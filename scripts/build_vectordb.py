@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict
+import glob
 
 import chromadb
 from chromadb.config import Settings
@@ -21,21 +22,21 @@ class VectorDBBuilder:
     
     def __init__(
         self,
-        data_file: str = "data/processed/vectordb_ready_chunks.json",
+        vectordb_dir: str = "data/vectordb_ready/documents",
         db_path: str = "vectordb/chroma_db",
-        collection_name: str = "kdigo_ckd_guidelines",
+        collection_name: str = "nephro_ai_medical_kb",
         model_name: str = "all-MiniLM-L6-v2"
     ):
         """
         Initialize vector database builder
         
         Args:
-            data_file: Path to processed chunks JSON
+            vectordb_dir: Directory containing vectordb_ready JSON files
             db_path: Directory for ChromaDB storage
             collection_name: Name for the collection
             model_name: Sentence transformer model to use
         """
-        self.data_file = data_file
+        self.vectordb_dir = vectordb_dir
         self.db_path = db_path
         self.collection_name = collection_name
         self.model_name = model_name
@@ -46,39 +47,71 @@ class VectorDBBuilder:
         print("=" * 70)
         print("🏗️  CHROMADB VECTOR DATABASE BUILDER")
         print("=" * 70)
-        print(f"📁 Data file: {data_file}")
+        print(f"📁 VectorDB documents: {vectordb_dir}")
         print(f"💾 Database path: {db_path}")
         print(f"📦 Collection: {collection_name}")
         print(f"🤖 Embedding model: {model_name}")
         print("=" * 70 + "\n")
     
     def load_data(self) -> Dict:
-        """Load processed chunks from JSON"""
-        print("📂 Loading processed data...")
+        """Load and merge all vectordb_ready JSON files"""
+        print("📂 Loading vectordb_ready documents...")
         
-        if not os.path.exists(self.data_file):
-            print(f"❌ Error: Data file not found: {self.data_file}")
+        # Find all vectordb_ready JSON files
+        if not os.path.exists(self.vectordb_dir):
+            print(f"❌ Error: Directory not found: {self.vectordb_dir}")
+            print(f"   Please run prepare_vectordb.py first to generate vectordb_ready files")
             sys.exit(1)
         
-        with open(self.data_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+        vectordb_files = glob.glob(os.path.join(self.vectordb_dir, "*_vectordb_ready.json"))
         
-        num_docs = len(data.get('documents', []))
-        print(f"✅ Loaded {num_docs} documents")
-        print(f"   - Documents: {len(data.get('documents', []))}")
-        print(f"   - Metadata entries: {len(data.get('metadatas', []))}")
-        print(f"   - IDs: {len(data.get('ids', []))}")
+        if not vectordb_files:
+            print(f"❌ Error: No vectordb_ready files found in {self.vectordb_dir}")
+            print(f"   Please run prepare_vectordb.py first")
+            sys.exit(1)
+        
+        print(f"   Found {len(vectordb_files)} vectordb_ready files")
+        
+        # Merge all data
+        all_documents = []
+        all_metadatas = []
+        all_ids = []
+        
+        for file_path in sorted(vectordb_files):
+            filename = os.path.basename(file_path)
+            print(f"   Loading: {filename}")
+            
+            with open(file_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            # Append data
+            all_documents.extend(data.get('documents', []))
+            all_metadatas.extend(data.get('metadatas', []))
+            all_ids.extend(data.get('ids', []))
+        
+        # Create merged data dictionary
+        merged_data = {
+            'documents': all_documents,
+            'metadatas': all_metadatas,
+            'ids': all_ids
+        }
+        
+        num_docs = len(all_documents)
+        print(f"\n✅ Loaded total {num_docs} documents from {len(vectordb_files)} files")
+        print(f"   - Documents: {len(all_documents)}")
+        print(f"   - Metadata entries: {len(all_metadatas)}")
+        print(f"   - IDs: {len(all_ids)}")
         
         # Validate data
         if num_docs == 0:
-            print("❌ Error: No documents found in data file")
+            print("❌ Error: No documents found in vectordb_ready files")
             sys.exit(1)
         
-        if len(data['documents']) != len(data['metadatas']) != len(data['ids']):
-            print("❌ Error: Mismatched lengths in data")
+        if len(all_documents) != len(all_metadatas) != len(all_ids):
+            print("❌ Error: Mismatched lengths in merged data")
             sys.exit(1)
         
-        return data
+        return merged_data
     
     def initialize_chromadb(self):
         """Initialize ChromaDB client and collection"""
@@ -117,7 +150,7 @@ class VectorDBBuilder:
         self.collection = self.client.get_or_create_collection(
             name=self.collection_name,
             metadata={
-                "description": "KDIGO 2024 Clinical Practice Guideline for CKD",
+                "description": "Nephro-AI Medical Knowledge Base for CKD",
                 "created_at": datetime.now().isoformat(),
                 "embedding_model": self.model_name,
                 "embedding_dimension": self.embedding_model.get_sentence_embedding_dimension()
@@ -270,13 +303,17 @@ class VectorDBBuilder:
         """Save build summary to file"""
         summary_file = os.path.join(self.db_path, "build_summary.json")
         
+        # Count source files
+        vectordb_files = glob.glob(os.path.join(self.vectordb_dir, "*_vectordb_ready.json"))
+        
         summary = {
             "build_date": datetime.now().isoformat(),
             "collection_name": self.collection_name,
             "document_count": self.collection.count(),
             "embedding_model": self.model_name,
             "embedding_dimension": self.embedding_model.get_sentence_embedding_dimension(),
-            "data_source": self.data_file,
+            "data_source_directory": self.vectordb_dir,
+            "source_files_count": len(vectordb_files),
             "database_path": self.db_path,
             "status": "success"
         }
@@ -335,9 +372,9 @@ def main():
     
     # Configuration
     builder = VectorDBBuilder(
-        data_file="data/processed/vectordb_ready_chunks.json",
+        vectordb_dir="data/vectordb_ready/documents",
         db_path="vectordb/chroma_db",
-        collection_name="kdigo_ckd_guidelines",
+        collection_name="nephro_ai_medical_kb",
         model_name="all-MiniLM-L6-v2"
     )
     

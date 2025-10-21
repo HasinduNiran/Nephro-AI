@@ -1,0 +1,17 @@
+{
+  "total_pages": 9,
+  "raw_text_length": 42839,
+  "cleaned_text_length": 42936,
+  "source_file": "s12955-020-01369-1.pdf",
+  "extraction_date": "2025-10-21T18:15:11.247770",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2020",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD"
+  ],
+  "total_chunks": 12,
+  "avg_chunk_size": 469.1666666666667,
+  "processing_date": "2025-10-21T18:15:11.282481"
+}

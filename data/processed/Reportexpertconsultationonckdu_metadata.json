@@ -1,0 +1,19 @@
+{
+  "total_pages": 48,
+  "raw_text_length": 61104,
+  "cleaned_text_length": 60850,
+  "source_file": "Reportexpertconsultationonckdu.pdf",
+  "extraction_date": "2025-10-21T18:15:05.522860",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2016",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "renal",
+    "KDIGO"
+  ],
+  "total_chunks": 21,
+  "avg_chunk_size": 464.8095238095238,
+  "processing_date": "2025-10-21T18:15:05.889009"
+}

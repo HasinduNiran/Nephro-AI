@@ -1,0 +1,141 @@
+[
+  {
+    "chunk_id": 0,
+    "text": "STAGES 15 Estimated Glomerular Filtration Rate (eGFR) A key to understanding how well your kidneys are working 2 NATIONAL KIDNEY FOUNDATION Contents How do doctors check for kidney disease? 4 Wouldnt I know if something was wrong with my kidneys? 4 What is estimated glomerular filtration rate (eGFR)? 5 How is eGFR checked? 5 Do you know what your eGFR is? 5 Stages of chronic kidney disease 6 What is a normal eGFR number? 7 Does age affect eGFR? 8 If my eGFR is low, what are the next steps? 9 Am I at increased risk for kidney disease? 10 If the tests find kidney disease, what does it mean for my health? 10 Can treatment keep kidney disease from getting worse? 11 Where can I get more information? 14 KIDNEY. ORG 3 Most people are aware that their blood pressure and cholesterol numbers are important in knowing their risk for heart and blood vessel diseases. Yet few know about estimated glomerular filtration rate (eGFR), one of the numbers that measures the health of their kidneys. This brochure explains what eGFR is, how it is measured, and why it is important in understanding chronic kidney disease (CKD). How do doctors check for kidney disease? Kidney disease can be found with two simple tests: A urine test for protein (uACR) A blood test for creatinine (eGFR) Even if these tests are normal now, they should be repeated in the future, especially if you are at increased risk for kidney disease. Wouldnt I know if something was wrong with my kidneys? Not always. Early kidney disease can be silent, without pain or other symptoms. Most people do not know that they have early kidney disease. When kidney disease gets worse, some people do notice problems such as swelling around the ankles, puffiness around the eyes, high blood pressure, nausea, poor appetite, or vomiting. 4 NATIONAL KIDNEY FOUNDATION What is estimated glomerular filtration rate (eGFR)? Your eGFR tells a lot about how well your kidneys are working. Your kidneys are important. They keep you healthy. They filter out waste and extra fluid from your blood, help make red blood cells, and keep your bones strong. When kidneys arent working well, wastes build up in your blood. Your bones can become weak. You may not have enough red blood cells for your bodys needs. Your eGFR number is a calculated measurement of how well your kidneys are working. If your eGFR number is low, your kidneys may not be working as well as they should. Its important to find this out early. Early treatment may help keep kidney disease from getting worse. How is eGFR checked? Having a simple blood test for creatinine is the first step in checking your eGFR. Creatinine is a waste product made by your bodys muscles. Your kidneys usually keep the level of creatinine just right. The level of creatinine in your blood, your age, and gender are used to calculate your eGFR.",
+    "word_count": 494,
+    "char_count": 2839,
+    "sentence_count": 40,
+    "metadata": {
+      "source_file": "gfr_a_key_to_understanding.pdf",
+      "extraction_date": "2025-10-21T18:11:54.624261",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "GFR",
+        "kidney function",
+        "eGFR"
+      ],
+      "chunk_index": 0,
+      "total_chunks": 5,
+      "position": "1/5",
+      "content_type": "general",
+      "medical_entities": [
+        "CKD",
+        "GFR"
+      ]
+    }
+  },
+  {
+    "chunk_id": 1,
+    "text": "Creatinine is a waste product made by your bodys muscles. Your kidneys usually keep the level of creatinine just right. The level of creatinine in your blood, your age, and gender are used to calculate your eGFR. Do you know what your eGFR is? Your healthcare professional or testing lab usually calculates your eGFR number. Be sure to talk with your doctor about the result. KIDNEY. ORG 5 Stages of chronic kidney disease There are 5 stages of kidney disease as shown in the table below. Your healthcare provider will tell you the stage of kidney disease, based on how well your kidneys are working and your estimated glomerular filtration rate (eGFR). The eGFR number comes from a lab test that measures the amount of blood your kidneys are filtering each minute. As CKD gets worse, the eGFR number goes down. STAGES OF KIDNEY DISEASE ESTIMATED GLOMERULAR FILTRATION RATE KIDNEY STAGE DESCRIPTION (eGFR) FUNCTION Kidney damage (e. g. , protein 1 in the urine) with normal 90 or above 90100% kidney function Kidney damage with mild 2 60 to 89 loss of kidney function 6089% Mild to moderate loss of 3a 45 to 59 kidney function 4559% Moderate to severe loss of 3b 30 to 44 kidney function 3044% Severe loss of kidney 4 15 to 29 function 1529% 5 Kidney failure Less than 15 Less than 15% 6 NATIONAL KIDNEY FOUNDATION Stages of chronic kidney disease What is a normal eGFR number? There are 5 stages of kidney disease as shown in the In adults, the normal eGFR number is more than 90. table below. Your healthcare provider will tell you the IF YOUR eGFR IS BETWEEN 60 AND 89 stage of kidney disease, based on how well your People with mildly low eGFR (between 60 and 89) kidneys are working and your estimated glomerular may not have kidney disease if there is no sign of filtration rate (eGFR). The eGFR number comes from a kidney damage, such as protein in their urine. These lab test that measures the amount of blood your people should have their eGFR checked often. They kidneys are filtering each minute. As CKD gets worse, may be asked to avoid medications that can damage the eGFR number goes down. the kidneys (such as ibuprofen) or reduce the dose of medicines that are removed by the kidneys. STAGES OF KIDNEY DISEASE If there is kidney damage, such as protein in the urine, a result between 60 and 89 may mean early ESTIMATED GLOMERULAR kidney disease. Even an eGFR over 90 with protein FILTRATION RATE KIDNEY STAGE DESCRIPTION (eGFR) FUNCTION in the urine is a sign of kidney disease. eGFR must Kidney damage (e. g. , protein remain low for three months for kidney disease to be 1 in the urine) with normal 90 or above 90100% diagnosed.",
+    "word_count": 472,
+    "char_count": 2646,
+    "sentence_count": 22,
+    "metadata": {
+      "source_file": "gfr_a_key_to_understanding.pdf",
+      "extraction_date": "2025-10-21T18:11:54.624261",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "GFR",
+        "kidney function",
+        "eGFR"
+      ],
+      "chunk_index": 1,
+      "total_chunks": 5,
+      "position": "2/5",
+      "content_type": "reference",
+      "medical_entities": [
+        "CKD",
+        "GFR"
+      ]
+    }
+  },
+  {
+    "chunk_id": 2,
+    "text": "eGFR must Kidney damage (e. g. , protein remain low for three months for kidney disease to be 1 in the urine) with normal 90 or above 90100% diagnosed. kidney function Kidney damage with mild IF YOUR eGFR IS BELOW 60 2 60 to 89 loss of kidney function 6089% When eGFR is below 60 for more than three months, it usually means you have moderate-to-severe kidney Mild to moderate loss of 3a 45 to 59 disease. You may be referred to a nephrologist (kidney kidney function 4559% doctor) for evaluation and treatment. Moderate to severe loss of 3b 30 to 44 IF YOUR eGFR IS BELOW 15 kidney function 3044% An eGFR below 15 means kidney failure. If kidney failure occurs, dialysis or a kidney transplant will be Severe loss of kidney 4 15 to 29 function 1529% needed to stay alive. 5 Kidney failure Less than 15 Less than 15% KIDNEY. ORG 7 Does age affect eGFR? Yes. eGFR gets lower with age, even in people without kidney disease. The older you are, the lower your eGFR. For this reason, the eGFR calculation takes age in to account. At any age, an eGFR below 60 for three months or more indicates kidney disease. eGFR Declines with Age (even in people without kidney disease) Age (years) Average eGFR 2029 116 3039 107 4049 99 5059 93 6069 85 70 75 8 NATIONAL KIDNEY FOUNDATION If my eGFR is low, what are the next steps? More tests should be done to understand why it is low. The results of these tests may provide clues about what is happening with your kidneys. Examples of tests that might be ordered are: Urine tests that look for: The type and amount of protein in your urine (a sign of kidney damage) Red blood cells (a sign of bleeding in the urinary system) White blood cells (a sign of infection) Ultrasound or CT scan to get a picture of your kidneys and urinary system. These pictures show the size of your kidneys and if tumors, kidney stones, or cysts are present. A biopsy to remove a tiny piece of the kidney for evaluation. The sample is studied under a microscope to see what kind of kidney damage is may be present. KIDNEY. ORG 9 Am I at increased risk for kidney disease? Some people are more likely than others to develop kidney disease. You may be at increased risk for kidney disease if you: Have diabetes Have high blood pressure Have a family history of kidney disease or kidney failure Are age 60 or older Are overweight or obese If the tests find kidney disease, what does it mean for my health? If you have kidney disease, your kidneys have lost some of their ability to keep you healthy. They arent able to do their full jobs: filter your blood, help make red blood cells, and keep bones strong. The most common causes of kidney disease are diabetes and high blood pressure.",
+    "word_count": 498,
+    "char_count": 2696,
+    "sentence_count": 26,
+    "metadata": {
+      "source_file": "gfr_a_key_to_understanding.pdf",
+      "extraction_date": "2025-10-21T18:11:54.624261",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "GFR",
+        "kidney function",
+        "eGFR"
+      ],
+      "chunk_index": 2,
+      "total_chunks": 5,
+      "position": "3/5",
+      "content_type": "general",
+      "medical_entities": [
+        "GFR",
+        "dialysis",
+        "diabetes"
+      ]
+    }
+  },
+  {
+    "chunk_id": 3,
+    "text": "If you have kidney disease, your kidneys have lost some of their ability to keep you healthy. They arent able to do their full jobs: filter your blood, help make red blood cells, and keep bones strong. The most common causes of kidney disease are diabetes and high blood pressure. There are also other problems caused by kidney disease like high blood pressure, poor nutrition, and heart disease. 10 NATIONAL KIDNEY FOUNDATION Can treatment keep kidney disease from getting worse? The earlier your kidney disease is found, the better. If it is found and treated early, you may be able to keep it from getting worse. That is why it is so important for people with risk factors to be tested for kidney disease. Heart and blood vessel problems Poor nutritional health High blood pressure Anemia Bone problems Kidney disease affects many areas of the body. KIDNEY. ORG 11 The success of treatment depends on a number of things: Your stage of kidney disease when you start treatment. The earlier you start, the better you are likely to do. How carefully you follow your treatment plan. Learn all you can about kidney disease and its treatment. Talk to your doctor about what you can do. What caused your kidney disease. Some kidney diseases are more difficult to control. 12 NATIONAL KIDNEY FOUNDATION Key Points to Remember: Two simple tests will find chronic kidney disease: A urine test for protein (uACR) A blood test for creatinine (eGFR) Get a blood pressure measurement. eGFR is an important number that estimates how much kidney function you have. If you have kidney disease, a treatment plan will be developed especially for you. It will be based on your eGFR, the cause of your kidney disease, and other health factors. Your doctor will monitor your stage of kidney disease using your eGFR. You should keep track of it, too. You can keep kidney disease from getting worse by following your treatment plan carefully. If kidney disease progresses to kidney failure, dialysis or a kidney transplant will be needed. KIDNEY. ORG 13 Where can I get more information? If you have questions, speak with your healthcare team. They know you and can answer questions. You can also call the National Kidney Foundation Cares Patient Help Line toll-free at 855. NKF. CARES (855. 653. 2273) or email nkfcareskidney. org. A trained professional will listen to your concerns and answer your questions. 14 NATIONAL KIDNEY FOUNDATION Setting a standard for care The National Kidney Foundation, through its Kidney Disease Outcomes Quality Initiative (KDOQI), defines stages of kidney disease and offers guidelines that help your healthcare professional and healthcare team make important decisions about your medical treatment. The information in this booklet is based on those recommended guidelines. The information contained in this publication is based on current data and expert guidance available at the time of publication. The information is intended to help patients become aware of their disease and its management.",
+    "word_count": 494,
+    "char_count": 3010,
+    "sentence_count": 40,
+    "metadata": {
+      "source_file": "gfr_a_key_to_understanding.pdf",
+      "extraction_date": "2025-10-21T18:11:54.624261",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "GFR",
+        "kidney function",
+        "eGFR"
+      ],
+      "chunk_index": 3,
+      "total_chunks": 5,
+      "position": "4/5",
+      "content_type": "recommendation",
+      "medical_entities": [
+        "GFR",
+        "dialysis",
+        "diabetes"
+      ]
+    }
+  },
+  {
+    "chunk_id": 4,
+    "text": "The information in this booklet is based on those recommended guidelines. The information contained in this publication is based on current data and expert guidance available at the time of publication. The information is intended to help patients become aware of their disease and its management. This publication is not intended to set out a preferred standard of care and should not be construed as one. Neither should the information be interpreted as prescribing an exclusive course of management. Patients should always consult with their healthcare providers regarding decisions about their individual plan of care. KIDNEY. ORG 15 Fueled by passion and urgency, the National Kidney Foundation (NKF) is a lifeline for all people affected by kidney disease. As pioneers of scientific research and innovation, we focus on the whole patient through the lens of kidney health. Relentess in our work, we enhance lives through action, education, and accelerating change. 30 E. 33RD ST. NEW YORK, NY 10016 800. 622. 9010 KIDNEY. ORG KIDNEY. ORG 2022 National Kidney Foundation, Inc. 11-10-1813_2204",
+    "word_count": 171,
+    "char_count": 1097,
+    "sentence_count": 15,
+    "metadata": {
+      "source_file": "gfr_a_key_to_understanding.pdf",
+      "extraction_date": "2025-10-21T18:11:54.624261",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "GFR",
+        "kidney function",
+        "eGFR"
+      ],
+      "chunk_index": 4,
+      "total_chunks": 5,
+      "position": "5/5",
+      "content_type": "recommendation",
+      "medical_entities": []
+    }
+  }
+]

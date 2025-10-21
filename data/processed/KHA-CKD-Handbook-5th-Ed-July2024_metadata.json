@@ -1,0 +1,18 @@
+{
+  "total_pages": 88,
+  "raw_text_length": 151653,
+  "cleaned_text_length": 149594,
+  "source_file": "KHA-CKD-Handbook-5th-Ed-July2024.pdf",
+  "extraction_date": "2025-10-21T18:13:32.667319",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "renal",
+    "nephrology"
+  ],
+  "total_chunks": 50,
+  "avg_chunk_size": 484.7,
+  "processing_date": "2025-10-21T18:13:32.736497"
+}

@@ -1,0 +1,16 @@
+{
+  "total_pages": 28,
+  "raw_text_length": 22381,
+  "cleaned_text_length": 22212,
+  "source_file": "peritoneal_dialysis.pdf",
+  "extraction_date": "2025-10-21T18:14:31.854370",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "dialysis",
+    "kidney function"
+  ],
+  "total_chunks": 9,
+  "avg_chunk_size": 479.1111111111111,
+  "processing_date": "2025-10-21T18:14:31.872627"
+}

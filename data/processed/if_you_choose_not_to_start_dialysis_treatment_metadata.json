@@ -1,0 +1,15 @@
+{
+  "total_pages": 16,
+  "raw_text_length": 13928,
+  "cleaned_text_length": 13944,
+  "source_file": "if_you_choose_not_to_start_dialysis_treatment.pdf",
+  "extraction_date": "2025-10-21T18:12:42.582419",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "dialysis"
+  ],
+  "total_chunks": 6,
+  "avg_chunk_size": 423.1666666666667,
+  "processing_date": "2025-10-21T18:12:42.871141"
+}

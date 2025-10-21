@@ -1,0 +1,21 @@
+{
+  "total_documents": 12,
+  "source_file": "s12955-020-01369-1_chunks.json",
+  "source_path": "data/processed\\s12955-020-01369-1_chunks.json",
+  "preparation_date": "2025-10-21T18:35:11.687395",
+  "avg_word_count": 469.1666666666667,
+  "content_types": {
+    "definition": 2,
+    "reference": 6,
+    "recommendation": 2,
+    "general": 1,
+    "evidence": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 12,
+    "GFR": 4,
+    "diabetes": 0,
+    "hypertension": 1,
+    "dialysis": 3
+  }
+}

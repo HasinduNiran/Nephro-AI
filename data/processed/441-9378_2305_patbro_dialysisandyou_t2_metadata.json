@@ -1,0 +1,18 @@
+{
+  "total_pages": 28,
+  "raw_text_length": 24066,
+  "cleaned_text_length": 23605,
+  "source_file": "441-9378_2305_patbro_dialysisandyou_t2.pdf",
+  "extraction_date": "2025-10-21T18:07:54.615232",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "dialysis",
+    "kidney function"
+  ],
+  "total_chunks": 9,
+  "avg_chunk_size": 468.77777777777777,
+  "processing_date": "2025-10-21T18:07:54.989326"
+}

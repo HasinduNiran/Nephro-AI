@@ -3,7 +3,7 @@
   "raw_text_length": 936183,
   "cleaned_text_length": 944430,
   "source_file": "KDIGO-2024-CKD-Guideline.pdf",
-  "extraction_date": "2025-10-19T18:39:38.200591",
+  "extraction_date": "2025-10-21T18:13:22.045536",
   "document_type": "medical_guideline",
   "language": "en",
   "organization": "KDIGO",
@@ -21,5 +21,5 @@
   ],
   "total_chunks": 243,
   "avg_chunk_size": 486.36625514403295,
-  "processing_date": "2025-10-19T18:39:38.947619"
+  "processing_date": "2025-10-21T18:13:22.483119"
 }

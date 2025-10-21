@@ -1,0 +1,19 @@
+{
+  "total_pages": 28,
+  "raw_text_length": 26123,
+  "cleaned_text_length": 25915,
+  "source_file": "dining_out_with_confidence_1_2.pdf",
+  "extraction_date": "2025-10-21T18:11:27.926797",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "GFR",
+    "kidney function",
+    "eGFR"
+  ],
+  "total_chunks": 11,
+  "avg_chunk_size": 447.09090909090907,
+  "processing_date": "2025-10-21T18:11:27.955521"
+}

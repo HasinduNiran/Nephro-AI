@@ -1,0 +1,111 @@
+======================================================================
+NEPHRO-AI CLEANUP - FILES TO BE DELETED
+Timestamp: 2025-10-21 18:39:14
+======================================================================
+
+1. VectorDB Ready Files (45):
+   - 11-10-0209_2203_patbro_diabckd1-4p5_vectordb_ready.json
+   - 11-10-0513_2401_patbro_traveltip_t1_vectordb_ready.json
+   - 11-10_0502_2312_patbro_keepingfit_t1_final_vectordb_ready.json
+   - 1803.11253v1_vectordb_ready.json
+   - 441-9378_2305_patbro_dialysisandyou_t2_vectordb_ready.json
+   - 441-9471_2307_patbro_riskfactors_t3_002_vectordb_ready.json
+   - 443-9484_2307_patbro_hbpandckd_t3_0_vectordb_ready.json
+   - About Living Donation-Patient Brochure_11_24_vectordb_ready.json
+   - advance_directives_vectordb_ready.json
+   - choosing_a_treatment_vectordb_ready.json
+   - Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021_vectordb_ready.json
+   - coping_vectordb_ready.json
+   - dialysis_patients_bill_of_rights_vectordb_ready.json
+   - dining_out_with_confidence_1_2_vectordb_ready.json
+   - dining_out_with_confidence_1_vectordb_ready.json
+   - epidemiology_of_chronic_kidney_disease_in_a_sri.41_vectordb_ready.json
+   - gfr_a_key_to_understanding_vectordb_ready.json
+   - hemodialysis_0_vectordb_ready.json
+   - hemodialysis_access_vectordb_ready.json
+   - HFHS_CKD_V6_vectordb_ready.json
+   - home_hemo_vectordb_ready.json
+   - hyperkalemia_vectordb_ready.json
+   - if_you_choose_not_to_start_dialysis_treatment_vectordb_ready.json
+   - j-krcp-23-194_vectordb_ready.json
+   - KDIGO-2024-CKD-Guideline_vectordb_ready.json
+   - KHA-CKD-Handbook-5th-Ed-July2024_vectordb_ready.json
+   - kidneytransplant_updated_vectordb_ready.json
+   - kidney_cancer_vectordb_ready.json
+   - managing_anemia_vectordb_ready.json
+   - managing_iron_vectordb_ready.json
+   - mineral_and_bone_disorder_vectordb_ready.json
+   - nutrition_and_ckd_vectordb_ready.json
+   - nutrition_and_hemodiaylsis_vectordb_ready.json
+   - nutrition_and_peritoneal_dialysis_vectordb_ready.json
+   - nutrition_and_transplant_vectordb_ready.json
+   - pain_medicines_vectordb_ready.json
+   - peritoneal_dialysis_vectordb_ready.json
+   - planning_for_emergencies_vectordb_ready.json
+   - Reportexpertconsultationonckdu_vectordb_ready.json
+   - s12882-019-1501-0_vectordb_ready.json
+   - s12955-020-01369-1_vectordb_ready.json
+   - Screening Guidelines Chronic Kidney Disease Sri Lanka - 2017_vectordb_ready.json
+   - vaccines_and_dialysis_vectordb_ready.json
+   - working_with_kidney_disease_vectordb_ready.json
+   - yjoh-22-259_vectordb_ready.json
+
+2. Preparation Summary Files (46):
+   - 11-10-0209_2203_patbro_diabckd1-4p5_preparation_summary.json
+   - 11-10-0513_2401_patbro_traveltip_t1_preparation_summary.json
+   - 11-10_0502_2312_patbro_keepingfit_t1_final_preparation_summary.json
+   - 1803.11253v1_preparation_summary.json
+   - 441-9378_2305_patbro_dialysisandyou_t2_preparation_summary.json
+   - 441-9471_2307_patbro_riskfactors_t3_002_preparation_summary.json
+   - 443-9484_2307_patbro_hbpandckd_t3_0_preparation_summary.json
+   - About Living Donation-Patient Brochure_11_24_preparation_summary.json
+   - advance_directives_preparation_summary.json
+   - choosing_a_treatment_preparation_summary.json
+   - Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021_preparation_summary.json
+   - coping_preparation_summary.json
+   - dialysis_patients_bill_of_rights_preparation_summary.json
+   - dining_out_with_confidence_1_2_preparation_summary.json
+   - dining_out_with_confidence_1_preparation_summary.json
+   - epidemiology_of_chronic_kidney_disease_in_a_sri.41_preparation_summary.json
+   - gfr_a_key_to_understanding_preparation_summary.json
+   - hemodialysis_0_preparation_summary.json
+   - hemodialysis_access_preparation_summary.json
+   - HFHS_CKD_V6_preparation_summary.json
+   - home_hemo_preparation_summary.json
+   - hyperkalemia_preparation_summary.json
+   - if_you_choose_not_to_start_dialysis_treatment_preparation_summary.json
+   - j-krcp-23-194_preparation_summary.json
+   - KDIGO-2024-CKD-Guideline_preparation_summary.json
+   - KHA-CKD-Handbook-5th-Ed-July2024_preparation_summary.json
+   - kidneytransplant_updated_preparation_summary.json
+   - kidney_cancer_preparation_summary.json
+   - managing_anemia_preparation_summary.json
+   - managing_iron_preparation_summary.json
+   - mineral_and_bone_disorder_preparation_summary.json
+   - nutrition_and_ckd_preparation_summary.json
+   - nutrition_and_hemodiaylsis_preparation_summary.json
+   - nutrition_and_peritoneal_dialysis_preparation_summary.json
+   - nutrition_and_transplant_preparation_summary.json
+   - pain_medicines_preparation_summary.json
+   - peritoneal_dialysis_preparation_summary.json
+   - planning_for_emergencies_preparation_summary.json
+   - Reportexpertconsultationonckdu_preparation_summary.json
+   - s12882-019-1501-0_preparation_summary.json
+   - s12955-020-01369-1_preparation_summary.json
+   - Screening Guidelines Chronic Kidney Disease Sri Lanka - 2017_preparation_summary.json
+   - vaccines_and_dialysis_preparation_summary.json
+   - vectordb_preparation_summary.json
+   - working_with_kidney_disease_preparation_summary.json
+   - yjoh-22-259_preparation_summary.json
+
+3. Old Tracker and Query Files:
+   - .processed_chunks_tracker.json
+   - sample_queries.txt
+   - vectordb_preparation_summary.json
+   - vectordb_ready_chunks.json
+
+4. Root Directory Documentation Files:
+   - COMPLETION_REPORT.md
+   - CT.txt
+   - FINAL_SUCCESS_SUMMARY.md
+   - VECTORDB_BUILD_COMPLETE.md

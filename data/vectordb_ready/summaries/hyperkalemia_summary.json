@@ -1,0 +1,18 @@
+{
+  "total_documents": 4,
+  "source_file": "hyperkalemia_chunks.json",
+  "source_path": "data/processed\\hyperkalemia_chunks.json",
+  "preparation_date": "2025-10-21T18:35:11.585429",
+  "avg_word_count": 428.0,
+  "content_types": {
+    "general": 3,
+    "reference": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 1,
+    "diabetes": 3,
+    "hypertension": 0,
+    "dialysis": 1
+  }
+}

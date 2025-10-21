@@ -1,0 +1,17 @@
+{
+  "total_pages": 16,
+  "raw_text_length": 14290,
+  "cleaned_text_length": 13922,
+  "source_file": "kidney_cancer.pdf",
+  "extraction_date": "2025-10-21T18:13:34.216472",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "dialysis",
+    "kidney function",
+    "renal"
+  ],
+  "total_chunks": 6,
+  "avg_chunk_size": 429.6666666666667,
+  "processing_date": "2025-10-21T18:13:34.235880"
+}
