@@ -9,6 +9,8 @@ import json
 from pathlib import Path
 from typing import List, Dict, Tuple
 from datetime import datetime
+import tkinter as tk
+from tkinter import filedialog
 
 import PyPDF2
 import pdfplumber
@@ -452,17 +454,81 @@ class PDFKnowledgeExtractor:
         return output_file
 
 
+def select_pdf_file():
+    """
+    Open a file dialog to select a PDF file
+    
+    Returns:
+        str: Path to the selected PDF file, or None if cancelled
+    """
+    print("=" * 70)
+    print("📂 PDF FILE SELECTOR")
+    print("=" * 70)
+    print("Please select a PDF file to process...")
+    print()
+    
+    # Create a root window and hide it
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)  # Bring dialog to front
+    
+    # Open file dialog
+    file_path = filedialog.askopenfilename(
+        title="Select PDF File to Extract",
+        filetypes=[
+            ("PDF files", "*.pdf"),
+            ("All files", "*.*")
+        ],
+        initialdir=os.path.abspath("data/raw")  # Start in data/raw directory
+    )
+    
+    # Destroy the root window
+    root.destroy()
+    
+    if file_path:
+        print(f"✅ Selected: {file_path}\n")
+        return file_path
+    else:
+        print("❌ No file selected. Exiting...\n")
+        return None
+
+
 def main():
     """Main execution function"""
     
+    # Open file dialog to select PDF
+    pdf_path = select_pdf_file()
+    
+    if not pdf_path:
+        print("⚠️  No PDF file selected. Exiting...")
+        return None
+    
+    # Verify file exists and is a PDF
+    if not os.path.exists(pdf_path):
+        print(f"❌ Error: File does not exist: {pdf_path}")
+        return None
+    
+    if not pdf_path.lower().endswith('.pdf'):
+        print(f"❌ Error: Selected file is not a PDF: {pdf_path}")
+        return None
+    
     # Configuration
-    PDF_PATH = "data/raw/KDIGO-2024-CKD-Guideline.pdf"
     OUTPUT_DIR = "data/processed"
     CHUNK_SIZE = 500  # words per chunk
     OVERLAP = 50      # words overlap between chunks
     
+    print("=" * 70)
+    print("⚙️  CONFIGURATION")
+    print("=" * 70)
+    print(f"PDF File: {os.path.basename(pdf_path)}")
+    print(f"Output Directory: {OUTPUT_DIR}")
+    print(f"Chunk Size: {CHUNK_SIZE} words")
+    print(f"Overlap: {OVERLAP} words")
+    print("=" * 70)
+    print()
+    
     # Initialize extractor
-    extractor = PDFKnowledgeExtractor(PDF_PATH, OUTPUT_DIR)
+    extractor = PDFKnowledgeExtractor(pdf_path, OUTPUT_DIR)
     
     # Process the PDF
     output_file = extractor.process(
@@ -470,6 +536,15 @@ def main():
         overlap=OVERLAP,
         save_format='json'
     )
+    
+    if output_file:
+        print("\n" + "=" * 70)
+        print("🎉 SUCCESS!")
+        print("=" * 70)
+        print(f"✅ PDF processed successfully!")
+        print(f"📁 Output files saved in: {OUTPUT_DIR}")
+        print(f"📄 Main output: {os.path.basename(output_file)}")
+        print("=" * 70)
     
     return output_file
 
