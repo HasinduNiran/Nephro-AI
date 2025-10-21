@@ -1,0 +1,19 @@
+{
+  "total_pages": 16,
+  "raw_text_length": 11857,
+  "cleaned_text_length": 11348,
+  "source_file": "gfr_a_key_to_understanding.pdf",
+  "extraction_date": "2025-10-21T18:11:54.624261",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "GFR",
+    "kidney function",
+    "eGFR"
+  ],
+  "total_chunks": 5,
+  "avg_chunk_size": 425.8,
+  "processing_date": "2025-10-21T18:11:54.635779"
+}

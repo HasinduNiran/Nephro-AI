@@ -1,0 +1,18 @@
+{
+  "total_documents": 7,
+  "source_file": "epidemiology_of_chronic_kidney_disease_in_a_sri.41_chunks.json",
+  "source_path": "data/processed\\epidemiology_of_chronic_kidney_disease_in_a_sri.41_chunks.json",
+  "preparation_date": "2025-10-21T18:35:11.555340",
+  "avg_word_count": 430.2857142857143,
+  "content_types": {
+    "evidence": 4,
+    "reference": 3
+  },
+  "medical_entity_coverage": {
+    "CKD": 7,
+    "GFR": 1,
+    "diabetes": 5,
+    "hypertension": 6,
+    "dialysis": 2
+  }
+}

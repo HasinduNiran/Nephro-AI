@@ -1,0 +1,17 @@
+{
+  "total_pages": 20,
+  "raw_text_length": 16858,
+  "cleaned_text_length": 16821,
+  "source_file": "working_with_kidney_disease.pdf",
+  "extraction_date": "2025-10-21T18:15:14.231814",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "dialysis"
+  ],
+  "total_chunks": 7,
+  "avg_chunk_size": 434.85714285714283,
+  "processing_date": "2025-10-21T18:15:14.250758"
+}

@@ -11,12 +11,17 @@ from typing import List, Dict, Tuple
 from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog
+import logging
 
 import PyPDF2
 import pdfplumber
 from langdetect import detect
 import nltk
 from nltk.tokenize import sent_tokenize
+
+# Suppress pdfplumber warnings about graphics/colors
+logging.getLogger("pdfminer").setLevel(logging.ERROR)
+logging.getLogger("pdfplumber").setLevel(logging.ERROR)
 
 # Download required NLTK data
 try:
@@ -50,9 +55,23 @@ class PDFKnowledgeExtractor:
         os.makedirs(self.output_dir, exist_ok=True)
         
     def extract_text(self) -> str:
-        """Extract raw text from PDF using multiple methods"""
+        """Extract raw text from PDF or text file using multiple methods"""
         print(f"📄 Extracting text from: {self.pdf_path}")
         
+        # Check if it's a text file
+        if self.pdf_path.lower().endswith('.txt'):
+            try:
+                with open(self.pdf_path, 'r', encoding='utf-8') as f:
+                    text = f.read()
+                self.metadata['total_pages'] = 1
+                self.metadata['raw_text_length'] = len(text)
+                print(f"✅ Extracted {len(text)} characters from text file")
+                return text
+            except Exception as e:
+                print(f"❌ Failed to read text file: {e}")
+                return ""
+        
+        # Process PDF files
         full_text = []
         
         # Method 1: Try pdfplumber (better for complex layouts)
@@ -454,17 +473,18 @@ class PDFKnowledgeExtractor:
         return output_file
 
 
-def select_pdf_file():
+def select_files():
     """
-    Open a file dialog to select a PDF file
+    Open a file dialog to select multiple PDF or text files
     
     Returns:
-        str: Path to the selected PDF file, or None if cancelled
+        list: List of paths to the selected files, or empty list if cancelled
     """
     print("=" * 70)
-    print("📂 PDF FILE SELECTOR")
+    print("📂 FILE SELECTOR")
     print("=" * 70)
-    print("Please select a PDF file to process...")
+    print("Please select one or more PDF/text files to process...")
+    print("💡 Tip: Hold Ctrl to select multiple files")
     print()
     
     # Create a root window and hide it
@@ -472,11 +492,13 @@ def select_pdf_file():
     root.withdraw()
     root.attributes('-topmost', True)  # Bring dialog to front
     
-    # Open file dialog
-    file_path = filedialog.askopenfilename(
-        title="Select PDF File to Extract",
+    # Open file dialog with multiple selection enabled
+    file_paths = filedialog.askopenfilenames(  # Note: askopenfileNAMES (plural) for multiple selection
+        title="Select PDF/Text Files to Extract (Ctrl+Click for multiple)",
         filetypes=[
+            ("PDF and Text files", "*.pdf *.txt"),
             ("PDF files", "*.pdf"),
+            ("Text files", "*.txt"),
             ("All files", "*.*")
         ],
         initialdir=os.path.abspath("data/raw")  # Start in data/raw directory
@@ -485,31 +507,25 @@ def select_pdf_file():
     # Destroy the root window
     root.destroy()
     
-    if file_path:
-        print(f"✅ Selected: {file_path}\n")
-        return file_path
+    if file_paths:
+        print(f"✅ Selected {len(file_paths)} file(s):")
+        for i, fp in enumerate(file_paths, 1):
+            print(f"   {i}. {os.path.basename(fp)}")
+        print()
+        return list(file_paths)
     else:
-        print("❌ No file selected. Exiting...\n")
-        return None
+        print("❌ No files selected. Exiting...\n")
+        return []
 
 
 def main():
     """Main execution function"""
     
-    # Open file dialog to select PDF
-    pdf_path = select_pdf_file()
+    # Open file dialog to select files
+    file_paths = select_files()
     
-    if not pdf_path:
-        print("⚠️  No PDF file selected. Exiting...")
-        return None
-    
-    # Verify file exists and is a PDF
-    if not os.path.exists(pdf_path):
-        print(f"❌ Error: File does not exist: {pdf_path}")
-        return None
-    
-    if not pdf_path.lower().endswith('.pdf'):
-        print(f"❌ Error: Selected file is not a PDF: {pdf_path}")
+    if not file_paths:
+        print("⚠️  No files selected. Exiting...")
         return None
     
     # Configuration
@@ -520,33 +536,95 @@ def main():
     print("=" * 70)
     print("⚙️  CONFIGURATION")
     print("=" * 70)
-    print(f"PDF File: {os.path.basename(pdf_path)}")
+    print(f"Files to process: {len(file_paths)}")
     print(f"Output Directory: {OUTPUT_DIR}")
     print(f"Chunk Size: {CHUNK_SIZE} words")
     print(f"Overlap: {OVERLAP} words")
     print("=" * 70)
     print()
     
-    # Initialize extractor
-    extractor = PDFKnowledgeExtractor(pdf_path, OUTPUT_DIR)
+    # Process each file
+    results = []
+    successful = 0
+    failed = 0
     
-    # Process the PDF
-    output_file = extractor.process(
-        chunk_size=CHUNK_SIZE,
-        overlap=OVERLAP,
-        save_format='json'
-    )
-    
-    if output_file:
+    for idx, file_path in enumerate(file_paths, 1):
         print("\n" + "=" * 70)
-        print("🎉 SUCCESS!")
+        print(f"📁 PROCESSING FILE {idx}/{len(file_paths)}")
         print("=" * 70)
-        print(f"✅ PDF processed successfully!")
-        print(f"📁 Output files saved in: {OUTPUT_DIR}")
-        print(f"📄 Main output: {os.path.basename(output_file)}")
+        print(f"File: {os.path.basename(file_path)}")
         print("=" * 70)
+        
+        # Verify file exists
+        if not os.path.exists(file_path):
+            print(f"❌ Error: File does not exist: {file_path}")
+            failed += 1
+            continue
+        
+        # Verify file type
+        if not (file_path.lower().endswith('.pdf') or file_path.lower().endswith('.txt')):
+            print(f"❌ Error: File must be PDF or TXT: {file_path}")
+            failed += 1
+            continue
+        
+        try:
+            # Initialize extractor
+            extractor = PDFKnowledgeExtractor(file_path, OUTPUT_DIR)
+            
+            # Process the file
+            output_file = extractor.process(
+                chunk_size=CHUNK_SIZE,
+                overlap=OVERLAP,
+                save_format='json'
+            )
+            
+            if output_file:
+                results.append({
+                    'input': file_path,
+                    'output': output_file,
+                    'status': 'success'
+                })
+                successful += 1
+                print(f"\n✅ File {idx}/{len(file_paths)} processed successfully!")
+            else:
+                results.append({
+                    'input': file_path,
+                    'output': None,
+                    'status': 'failed'
+                })
+                failed += 1
+                print(f"\n❌ File {idx}/{len(file_paths)} failed to process!")
+                
+        except Exception as e:
+            print(f"\n❌ Error processing file: {e}")
+            results.append({
+                'input': file_path,
+                'output': None,
+                'status': 'error',
+                'error': str(e)
+            })
+            failed += 1
     
-    return output_file
+    # Print final summary
+    print("\n" + "=" * 70)
+    print("🎉 BATCH PROCESSING COMPLETE!")
+    print("=" * 70)
+    print(f"Total files: {len(file_paths)}")
+    print(f"✅ Successful: {successful}")
+    print(f"❌ Failed: {failed}")
+    print(f"📁 Output directory: {OUTPUT_DIR}")
+    print("\n📊 Results:")
+    for i, result in enumerate(results, 1):
+        status_icon = "✅" if result['status'] == 'success' else "❌"
+        filename = os.path.basename(result['input'])
+        print(f"   {i}. {status_icon} {filename}")
+        if result['status'] == 'success':
+            print(f"      → {os.path.basename(result['output'])}")
+        elif result.get('error'):
+            print(f"      → Error: {result['error']}")
+    print("=" * 70)
+    
+    return results
 
 
 if __name__ == "__main__":

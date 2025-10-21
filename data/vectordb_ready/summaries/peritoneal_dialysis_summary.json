@@ -1,0 +1,19 @@
+{
+  "total_documents": 9,
+  "source_file": "peritoneal_dialysis_chunks.json",
+  "source_path": "data/processed\\peritoneal_dialysis_chunks.json",
+  "preparation_date": "2025-10-21T18:35:11.667832",
+  "avg_word_count": 479.1111111111111,
+  "content_types": {
+    "general": 5,
+    "reference": 3,
+    "recommendation": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 1,
+    "diabetes": 1,
+    "hypertension": 0,
+    "dialysis": 9
+  }
+}
