@@ -16,7 +16,7 @@ class VectorDBQuery:
     def __init__(
         self,
         db_path: str = "vectordb/chroma_db",
-        collection_name: str = "kdigo_ckd_guidelines"
+        collection_name: str = "nephro_ai_medical_kb"
     ):
         """
         Initialize query interface
