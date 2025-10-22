@@ -1,6 +1,23 @@
+
 """
 PDF Knowledge Extractor for Kidney Care Vector Database
-Extracts, cleans, normalizes, chunks, and prepares medical text for vectorization
+========================================================
+This module extracts medical knowledge from PDF documents and prepares them for vector database storage.
+
+Main Features:
+- Multi-method PDF text extraction (pdfplumber + PyPDF2 fallback)
+- Text cleaning and normalization for medical content
+- Intelligent chunking with overlap for context preservation
+- Automatic metadata extraction and medical entity detection
+- Quality filtering to ensure useful content
+- Batch processing support for multiple files
+
+Pipeline Flow:
+    PDF → Extract Text → Clean → Chunk → Add Metadata → Filter → Save JSON
+
+Usage:
+    python pdf_extractor.py
+    (Opens file dialog to select PDF/TXT files)
 """
 
 import os
@@ -13,22 +30,25 @@ import tkinter as tk
 from tkinter import filedialog
 import logging
 
-import PyPDF2
-import pdfplumber
-from langdetect import detect
+# Third-party libraries for PDF processing and NLP
+import PyPDF2          # Fallback PDF reader
+import pdfplumber      # Primary PDF reader (better for complex layouts)
+from langdetect import detect  # Automatic language detection
 import nltk
-from nltk.tokenize import sent_tokenize
+from nltk.tokenize import sent_tokenize  # Split text into sentences
 
-# Suppress pdfplumber warnings about graphics/colors
+# Suppress pdfplumber warnings about graphics/colors that clutter output
 logging.getLogger("pdfminer").setLevel(logging.ERROR)
 logging.getLogger("pdfplumber").setLevel(logging.ERROR)
 
-# Download required NLTK data
+# Download required NLTK data if not already present
+# punkt: Sentence tokenizer models
 try:
     nltk.data.find('tokenizers/punkt')
 except LookupError:
     nltk.download('punkt')
 
+# punkt_tab: Additional tokenizer data
 try:
     nltk.data.find('tokenizers/punkt_tab')
 except LookupError:
@@ -36,29 +56,55 @@ except LookupError:
 
 
 class PDFKnowledgeExtractor:
-    """Extract and process medical knowledge from PDF documents"""
+    """
+    Main class for extracting and processing medical knowledge from PDF documents.
+    
+    This class handles the complete pipeline from raw PDF to structured chunks:
+    1. Text extraction (multiple methods for reliability)
+    2. Text cleaning and normalization
+    3. Metadata extraction
+    4. Intelligent chunking with overlap
+    5. Medical entity detection
+    6. Quality filtering
+    7. Saving processed data
+    
+    Attributes:
+        pdf_path (str): Path to the source PDF or text file
+        output_dir (str): Directory where processed chunks will be saved
+        metadata (dict): Document-level metadata (pages, length, title, etc.)
+        chunks (list): List of processed text chunks with metadata
+    """
     
     def __init__(self, pdf_path: str, output_dir: str = None):
         """
-        Initialize the PDF extractor
+        Initialize the PDF Knowledge Extractor.
         
         Args:
-            pdf_path: Path to the PDF file
-            output_dir: Directory to save processed chunks (default: data/processed)
+            pdf_path (str): Path to the PDF or text file to process
+            output_dir (str, optional): Output directory for processed files. 
+                                       Defaults to "data/processed"
         """
         self.pdf_path = pdf_path
         self.output_dir = output_dir or "data/processed"
-        self.metadata = {}
-        self.chunks = []
+        self.metadata = {}  # Stores document-level info (pages, length, title, etc.)
+        self.chunks = []    # Stores processed text chunks
         
-        # Create output directory
+        # Create output directory if it doesn't exist
         os.makedirs(self.output_dir, exist_ok=True)
         
     def extract_text(self) -> str:
-        """Extract raw text from PDF or text file using multiple methods"""
+        """
+        Extract raw text from PDF or text file using multiple methods.
+        
+        Uses pdfplumber as primary method (better for complex layouts and tables),
+        with PyPDF2 as fallback. Also supports plain text files.
+        
+        Returns:
+            str: Extracted raw text from the document
+        """
         print(f"📄 Extracting text from: {self.pdf_path}")
         
-        # Check if it's a text file
+        # Handle plain text files directly
         if self.pdf_path.lower().endswith('.txt'):
             try:
                 with open(self.pdf_path, 'r', encoding='utf-8') as f:
@@ -72,19 +118,21 @@ class PDFKnowledgeExtractor:
                 return ""
         
         # Process PDF files
-        full_text = []
+        full_text = []  # Collect text from all pages
         
-        # Method 1: Try pdfplumber (better for complex layouts)
+        # Method 1: Try pdfplumber (primary method - better for complex layouts)
         try:
             with pdfplumber.open(self.pdf_path) as pdf:
                 self.metadata['total_pages'] = len(pdf.pages)
                 print(f"   Total pages: {self.metadata['total_pages']}")
                 
+                # Extract text from each page
                 for i, page in enumerate(pdf.pages, 1):
                     text = page.extract_text()
-                    if text:
+                    if text:  # Only add if text was successfully extracted
                         full_text.append(text)
                     
+                    # Progress indicator for large documents
                     if i % 10 == 0:
                         print(f"   Processed {i}/{self.metadata['total_pages']} pages...")
         
@@ -92,19 +140,20 @@ class PDFKnowledgeExtractor:
             print(f"⚠️  pdfplumber failed: {e}")
             print("   Trying PyPDF2...")
             
-            # Fallback to PyPDF2
+            # Fallback to PyPDF2 (simpler but sometimes more reliable)
             try:
                 with open(self.pdf_path, 'rb') as file:
                     pdf_reader = PyPDF2.PdfReader(file)
                     self.metadata['total_pages'] = len(pdf_reader.pages)
                     
+                    # Extract text from all pages
                     for page in pdf_reader.pages:
                         text = page.extract_text()
                         if text:
                             full_text.append(text)
             except Exception as e2:
                 print(f"❌ PyPDF2 also failed: {e2}")
-                return ""
+                return ""  # Both methods failed
         
         combined_text = "\n".join(full_text)
         self.metadata['raw_text_length'] = len(combined_text)
@@ -113,85 +162,124 @@ class PDFKnowledgeExtractor:
         return combined_text
     
     def clean_text(self, text: str) -> str:
-        """Clean and normalize extracted text"""
+        """
+        Clean and normalize extracted text for better processing.
+        
+        Removes:
+        - Excessive whitespace and line breaks
+        - Page numbers and headers
+        - URLs (while preserving DOIs)
+        - Hyphenation artifacts from line breaks
+        - Table of contents ellipses
+        - Excessive punctuation
+        
+        Preserves:
+        - Medical symbols (%, ±, ≥, ≤, °, μ, α, β, γ, δ)
+        - Proper sentence structure
+        - Essential punctuation
+        
+        Args:
+            text (str): Raw extracted text
+            
+        Returns:
+            str: Cleaned and normalized text
+        """
         print("\n🧹 Cleaning text...")
         
-        # Remove excessive whitespace
+        # Remove excessive whitespace (multiple spaces, tabs, newlines → single space)
         text = re.sub(r'\s+', ' ', text)
         
-        # Remove page numbers (common patterns)
-        text = re.sub(r'\n\s*\d+\s*\n', '\n', text)
-        text = re.sub(r'Page \d+', '', text, flags=re.IGNORECASE)
+        # Remove page numbers (common patterns in PDFs)
+        text = re.sub(r'\n\s*\d+\s*\n', '\n', text)  # Standalone page numbers
+        text = re.sub(r'Page \d+', '', text, flags=re.IGNORECASE)  # "Page N" format
         
-        # Fix hyphenated words at line breaks
+        # Fix hyphenated words split across line breaks (e.g., "treat- ment" → "treatment")
         text = re.sub(r'(\w+)-\s+(\w+)', r'\1\2', text)
         
-        # Remove multiple periods (often from table of contents)
+        # Remove multiple periods (often from table of contents: "Section 1.2.....45")
         text = re.sub(r'\.{3,}', '', text)
         
-        # Remove URLs (keep DOI for reference)
+        # Remove URLs but keep DOIs (for academic references)
         text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
         
-        # Normalize quotes
-        text = text.replace('"', '"').replace('"', '"')
-        text = text.replace(''', "'").replace(''', "'")
+        # Normalize smart quotes to regular quotes
+        text = text.replace('"', '"').replace('"', '"')  # Curly double quotes
+        text = text.replace(''', "'").replace(''', "'")  # Curly single quotes
         
-        # Remove excessive punctuation
+        # Remove excessive punctuation (e.g., "!!!" → "!", "???" → "?")
         text = re.sub(r'([!?])\1+', r'\1', text)
         
         # Fix spacing around punctuation
-        text = re.sub(r'\s+([.,!?;:])', r'\1', text)
-        text = re.sub(r'([.,!?;:])\s*', r'\1 ', text)
+        text = re.sub(r'\s+([.,!?;:])', r'\1', text)      # Remove space before punctuation
+        text = re.sub(r'([.,!?;:])\s*', r'\1 ', text)     # Ensure space after punctuation
         
-        # Remove special characters but keep medical symbols
-        # Keep: %, ±, ≥, ≤, °, μ, α, β, etc.
+        # Remove special characters BUT preserve important medical symbols
+        # Keep: %, ±, ≥, ≤, °, μ (micro), α (alpha), β (beta), γ (gamma), δ (delta)
         text = re.sub(r'[^\w\s.,!?;:()\-±≥≤°μαβγδ%/]', '', text)
         
-        # Normalize whitespace again
+        # Final whitespace normalization
         text = re.sub(r'\s+', ' ', text)
         text = text.strip()
         
+        # Store cleaned text length for statistics
         self.metadata['cleaned_text_length'] = len(text)
         print(f"✅ Cleaned text: {len(text)} characters")
         
         return text
     
     def extract_metadata_from_content(self, text: str) -> Dict:
-        """Extract metadata from document content"""
+        """
+        Extract metadata from document content using pattern matching and heuristics.
+        
+        Extracts:
+        - Source filename and processing date
+        - Document title (from first substantial line)
+        - Organization (e.g., KDIGO)
+        - Publication year
+        - Language (auto-detected)
+        - Medical keywords present in document
+        
+        Args:
+            text (str): Cleaned document text
+            
+        Returns:
+            Dict: Metadata dictionary with extracted information
+        """
         print("\n📋 Extracting metadata...")
         
+        # Initialize metadata with basic information
         metadata = {
             'source_file': os.path.basename(self.pdf_path),
             'extraction_date': datetime.now().isoformat(),
             'document_type': 'medical_guideline',
-            'language': 'en'
+            'language': 'en'  # Default to English
         }
         
-        # Try to detect language
+        # Auto-detect language from first 1000 characters
         try:
             sample = text[:1000] if len(text) > 1000 else text
             metadata['language'] = detect(sample)
         except:
-            pass
+            pass  # Keep default if detection fails
         
-        # Extract title (usually in first few lines)
-        lines = text.split('\n')[:20]
+        # Extract title: Look for first substantial line (not too short, not too long)
+        lines = text.split('\n')[:20]  # Check first 20 lines
         for line in lines:
-            if len(line) > 20 and len(line) < 200:
+            if len(line) > 20 and len(line) < 200:  # Reasonable title length
                 metadata['title'] = line.strip()
                 break
         
-        # Look for KDIGO specific information
-        if 'KDIGO' in text[:2000]:
+        # Look for KDIGO-specific information (or other organizations)
+        if 'KDIGO' in text[:2000]:  # Check in document header
             metadata['organization'] = 'KDIGO'
             metadata['guideline_type'] = 'Clinical Practice Guideline'
         
-        # Extract year
+        # Extract publication year (4-digit year starting with 20XX)
         year_match = re.search(r'20\d{2}', text[:1000])
         if year_match:
             metadata['year'] = year_match.group()
         
-        # Look for keywords
+        # Identify medical keywords present in document (for categorization)
         keywords = []
         keyword_patterns = [
             r'chronic kidney disease', r'CKD', r'GFR', r'dialysis',
@@ -199,6 +287,7 @@ class PDFKnowledgeExtractor:
             r'proteinuria', r'albuminuria', r'eGFR'
         ]
         
+        # Search for each keyword in first 5000 characters
         for pattern in keyword_patterns:
             if re.search(pattern, text[:5000], re.IGNORECASE):
                 keywords.append(pattern)
@@ -210,28 +299,44 @@ class PDFKnowledgeExtractor:
         return metadata
     
     def is_useful_content(self, text: str) -> bool:
-        """Filter out non-useful content like TOC, references, etc."""
+        """
+        Determine if a text chunk contains useful medical content.
         
-        # Too short
+        Filters out:
+        - Very short chunks (< 20 words)
+        - Chunks that are mostly numbers (tables, lists)
+        - Table of contents sections
+        - Reference lists and bibliographies
+        - Page numbers and figure captions
+        - Chunks without medical terminology
+        
+        Args:
+            text (str): Text chunk to evaluate
+            
+        Returns:
+            bool: True if chunk contains useful content, False otherwise
+        """
+        
+        # Filter 1: Too short to be meaningful
         if len(text.split()) < 20:
             return False
         
-        # Mostly numbers (likely a table or list)
+        # Filter 2: Mostly numbers (likely a table, figure, or numbered list)
         words = text.split()
         number_ratio = sum(1 for w in words if w.replace('.', '').isdigit()) / len(words)
-        if number_ratio > 0.5:
+        if number_ratio > 0.5:  # More than 50% numbers
             return False
         
-        # Common non-content indicators
+        # Filter 3: Common non-content section headers and artifacts
         skip_patterns = [
-            r'^table of contents',
-            r'^references\s*$',
-            r'^bibliography\s*$',
-            r'^index\s*$',
-            r'^appendix\s+[a-z]',
-            r'^\d+\s*$',  # Just page numbers
-            r'^figure \d+',
-            r'^table \d+',
+            r'^table of contents',      # TOC pages
+            r'^references\s*$',          # Reference sections
+            r'^bibliography\s*$',        # Bibliography pages
+            r'^index\s*$',               # Index pages
+            r'^appendix\s+[a-z]',        # Appendix sections
+            r'^\d+\s*$',                 # Standalone page numbers
+            r'^figure \d+',              # Figure captions
+            r'^table \d+',               # Table captions
         ]
         
         text_lower = text.lower().strip()
@@ -239,7 +344,8 @@ class PDFKnowledgeExtractor:
             if re.match(pattern, text_lower):
                 return False
         
-        # Must contain some medical/kidney-related content
+        # Filter 4: Must contain medical/kidney-related terminology
+        # This ensures we keep domain-relevant content
         medical_terms = [
             'kidney', 'renal', 'ckd', 'gfr', 'dialysis', 'patient',
             'disease', 'treatment', 'clinical', 'medical', 'health',
@@ -252,36 +358,51 @@ class PDFKnowledgeExtractor:
     
     def chunk_text(self, text: str, chunk_size: int = 500, overlap: int = 50) -> List[Dict]:
         """
-        Split text into meaningful chunks with overlap
+        Split text into meaningful chunks with overlap for context preservation.
+        
+        Uses sentence-based chunking to:
+        - Maintain semantic coherence (doesn't split mid-sentence)
+        - Add overlap between chunks to preserve context
+        - Filter out non-useful content during chunking
+        - Create uniform-sized chunks for better vectorization
+        
+        Why overlap? Adjacent chunks share context, improving retrieval quality
+        when queries span chunk boundaries.
         
         Args:
-            text: Cleaned text to chunk
-            chunk_size: Target number of words per chunk
-            overlap: Number of words to overlap between chunks
+            text (str): Cleaned text to chunk
+            chunk_size (int): Target number of words per chunk (default: 500)
+            overlap (int): Number of words to overlap between chunks (default: 50)
+            
+        Returns:
+            List[Dict]: List of chunk dictionaries with text and metadata
         """
         print(f"\n✂️  Chunking text (chunk_size={chunk_size}, overlap={overlap})...")
         
-        # Split into sentences
+        # Split into sentences using NLTK's sentence tokenizer
         sentences = sent_tokenize(text)
         
-        chunks = []
-        current_chunk = []
-        current_word_count = 0
-        chunk_id = 0
+        # Initialize chunking variables
+        chunks = []                # Final list of processed chunks
+        current_chunk = []         # Current chunk being built (list of sentences)
+        current_word_count = 0     # Running word count for current chunk
+        chunk_id = 0               # Unique identifier for each chunk
         
+        # Process each sentence and build chunks
         for sentence in sentences:
             sentence = sentence.strip()
-            if not sentence:
+            if not sentence:  # Skip empty sentences
                 continue
             
             words = sentence.split()
             word_count = len(words)
             
-            # If adding this sentence exceeds chunk size, save current chunk
+            # Check if adding this sentence would exceed chunk size
             if current_word_count + word_count > chunk_size and current_chunk:
+                # Save current chunk before starting a new one
                 chunk_text = ' '.join(current_chunk)
                 
-                # Only save if it's useful content
+                # Quality filter: Only save if it contains useful content
                 if self.is_useful_content(chunk_text):
                     chunks.append({
                         'chunk_id': chunk_id,
@@ -292,24 +413,27 @@ class PDFKnowledgeExtractor:
                     })
                     chunk_id += 1
                 
-                # Keep last few sentences for overlap
+                # Create overlap: Keep last few sentences for context continuity
+                # Work backwards from end of current chunk
                 overlap_sentences = []
                 overlap_words = 0
                 for s in reversed(current_chunk):
                     s_words = len(s.split())
                     if overlap_words + s_words <= overlap:
-                        overlap_sentences.insert(0, s)
+                        overlap_sentences.insert(0, s)  # Maintain order
                         overlap_words += s_words
                     else:
-                        break
+                        break  # Stop when we've collected enough overlap
                 
+                # Start new chunk with overlap sentences
                 current_chunk = overlap_sentences
                 current_word_count = overlap_words
             
+            # Add sentence to current chunk
             current_chunk.append(sentence)
             current_word_count += word_count
         
-        # Add final chunk
+        # Don't forget the final chunk!
         if current_chunk:
             chunk_text = ' '.join(current_chunk)
             if self.is_useful_content(chunk_text):
@@ -326,25 +450,47 @@ class PDFKnowledgeExtractor:
         return chunks
     
     def add_metadata_to_chunks(self, chunks: List[Dict], doc_metadata: Dict) -> List[Dict]:
-        """Add metadata to each chunk"""
+        """
+        Enrich each chunk with metadata for better searchability and categorization.
+        
+        Adds:
+        - Document-level metadata (source, year, organization)
+        - Position information (chunk index, total chunks)
+        - Content type classification (recommendation, evidence, definition, etc.)
+        - Section headers (if detected)
+        - Medical entity detection (CKD, GFR, diabetes, etc.)
+        
+        This metadata enables:
+        - Filtered searches (e.g., "show only recommendations")
+        - Source attribution
+        - Entity-based retrieval
+        - Quality assessment
+        
+        Args:
+            chunks (List[Dict]): List of text chunks
+            doc_metadata (Dict): Document-level metadata
+            
+        Returns:
+            List[Dict]: Chunks with added metadata
+        """
         print("\n🏷️  Adding metadata to chunks...")
         
         for i, chunk in enumerate(chunks):
-            # Add document-level metadata
+            # Start with document-level metadata (source file, year, etc.)
             chunk['metadata'] = {
-                **doc_metadata,
+                **doc_metadata,  # Spread operator: include all doc metadata
                 'chunk_index': i,
                 'total_chunks': len(chunks),
-                'position': f"{i+1}/{len(chunks)}"
+                'position': f"{i+1}/{len(chunks)}"  # Human-readable position
             }
             
-            # Extract section if possible (look for headers)
+            # Try to extract section header (e.g., "Introduction:", "1. Background")
             text = chunk['text']
             section_match = re.match(r'^([A-Z][A-Za-z\s]+:|\d+\.\s+[A-Z][A-Za-z\s]+)', text)
             if section_match:
                 chunk['metadata']['section'] = section_match.group().strip()
             
-            # Identify content type
+            # Classify content type based on keywords
             text_lower = text.lower()
             if 'recommend' in text_lower:
                 chunk['metadata']['content_type'] = 'recommendation'
@@ -357,18 +503,19 @@ class PDFKnowledgeExtractor:
             else:
                 chunk['metadata']['content_type'] = 'general'
             
-            # Extract key medical terms
+            # Detect medical entities for targeted retrieval
             medical_entities = []
             patterns = {
-                'CKD': r'\bCKD\b',
-                'GFR': r'\b[e]?GFR\b',
-                'dialysis': r'\bdialysis\b',
-                'proteinuria': r'\bproteinuria\b',
-                'albuminuria': r'\balbuminuria\b',
-                'hypertension': r'\bhypertension\b',
-                'diabetes': r'\bdiabetes\b'
+                'CKD': r'\bCKD\b',                    # Chronic Kidney Disease
+                'GFR': r'\b[e]?GFR\b',                # (estimated) Glomerular Filtration Rate
+                'dialysis': r'\bdialysis\b',          # Dialysis treatment
+                'proteinuria': r'\bproteinuria\b',    # Protein in urine
+                'albuminuria': r'\balbuminuria\b',    # Albumin in urine
+                'hypertension': r'\bhypertension\b',  # High blood pressure
+                'diabetes': r'\bdiabetes\b'           # Diabetes mellitus
             }
             
+            # Check each pattern in the chunk text
             for entity, pattern in patterns.items():
                 if re.search(pattern, text, re.IGNORECASE):
                     medical_entities.append(entity)
@@ -475,10 +622,16 @@ class PDFKnowledgeExtractor:
 
 def select_files():
     """
-    Open a file dialog to select multiple PDF or text files
+    Open a GUI file dialog to select multiple PDF or text files for processing.
+    
+    Uses tkinter's file dialog for user-friendly file selection.
+    Supports:
+    - Multiple file selection (Ctrl+Click)
+    - PDF and TXT files
+    - Starts in data/raw/ directory for convenience
     
     Returns:
-        list: List of paths to the selected files, or empty list if cancelled
+        list: List of absolute file paths selected by user, or empty list if cancelled
     """
     print("=" * 70)
     print("📂 FILE SELECTOR")
@@ -487,51 +640,63 @@ def select_files():
     print("💡 Tip: Hold Ctrl to select multiple files")
     print()
     
-    # Create a root window and hide it
+    # Create a hidden root window (required for file dialog)
     root = tk.Tk()
-    root.withdraw()
-    root.attributes('-topmost', True)  # Bring dialog to front
+    root.withdraw()                    # Hide the root window
+    root.attributes('-topmost', True)  # Bring dialog to front of all windows
     
     # Open file dialog with multiple selection enabled
-    file_paths = filedialog.askopenfilenames(  # Note: askopenfileNAMES (plural) for multiple selection
+    file_paths = filedialog.askopenfilenames(  # Note: fileNAMES (plural) for multiple selection
         title="Select PDF/Text Files to Extract (Ctrl+Click for multiple)",
         filetypes=[
-            ("PDF and Text files", "*.pdf *.txt"),
-            ("PDF files", "*.pdf"),
-            ("Text files", "*.txt"),
-            ("All files", "*.*")
+            ("PDF and Text files", "*.pdf *.txt"),  # Combined filter
+            ("PDF files", "*.pdf"),                  # PDF only
+            ("Text files", "*.txt"),                 # TXT only
+            ("All files", "*.*")                     # Show all files
         ],
         initialdir=os.path.abspath("data/raw")  # Start in data/raw directory
     )
     
-    # Destroy the root window
+    # Clean up the hidden window
     root.destroy()
     
+    # Display selected files
     if file_paths:
         print(f"✅ Selected {len(file_paths)} file(s):")
         for i, fp in enumerate(file_paths, 1):
             print(f"   {i}. {os.path.basename(fp)}")
         print()
-        return list(file_paths)
+        return list(file_paths)  # Convert tuple to list
     else:
         print("❌ No files selected. Exiting...\n")
         return []
 
 
 def main():
-    """Main execution function"""
+    """
+    Main execution function for batch PDF processing.
     
-    # Open file dialog to select files
+    Workflow:
+    1. Prompt user to select files via GUI dialog
+    2. Configure processing parameters
+    3. Process each file through the extraction pipeline
+    4. Generate summary report of results
+    
+    Returns:
+        list: Processing results for each file (success/failure status)
+    """
+    
+    # Step 1: Open file dialog to select files
     file_paths = select_files()
     
     if not file_paths:
         print("⚠️  No files selected. Exiting...")
         return None
     
-    # Configuration
-    OUTPUT_DIR = "data/processed"
-    CHUNK_SIZE = 500  # words per chunk
-    OVERLAP = 50      # words overlap between chunks
+    # Step 2: Configuration - adjust these parameters as needed
+    OUTPUT_DIR = "data/processed"  # Where to save processed chunks
+    CHUNK_SIZE = 500              # Target words per chunk (affects retrieval granularity)
+    OVERLAP = 50                  # Words to overlap (preserves context between chunks)
     
     print("=" * 70)
     print("⚙️  CONFIGURATION")
@@ -543,10 +708,10 @@ def main():
     print("=" * 70)
     print()
     
-    # Process each file
-    results = []
-    successful = 0
-    failed = 0
+    # Step 3: Process each file through the pipeline
+    results = []       # Store processing results for each file
+    successful = 0     # Count of successfully processed files
+    failed = 0         # Count of failed files
     
     for idx, file_path in enumerate(file_paths, 1):
         print("\n" + "=" * 70)
@@ -555,29 +720,31 @@ def main():
         print(f"File: {os.path.basename(file_path)}")
         print("=" * 70)
         
-        # Verify file exists
+        # Validation: Check if file exists
         if not os.path.exists(file_path):
             print(f"❌ Error: File does not exist: {file_path}")
             failed += 1
             continue
         
-        # Verify file type
+        # Validation: Check file extension
         if not (file_path.lower().endswith('.pdf') or file_path.lower().endswith('.txt')):
             print(f"❌ Error: File must be PDF or TXT: {file_path}")
             failed += 1
             continue
         
         try:
-            # Initialize extractor
+            # Initialize the extractor for this file
             extractor = PDFKnowledgeExtractor(file_path, OUTPUT_DIR)
             
-            # Process the file
+            # Run the complete processing pipeline:
+            # Extract → Clean → Metadata → Chunk → Enrich → Save
             output_file = extractor.process(
                 chunk_size=CHUNK_SIZE,
                 overlap=OVERLAP,
-                save_format='json'
+                save_format='json'  # Save as JSON for vector DB compatibility
             )
             
+            # Check if processing was successful
             if output_file:
                 results.append({
                     'input': file_path,
@@ -596,6 +763,7 @@ def main():
                 print(f"\n❌ File {idx}/{len(file_paths)} failed to process!")
                 
         except Exception as e:
+            # Catch any unexpected errors during processing
             print(f"\n❌ Error processing file: {e}")
             results.append({
                 'input': file_path,
@@ -605,7 +773,7 @@ def main():
             })
             failed += 1
     
-    # Print final summary
+    # Step 4: Print comprehensive summary report
     print("\n" + "=" * 70)
     print("🎉 BATCH PROCESSING COMPLETE!")
     print("=" * 70)
@@ -614,18 +782,30 @@ def main():
     print(f"❌ Failed: {failed}")
     print(f"📁 Output directory: {OUTPUT_DIR}")
     print("\n📊 Results:")
+    
+    # List each file with its status
     for i, result in enumerate(results, 1):
         status_icon = "✅" if result['status'] == 'success' else "❌"
         filename = os.path.basename(result['input'])
         print(f"   {i}. {status_icon} {filename}")
+        
+        # Show output file for successful processing
         if result['status'] == 'success':
             print(f"      → {os.path.basename(result['output'])}")
+        # Show error message for failed processing
         elif result.get('error'):
             print(f"      → Error: {result['error']}")
+    
+    print("=" * 70)
+    print("\n💡 Next Steps:")
+    print("   1. Run 'python scripts/prepare_vectordb.py' to filter and prepare chunks")
+    print("   2. Run 'python scripts/build_vectordb.py' to create vector database")
+    print("   3. Run 'python scripts/query_vectordb.py' to query the database")
     print("=" * 70)
     
     return results
 
 
+# Entry point when script is run directly
 if __name__ == "__main__":
     main()
