@@ -14,7 +14,7 @@ class SimpleRAG:
     def __init__(self, db_path: str = "vectordb/chroma_db"):
         """Initialize RAG system"""
         
-        print("🤖 Initializing Nephro-AI RAG System...")
+        print(" Initializing Nephro-AI RAG System...")
         
         # Connect to ChromaDB
         self.client = chromadb.PersistentClient(
@@ -23,9 +23,9 @@ class SimpleRAG:
         )
         
         # Get collection
-        self.collection = self.client.get_collection("kdigo_ckd_guidelines")
+        self.collection = self.client.get_collection("nephro_ai_medical_kb")
         
-        print(f"✅ Connected to database")
+        print(f" Connected to database")
         print(f"   Documents: {self.collection.count()}")
         print()
     
@@ -65,16 +65,16 @@ class SimpleRAG:
     def generate_prompt(self, question: str, context: str):
         """Generate prompt for LLM"""
         
-        prompt = f"""You are a medical AI assistant specializing in kidney care. Answer the question based on the provided context from the KDIGO 2024 Clinical Practice Guideline for Chronic Kidney Disease.
+        prompt = f"""You are a medical AI assistant specializing in kidney care. Answer the question based on the provided context from medical knowledge sources including KDIGO guidelines, research papers, and patient education materials.
 
-Context from Medical Guidelines:
+Context from Medical Knowledge Base:
 {context}
 
 Question: {question}
 
 Instructions:
 - Answer based ONLY on the provided context
-- Be accurate and cite information from the guidelines
+- Be accurate and cite information from the medical sources
 - If the context doesn't contain enough information, say so
 - Use clear medical terminology but explain complex terms
 - Keep the answer concise but comprehensive
@@ -95,22 +95,22 @@ Answer:"""
             Dictionary with question, context, and prompt
         """
         
-        print(f"❓ Question: {question}\n")
+        print(f" Question: {question}\n")
         
         # Step 1: Retrieve relevant context
-        print("🔍 Retrieving relevant context...")
+        print(" Retrieving relevant context...")
         results = self.retrieve_context(question, n_results)
-        print(f"✅ Retrieved {len(results['documents'][0])} relevant chunks\n")
+        print(f" Retrieved {len(results['documents'][0])} relevant chunks\n")
         
         # Step 2: Format context
-        print("📝 Formatting context...")
+        print(" Formatting context...")
         context = self.format_context(results)
-        print(f"✅ Context prepared ({len(context)} characters)\n")
+        print(f" Context prepared ({len(context)} characters)\n")
         
         # Step 3: Generate prompt
-        print("🎯 Generating prompt...")
+        print(" Generating prompt...")
         prompt = self.generate_prompt(question, context)
-        print(f"✅ Prompt ready\n")
+        print(f" Prompt ready\n")
         
         # Return all components
         return {
@@ -125,16 +125,16 @@ Answer:"""
         """Display RAG output in readable format"""
         
         print("=" * 70)
-        print("📊 RAG OUTPUT")
+        print(" RAG OUTPUT")
         print("=" * 70)
         
-        print(f"\n❓ Question:")
+        print(f"\n Question:")
         print(f"   {output['question']}\n")
         
-        print(f"📚 Retrieved Context:")
+        print(f" Retrieved Context:")
         print(f"   {output['retrieved_chunks']} relevant chunks from guidelines\n")
         
-        print(f"🏷️  Source Types:")
+        print(f"️  Source Types:")
         types = {}
         for meta in output['metadata']:
             ctype = meta['content_type']
@@ -142,13 +142,13 @@ Answer:"""
         for ctype, count in types.items():
             print(f"   - {ctype}: {count}")
         
-        print(f"\n💬 LLM Prompt (ready to send):")
+        print(f"\n LLM Prompt (ready to send):")
         print("   " + "-" * 66)
         print(output['prompt'][:500] + "...")
         print("   " + "-" * 66)
         
         print("\n" + "=" * 70)
-        print("📝 NEXT STEP: Send prompt to LLM (GPT-4, Claude, etc.)")
+        print(" NEXT STEP: Send prompt to LLM (GPT-4, Claude, etc.)")
         print("=" * 70)
 
 
@@ -167,12 +167,12 @@ def demo():
         "When should dialysis be considered?"
     ]
     
-    print("🎓 RAG DEMONSTRATION")
+    print(" RAG DEMONSTRATION")
     print("=" * 70)
     print("\nThis demo shows how to use the vector database for RAG\n")
     
     # Let user choose a question or ask their own
-    print("📋 Sample Questions:")
+    print(" Sample Questions:")
     for i, q in enumerate(questions, 1):
         print(f"   {i}. {q}")
     print("   6. Ask your own question")
@@ -186,7 +186,7 @@ def demo():
             question = questions[int(choice) - 1]
         
         print("\n" + "=" * 70)
-        print("🚀 PROCESSING RAG QUERY")
+        print(" PROCESSING RAG QUERY")
         print("=" * 70 + "\n")
         
         # Process question
@@ -196,7 +196,7 @@ def demo():
         rag.display_rag_output(output)
         
         # Show how to integrate with LLM
-        print("\n💡 Integration Example:")
+        print("\n Integration Example:")
         print("""
 # To integrate with OpenAI GPT:
 import openai
@@ -229,17 +229,17 @@ print(answer)
         """)
         
         # Save output
-        save = input("\n💾 Save RAG output to file? (y/n): ").strip().lower()
+        save = input("\n Save RAG output to file? (y/n): ").strip().lower()
         if save == 'y':
             filename = "rag_output_example.json"
             with open(filename, 'w', encoding='utf-8') as f:
                 json.dump(output, f, indent=2)
-            print(f"✅ Saved to {filename}")
+            print(f" Saved to {filename}")
         
     except KeyboardInterrupt:
-        print("\n\n👋 Exiting...")
+        print("\n\n Exiting...")
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\n Error: {e}")
 
 
 if __name__ == "__main__":

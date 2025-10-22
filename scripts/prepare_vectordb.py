@@ -176,7 +176,7 @@ class VectorDBPreparator:
         Returns:
             list: Loaded chunks, or empty list if file should be skipped
         """
-        print(f"📂 Loading chunks from: {self.chunks_file}")
+        print(f" Loading chunks from: {self.chunks_file}")
         
         try:
             # Load JSON file
@@ -186,30 +186,30 @@ class VectorDBPreparator:
             # Validation 1: Check if already in vectordb_ready format
             # (has 'documents' key instead of being a list of chunks)
             if isinstance(data, dict) and 'documents' in data:
-                print(f"⚠️  This file is already in vectorDB-ready format!")
+                print(f"️  This file is already in vectorDB-ready format!")
                 print(f"   Skipping: {os.path.basename(self.chunks_file)}")
                 return []
             
             # Validation 2: Check if it's a list of chunks (expected format)
             if isinstance(data, list):
                 self.chunks = data
-                print(f"✅ Loaded {len(self.chunks)} chunks")
+                print(f" Loaded {len(self.chunks)} chunks")
                 return self.chunks
             else:
                 # Unexpected format
-                print(f"⚠️  Unexpected file format!")
+                print(f"️  Unexpected file format!")
                 print(f"   Expected: list of chunks")
                 print(f"   Got: {type(data)}")
                 return []
                 
         except json.JSONDecodeError as e:
             # Handle JSON parsing errors
-            print(f"❌ Error: Invalid JSON format in {os.path.basename(self.chunks_file)}")
+            print(f" Error: Invalid JSON format in {os.path.basename(self.chunks_file)}")
             print(f"   Details: {e}")
             return []
         except Exception as e:
             # Handle other file loading errors
-            print(f"❌ Error loading file: {e}")
+            print(f" Error loading file: {e}")
             return []
     
     def filter_quality_chunks(self, min_words: int = 50, max_words: int = 600) -> List[Dict]:
@@ -242,7 +242,7 @@ class VectorDBPreparator:
         Returns:
             List[Dict]: Filtered list of high-quality chunks
         """
-        print(f"\n🔍 Filtering quality chunks (min={min_words}, max={max_words} words)...")
+        print(f"\n Filtering quality chunks (min={min_words}, max={max_words} words)...")
         
         filtered = []  # Store chunks that pass all filters
         
@@ -280,7 +280,7 @@ class VectorDBPreparator:
             filtered.append(chunk)
         
         # Report filtering results
-        print(f"✅ Filtered to {len(filtered)} high-quality chunks")
+        print(f" Filtered to {len(filtered)} high-quality chunks")
         print(f"   Removed: {len(self.chunks) - len(filtered)} chunks")
         print(f"   Retention rate: {len(filtered)/len(self.chunks)*100:.1f}%")
         
@@ -317,7 +317,7 @@ class VectorDBPreparator:
         Returns:
             Dict: ChromaDB-ready data with 'documents', 'metadatas', and 'ids' keys
         """
-        print(f"\n🔧 Preparing {len(chunks)} chunks for ChromaDB...")
+        print(f"\n Preparing {len(chunks)} chunks for ChromaDB...")
         
         # Initialize parallel arrays for ChromaDB
         documents = []   # Text content
@@ -365,7 +365,7 @@ class VectorDBPreparator:
             # 3. Generate unique ID: {base_name}_{chunk_id}
             ids.append(f"{base_name}_{chunk['chunk_id']}")
         
-        print(f"✅ Prepared {len(documents)} documents for ChromaDB")
+        print(f" Prepared {len(documents)} documents for ChromaDB")
         print(f"   Format: documents, metadatas, ids (parallel arrays)")
         
         # Return ChromaDB-compatible dictionary
@@ -390,7 +390,7 @@ class VectorDBPreparator:
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(prepared_data, f, indent=2, ensure_ascii=False)
         
-        print(f"\n💾 Saved vectorDB-ready data to: {output_path}")
+        print(f"\n Saved vectorDB-ready data to: {output_path}")
         
         # Save summary
         summary = {
@@ -420,7 +420,7 @@ class VectorDBPreparator:
         with open(summary_path, 'w', encoding='utf-8') as f:
             json.dump(summary, f, indent=2, ensure_ascii=False)
         
-        print(f"💾 Saved preparation summary to: {summary_path}")
+        print(f" Saved preparation summary to: {summary_path}")
         
         return output_path
     
@@ -518,7 +518,7 @@ class VectorDBPreparator:
             for i, query in enumerate(queries, 1):
                 f.write(f"{i}. {query}\n")
         
-        print(f"📝 Generated {len(queries)} sample queries: {output_file}")
+        print(f" Generated {len(queries)} sample queries: {output_file}")
         
         return queries
     
@@ -526,7 +526,7 @@ class VectorDBPreparator:
         """Full preparation pipeline"""
         
         print("=" * 70)
-        print("🚀 VECTOR DATABASE PREPARATION PIPELINE")
+        print(" VECTOR DATABASE PREPARATION PIPELINE")
         print("=" * 70)
         print(f"Processing: {os.path.basename(self.chunks_file)}")
         print("=" * 70)
@@ -536,14 +536,14 @@ class VectorDBPreparator:
         
         # Check if loading failed or file was already processed
         if not chunks_loaded or len(self.chunks) == 0:
-            print("\n⚠️  File skipped (empty, invalid, or already in vectorDB format)")
+            print("\n️  File skipped (empty, invalid, or already in vectorDB format)")
             return None
         
         # Filter quality chunks
         filtered_chunks = self.filter_quality_chunks()
         
         if len(filtered_chunks) == 0:
-            print("\n⚠️  No chunks passed quality filtering!")
+            print("\n️  No chunks passed quality filtering!")
             print("   This file will be skipped.")
             return None
         
@@ -558,7 +558,7 @@ class VectorDBPreparator:
         
         # Print summary
         print("\n" + "=" * 70)
-        print("📊 PREPARATION SUMMARY")
+        print(" PREPARATION SUMMARY")
         print("=" * 70)
         print(f"Input file: {os.path.basename(self.chunks_file)}")
         print(f"Total input chunks: {len(self.chunks)}")
@@ -566,11 +566,11 @@ class VectorDBPreparator:
         print(f"Documents prepared: {len(prepared_data['documents'])}")
         print(f"Output file: {os.path.basename(output_file)}")
         print("=" * 70)
-        print("✅ PREPARATION COMPLETE!")
+        print(" PREPARATION COMPLETE!")
         print("=" * 70)
-        print(f"\n📂 Output Locations:")
-        print(f"   📄 VectorDB file: {self.vectordb_dir}")
-        print(f"   📊 Summary file: {self.summaries_dir}")
+        print(f"\n Output Locations:")
+        print(f"    VectorDB file: {self.vectordb_dir}")
+        print(f"    Summary file: {self.summaries_dir}")
         print("=" * 70)
         
         return prepared_data
@@ -638,7 +638,7 @@ def main():
     """
     
     print("=" * 70)
-    print("📂 SCANNING FOR CHUNK FILES")
+    print(" SCANNING FOR CHUNK FILES")
     print("=" * 70)
     
     # Step 1: Find all chunk files in the processed directory
@@ -646,11 +646,11 @@ def main():
     
     # Validation: Check if any files were found
     if not chunk_files:
-        print("❌ No *_chunks.json files found in data/processed/")
+        print(" No *_chunks.json files found in data/processed/")
         print("   Run pdf_extractor.py first to create chunk files.")
         return
     
-    print(f"✅ Found {len(chunk_files)} chunk file(s):")
+    print(f" Found {len(chunk_files)} chunk file(s):")
     for i, cf in enumerate(chunk_files, 1):
         print(f"   {i}. {os.path.basename(cf)}")
     print()
@@ -666,19 +666,19 @@ def main():
     # Check if all files are already processed
     if not unprocessed_files:
         print("=" * 70)
-        print("✅ ALL FILES ALREADY PROCESSED!")
+        print(" ALL FILES ALREADY PROCESSED!")
         print("=" * 70)
         print(f"Total files: {len(chunk_files)}")
         print(f"Already processed: {len(processed_files)}")
         print(f"New files to process: 0")
-        print("\n💡 Tip: To reprocess files, delete:")
+        print("\n Tip: To reprocess files, delete:")
         print("   data/vectordb_ready/.processed_chunks_tracker.json")
         print("=" * 70)
         return
     
     # Display processing status
     print("=" * 70)
-    print("📋 PROCESSING STATUS")
+    print(" PROCESSING STATUS")
     print("=" * 70)
     print(f"Total chunk files: {len(chunk_files)}")
     print(f"Already processed: {len(processed_files)}")
@@ -696,7 +696,7 @@ def main():
     
     for idx, chunk_file in enumerate(unprocessed_files, 1):
         print("\n" + "=" * 70)
-        print(f"📄 PROCESSING FILE {idx}/{len(unprocessed_files)}")
+        print(f" PROCESSING FILE {idx}/{len(unprocessed_files)}")
         print("=" * 70)
         
         try:
@@ -727,7 +727,7 @@ def main():
                 
         except Exception as e:
             # Catch any errors during processing
-            print(f"\n❌ Error processing file: {e}")
+            print(f"\n Error processing file: {e}")
             results.append({
                 'file': chunk_file,
                 'status': 'error',
@@ -738,7 +738,7 @@ def main():
     # Step 4: Generate sample queries (only once for all files)
     if successful > 0:
         print("\n" + "=" * 70)
-        print("📝 GENERATING SAMPLE QUERIES")
+        print(" GENERATING SAMPLE QUERIES")
         print("=" * 70)
         # Use first file's preparator to access output directory
         temp_preparator = VectorDBPreparator(unprocessed_files[0])
@@ -746,31 +746,31 @@ def main():
     
     # Step 5: Print comprehensive final summary
     print("\n" + "=" * 70)
-    print("🎉 BATCH PREPARATION COMPLETE!")
+    print(" BATCH PREPARATION COMPLETE!")
     print("=" * 70)
     print(f"Total files processed: {len(unprocessed_files)}")
-    print(f"✅ Successful: {successful}")
-    print(f"⚠️  Skipped: {len([r for r in results if r['status'] == 'skipped'])}")
-    print(f"❌ Failed: {failed}")
-    print(f"📁 Output directory: data/vectordb_ready")
+    print(f" Successful: {successful}")
+    print(f"️  Skipped: {len([r for r in results if r['status'] == 'skipped'])}")
+    print(f" Failed: {failed}")
+    print(f" Output directory: data/vectordb_ready")
     
     # Display individual file results
-    print("\n📊 Results:")
+    print("\n Results:")
     for i, result in enumerate(results, 1):
         filename = os.path.basename(result['file'])
         
         if result['status'] == 'success':
             # Show success with document count
-            print(f"   {i}. ✅ {filename} ({result['documents']} documents)")
+            print(f"   {i}.  {filename} ({result['documents']} documents)")
         elif result['status'] == 'skipped':
             # Show reason for skipping
-            print(f"   {i}. ⚠️  {filename} - {result.get('reason', 'Skipped')}")
+            print(f"   {i}. ️  {filename} - {result.get('reason', 'Skipped')}")
         else:
             # Show error message
-            print(f"   {i}. ❌ {filename} - Error: {result.get('error', 'Unknown')}")
+            print(f"   {i}.  {filename} - Error: {result.get('error', 'Unknown')}")
     
     print("=" * 70)
-    print("\n💡 Next Steps:")
+    print("\n Next Steps:")
     print("   1. Run 'python scripts/build_vectordb.py' to create vector database")
     print("   2. Run 'python scripts/query_vectordb.py' to test queries")
     print("   3. Check data/vectordb_ready/ for output files")

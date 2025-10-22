@@ -39,15 +39,15 @@ class VectorDBQuery:
             self.collection = self.client.get_collection(collection_name)
             
             print("=" * 70)
-            print("🔍 NEPHRO-AI VECTOR DATABASE QUERY INTERFACE")
+            print(" NEPHRO-AI VECTOR DATABASE QUERY INTERFACE")
             print("=" * 70)
-            print(f"📦 Collection: {collection_name}")
-            print(f"📄 Documents: {self.collection.count()}")
-            print(f"💾 Database: {db_path}")
+            print(f" Collection: {collection_name}")
+            print(f" Documents: {self.collection.count()}")
+            print(f" Database: {db_path}")
             print("=" * 70 + "\n")
             
         except Exception as e:
-            print(f"❌ Error connecting to database: {e}")
+            print(f" Error connecting to database: {e}")
             print(f"   Make sure you've run 'python scripts/build_vectordb.py' first")
             sys.exit(1)
     
@@ -81,8 +81,8 @@ class VectorDBQuery:
     def display_results(self, results, query_text: str):
         """Display query results in a readable format"""
         
-        print(f"\n🔍 Query: \"{query_text}\"")
-        print(f"📊 Found {len(results['documents'][0])} results\n")
+        print(f"\n Query: \"{query_text}\"")
+        print(f" Found {len(results['documents'][0])} results\n")
         print("=" * 70)
         
         for i, (doc, metadata, distance) in enumerate(zip(
@@ -90,9 +90,9 @@ class VectorDBQuery:
             results['metadatas'][0],
             results['distances'][0]
         ), 1):
-            print(f"\n📄 Result {i} (Similarity: {1 - distance:.3f})")
-            print(f"   📋 Type: {metadata.get('content_type', 'N/A')}")
-            print(f"   🏷️  Entities: {metadata.get('medical_entities', 'N/A')}")
+            print(f"\n Result {i} (Similarity: {1 - distance:.3f})")
+            print(f"    Type: {metadata.get('content_type', 'N/A')}")
+            print(f"   ️  Entities: {metadata.get('medical_entities', 'N/A')}")
             print(f"   📏 Words: {metadata.get('word_count', 'N/A')}")
             print(f"\n   {doc[:300]}...")
             
@@ -104,19 +104,19 @@ class VectorDBQuery:
     def interactive_mode(self):
         """Interactive query mode"""
         
-        print("💬 Interactive Query Mode")
+        print(" Interactive Query Mode")
         print("   Type your question or 'quit' to exit")
         print("   Type 'help' for commands\n")
         
         while True:
             try:
-                query = input("🔍 Query: ").strip()
+                query = input(" Query: ").strip()
                 
                 if not query:
                     continue
                 
                 if query.lower() in ['quit', 'exit', 'q']:
-                    print("\n👋 Goodbye!")
+                    print("\n Goodbye!")
                     break
                 
                 if query.lower() == 'help':
@@ -154,30 +154,30 @@ class VectorDBQuery:
                 self.display_results(results, query)
                 
             except KeyboardInterrupt:
-                print("\n\n👋 Goodbye!")
+                print("\n\n Goodbye!")
                 break
             except Exception as e:
-                print(f"❌ Error: {e}")
+                print(f" Error: {e}")
     
     def print_help(self):
         """Print help information"""
         print("\n" + "=" * 70)
         print("📖 HELP - Available Commands")
         print("=" * 70)
-        print("\n🔍 Basic Query:")
+        print("\n Basic Query:")
         print("   Just type your question naturally")
         print("   Example: What is chronic kidney disease?")
         
-        print("\n🎯 Advanced Queries:")
+        print("\n Advanced Queries:")
         print("   top<N> <query>          - Get top N results")
         print("   Example: top10 kidney failure symptoms")
         
-        print("\n🏷️  Filtered Queries:")
+        print("\n️  Filtered Queries:")
         print("   filter:<type> <query>   - Filter by content type")
         print("   Types: recommendation, evidence, definition, reference")
         print("   Example: filter:recommendation diabetes treatment")
         
-        print("\n📊 Special Commands:")
+        print("\n Special Commands:")
         print("   stats    - Show collection statistics")
         print("   help     - Show this help message")
         print("   quit     - Exit the program")
@@ -197,11 +197,11 @@ class VectorDBQuery:
             content_types[ctype] = content_types.get(ctype, 0) + 1
         
         print("\n" + "=" * 70)
-        print("📊 COLLECTION STATISTICS")
+        print(" COLLECTION STATISTICS")
         print("=" * 70)
-        print(f"\n📄 Total Documents: {count}")
+        print(f"\n Total Documents: {count}")
         
-        print(f"\n📋 Content Type Distribution:")
+        print(f"\n Content Type Distribution:")
         for ctype, ccount in sorted(content_types.items(), key=lambda x: x[1], reverse=True):
             percentage = (ccount / count) * 100
             bar = "█" * int(percentage / 2)
@@ -215,10 +215,10 @@ class VectorDBQuery:
         sample_file = "data/processed/sample_queries.txt"
         
         if not Path(sample_file).exists():
-            print(f"⚠️  Sample queries file not found: {sample_file}")
+            print(f"️  Sample queries file not found: {sample_file}")
             return
         
-        print("🧪 Running sample queries...\n")
+        print(" Running sample queries...\n")
         
         with open(sample_file, 'r', encoding='utf-8') as f:
             queries = [line.strip() for line in f if line.strip() and not line.startswith('=')]

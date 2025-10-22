@@ -45,49 +45,78 @@ class VectorDBBuilder:
         os.makedirs(db_path, exist_ok=True)
         
         print("=" * 70)
-        print("🏗️  CHROMADB VECTOR DATABASE BUILDER")
+        print("️  CHROMADB VECTOR DATABASE BUILDER")
         print("=" * 70)
-        print(f"📁 VectorDB documents: {vectordb_dir}")
-        print(f"💾 Database path: {db_path}")
-        print(f"📦 Collection: {collection_name}")
-        print(f"🤖 Embedding model: {model_name}")
+        print(f" VectorDB documents: {vectordb_dir}")
+        print(f" Database path: {db_path}")
+        print(f" Collection: {collection_name}")
+        print(f" Embedding model: {model_name}")
         print("=" * 70 + "\n")
     
-    def load_data(self) -> Dict:
-        """Load and merge all vectordb_ready JSON files"""
-        print("📂 Loading vectordb_ready documents...")
+    def load_data(self, existing_ids: set = None) -> Dict:
+        """
+        Load and merge all vectordb_ready JSON files (incremental mode)
+        
+        Args:
+            existing_ids: Set of document IDs already in the database (for incremental loading)
+            
+        Returns:
+            Dictionary with new documents only
+        """
+        print(" Loading vectordb_ready documents...")
         
         # Find all vectordb_ready JSON files
         if not os.path.exists(self.vectordb_dir):
-            print(f"❌ Error: Directory not found: {self.vectordb_dir}")
+            print(f" Error: Directory not found: {self.vectordb_dir}")
             print(f"   Please run prepare_vectordb.py first to generate vectordb_ready files")
             sys.exit(1)
         
         vectordb_files = glob.glob(os.path.join(self.vectordb_dir, "*_vectordb_ready.json"))
         
         if not vectordb_files:
-            print(f"❌ Error: No vectordb_ready files found in {self.vectordb_dir}")
+            print(f" Error: No vectordb_ready files found in {self.vectordb_dir}")
             print(f"   Please run prepare_vectordb.py first")
             sys.exit(1)
         
         print(f"   Found {len(vectordb_files)} vectordb_ready files")
         
-        # Merge all data
+        if existing_ids:
+            print(f"    Incremental mode: Skipping {len(existing_ids)} existing documents")
+        
+        # Merge all data (only new documents)
         all_documents = []
         all_metadatas = []
         all_ids = []
+        skipped_count = 0
+        new_files_count = 0
         
         for file_path in sorted(vectordb_files):
             filename = os.path.basename(file_path)
-            print(f"   Loading: {filename}")
             
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
-            # Append data
-            all_documents.extend(data.get('documents', []))
-            all_metadatas.extend(data.get('metadatas', []))
-            all_ids.extend(data.get('ids', []))
+            # Filter out existing documents
+            file_has_new = False
+            for doc, meta, doc_id in zip(
+                data.get('documents', []),
+                data.get('metadatas', []),
+                data.get('ids', [])
+            ):
+                if existing_ids and doc_id in existing_ids:
+                    skipped_count += 1
+                else:
+                    all_documents.append(doc)
+                    all_metadatas.append(meta)
+                    all_ids.append(doc_id)
+                    file_has_new = True
+            
+            # Show status
+            if file_has_new:
+                print(f"    Loading: {filename}")
+                new_files_count += 1
+            else:
+                print(f"   ️  Skipping: {filename} (already in database)")
         
         # Create merged data dictionary
         merged_data = {
@@ -97,24 +126,31 @@ class VectorDBBuilder:
         }
         
         num_docs = len(all_documents)
-        print(f"\n✅ Loaded total {num_docs} documents from {len(vectordb_files)} files")
+        print(f"\n Loaded {num_docs} NEW documents from {new_files_count} files")
+        if skipped_count > 0:
+            print(f"   ️  Skipped {skipped_count} existing documents")
         print(f"   - Documents: {len(all_documents)}")
         print(f"   - Metadata entries: {len(all_metadatas)}")
         print(f"   - IDs: {len(all_ids)}")
         
         # Validate data
-        if num_docs == 0:
-            print("❌ Error: No documents found in vectordb_ready files")
+        if num_docs == 0 and skipped_count == 0:
+            print(" Error: No documents found in vectordb_ready files")
             sys.exit(1)
         
         if len(all_documents) != len(all_metadatas) != len(all_ids):
-            print("❌ Error: Mismatched lengths in merged data")
+            print(" Error: Mismatched lengths in merged data")
             sys.exit(1)
         
         return merged_data
     
-    def initialize_chromadb(self):
-        """Initialize ChromaDB client and collection"""
+    def initialize_chromadb(self, incremental: bool = True):
+        """
+        Initialize ChromaDB client and collection
+        
+        Args:
+            incremental: If True, add to existing collection; if False, recreate
+        """
         print("\n🔌 Initializing ChromaDB...")
         
         # Create persistent client
@@ -130,20 +166,24 @@ class VectorDBBuilder:
         existing_collections = [col.name for col in self.client.list_collections()]
         
         if self.collection_name in existing_collections:
-            print(f"⚠️  Collection '{self.collection_name}' already exists")
-            response = input("   Delete and recreate? (y/n): ").lower().strip()
-            
-            if response == 'y':
-                self.client.delete_collection(self.collection_name)
-                print(f"   🗑️  Deleted existing collection")
+            if incremental:
+                print(f" Collection '{self.collection_name}' already exists")
+                print(f"    Incremental mode: Will add new documents only")
             else:
-                print("   ℹ️  Using existing collection (will add documents)")
+                print(f"️  Collection '{self.collection_name}' already exists")
+                response = input("   Delete and recreate? (y/n): ").lower().strip()
+                
+                if response == 'y':
+                    self.client.delete_collection(self.collection_name)
+                    print(f"   ️  Deleted existing collection")
+                else:
+                    print("   ℹ️  Using existing collection (will add documents)")
         
         # Load embedding model
-        print(f"\n🤖 Loading embedding model: {self.model_name}...")
+        print(f"\n Loading embedding model: {self.model_name}...")
         print("   (This may take a minute on first run)")
         self.embedding_model = SentenceTransformer(self.model_name)
-        print(f"✅ Model loaded successfully")
+        print(f" Model loaded successfully")
         print(f"   - Embedding dimension: {self.embedding_model.get_sentence_embedding_dimension()}")
         
         # Create or get collection
@@ -157,7 +197,7 @@ class VectorDBBuilder:
             }
         )
         
-        print(f"✅ Collection '{self.collection_name}' ready")
+        print(f" Collection '{self.collection_name}' ready")
         print(f"   - Current document count: {self.collection.count()}")
     
     def generate_embeddings(self, documents: List[str], batch_size: int = 32) -> List[List[float]]:
@@ -186,7 +226,7 @@ class VectorDBBuilder:
             )
             embeddings.extend(batch_embeddings.tolist())
         
-        print(f"✅ Generated {len(embeddings)} embeddings")
+        print(f" Generated {len(embeddings)} embeddings")
         return embeddings
     
     def add_to_collection(self, data: Dict, batch_size: int = 100):
@@ -201,14 +241,14 @@ class VectorDBBuilder:
         metadatas = data['metadatas']
         ids = data['ids']
         
-        print(f"\n📥 Adding {len(documents)} documents to collection...")
+        print(f"\n Adding {len(documents)} documents to collection...")
         print(f"   Batch size: {batch_size}")
         
         # Generate embeddings
         embeddings = self.generate_embeddings(documents, batch_size=32)
         
         # Add to collection in batches
-        print("\n💾 Storing in ChromaDB...")
+        print("\n Storing in ChromaDB...")
         for i in tqdm(range(0, len(documents), batch_size), desc="Storing"):
             batch_end = min(i + batch_size, len(documents))
             
@@ -219,29 +259,29 @@ class VectorDBBuilder:
                 embeddings=embeddings[i:batch_end]
             )
         
-        print(f"✅ Successfully added all documents")
+        print(f" Successfully added all documents")
         print(f"   Total documents in collection: {self.collection.count()}")
     
     def verify_collection(self):
         """Verify the collection was created successfully"""
-        print("\n🔍 Verifying collection...")
+        print("\n Verifying collection...")
         
         count = self.collection.count()
         metadata = self.collection.metadata
         
-        print(f"✅ Collection verified")
+        print(f" Collection verified")
         print(f"   - Name: {self.collection.name}")
         print(f"   - Document count: {count}")
         print(f"   - Metadata: {metadata}")
         
         # Test a simple query
-        print("\n🧪 Testing query functionality...")
+        print("\n Testing query functionality...")
         test_results = self.collection.query(
             query_texts=["What is chronic kidney disease?"],
             n_results=3
         )
         
-        print(f"✅ Query test successful")
+        print(f" Query test successful")
         print(f"   - Retrieved {len(test_results['documents'][0])} results")
         print(f"\n   Sample result:")
         print(f"   {test_results['documents'][0][0][:200]}...")
@@ -249,7 +289,7 @@ class VectorDBBuilder:
     def print_statistics(self):
         """Print collection statistics"""
         print("\n" + "=" * 70)
-        print("📊 COLLECTION STATISTICS")
+        print(" COLLECTION STATISTICS")
         print("=" * 70)
         
         count = self.collection.count()
@@ -281,17 +321,17 @@ class VectorDBBuilder:
             # Word count
             word_counts.append(metadata.get('word_count', 0))
         
-        print(f"\n📄 Documents: {count}")
+        print(f"\n Documents: {count}")
         print(f"   - Average words: {sum(word_counts) / len(word_counts):.0f}")
         print(f"   - Min words: {min(word_counts)}")
         print(f"   - Max words: {max(word_counts)}")
         
-        print(f"\n📋 Content Types:")
+        print(f"\n Content Types:")
         for ctype, ccount in sorted(content_types.items(), key=lambda x: x[1], reverse=True):
             percentage = (ccount / count) * 100
             print(f"   - {ctype}: {ccount} ({percentage:.1f}%)")
         
-        print(f"\n🏷️  Medical Entity Coverage:")
+        print(f"\n️  Medical Entity Coverage:")
         for entity, ecount in entity_counts.items():
             percentage = (ecount / count) * 100
             entity_name = entity.replace('has_', '').upper()
@@ -321,18 +361,40 @@ class VectorDBBuilder:
         with open(summary_file, 'w', encoding='utf-8') as f:
             json.dump(summary, f, indent=2)
         
-        print(f"\n💾 Build summary saved to: {summary_file}")
+        print(f"\n Build summary saved to: {summary_file}")
     
-    def build(self):
-        """Main build process"""
+    def build(self, incremental: bool = True):
+        """
+        Main build process
+        
+        Args:
+            incremental: If True, only add new documents; if False, rebuild from scratch
+        """
         start_time = datetime.now()
         
         try:
-            # Load data
-            data = self.load_data()
+            # Initialize ChromaDB first to check existing documents
+            self.initialize_chromadb(incremental=incremental)
             
-            # Initialize ChromaDB
-            self.initialize_chromadb()
+            # Get existing document IDs if incremental mode
+            existing_ids = set()
+            if incremental and self.collection.count() > 0:
+                print("\n Checking existing documents...")
+                existing_docs = self.collection.get(include=[])
+                existing_ids = set(existing_docs['ids'])
+                print(f"   Found {len(existing_ids)} existing documents in database")
+            
+            # Load data (only new documents in incremental mode)
+            data = self.load_data(existing_ids if incremental else None)
+            
+            # Skip if no new documents
+            if len(data['documents']) == 0:
+                print("\n" + "=" * 70)
+                print(" NO NEW DOCUMENTS TO ADD")
+                print("=" * 70)
+                print("   All documents are already in the database!")
+                print(f"   Total documents: {self.collection.count()}")
+                return
             
             # Add documents
             self.add_to_collection(data)
@@ -350,18 +412,18 @@ class VectorDBBuilder:
             duration = (datetime.now() - start_time).total_seconds()
             
             print("\n" + "=" * 70)
-            print("🎉 SUCCESS! VECTOR DATABASE BUILT")
+            print(" SUCCESS! VECTOR DATABASE BUILT")
             print("=" * 70)
             print(f"⏱️  Build time: {duration:.1f} seconds")
-            print(f"📦 Collection: {self.collection_name}")
-            print(f"📄 Documents: {self.collection.count()}")
-            print(f"💾 Location: {os.path.abspath(self.db_path)}")
-            print(f"🤖 Model: {self.model_name}")
-            print("\n✅ Ready for queries!")
+            print(f" Collection: {self.collection_name}")
+            print(f" Documents: {self.collection.count()}")
+            print(f" Location: {os.path.abspath(self.db_path)}")
+            print(f" Model: {self.model_name}")
+            print("\n Ready for queries!")
             print("=" * 70)
             
         except Exception as e:
-            print(f"\n❌ Error during build: {e}")
+            print(f"\n Error during build: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
@@ -369,6 +431,28 @@ class VectorDBBuilder:
 
 def main():
     """Main entry point"""
+    import argparse
+    
+    parser = argparse.ArgumentParser(
+        description="Build or update ChromaDB vector database",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Incremental mode (default) - only add new documents
+  python scripts/build_vectordb.py
+  
+  # Force rebuild - delete and recreate database
+  python scripts/build_vectordb.py --rebuild
+        """
+    )
+    
+    parser.add_argument(
+        '--rebuild',
+        action='store_true',
+        help='Rebuild database from scratch (deletes existing data)'
+    )
+    
+    args = parser.parse_args()
     
     # Configuration
     builder = VectorDBBuilder(
@@ -378,8 +462,8 @@ def main():
         model_name="all-MiniLM-L6-v2"
     )
     
-    # Build the database
-    builder.build()
+    # Build the database (incremental by default)
+    builder.build(incremental=not args.rebuild)
 
 
 if __name__ == "__main__":
