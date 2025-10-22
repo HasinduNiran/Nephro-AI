@@ -1,21 +1,47 @@
 """
-Quick Start Guide - Using Processed Chunks
-Demonstrates how to load and use the vectorDB-ready chunks
+Quick Start Guide - Using VectorDB Ready Documents
+Demonstrates how to load and use the vectorDB-ready chunks from multiple source files
 """
 
 import json
 from pathlib import Path
+import glob
 
 
-def load_vectordb_data(file_path: str = "data/processed/vectordb_ready_chunks.json"):
-    """Load the processed chunks ready for vectorization"""
+def load_vectordb_data(vectordb_dir: str = "data/vectordb_ready/documents"):
+    """Load all processed chunks ready for vectorization from multiple JSON files"""
     
-    print("📂 Loading vectorDB-ready data...")
+    print(" Loading vectorDB-ready data from multiple sources...")
     
-    with open(file_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
+    # Find all vectordb_ready JSON files
+    vectordb_files = glob.glob(f"{vectordb_dir}/*_vectordb_ready.json")
     
-    print(f"✅ Loaded {len(data['documents'])} documents")
+    if not vectordb_files:
+        print(f" No vectordb_ready files found in {vectordb_dir}")
+        return None
+    
+    print(f"   Found {len(vectordb_files)} source files")
+    
+    # Combine all data
+    all_documents = []
+    all_metadatas = []
+    all_ids = []
+    
+    for file_path in vectordb_files:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            file_data = json.load(f)
+            all_documents.extend(file_data['documents'])
+            all_metadatas.extend(file_data['metadatas'])
+            all_ids.extend(file_data['ids'])
+        print(f"   ✓ Loaded {Path(file_path).name}: {len(file_data['documents'])} documents")
+    
+    data = {
+        'documents': all_documents,
+        'metadatas': all_metadatas,
+        'ids': all_ids
+    }
+    
+    print(f" Total loaded: {len(data['documents'])} documents from {len(vectordb_files)} files")
     
     return data
 
@@ -24,23 +50,23 @@ def explore_chunks(data: dict):
     """Explore the structure and content of chunks"""
     
     print("\n" + "=" * 70)
-    print("🔍 EXPLORING CHUNKS")
+    print(" EXPLORING CHUNKS")
     print("=" * 70)
     
     # Basic statistics
-    print(f"\n📊 Basic Statistics:")
+    print(f"\n Basic Statistics:")
     print(f"   Total documents: {len(data['documents'])}")
     print(f"   Total metadata entries: {len(data['metadatas'])}")
     print(f"   Total IDs: {len(data['ids'])}")
     
     # Sample document
-    print(f"\n📄 Sample Document (Chunk 0):")
+    print(f"\n Sample Document (Chunk 0):")
     print(f"   ID: {data['ids'][0]}")
     print(f"   Text length: {len(data['documents'][0])} characters")
     print(f"   Text preview: {data['documents'][0][:200]}...")
     
     # Sample metadata
-    print(f"\n🏷️  Sample Metadata:")
+    print(f"\n️  Sample Metadata:")
     for key, value in data['metadatas'][0].items():
         print(f"   {key}: {value}")
     
@@ -50,7 +76,7 @@ def explore_chunks(data: dict):
         ct = meta['content_type']
         content_types[ct] = content_types.get(ct, 0) + 1
     
-    print(f"\n📊 Content Type Distribution:")
+    print(f"\n Content Type Distribution:")
     for ct, count in sorted(content_types.items(), key=lambda x: x[1], reverse=True):
         print(f"   {ct}: {count} chunks ({count/len(data['documents'])*100:.1f}%)")
     
@@ -63,7 +89,7 @@ def explore_chunks(data: dict):
         'Dialysis': sum(1 for m in data['metadatas'] if m['has_dialysis'])
     }
     
-    print(f"\n🔬 Medical Entity Coverage:")
+    print(f"\n Medical Entity Coverage:")
     for entity, count in sorted(entity_coverage.items(), key=lambda x: x[1], reverse=True):
         print(f"   {entity}: {count} chunks ({count/len(data['documents'])*100:.1f}%)")
 
@@ -79,7 +105,7 @@ def find_chunks_by_entity(data: dict, entity: str):
         if data['metadatas'][i].get(entity_field, False)
     ]
     
-    print(f"\n🔍 Found {len(matching_chunks)} chunks with {entity}")
+    print(f"\n Found {len(matching_chunks)} chunks with {entity}")
     
     if matching_chunks:
         print(f"\n   Sample matches:")
@@ -100,7 +126,7 @@ def find_chunks_by_type(data: dict, content_type: str):
         if data['metadatas'][i]['content_type'] == content_type
     ]
     
-    print(f"\n🔍 Found {len(matching_chunks)} chunks of type '{content_type}'")
+    print(f"\n Found {len(matching_chunks)} chunks of type '{content_type}'")
     
     if matching_chunks:
         print(f"\n   Sample matches:")
@@ -124,7 +150,7 @@ def search_text(data: dict, query: str):
         if query_lower in data['documents'][i].lower()
     ]
     
-    print(f"\n🔍 Text search for '{query}': {len(matching_chunks)} matches")
+    print(f"\n Text search for '{query}': {len(matching_chunks)} matches")
     
     if matching_chunks:
         print(f"\n   Sample matches:")
@@ -147,7 +173,7 @@ def main():
     """Main demonstration"""
     
     print("=" * 70)
-    print("🚀 VECTORDB-READY CHUNKS - QUICK START GUIDE")
+    print(" VECTORDB-READY CHUNKS - QUICK START GUIDE")
     print("=" * 70)
     
     # Load data
@@ -158,7 +184,7 @@ def main():
     
     # Example searches
     print("\n" + "=" * 70)
-    print("🔎 EXAMPLE SEARCHES")
+    print(" EXAMPLE SEARCHES")
     print("=" * 70)
     
     # Search by entity
@@ -172,7 +198,7 @@ def main():
     
     # Next steps
     print("\n" + "=" * 70)
-    print("📚 NEXT STEPS")
+    print(" NEXT STEPS")
     print("=" * 70)
     print("""
 To use this data with ChromaDB:
@@ -190,8 +216,8 @@ To use this data with ChromaDB:
    
    # Create collection
    collection = client.create_collection(
-       name="kdigo_ckd_guidelines",
-       metadata={"description": "KDIGO 2024 CKD Guidelines"}
+       name="nephro_ai_medical_kb",
+       metadata={"description": "Nephro-AI Medical Knowledge Base"}
    )
    
    # Add documents
@@ -212,7 +238,7 @@ For more details, see the scripts in the scripts/ directory.
     """)
     
     print("=" * 70)
-    print("✅ GUIDE COMPLETE")
+    print(" GUIDE COMPLETE")
     print("=" * 70)
 
 

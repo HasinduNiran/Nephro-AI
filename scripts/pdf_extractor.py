@@ -102,7 +102,7 @@ class PDFKnowledgeExtractor:
         Returns:
             str: Extracted raw text from the document
         """
-        print(f"📄 Extracting text from: {self.pdf_path}")
+        print(f" Extracting text from: {self.pdf_path}")
         
         # Handle plain text files directly
         if self.pdf_path.lower().endswith('.txt'):
@@ -111,10 +111,10 @@ class PDFKnowledgeExtractor:
                     text = f.read()
                 self.metadata['total_pages'] = 1
                 self.metadata['raw_text_length'] = len(text)
-                print(f"✅ Extracted {len(text)} characters from text file")
+                print(f" Extracted {len(text)} characters from text file")
                 return text
             except Exception as e:
-                print(f"❌ Failed to read text file: {e}")
+                print(f" Failed to read text file: {e}")
                 return ""
         
         # Process PDF files
@@ -137,7 +137,7 @@ class PDFKnowledgeExtractor:
                         print(f"   Processed {i}/{self.metadata['total_pages']} pages...")
         
         except Exception as e:
-            print(f"⚠️  pdfplumber failed: {e}")
+            print(f"️  pdfplumber failed: {e}")
             print("   Trying PyPDF2...")
             
             # Fallback to PyPDF2 (simpler but sometimes more reliable)
@@ -152,12 +152,12 @@ class PDFKnowledgeExtractor:
                         if text:
                             full_text.append(text)
             except Exception as e2:
-                print(f"❌ PyPDF2 also failed: {e2}")
+                print(f" PyPDF2 also failed: {e2}")
                 return ""  # Both methods failed
         
         combined_text = "\n".join(full_text)
         self.metadata['raw_text_length'] = len(combined_text)
-        print(f"✅ Extracted {len(combined_text)} characters")
+        print(f" Extracted {len(combined_text)} characters")
         
         return combined_text
     
@@ -223,7 +223,7 @@ class PDFKnowledgeExtractor:
         
         # Store cleaned text length for statistics
         self.metadata['cleaned_text_length'] = len(text)
-        print(f"✅ Cleaned text: {len(text)} characters")
+        print(f" Cleaned text: {len(text)} characters")
         
         return text
     
@@ -245,7 +245,7 @@ class PDFKnowledgeExtractor:
         Returns:
             Dict: Metadata dictionary with extracted information
         """
-        print("\n📋 Extracting metadata...")
+        print("\n Extracting metadata...")
         
         # Initialize metadata with basic information
         metadata = {
@@ -294,7 +294,7 @@ class PDFKnowledgeExtractor:
         
         metadata['keywords'] = keywords
         
-        print(f"✅ Metadata extracted: {metadata.get('title', 'Unknown')[:50]}...")
+        print(f" Metadata extracted: {metadata.get('title', 'Unknown')[:50]}...")
         
         return metadata
     
@@ -445,7 +445,7 @@ class PDFKnowledgeExtractor:
                     'sentence_count': len(current_chunk)
                 })
         
-        print(f"✅ Created {len(chunks)} chunks")
+        print(f" Created {len(chunks)} chunks")
         
         return chunks
     
@@ -473,7 +473,7 @@ class PDFKnowledgeExtractor:
         Returns:
             List[Dict]: Chunks with added metadata
         """
-        print("\n🏷️  Adding metadata to chunks...")
+        print("\n️  Adding metadata to chunks...")
         
         for i, chunk in enumerate(chunks):
             # Start with document-level metadata (source file, year, etc.)
@@ -522,7 +522,7 @@ class PDFKnowledgeExtractor:
             
             chunk['metadata']['medical_entities'] = medical_entities
         
-        print(f"✅ Metadata added to all chunks")
+        print(f" Metadata added to all chunks")
         
         return chunks
     
@@ -536,7 +536,7 @@ class PDFKnowledgeExtractor:
             output_file = os.path.join(self.output_dir, f"{base_name}_chunks.json")
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(chunks, f, indent=2, ensure_ascii=False)
-            print(f"\n💾 Saved JSON chunks to: {output_file}")
+            print(f"\n Saved JSON chunks to: {output_file}")
         
         elif format == 'txt':
             output_file = os.path.join(self.output_dir, f"{base_name}_chunks.txt")
@@ -545,7 +545,7 @@ class PDFKnowledgeExtractor:
                     f.write(f"=== CHUNK {chunk['chunk_id']} ===\n")
                     f.write(f"Metadata: {json.dumps(chunk['metadata'], indent=2)}\n")
                     f.write(f"{chunk['text']}\n\n")
-            print(f"💾 Saved TXT chunks to: {output_file}")
+            print(f" Saved TXT chunks to: {output_file}")
         
         # Also save metadata summary
         metadata_file = os.path.join(self.output_dir, f"{base_name}_metadata.json")
@@ -559,7 +559,7 @@ class PDFKnowledgeExtractor:
         with open(metadata_file, 'w', encoding='utf-8') as f:
             json.dump(summary, f, indent=2, ensure_ascii=False)
         
-        print(f"💾 Saved metadata to: {metadata_file}")
+        print(f" Saved metadata to: {metadata_file}")
         
         return output_file
     
@@ -573,13 +573,13 @@ class PDFKnowledgeExtractor:
             save_format: Output format ('json' or 'txt')
         """
         print("=" * 70)
-        print("🚀 STARTING PDF KNOWLEDGE EXTRACTION PIPELINE")
+        print(" STARTING PDF KNOWLEDGE EXTRACTION PIPELINE")
         print("=" * 70)
         
         # Step 1: Extract text
         raw_text = self.extract_text()
         if not raw_text:
-            print("❌ Failed to extract text from PDF")
+            print(" Failed to extract text from PDF")
             return None
         
         # Step 2: Clean text
@@ -602,7 +602,7 @@ class PDFKnowledgeExtractor:
         
         # Print summary
         print("\n" + "=" * 70)
-        print("📊 PROCESSING SUMMARY")
+        print(" PROCESSING SUMMARY")
         print("=" * 70)
         print(f"Source: {self.pdf_path}")
         print(f"Total pages: {self.metadata.get('total_pages', 'N/A')}")
@@ -614,7 +614,7 @@ class PDFKnowledgeExtractor:
             print(f"Chunk size range: {min(c['word_count'] for c in chunks)} - {max(c['word_count'] for c in chunks)} words")
         print(f"Output file: {output_file}")
         print("=" * 70)
-        print("✅ PROCESSING COMPLETE!")
+        print(" PROCESSING COMPLETE!")
         print("=" * 70)
         
         return output_file
@@ -634,10 +634,10 @@ def select_files():
         list: List of absolute file paths selected by user, or empty list if cancelled
     """
     print("=" * 70)
-    print("📂 FILE SELECTOR")
+    print(" FILE SELECTOR")
     print("=" * 70)
     print("Please select one or more PDF/text files to process...")
-    print("💡 Tip: Hold Ctrl to select multiple files")
+    print(" Tip: Hold Ctrl to select multiple files")
     print()
     
     # Create a hidden root window (required for file dialog)
@@ -662,13 +662,13 @@ def select_files():
     
     # Display selected files
     if file_paths:
-        print(f"✅ Selected {len(file_paths)} file(s):")
+        print(f" Selected {len(file_paths)} file(s):")
         for i, fp in enumerate(file_paths, 1):
             print(f"   {i}. {os.path.basename(fp)}")
         print()
         return list(file_paths)  # Convert tuple to list
     else:
-        print("❌ No files selected. Exiting...\n")
+        print(" No files selected. Exiting...\n")
         return []
 
 
@@ -690,7 +690,7 @@ def main():
     file_paths = select_files()
     
     if not file_paths:
-        print("⚠️  No files selected. Exiting...")
+        print("️  No files selected. Exiting...")
         return None
     
     # Step 2: Configuration - adjust these parameters as needed
@@ -715,20 +715,20 @@ def main():
     
     for idx, file_path in enumerate(file_paths, 1):
         print("\n" + "=" * 70)
-        print(f"📁 PROCESSING FILE {idx}/{len(file_paths)}")
+        print(f" PROCESSING FILE {idx}/{len(file_paths)}")
         print("=" * 70)
         print(f"File: {os.path.basename(file_path)}")
         print("=" * 70)
         
         # Validation: Check if file exists
         if not os.path.exists(file_path):
-            print(f"❌ Error: File does not exist: {file_path}")
+            print(f" Error: File does not exist: {file_path}")
             failed += 1
             continue
         
         # Validation: Check file extension
         if not (file_path.lower().endswith('.pdf') or file_path.lower().endswith('.txt')):
-            print(f"❌ Error: File must be PDF or TXT: {file_path}")
+            print(f" Error: File must be PDF or TXT: {file_path}")
             failed += 1
             continue
         
@@ -752,7 +752,7 @@ def main():
                     'status': 'success'
                 })
                 successful += 1
-                print(f"\n✅ File {idx}/{len(file_paths)} processed successfully!")
+                print(f"\n File {idx}/{len(file_paths)} processed successfully!")
             else:
                 results.append({
                     'input': file_path,
@@ -760,11 +760,11 @@ def main():
                     'status': 'failed'
                 })
                 failed += 1
-                print(f"\n❌ File {idx}/{len(file_paths)} failed to process!")
+                print(f"\n File {idx}/{len(file_paths)} failed to process!")
                 
         except Exception as e:
             # Catch any unexpected errors during processing
-            print(f"\n❌ Error processing file: {e}")
+            print(f"\n Error processing file: {e}")
             results.append({
                 'input': file_path,
                 'output': None,
@@ -775,17 +775,17 @@ def main():
     
     # Step 4: Print comprehensive summary report
     print("\n" + "=" * 70)
-    print("🎉 BATCH PROCESSING COMPLETE!")
+    print(" BATCH PROCESSING COMPLETE!")
     print("=" * 70)
     print(f"Total files: {len(file_paths)}")
-    print(f"✅ Successful: {successful}")
-    print(f"❌ Failed: {failed}")
-    print(f"📁 Output directory: {OUTPUT_DIR}")
-    print("\n📊 Results:")
+    print(f" Successful: {successful}")
+    print(f" Failed: {failed}")
+    print(f" Output directory: {OUTPUT_DIR}")
+    print("\n Results:")
     
     # List each file with its status
     for i, result in enumerate(results, 1):
-        status_icon = "✅" if result['status'] == 'success' else "❌"
+        status_icon = "" if result['status'] == 'success' else ""
         filename = os.path.basename(result['input'])
         print(f"   {i}. {status_icon} {filename}")
         
@@ -797,7 +797,7 @@ def main():
             print(f"      → Error: {result['error']}")
     
     print("=" * 70)
-    print("\n💡 Next Steps:")
+    print("\n Next Steps:")
     print("   1. Run 'python scripts/prepare_vectordb.py' to filter and prepare chunks")
     print("   2. Run 'python scripts/build_vectordb.py' to create vector database")
     print("   3. Run 'python scripts/query_vectordb.py' to query the database")

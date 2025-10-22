@@ -1,203 +1,390 @@
-# 🎉 Nephro-AI Vector Database - BUILD COMPLETE!
+# 🏥 Nephro-AI - AI-Powered Kidney Care Knowledge System# 🎉 Nephro-AI Vector Database - BUILD COMPLETE!
 
-## ✅ Project Status: FULLY OPERATIONAL
+## ✅ Project Status: FULLY OPERATIONAL## ✅ Project Status: FULLY OPERATIONAL
 
-Your **Nephro-AI** vector database is now **live and ready** for semantic search and RAG applications!
+An intelligent medical knowledge system for chronic kidney disease (CKD) care, featuring semantic search, RAG capabilities, and a comprehensive medical knowledge base with **647 documents** from multiple authoritative sources.Your **Nephro-AI** vector database is now **live and ready** for semantic search and RAG applications!
 
 ---
 
-## 📊 What You Have
+## 🎯 Overview## 📊 What You Have
 
-### ✅ Complete Pipeline
+**Nephro-AI** is a Final Year Research Project (Y4S1) that leverages vector databases and AI to provide accurate, evidence-based kidney care information. The system combines medical guidelines, research papers, and patient education materials into a searchable knowledge base.### ✅ Complete Pipeline
 
-1. **PDF Extraction** → 197 high-quality medical knowledge chunks
+### Key Features1. **PDF Extraction** → 197 high-quality medical knowledge chunks
+
 2. **Vector Database** → ChromaDB with 384-dimensional embeddings
-3. **Query System** → Interactive CLI and Python SDK
-4. **RAG Framework** → Ready for LLM integration
 
-### ✅ Key Statistics
+- ✅ **Semantic Search**: Find relevant medical information using natural language queries3. **Query System** → Interactive CLI and Python SDK
 
-- **Documents**: 197 chunks from KDIGO 2024 CKD Guidelines
+- ✅ **647 Medical Documents**: Comprehensive knowledge from multiple authoritative sources4. **RAG Framework** → Ready for LLM integration
+
+- ✅ **RAG-Ready**: Prepared for integration with LLMs (GPT-4, Claude, Gemini)
+
+- ✅ **Incremental Updates**: Smart database building that avoids reprocessing### ✅ Key Statistics
+
+- ✅ **Rich Metadata**: Content classification and medical entity tagging
+
+- ✅ **Fast Queries**: Sub-100ms semantic search response time- **Documents**: 197 chunks from KDIGO 2024 CKD Guidelines
+
 - **Coverage**: 91.9% CKD, 73.6% GFR
-- **Embedding Model**: all-MiniLM-L6-v2 (384 dimensions)
+
+---- **Embedding Model**: all-MiniLM-L6-v2 (384 dimensions)
+
 - **Query Speed**: < 100ms
-- **Database Size**: ~150MB
 
----
+## 📊 Current Statistics- **Database Size**: ~150MB
 
-## 🚀 Quick Start Guide
+| Metric | Value |---
 
-### 1. Query the Database
+|--------|-------|
 
-**Simple Query:**
+| **Total Documents** | 647 chunks |## 🚀 Quick Start Guide
+
+| **Source Files** | 45 medical documents |
+
+| **Embedding Model** | all-MiniLM-L6-v2 (384D) |### 1. Query the Database
+
+| **Database Type** | ChromaDB (persistent) |
+
+| **Query Speed** | < 100ms |**Simple Query:**
+
+| **Content Types** | 6 types (recommendation, evidence, dietary, etc.) |
 
 ```powershell
-& ".venv/Scripts/python.exe" scripts/query_vectordb.py "What is chronic kidney disease?"
+
+---& ".venv/Scripts/python.exe" scripts/query_vectordb.py "What is chronic kidney disease?"
+
 ```
+
+## 🚀 Quick Start
 
 **Interactive Mode:**
 
-```powershell
-& ".venv/Scripts/python.exe" scripts/query_vectordb.py
-```
+### 1. Setup Environment
+
+````powershell
+
+```powershell& ".venv/Scripts/python.exe" scripts/query_vectordb.py
+
+# Activate virtual environment```
+
+.\.venv\Scripts\Activate.ps1
 
 Then type your questions:
 
-```
-🔍 Query: What are the stages of CKD?
+# Install dependencies
+
+pip install -r requirements.txt```
+
+```🔍 Query: What are the stages of CKD?
+
 🔍 Query: filter:recommendation diabetes treatment
-🔍 Query: top10 kidney failure symptoms
-```
 
-### 2. Run Sample Queries
+### 2. Query the Database🔍 Query: top10 kidney failure symptoms
 
-```powershell
+````
+
+**Interactive Mode:**
+
+```````powershell### 2. Run Sample Queries
+
+python scripts/query_vectordb.py
+
+``````powershell
+
 & ".venv/Scripts/python.exe" scripts/query_vectordb.py --sample
-```
 
-### 3. View Statistics
-
-```powershell
-& ".venv/Scripts/python.exe" scripts/query_vectordb.py --stats
-```
-
-### 4. Test RAG System
+**Direct Query:**```
 
 ```powershell
-& ".venv/Scripts/python.exe" scripts/rag_example.py
+
+python scripts/query_vectordb.py "What dietary changes are recommended for CKD patients?"### 3. View Statistics
+
+```````
+
+```powershell
+
+### 3. Test RAG System& ".venv/Scripts/python.exe" scripts/query_vectordb.py --stats
+
 ```
 
----
+```powershell
+
+python scripts/rag_example.py### 4. Test RAG System
+
+```
+
+```powershell
+
+---& ".venv/Scripts/python.exe" scripts/rag_example.py
+
+```
 
 ## 📁 Project Structure
 
-```
-Nephro-AI/
-├── 📄 README.md                          ← This file
-├── 📄 VECTORDB_BUILD_COMPLETE.md         ← Detailed build report
-├── 📄 COMPLETION_REPORT.md               ← PDF processing report
-├── 📄 PIPELINE_README.md                 ← Full pipeline guide
-│
-├── 📂 data/
-│   ├── 📂 raw/                           ← Original knowledge sources
-│   │   └── medical_knowledge/
-│   │       ├── diseases/
-│   │       ├── treatments/
-│   │       ├── diagnostics/
-│   │       ├── medications/
-│   │       ├── nutrition/
-│   │       └── prevention/
-│   │
-│   └── 📂 processed/                     ← Processed chunks
-│       ├── vectordb_ready_chunks.json    ← Main data file (197 chunks)
-│       ├── sample_queries.txt            ← 30 test queries
-│       ├── PROCESSING_SUMMARY.md         ← Processing stats
-│       └── ...other processed files
-│
-├── 📂 scripts/                           ← Automation scripts
-│   ├── pdf_extractor.py                 ← Extract PDF → chunks
-│   ├── analyze_chunks.py                ← Statistical analysis
-│   ├── prepare_vectordb.py              ← Quality filtering
-│   ├── build_vectordb.py                ← Build vector DB ✅
-│   ├── query_vectordb.py                ← Query interface ✅
-│   └── rag_example.py                   ← RAG demo ✅
-│
-└── 📂 vectordb/                          ← Vector database
-    └── 📂 chroma_db/                     ← ChromaDB storage ✅
-        ├── chroma.sqlite3                ← Database file
-        └── build_summary.json            ← Build metadata
-```
-
 ---
 
-## 💻 Available Scripts
+````
+
+Nephro-AI/## 📁 Project Structure
+
+├── 📄 README.md                          ← You are here
+
+├── 📄 config.py                          ← Central configuration```
+
+├── 📄 requirements.txt                   ← Python dependenciesNephro-AI/
+
+│├── 📄 README.md                          ← This file
+
+├── 📂 data/├── 📄 VECTORDB_BUILD_COMPLETE.md         ← Detailed build report
+
+│   ├── 📂 raw/                           ← Original source documents├── 📄 COMPLETION_REPORT.md               ← PDF processing report
+
+│   ├── 📂 processed/                     ← Processed text chunks├── 📄 PIPELINE_README.md                 ← Full pipeline guide
+
+│   └── 📂 vectordb_ready/                ← Vectorization-ready documents│
+
+│       └── 📂 documents/                 ← 45 JSON files (647 chunks)├── 📂 data/
+
+││   ├── 📂 raw/                           ← Original knowledge sources
+
+├── 📂 scripts/                           ← Python scripts│   │   └── medical_knowledge/
+
+│   ├── build_vectordb.py                ← Build/update vector database ⭐│   │       ├── diseases/
+
+│   ├── query_vectordb.py                ← Query interface ⭐│   │       ├── treatments/
+
+│   ├── rag_example.py                   ← RAG demonstration ⭐│   │       ├── diagnostics/
+
+│   ├── quick_start.py                   ← Quick start guide│   │       ├── medications/
+
+│   └── analyze_chunks.py                ← Analysis tools│   │       ├── nutrition/
+
+││   │       └── prevention/
+
+└── 📂 vectordb/│   │
+
+    └── 📂 chroma_db/                     ← ChromaDB storage (647 docs) ⭐│   └── 📂 processed/                     ← Processed chunks
+
+```│       ├── vectordb_ready_chunks.json    ← Main data file (197 chunks)
+
+│       ├── sample_queries.txt            ← 30 test queries
+
+---│       ├── PROCESSING_SUMMARY.md         ← Processing stats
+
+│       └── ...other processed files
+
+## 💻 Available Scripts│
+
+├── 📂 scripts/                           ← Automation scripts
+
+| Script | Purpose | Usage |│   ├── pdf_extractor.py                 ← Extract PDF → chunks
+
+|--------|---------|-------|│   ├── analyze_chunks.py                ← Statistical analysis
+
+| `query_vectordb.py` | Query the knowledge base | `python scripts/query_vectordb.py "question"` |│   ├── prepare_vectordb.py              ← Quality filtering
+
+| `rag_example.py` | RAG demonstration | `python scripts/rag_example.py` |│   ├── build_vectordb.py                ← Build vector DB ✅
+
+| `build_vectordb.py` | Build/update database | `python scripts/build_vectordb.py` |│   ├── query_vectordb.py                ← Query interface ✅
+
+| `analyze_chunks.py` | Analyze content | `python scripts/analyze_chunks.py` |│   └── rag_example.py                   ← RAG demo ✅
+
+│
+
+---└── 📂 vectordb/                          ← Vector database
+
+    └── 📂 chroma_db/                     ← ChromaDB storage ✅
+
+## 🔍 Query Examples        ├── chroma.sqlite3                ← Database file
+
+        └── build_summary.json            ← Build metadata
+
+````
+
+What is chronic kidney disease?
+
+What dietary changes are recommended for CKD patients?---
+
+When should dialysis be considered?
+
+What foods should CKD patients avoid?## 💻 Available Scripts
+
+````
 
 | Script                | Purpose            | Command                                       |
-| --------------------- | ------------------ | --------------------------------------------- |
+
+---| --------------------- | ------------------ | --------------------------------------------- |
+
 | **query_vectordb.py** | Query the database | `python scripts/query_vectordb.py "question"` |
-| **rag_example.py**    | RAG demonstration  | `python scripts/rag_example.py`               |
+
+## 🤖 RAG Integration| **rag_example.py**    | RAG demonstration  | `python scripts/rag_example.py`               |
+
 | **build_vectordb.py** | Rebuild database   | `python scripts/build_vectordb.py`            |
-| **pdf_extractor.py**  | Process new PDFs   | `python scripts/pdf_extractor.py`             |
 
----
+```python| **pdf_extractor.py**  | Process new PDFs   | `python scripts/pdf_extractor.py`             |
 
-## 🔍 Query Examples
+import chromadb
 
-### Basic Queries
+from config import get_db_config---
 
-```
-What is chronic kidney disease?
-What are the stages of CKD?
-How is GFR measured?
-What are treatment options for stage 3 CKD?
-When should dialysis be considered?
-```
 
-### Advanced Queries
 
-```
+# Setup## 🔍 Query Examples
+
+config = get_db_config()
+
+client = chromadb.PersistentClient(path=config['path'])### Basic Queries
+
+collection = client.get_collection(config['collection_name'])
+
+````
+
+# QueryWhat is chronic kidney disease?
+
+results = collection.query(What are the stages of CKD?
+
+    query_texts=["What foods should CKD patients avoid?"],How is GFR measured?
+
+    n_results=5What are treatment options for stage 3 CKD?
+
+)When should dialysis be considered?
+
+````
+
+
+
+---### Advanced Queries
+
+
+
+## 🔧 Technical Stack```
+
 filter:recommendation diabetes management
-filter:evidence GFR measurement accuracy
-top10 CKD complications
-```
+
+- **Vector Database**: ChromaDB (persistent)filter:evidence GFR measurement accuracy
+
+- **Embeddings**: all-MiniLM-L6-v2 (384D)top10 CKD complications
+
+- **Python**: 3.12.6```
+
+- **Search**: HNSW algorithm, cosine similarity
 
 ### Metadata Filters
 
-Available content types:
-
-- `recommendation` - Clinical recommendations
-- `evidence` - Research evidence
-- `definition` - Medical definitions
-- `reference` - Citations and references
-- `general` - General information
-
 ---
 
-## 🤖 RAG Integration
+Available content types:
 
-### Python SDK Example
+## 📚 Documentation
 
-```python
-import chromadb
+- `recommendation` - Clinical recommendations
+
+- **[INCREMENTAL_BUILD_GUIDE.md](INCREMENTAL_BUILD_GUIDE.md)** - Build system guide- `evidence` - Research evidence
+
+- **[DUPLICATE_HANDLING_EXPLAINED.md](DUPLICATE_HANDLING_EXPLAINED.md)** - Technical details- `definition` - Medical definitions
+
+- **[PIPELINE_README.md](PIPELINE_README.md)** - Data processing pipeline- `reference` - Citations and references
+
+- **[config.py](config.py)** - Configuration settings- `general` - General information
+
+
+
+------
+
+
+
+## 🎯 Roadmap## 🤖 RAG Integration
+
+
+
+### Completed ✅### Python SDK Example
+
+- [x] Multi-source processing (45 files → 647 docs)
+
+- [x] Vector database with incremental builds```python
+
+- [x] Query interface and RAG frameworkimport chromadb
+
+- [x] Comprehensive documentation
 
 # Connect to database
-client = chromadb.PersistentClient(path="vectordb/chroma_db")
-collection = client.get_collection("kdigo_ckd_guidelines")
 
-# Query
+### Next Steps 🚧client = chromadb.PersistentClient(path="vectordb/chroma_db")
+
+- [ ] Web interface (Streamlit/Gradio)collection = client.get_collection("kdigo_ckd_guidelines")
+
+- [ ] LLM integration (GPT-4/Gemini)
+
+- [ ] REST API (FastAPI)# Query
+
 results = collection.query(
-    query_texts=["What is CKD?"],
-    n_results=5
-)
 
-# Process results
-for doc, metadata in zip(results['documents'][0], results['metadatas'][0]):
-    print(f"Content: {doc}")
+---    query_texts=["What is CKD?"],
+
+    n_results=5
+
+## 📞 Quick Commands)
+
+
+
+```powershell# Process results
+
+# Activate environmentfor doc, metadata in zip(results['documents'][0], results['metadatas'][0]):
+
+.\.venv\Scripts\Activate.ps1    print(f"Content: {doc}")
+
     print(f"Type: {metadata['content_type']}")
-```
+
+# Query (interactive)```
+
+python scripts/query_vectordb.py
 
 ### With OpenAI GPT
 
-```python
+# RAG demo
+
+python scripts/rag_example.py```python
+
 import openai
-import chromadb
+
+# Rebuild databaseimport chromadb
+
+python scripts/build_vectordb.py --rebuild
 
 # Retrieve context
-client = chromadb.PersistentClient(path="vectordb/chroma_db")
-collection = client.get_collection("kdigo_ckd_guidelines")
-results = collection.query(query_texts=[question], n_results=5)
 
-# Build context
+# View configclient = chromadb.PersistentClient(path="vectordb/chroma_db")
+
+python config.pycollection = client.get_collection("kdigo_ckd_guidelines")
+
+```results = collection.query(query_texts=[question], n_results=5)
+
+
+
+---# Build context
+
 context = "\n".join(results['documents'][0])
 
+## 🌟 Project Info
+
 # Generate answer
-response = openai.ChatCompletion.create(
-    model="gpt-4",
-    messages=[
-        {"role": "system", "content": "You are a medical AI assistant."},
+
+**Repository**: HasinduNiran/Nephro-AI  response = openai.ChatCompletion.create(
+
+**Branch**: Lasal-VDB      model="gpt-4",
+
+**Status**: 🟢 Operational      messages=[
+
+**Updated**: October 22, 2025        {"role": "system", "content": "You are a medical AI assistant."},
+
         {"role": "user", "content": f"Context: {context}\n\nQuestion: {question}"}
-    ]
+
+---    ]
+
 )
+
+**Ready to Query! 🚀**
 
 answer = response.choices[0].message.content
 ```
@@ -362,11 +549,11 @@ python scripts/build_vectordb.py
 
 ## 🌟 Project Credits
 
-**Project**: Nephro-AI - AI-Powered Kidney Care System  
-**Level**: Final Year Research Project (Y4S1)  
-**Repository**: HasinduNiran/Nephro-AI  
-**Branch**: Lasal-VDB  
-**Date**: October 21, 2025  
+**Project**: Nephro-AI - AI-Powered Kidney Care System
+**Level**: Final Year Research Project (Y4S1)
+**Repository**: HasinduNiran/Nephro-AI
+**Branch**: Lasal-VDB
+**Date**: October 21, 2025
 **Status**: 🟢 OPERATIONAL
 
 ### Technologies
@@ -402,3 +589,4 @@ Your vector database is **fully operational** and ready to power intelligent kid
 **Need Help?** Check the documentation files or test with sample queries!
 
 **Happy Building! 🎉**
+````
