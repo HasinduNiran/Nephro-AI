@@ -36,10 +36,10 @@ CHUNK_SETTINGS = {
 }
 
 # Medical Entities
-# 🧠 Comprehensive Medical Entities for CKD + Nutrition Extraction
+# Comprehensive Medical Entities for CKD + Nutrition Extraction
 
 MEDICAL_ENTITIES = [
-    # 🩺 1️⃣ Core CKD & Renal Terms
+    # 1. Core CKD & Renal Terms
     "CKD", "chronic kidney disease",
     "acute kidney injury", "AKI",
     "glomerular filtration rate", "GFR", "eGFR",
@@ -49,7 +49,7 @@ MEDICAL_ENTITIES = [
     "albuminuria", "proteinuria",
     "creatinine", "urea", "BUN", "cystatin C",
 
-    # 💉 2️⃣ Lab and Biochemical Markers
+    # 2. Lab and Biochemical Markers
     "sodium", "potassium", "calcium", "phosphate", "phosphorus",
     "magnesium", "chloride", "bicarbonate",
     "uric acid", "hemoglobin", "hematocrit",
@@ -57,7 +57,7 @@ MEDICAL_ENTITIES = [
     "iron", "ferritin", "transferrin saturation", "TSAT",
     "blood urea nitrogen", "serum creatinine",
 
-    # 🍎 3️⃣ Nutrition and Diet Keywords
+    # 3. Nutrition and Diet Keywords
     "nutrition", "diet", "dietary protein", "low protein diet",
     "sodium restriction", "potassium restriction",
     "phosphate binders", "fluid restriction",
@@ -67,7 +67,7 @@ MEDICAL_ENTITIES = [
     "nutrient intake", "supplements", "micronutrients",
     "dietitian", "renal dietitian",
 
-    # 💊 4️⃣ Treatment and Medication-Related Terms
+    # 4. Treatment and Medication-Related Terms
     "ACE inhibitors", "angiotensin converting enzyme inhibitors",
     "ARBs", "angiotensin receptor blockers",
     "diuretics", "loop diuretics", "thiazides",
@@ -76,13 +76,13 @@ MEDICAL_ENTITIES = [
     "insulin", "antihypertensive", "sodium bicarbonate",
     "statins", "lipid lowering therapy",
 
-    # ⚕️ 5️⃣ Dialysis & Transplantation
+    # 5. Dialysis & Transplantation
     "dialysis", "hemodialysis", "peritoneal dialysis",
     "vascular access", "fistula", "catheter",
     "ultrafiltration", "dialysate", "Kt/V", "dialysis adequacy",
     "kidney transplant", "transplant rejection", "immunosuppressants",
 
-    # 🧬 6️⃣ Complications & Symptoms
+    # 6. Complications & Symptoms
     "anemia", "edema", "hyperkalemia", "hypokalemia",
     "hyperphosphatemia", "acidosis", "metabolic acidosis",
     "bone disease", "renal osteodystrophy",
@@ -90,13 +90,13 @@ MEDICAL_ENTITIES = [
     "cardiovascular disease", "CVD", "heart failure",
     "neuropathy", "retinopathy", "fluid overload",
 
-    # 👩‍⚕️ 7️⃣ Lifestyle & Patient Care
+    # 7. Lifestyle & Patient Care
     "smoking cessation", "exercise", "physical activity",
     "blood pressure control", "glycemic control",
     "patient education", "adherence", "self management",
     "quality of life", "follow up", "screening", "monitoring",
 
-    # 🧮 8️⃣ Staging & Classification
+    # 8. Staging & Classification
     "stage 1", "stage 2", "stage 3", "stage 4", "stage 5",
     "KDIGO", "KDOQI", "guideline", "classification",
     "risk category", "G category", "A category",
@@ -105,7 +105,7 @@ MEDICAL_ENTITIES = [
 
 
 # Content Type Classifications
-# 🧠 Content Type Classifications (CKD + Nutrition Enhanced)
+# Content Type Classifications (CKD + Nutrition Enhanced)
 CONTENT_TYPE_KEYWORDS = {
     # Clinical Recommendations & Guidelines
     "recommendation": [

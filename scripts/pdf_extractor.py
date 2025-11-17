@@ -184,7 +184,7 @@ class PDFKnowledgeExtractor:
         Returns:
             str: Cleaned and normalized text
         """
-        print("\n🧹 Cleaning text...")
+        print("\n Cleaning text...")
         
         # Remove excessive whitespace (multiple spaces, tabs, newlines → single space)
         text = re.sub(r'\s+', ' ', text)
@@ -377,7 +377,7 @@ class PDFKnowledgeExtractor:
         Returns:
             List[Dict]: List of chunk dictionaries with text and metadata
         """
-        print(f"\n✂️  Chunking text (chunk_size={chunk_size}, overlap={overlap})...")
+        print(f"\n️  Chunking text (chunk_size={chunk_size}, overlap={overlap})...")
         
         # Split into sentences using NLTK's sentence tokenizer
         sentences = sent_tokenize(text)
@@ -699,7 +699,7 @@ def main():
     OVERLAP = 50                  # Words to overlap (preserves context between chunks)
     
     print("=" * 70)
-    print("⚙️  CONFIGURATION")
+    print("️  CONFIGURATION")
     print("=" * 70)
     print(f"Files to process: {len(file_paths)}")
     print(f"Output Directory: {OUTPUT_DIR}")
