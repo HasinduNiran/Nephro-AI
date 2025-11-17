@@ -2,8 +2,11 @@
 
 # Vector Database & Embeddings
 chromadb>=0.4.18
-sentence-transformers>=2.2.2
-transformers>=4.35.0
+requests>=2.31.0
+
+# Optional: Local embeddings (if not using OpenAI)
+# sentence-transformers>=2.2.2
+# transformers>=4.35.0
 
 # PDF Processing
 PyPDF2>=3.0.1

@@ -17,8 +17,14 @@ SCRIPTS_DIR = PROJECT_ROOT / "scripts"
 
 # Vector Database Settings
 COLLECTION_NAME = "nephro_ai_medical_kb"
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
-EMBEDDING_DIMENSION = 384
+EMBEDDING_MODEL = "openai/text-embedding-3-small"
+EMBEDDING_DIMENSION = 1536
+
+# OpenRouter API Settings
+OPENROUTER_API_KEY = "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"
+OPENROUTER_API_URL = "https://openrouter.ai/api/v1/embeddings"
+OPENROUTER_SITE_URL = "https://nephro-ai.local"  # Optional: Your site URL
+OPENROUTER_SITE_NAME = "Nephro-AI"  # Optional: Your site name
 
 # Database Metadata
 DB_METADATA = {
