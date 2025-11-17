@@ -186,7 +186,7 @@ class VectorDBPreparator:
             # Validation 1: Check if already in vectordb_ready format
             # (has 'documents' key instead of being a list of chunks)
             if isinstance(data, dict) and 'documents' in data:
-                print(f"️  This file is already in vectorDB-ready format!")
+                print(f"  This file is already in vectorDB-ready format!")
                 print(f"   Skipping: {os.path.basename(self.chunks_file)}")
                 return []
             
@@ -197,7 +197,7 @@ class VectorDBPreparator:
                 return self.chunks
             else:
                 # Unexpected format
-                print(f"️  Unexpected file format!")
+                print(f"  Unexpected file format!")
                 print(f"   Expected: list of chunks")
                 print(f"   Got: {type(data)}")
                 return []
@@ -536,14 +536,14 @@ class VectorDBPreparator:
         
         # Check if loading failed or file was already processed
         if not chunks_loaded or len(self.chunks) == 0:
-            print("\n️  File skipped (empty, invalid, or already in vectorDB format)")
+            print("\n  File skipped (empty, invalid, or already in vectorDB format)")
             return None
         
         # Filter quality chunks
         filtered_chunks = self.filter_quality_chunks()
         
         if len(filtered_chunks) == 0:
-            print("\n️  No chunks passed quality filtering!")
+            print("\n  No chunks passed quality filtering!")
             print("   This file will be skipped.")
             return None
         
@@ -683,7 +683,7 @@ def main():
     print(f"Total chunk files: {len(chunk_files)}")
     print(f"Already processed: {len(processed_files)}")
     print(f"New files to process: {len(unprocessed_files)}")
-    print("\n🆕 Files to process:")
+    print("\n Files to process:")
     for i, cf in enumerate(unprocessed_files, 1):
         print(f"   {i}. {os.path.basename(cf)}")
     print("=" * 70)
@@ -764,7 +764,7 @@ def main():
             print(f"   {i}.  {filename} ({result['documents']} documents)")
         elif result['status'] == 'skipped':
             # Show reason for skipping
-            print(f"   {i}. ️  {filename} - {result.get('reason', 'Skipped')}")
+            print(f"   {i}.   {filename} - {result.get('reason', 'Skipped')}")
         else:
             # Show error message
             print(f"   {i}.  {filename} - Error: {result.get('error', 'Unknown')}")

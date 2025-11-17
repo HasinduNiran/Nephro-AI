@@ -33,7 +33,7 @@ def load_vectordb_data(vectordb_dir: str = "data/vectordb_ready/documents"):
             all_documents.extend(file_data['documents'])
             all_metadatas.extend(file_data['metadatas'])
             all_ids.extend(file_data['ids'])
-        print(f"   ✓ Loaded {Path(file_path).name}: {len(file_data['documents'])} documents")
+        print(f"    Loaded {Path(file_path).name}: {len(file_data['documents'])} documents")
     
     data = {
         'documents': all_documents,

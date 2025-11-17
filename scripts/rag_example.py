@@ -178,7 +178,7 @@ def demo():
     print("   6. Ask your own question")
     
     try:
-        choice = input("\n👉 Choose (1-6): ").strip()
+        choice = input("\n Choose (1-6): ").strip()
         
         if choice == '6':
             question = input("Your question: ").strip()

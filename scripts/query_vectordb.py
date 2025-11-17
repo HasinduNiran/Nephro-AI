@@ -93,7 +93,7 @@ class VectorDBQuery:
             print(f"\n Result {i} (Similarity: {1 - distance:.3f})")
             print(f"    Type: {metadata.get('content_type', 'N/A')}")
             print(f"   ️  Entities: {metadata.get('medical_entities', 'N/A')}")
-            print(f"   📏 Words: {metadata.get('word_count', 'N/A')}")
+            print(f"    Words: {metadata.get('word_count', 'N/A')}")
             print(f"\n   {doc[:300]}...")
             
             if i < len(results['documents'][0]):
@@ -162,7 +162,7 @@ class VectorDBQuery:
     def print_help(self):
         """Print help information"""
         print("\n" + "=" * 70)
-        print("📖 HELP - Available Commands")
+        print(" HELP - Available Commands")
         print("=" * 70)
         print("\n Basic Query:")
         print("   Just type your question naturally")

@@ -63,7 +63,7 @@ def load_all_chunks(vectordb_dir: str = "data/vectordb_ready/documents"):
     
     # Check if files exist
     if not vectordb_files:
-        print(f"⚠️ No vectordb_ready files found in {vectordb_dir}")
+        print(f"️ No vectordb_ready files found in {vectordb_dir}")
         return []
     
     all_chunks = []  # Combined list from all files
@@ -85,7 +85,7 @@ def load_all_chunks(vectordb_dir: str = "data/vectordb_ready/documents"):
                 all_chunks.append(chunk)
         
         # Progress feedback
-        print(f"   ✓ Loaded {Path(file_path).name}: {len(data['documents'])} chunks")
+        print(f"    Loaded {Path(file_path).name}: {len(data['documents'])} chunks")
     
     return all_chunks
 
@@ -109,23 +109,23 @@ def analyze_chunks(vectordb_dir: str = "data/vectordb_ready/documents"):
         Prints formatted report to console
     """
     print("=" * 70)
-    print("📊 CHUNK ANALYSIS REPORT")
+    print(" CHUNK ANALYSIS REPORT")
     print("=" * 70)
     
     # STEP 1: Load all chunks from all vectordb_ready files
-    print(f"\n📥 Loading chunks from {vectordb_dir}...")
+    print(f"\n Loading chunks from {vectordb_dir}...")
     chunks = load_all_chunks(vectordb_dir)
     
     # Exit if no chunks found
     if not chunks:
         return
     
-    print(f"\n✅ Total Chunks: {len(chunks)}")
+    print(f"\n Total Chunks: {len(chunks)}")
     
     # STEP 2: Word Count Statistics
     # Analyze chunk sizes to understand text distribution
     word_counts = [chunk['word_count'] for chunk in chunks]
-    print(f"\n📏 Word Count Statistics:")
+    print(f"\n Word Count Statistics:")
     print(f"   Average: {sum(word_counts) / len(word_counts):.1f} words")
     print(f"   Min: {min(word_counts)} words")
     print(f"   Max: {max(word_counts)} words")
@@ -135,7 +135,7 @@ def analyze_chunks(vectordb_dir: str = "data/vectordb_ready/documents"):
     # Shows how chunks are classified (recommendation vs evidence vs definition)
     content_types = [chunk['metadata'].get('content_type', 'unknown') for chunk in chunks]
     type_counts = Counter(content_types)  # Count occurrences of each type
-    print(f"\n🏷️  Content Type Distribution:")
+    print(f"\n️  Content Type Distribution:")
     for content_type, count in type_counts.most_common():
         percentage = (count / len(chunks)) * 100
         print(f"   {content_type}: {count} ({percentage:.1f}%)")
@@ -150,13 +150,13 @@ def analyze_chunks(vectordb_dir: str = "data/vectordb_ready/documents"):
         all_entities.extend(entities)  # Combine all entities from all chunks
     
     entity_counts = Counter(all_entities)  # Count frequency of each entity
-    print(f"\n🏥 Top Medical Entities:")
+    print(f"\n Top Medical Entities:")
     for entity, count in entity_counts.most_common(10):  # Show top 10
         print(f"   {entity}: {count} occurrences")
     
     # STEP 5: Sample Chunks
     # Display one example chunk from each content type for manual review
-    print(f"\n📄 Sample Chunks:")
+    print(f"\n Sample Chunks:")
     print("\n" + "-" * 70)
     
     # Check each major content type
@@ -177,14 +177,14 @@ def analyze_chunks(vectordb_dir: str = "data/vectordb_ready/documents"):
     sections = [chunk['metadata'].get('section', 'No section') for chunk in chunks if chunk['metadata'].get('section')]
     if sections:
         section_counts = Counter(sections)
-        print(f"\n📑 Top Sections:")
+        print(f"\n Top Sections:")
         for section, count in section_counts.most_common(10):
             # Truncate long section names to 50 characters for display
             print(f"   {section[:50]}: {count} chunks")
     
     # Report complete
     print("\n" + "=" * 70)
-    print("✅ ANALYSIS COMPLETE")
+    print(" ANALYSIS COMPLETE")
     print("=" * 70)
 
 
@@ -261,7 +261,7 @@ def export_to_txt(vectordb_dir: str = "data/vectordb_ready/documents", output_fi
             f.write(f"{chunk['text']}\n")
             f.write(f"{'-' * 70}\n\n")
     
-    print(f"💾 Exported readable version to: {output_file}")
+    print(f" Exported readable version to: {output_file}")
     return output_file
 
 
@@ -283,7 +283,7 @@ def main():
     
     # Validation: Check if directory exists
     if not os.path.exists(vectordb_dir):
-        print(f"❌ Error: {vectordb_dir} not found!")
+        print(f" Error: {vectordb_dir} not found!")
         print("   Please ensure vectordb_ready files exist.")
         print("   Run 'python scripts/prepare_vectordb.py' first.")
         return

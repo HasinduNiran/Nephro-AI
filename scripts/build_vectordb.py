@@ -151,7 +151,7 @@ class VectorDBBuilder:
         Args:
             incremental: If True, add to existing collection; if False, recreate
         """
-        print("\n🔌 Initializing ChromaDB...")
+        print("\n Initializing ChromaDB...")
         
         # Create persistent client
         self.client = chromadb.PersistentClient(
@@ -177,7 +177,7 @@ class VectorDBBuilder:
                     self.client.delete_collection(self.collection_name)
                     print(f"   ️  Deleted existing collection")
                 else:
-                    print("   ℹ️  Using existing collection (will add documents)")
+                    print("   ️  Using existing collection (will add documents)")
         
         # Load embedding model
         print(f"\n Loading embedding model: {self.model_name}...")
@@ -211,7 +211,7 @@ class VectorDBBuilder:
         Returns:
             List of embedding vectors
         """
-        print(f"\n🧮 Generating embeddings for {len(documents)} documents...")
+        print(f"\n Generating embeddings for {len(documents)} documents...")
         print(f"   Batch size: {batch_size}")
         
         embeddings = []
@@ -414,7 +414,7 @@ class VectorDBBuilder:
             print("\n" + "=" * 70)
             print(" SUCCESS! VECTOR DATABASE BUILT")
             print("=" * 70)
-            print(f"⏱️  Build time: {duration:.1f} seconds")
+            print(f"️  Build time: {duration:.1f} seconds")
             print(f" Collection: {self.collection_name}")
             print(f" Documents: {self.collection.count()}")
             print(f" Location: {os.path.abspath(self.db_path)}")
