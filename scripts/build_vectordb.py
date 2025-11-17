@@ -13,8 +13,10 @@ import glob
 
 import chromadb
 from chromadb.config import Settings
-from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
+
+# Import OpenAI embeddings (via OpenRouter)
+from openai_embeddings import OpenAIEmbeddings
 
 
 class VectorDBBuilder:
@@ -25,7 +27,8 @@ class VectorDBBuilder:
         vectordb_dir: str = "data/vectordb_ready/documents",
         db_path: str = "vectordb/chroma_db",
         collection_name: str = "nephro_ai_medical_kb",
-        model_name: str = "all-MiniLM-L6-v2"
+        model_name: str = "openai/text-embedding-3-small",
+        api_key: str = None
     ):
         """
         Initialize vector database builder
@@ -34,12 +37,14 @@ class VectorDBBuilder:
             vectordb_dir: Directory containing vectordb_ready JSON files
             db_path: Directory for ChromaDB storage
             collection_name: Name for the collection
-            model_name: Sentence transformer model to use
+            model_name: Embedding model to use (OpenAI via OpenRouter)
+            api_key: OpenRouter API key (if None, will use config)
         """
         self.vectordb_dir = vectordb_dir
         self.db_path = db_path
         self.collection_name = collection_name
         self.model_name = model_name
+        self.api_key = api_key
         
         # Create DB directory
         os.makedirs(db_path, exist_ok=True)
@@ -179,11 +184,29 @@ class VectorDBBuilder:
                 else:
                     print("   ️  Using existing collection (will add documents)")
         
-        # Load embedding model
-        print(f"\n Loading embedding model: {self.model_name}...")
-        print("   (This may take a minute on first run)")
-        self.embedding_model = SentenceTransformer(self.model_name)
-        print(f" Model loaded successfully")
+        # Initialize OpenAI embedding model via OpenRouter
+        print(f"\n Initializing embedding model: {self.model_name}...")
+        
+        # Get API key from config if not provided
+        if not self.api_key:
+            from config import OPENROUTER_API_KEY, OPENROUTER_API_URL, OPENROUTER_SITE_URL, OPENROUTER_SITE_NAME
+            self.api_key = OPENROUTER_API_KEY
+            api_url = OPENROUTER_API_URL
+            site_url = OPENROUTER_SITE_URL
+            site_name = OPENROUTER_SITE_NAME
+        else:
+            api_url = "https://openrouter.ai/api/v1/embeddings"
+            site_url = None
+            site_name = None
+        
+        self.embedding_model = OpenAIEmbeddings(
+            api_key=self.api_key,
+            model=self.model_name,
+            api_url=api_url,
+            site_url=site_url,
+            site_name=site_name
+        )
+        print(f" Embedding model initialized successfully")
         print(f"   - Embedding dimension: {self.embedding_model.get_sentence_embedding_dimension()}")
         
         # Create or get collection
@@ -200,31 +223,28 @@ class VectorDBBuilder:
         print(f" Collection '{self.collection_name}' ready")
         print(f"   - Current document count: {self.collection.count()}")
     
-    def generate_embeddings(self, documents: List[str], batch_size: int = 32) -> List[List[float]]:
+    def generate_embeddings(self, documents: List[str], batch_size: int = 100) -> List[List[float]]:
         """
-        Generate embeddings for documents
+        Generate embeddings for documents using OpenAI API
         
         Args:
             documents: List of text documents
-            batch_size: Batch size for encoding
+            batch_size: Batch size for API calls (default 100 for OpenAI)
             
         Returns:
             List of embedding vectors
         """
         print(f"\n Generating embeddings for {len(documents)} documents...")
-        print(f"   Batch size: {batch_size}")
+        print(f"   API batch size: {batch_size}")
+        print(f"   Note: Using OpenAI API via OpenRouter")
         
-        embeddings = []
-        
-        # Process in batches with progress bar
-        for i in tqdm(range(0, len(documents), batch_size), desc="Encoding"):
-            batch = documents[i:i + batch_size]
-            batch_embeddings = self.embedding_model.encode(
-                batch,
-                show_progress_bar=False,
-                normalize_embeddings=True  # Normalize for better similarity search
-            )
-            embeddings.extend(batch_embeddings.tolist())
+        # Generate embeddings (API handles batching and progress internally)
+        embeddings = self.embedding_model.encode(
+            documents,
+            batch_size=batch_size,
+            show_progress_bar=True,
+            normalize_embeddings=False  # OpenAI embeddings are pre-normalized
+        )
         
         print(f" Generated {len(embeddings)} embeddings")
         return embeddings
@@ -459,7 +479,7 @@ Examples:
         vectordb_dir="data/vectordb_ready/documents",
         db_path="vectordb/chroma_db",
         collection_name="nephro_ai_medical_kb",
-        model_name="all-MiniLM-L6-v2"
+        model_name="openai/text-embedding-3-small"
     )
     
     # Build the database (incremental by default)
