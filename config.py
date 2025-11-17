@@ -36,25 +36,126 @@ CHUNK_SETTINGS = {
 }
 
 # Medical Entities
+# 🧠 Comprehensive Medical Entities for CKD + Nutrition Extraction
+
 MEDICAL_ENTITIES = [
+    # 🩺 1️⃣ Core CKD & Renal Terms
     "CKD", "chronic kidney disease",
-    "GFR", "glomerular filtration rate",
-    "diabetes", "diabetic",
-    "hypertension", "blood pressure",
+    "acute kidney injury", "AKI",
+    "glomerular filtration rate", "GFR", "eGFR",
+    "kidney function", "renal function",
+    "renal failure", "kidney failure", "end-stage renal disease", "ESRD",
+    "nephropathy", "nephron", "nephritis",
+    "albuminuria", "proteinuria",
+    "creatinine", "urea", "BUN", "cystatin C",
+
+    # 💉 2️⃣ Lab and Biochemical Markers
+    "sodium", "potassium", "calcium", "phosphate", "phosphorus",
+    "magnesium", "chloride", "bicarbonate",
+    "uric acid", "hemoglobin", "hematocrit",
+    "parathyroid hormone", "PTH", "vitamin D", "calcitriol",
+    "iron", "ferritin", "transferrin saturation", "TSAT",
+    "blood urea nitrogen", "serum creatinine",
+
+    # 🍎 3️⃣ Nutrition and Diet Keywords
+    "nutrition", "diet", "dietary protein", "low protein diet",
+    "sodium restriction", "potassium restriction",
+    "phosphate binders", "fluid restriction",
+    "caloric intake", "energy intake",
+    "nutritional assessment", "malnutrition",
+    "plant-based diet", "vegan diet", "renal diet",
+    "nutrient intake", "supplements", "micronutrients",
+    "dietitian", "renal dietitian",
+
+    # 💊 4️⃣ Treatment and Medication-Related Terms
+    "ACE inhibitors", "angiotensin converting enzyme inhibitors",
+    "ARBs", "angiotensin receptor blockers",
+    "diuretics", "loop diuretics", "thiazides",
+    "erythropoietin", "ESA", "erythropoiesis stimulating agent",
+    "phosphate binders", "calcimimetics",
+    "insulin", "antihypertensive", "sodium bicarbonate",
+    "statins", "lipid lowering therapy",
+
+    # ⚕️ 5️⃣ Dialysis & Transplantation
     "dialysis", "hemodialysis", "peritoneal dialysis",
-    "kidney failure", "renal failure", "ESRD",
-    "albumin", "creatinine", "proteinuria",
-    "transplant", "kidney transplant"
+    "vascular access", "fistula", "catheter",
+    "ultrafiltration", "dialysate", "Kt/V", "dialysis adequacy",
+    "kidney transplant", "transplant rejection", "immunosuppressants",
+
+    # 🧬 6️⃣ Complications & Symptoms
+    "anemia", "edema", "hyperkalemia", "hypokalemia",
+    "hyperphosphatemia", "acidosis", "metabolic acidosis",
+    "bone disease", "renal osteodystrophy",
+    "pruritus", "fatigue", "muscle cramps",
+    "cardiovascular disease", "CVD", "heart failure",
+    "neuropathy", "retinopathy", "fluid overload",
+
+    # 👩‍⚕️ 7️⃣ Lifestyle & Patient Care
+    "smoking cessation", "exercise", "physical activity",
+    "blood pressure control", "glycemic control",
+    "patient education", "adherence", "self management",
+    "quality of life", "follow up", "screening", "monitoring",
+
+    # 🧮 8️⃣ Staging & Classification
+    "stage 1", "stage 2", "stage 3", "stage 4", "stage 5",
+    "KDIGO", "KDOQI", "guideline", "classification",
+    "risk category", "G category", "A category",
+    "albumin-creatinine ratio", "ACR"
 ]
 
+
 # Content Type Classifications
+# 🧠 Content Type Classifications (CKD + Nutrition Enhanced)
 CONTENT_TYPE_KEYWORDS = {
-    "recommendation": ["recommend", "should", "suggest", "advise", "guideline"],
-    "evidence": ["study", "research", "trial", "evidence", "data show"],
-    "definition": ["is defined as", "refers to", "means", "definition"],
-    "reference": ["et al", "figure", "table", "reference", "citation"],
-    "dietary": ["diet", "food", "nutrition", "eating", "sodium", "potassium", "phosphorus", "protein"]
+    # Clinical Recommendations & Guidelines
+    "recommendation": [
+        "recommend", "should", "suggest", "advise",
+        "it is recommended", "guideline", "strongly encourage",
+        "clinicians should", "patients should"
+    ],
+
+    # Evidence and Research Context
+    "evidence": [
+        "study", "research", "trial", "evidence", "data show",
+        "observed", "results", "investigation", "findings",
+        "meta-analysis", "randomized", "cohort", "systematic review"
+    ],
+
+    # Definitions and Explanations
+    "definition": [
+        "is defined as", "refers to", "means", "definition",
+        "is characterized by", "is described as", "term", "concept"
+    ],
+
+    # References, Tables, Figures
+    "reference": [
+        "et al", "figure", "table", "reference", "citation",
+        "source", "dataset", "appendix", "supplementary"
+    ],
+
+    # Dietary and Nutritional Content
+    "dietary": [
+        "diet", "food", "nutrition", "eating", "nutrient",
+        "sodium", "potassium", "phosphorus", "protein",
+        "fluid", "restriction", "calorie", "energy intake",
+        "dietary recommendation", "dietitian", "meal", "supplement"
+    ],
+
+    # Treatments and Medications
+    "treatment": [
+        "treatment", "therapy", "medication", "drug",
+        "dosage", "prescribe", "pharmacologic", "administration",
+        "antihypertensive", "insulin", "ACE inhibitor", "ARB", "diuretic"
+    ],
+
+    # Monitoring, Follow-up, and Evaluation
+    "monitoring": [
+        "monitor", "follow up", "assessment", "evaluation",
+        "measurement", "screening", "track", "observe",
+        "check", "routine test", "surveillance"
+    ]
 }
+
 
 # Query Settings
 DEFAULT_QUERY_RESULTS = 5
