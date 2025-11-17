@@ -1,0 +1,19 @@
+{
+  "total_documents": 8,
+  "source_file": "11-10-0209_2203_patbro_diabckd1-4p5_chunks.json",
+  "source_path": "data/processed\\11-10-0209_2203_patbro_diabckd1-4p5_chunks.json",
+  "preparation_date": "2025-10-21T18:35:11.366254",
+  "avg_word_count": 476.5,
+  "content_types": {
+    "reference": 3,
+    "general": 3,
+    "recommendation": 2
+  },
+  "medical_entity_coverage": {
+    "CKD": 3,
+    "GFR": 5,
+    "diabetes": 8,
+    "hypertension": 0,
+    "dialysis": 2
+  }
+}

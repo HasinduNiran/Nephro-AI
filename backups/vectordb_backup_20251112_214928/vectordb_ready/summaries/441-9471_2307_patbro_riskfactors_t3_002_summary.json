@@ -1,0 +1,18 @@
+{
+  "total_documents": 9,
+  "source_file": "441-9471_2307_patbro_riskfactors_t3_002_chunks.json",
+  "source_path": "data/processed\\441-9471_2307_patbro_riskfactors_t3_002_chunks.json",
+  "preparation_date": "2025-10-21T18:35:11.407262",
+  "avg_word_count": 451.3333333333333,
+  "content_types": {
+    "general": 7,
+    "recommendation": 2
+  },
+  "medical_entity_coverage": {
+    "CKD": 7,
+    "GFR": 1,
+    "diabetes": 8,
+    "hypertension": 3,
+    "dialysis": 3
+  }
+}

@@ -2,7 +2,7 @@
   "total_documents": 40,
   "source_file": "1_chunks.json",
   "source_path": "data/processed\\1_chunks.json",
-  "preparation_date": "2025-10-22T15:28:42.193329",
+  "preparation_date": "2025-11-12T21:49:29.748675",
   "avg_word_count": 490.075,
   "content_types": {
     "recommendation": 18,

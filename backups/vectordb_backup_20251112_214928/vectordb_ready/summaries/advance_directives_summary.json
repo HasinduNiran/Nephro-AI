@@ -1,0 +1,19 @@
+{
+  "total_documents": 5,
+  "source_file": "advance_directives_chunks.json",
+  "source_path": "data/processed\\advance_directives_chunks.json",
+  "preparation_date": "2025-10-21T18:35:11.518222",
+  "avg_word_count": 488.2,
+  "content_types": {
+    "general": 3,
+    "recommendation": 1,
+    "reference": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 5
+  }
+}
