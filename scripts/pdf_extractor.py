@@ -1,25 +1,3 @@
-
-"""
-PDF Knowledge Extractor for Kidney Care Vector Database
-========================================================
-This module extracts medical knowledge from PDF documents and prepares them for vector database storage.
-
-Main Features:
-- Multi-method PDF text extraction (pdfplumber + PyPDF2 fallback)
-- Text cleaning and normalization for medical content
-- Intelligent chunking with overlap for context preservation
-- Automatic metadata extraction and medical entity detection
-- Quality filtering to ensure useful content
-- Batch processing support for multiple files
-
-Pipeline Flow:
-    PDF → Extract Text → Clean → Chunk → Add Metadata → Filter → Save JSON
-
-Usage:
-    python pdf_extractor.py
-    (Opens file dialog to select PDF/TXT files)
-"""
-
 import os
 import re
 import json
@@ -31,9 +9,9 @@ from tkinter import filedialog
 import logging
 
 # Third-party libraries for PDF processing and NLP
-import PyPDF2          # Fallback PDF reader
-import pdfplumber      # Primary PDF reader (better for complex layouts)
-from langdetect import detect  # Automatic language detection
+import PyPDF2          
+import pdfplumber     
+from langdetect import detect 
 import nltk
 from nltk.tokenize import sent_tokenize  # Split text into sentences
 
@@ -56,34 +34,10 @@ except LookupError:
 
 
 class PDFKnowledgeExtractor:
-    """
-    Main class for extracting and processing medical knowledge from PDF documents.
     
-    This class handles the complete pipeline from raw PDF to structured chunks:
-    1. Text extraction (multiple methods for reliability)
-    2. Text cleaning and normalization
-    3. Metadata extraction
-    4. Intelligent chunking with overlap
-    5. Medical entity detection
-    6. Quality filtering
-    7. Saving processed data
-    
-    Attributes:
-        pdf_path (str): Path to the source PDF or text file
-        output_dir (str): Directory where processed chunks will be saved
-        metadata (dict): Document-level metadata (pages, length, title, etc.)
-        chunks (list): List of processed text chunks with metadata
-    """
     
     def __init__(self, pdf_path: str, output_dir: str = None):
-        """
-        Initialize the PDF Knowledge Extractor.
         
-        Args:
-            pdf_path (str): Path to the PDF or text file to process
-            output_dir (str, optional): Output directory for processed files. 
-                                       Defaults to "data/processed"
-        """
         self.pdf_path = pdf_path
         self.output_dir = output_dir or "data/processed"
         self.metadata = {}  # Stores document-level info (pages, length, title, etc.)
@@ -93,15 +47,7 @@ class PDFKnowledgeExtractor:
         os.makedirs(self.output_dir, exist_ok=True)
         
     def extract_text(self) -> str:
-        """
-        Extract raw text from PDF or text file using multiple methods.
         
-        Uses pdfplumber as primary method (better for complex layouts and tables),
-        with PyPDF2 as fallback. Also supports plain text files.
-        
-        Returns:
-            str: Extracted raw text from the document
-        """
         print(f" Extracting text from: {self.pdf_path}")
         
         # Handle plain text files directly
@@ -162,28 +108,7 @@ class PDFKnowledgeExtractor:
         return combined_text
     
     def clean_text(self, text: str) -> str:
-        """
-        Clean and normalize extracted text for better processing.
         
-        Removes:
-        - Excessive whitespace and line breaks
-        - Page numbers and headers
-        - URLs (while preserving DOIs)
-        - Hyphenation artifacts from line breaks
-        - Table of contents ellipses
-        - Excessive punctuation
-        
-        Preserves:
-        - Medical symbols (%, ±, ≥, ≤, °, μ, α, β, γ, δ)
-        - Proper sentence structure
-        - Essential punctuation
-        
-        Args:
-            text (str): Raw extracted text
-            
-        Returns:
-            str: Cleaned and normalized text
-        """
         print("\n Cleaning text...")
         
         # Remove excessive whitespace (multiple spaces, tabs, newlines → single space)
@@ -228,23 +153,7 @@ class PDFKnowledgeExtractor:
         return text
     
     def extract_metadata_from_content(self, text: str) -> Dict:
-        """
-        Extract metadata from document content using pattern matching and heuristics.
-        
-        Extracts:
-        - Source filename and processing date
-        - Document title (from first substantial line)
-        - Organization (e.g., KDIGO)
-        - Publication year
-        - Language (auto-detected)
-        - Medical keywords present in document
-        
-        Args:
-            text (str): Cleaned document text
-            
-        Returns:
-            Dict: Metadata dictionary with extracted information
-        """
+       
         print("\n Extracting metadata...")
         
         # Initialize metadata with basic information
@@ -299,23 +208,7 @@ class PDFKnowledgeExtractor:
         return metadata
     
     def is_useful_content(self, text: str) -> bool:
-        """
-        Determine if a text chunk contains useful medical content.
-        
-        Filters out:
-        - Very short chunks (< 20 words)
-        - Chunks that are mostly numbers (tables, lists)
-        - Table of contents sections
-        - Reference lists and bibliographies
-        - Page numbers and figure captions
-        - Chunks without medical terminology
-        
-        Args:
-            text (str): Text chunk to evaluate
-            
-        Returns:
-            bool: True if chunk contains useful content, False otherwise
-        """
+       
         
         # Filter 1: Too short to be meaningful
         if len(text.split()) < 20:
@@ -357,26 +250,7 @@ class PDFKnowledgeExtractor:
         return has_medical_term
     
     def chunk_text(self, text: str, chunk_size: int = 500, overlap: int = 50) -> List[Dict]:
-        """
-        Split text into meaningful chunks with overlap for context preservation.
-        
-        Uses sentence-based chunking to:
-        - Maintain semantic coherence (doesn't split mid-sentence)
-        - Add overlap between chunks to preserve context
-        - Filter out non-useful content during chunking
-        - Create uniform-sized chunks for better vectorization
-        
-        Why overlap? Adjacent chunks share context, improving retrieval quality
-        when queries span chunk boundaries.
-        
-        Args:
-            text (str): Cleaned text to chunk
-            chunk_size (int): Target number of words per chunk (default: 500)
-            overlap (int): Number of words to overlap between chunks (default: 50)
-            
-        Returns:
-            List[Dict]: List of chunk dictionaries with text and metadata
-        """
+       
         print(f"\n️  Chunking text (chunk_size={chunk_size}, overlap={overlap})...")
         
         # Split into sentences using NLTK's sentence tokenizer
@@ -450,29 +324,7 @@ class PDFKnowledgeExtractor:
         return chunks
     
     def add_metadata_to_chunks(self, chunks: List[Dict], doc_metadata: Dict) -> List[Dict]:
-        """
-        Enrich each chunk with metadata for better searchability and categorization.
         
-        Adds:
-        - Document-level metadata (source, year, organization)
-        - Position information (chunk index, total chunks)
-        - Content type classification (recommendation, evidence, definition, etc.)
-        - Section headers (if detected)
-        - Medical entity detection (CKD, GFR, diabetes, etc.)
-        
-        This metadata enables:
-        - Filtered searches (e.g., "show only recommendations")
-        - Source attribution
-        - Entity-based retrieval
-        - Quality assessment
-        
-        Args:
-            chunks (List[Dict]): List of text chunks
-            doc_metadata (Dict): Document-level metadata
-            
-        Returns:
-            List[Dict]: Chunks with added metadata
-        """
         print("\n️  Adding metadata to chunks...")
         
         for i, chunk in enumerate(chunks):
@@ -564,14 +416,7 @@ class PDFKnowledgeExtractor:
         return output_file
     
     def process(self, chunk_size: int = 500, overlap: int = 50, save_format: str = 'json'):
-        """
-        Full processing pipeline
         
-        Args:
-            chunk_size: Target words per chunk
-            overlap: Overlap words between chunks
-            save_format: Output format ('json' or 'txt')
-        """
         print("=" * 70)
         print(" STARTING PDF KNOWLEDGE EXTRACTION PIPELINE")
         print("=" * 70)
@@ -621,18 +466,7 @@ class PDFKnowledgeExtractor:
 
 
 def select_files():
-    """
-    Open a GUI file dialog to select multiple PDF or text files for processing.
     
-    Uses tkinter's file dialog for user-friendly file selection.
-    Supports:
-    - Multiple file selection (Ctrl+Click)
-    - PDF and TXT files
-    - Starts in data/raw/ directory for convenience
-    
-    Returns:
-        list: List of absolute file paths selected by user, or empty list if cancelled
-    """
     print("=" * 70)
     print(" FILE SELECTOR")
     print("=" * 70)
@@ -673,18 +507,7 @@ def select_files():
 
 
 def main():
-    """
-    Main execution function for batch PDF processing.
-    
-    Workflow:
-    1. Prompt user to select files via GUI dialog
-    2. Configure processing parameters
-    3. Process each file through the extraction pipeline
-    4. Generate summary report of results
-    
-    Returns:
-        list: Processing results for each file (success/failure status)
-    """
+   
     
     # Step 1: Open file dialog to select files
     file_paths = select_files()
