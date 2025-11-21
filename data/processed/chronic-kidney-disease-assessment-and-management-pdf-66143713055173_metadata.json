@@ -1,0 +1,17 @@
+{
+  "total_pages": 78,
+  "raw_text_length": 132725,
+  "cleaned_text_length": 137626,
+  "source_file": "chronic-kidney-disease-assessment-and-management-pdf-66143713055173.pdf",
+  "extraction_date": "2025-11-21T14:29:29.632607",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2021",
+  "keywords": [
+    "chronic kidney disease",
+    "proteinuria"
+  ],
+  "total_chunks": 36,
+  "avg_chunk_size": 577.3888888888889,
+  "processing_date": "2025-11-21T14:29:30.073177"
+}

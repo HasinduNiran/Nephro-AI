@@ -1,0 +1,17 @@
+{
+  "total_pages": 8,
+  "raw_text_length": 5385,
+  "cleaned_text_length": 5837,
+  "source_file": "CKD-STAGE-3-PDF-VERSION.pdf",
+  "extraction_date": "2025-11-21T14:29:47.897638",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "kidney function"
+  ],
+  "total_chunks": 2,
+  "avg_chunk_size": 485.5,
+  "processing_date": "2025-11-21T14:29:47.956190"
+}
