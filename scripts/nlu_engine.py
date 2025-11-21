@@ -59,22 +59,36 @@ class CKDNLUEngine:
         self.matcher.add("WHEN", [[{"LOWER": "when"}]])
         
         # Treatment/recommendation intents
-        self.matcher.add("TREATMENT", [
-            [{"LOWER": {"IN": ["treatment", "therapy", "medication"]}}],
+        self.matcher.add("ask_medication", [ # Mapped from TREATMENT
+            [{"LOWER": {"IN": ["treatment", "therapy", "medication", "medicine", "drug", "pill"]}}],
             [{"LOWER": "how"}, {"LOWER": "to"}, {"LOWER": "treat"}]
         ])
         
         # Symptom inquiry
-        self.matcher.add("SYMPTOM_CHECK", [
+        self.matcher.add("ask_symptom", [ # Mapped from SYMPTOM_CHECK
             [{"LOWER": {"IN": ["symptom", "symptoms", "signs"]}}],
-            [{"LOWER": "feel"}, {"LOWER": {"IN": ["sick", "bad", "unwell"]}}],
-            [{"TEXT": {"REGEX": "hurt|pain|ache"}}]
+            [{"LOWER": "feel"}, {"LOWER": {"IN": ["sick", "bad", "unwell", "tired", "fatigue", "dizzy"]}}],
+            [{"TEXT": {"REGEX": "hurt|pain|ache|swelling|edema|nausea|vomit"}}],
+            [{"LOWER": "is"}, {"LOWER": "this"}, {"LOWER": "normal"}]
         ])
         
         # Diet/nutrition
-        self.matcher.add("DIET_INQUIRY", [
-            [{"LOWER": {"IN": ["eat", "food", "diet", "nutrition"]}}],
+        self.matcher.add("ask_diet", [ # Mapped from DIET_INQUIRY
+            [{"LOWER": {"IN": ["eat", "food", "diet", "nutrition", "meal", "recipe", "cook"]}}],
             [{"LOWER": "what"}, {"LOWER": {"IN": ["can", "should"]}}, {"LOWER": "i"}, {"LOWER": "eat"}]
+        ])
+
+        # Fluid limit
+        self.matcher.add("ask_fluid_limit", [
+            [{"LOWER": {"IN": ["fluid", "water", "drink", "liquid"]}}, {"LOWER": {"IN": ["limit", "restriction", "amount", "much"]}}],
+            [{"LOWER": "how"}, {"LOWER": "much"}, {"LOWER": "water"}]
+        ])
+        
+        # Lab results
+        self.matcher.add("get_lab_result", [
+            [{"LOWER": {"IN": ["lab", "result", "test", "blood", "urine"]}}, {"LOWER": {"IN": ["result", "report", "value", "level"]}}],
+            [{"LOWER": "my"}, {"LOWER": {"IN": ["creatinine", "egfr", "gfr", "potassium", "sodium", "calcium", "albumin"]}}],
+            [{"LOWER": "what"}, {"LOWER": "is"}, {"LOWER": "my"}, {"LOWER": {"IN": ["creatinine", "egfr", "gfr"]}}]
         ])
         
         # Diagnosis understanding
@@ -91,9 +105,24 @@ class CKDNLUEngine:
         ])
         
         # Lifestyle questions
-        self.matcher.add("LIFESTYLE", [
-            [{"LOWER": {"IN": ["exercise", "work", "travel", "activity"]}}],
+        self.matcher.add("ask_exercise", [ # Mapped from LIFESTYLE
+            [{"LOWER": {"IN": ["exercise", "work", "travel", "activity", "gym", "sport", "walk", "run"]}}],
             [{"LOWER": "can"}, {"LOWER": "i"}, {"LOWER": {"IN": ["work", "exercise", "travel"]}}]
+        ])
+
+        # Reminders
+        self.matcher.add("set_reminder", [
+            [{"LOWER": "remind"}, {"LOWER": "me"}],
+            [{"LOWER": "set"}, {"LOWER": "reminder"}],
+            [{"LOWER": "alarm"}]
+        ])
+
+        # Emergency
+        self.matcher.add("ask_emergency", [
+            [{"LOWER": {"IN": ["emergency", "ambulance", "hospital", "urgent", "911"]}}],
+            [{"LOWER": "call"}, {"LOWER": "doctor"}],
+            [{"LOWER": "chest"}, {"LOWER": "pain"}],
+            [{"LOWER": "can't"}, {"LOWER": "breathe"}]
         ])
     
     def _setup_medical_entities(self):
@@ -114,18 +143,18 @@ class CKDNLUEngine:
             "symptoms": [
                 "fatigue", "swelling", "edema", "nausea", "vomiting", 
                 "loss of appetite", "sleep problems", "muscle cramps",
-                "itching", "shortness of breath", "confusion"
+                "itching", "shortness of breath", "confusion", "dizziness", "pain"
             ],
             "tests": [
                 "blood test", "urine test", "egfr", "creatinine", "bun",
-                "ultrasound", "biopsy", "acr", "albumin"
+                "ultrasound", "biopsy", "acr", "albumin", "urine albumin", "potassium", "sodium"
             ],
             "treatments": [
                 "dialysis", "hemodialysis", "peritoneal dialysis",
                 "kidney transplant", "medication", "ace inhibitors", "arbs"
             ],
             "complications": [
-                "anemia", "bone disease", "heart disease", "high blood pressure",
+                "anemia", "bone disease", "heart disease", "high blood pressure", "hypertension",
                 "hyperkalemia", "acidosis", "fluid overload"
             ]
         }
@@ -134,10 +163,10 @@ class CKDNLUEngine:
         """Define symptom severity patterns"""
         
         self.severity_indicators = {
-            "severe": ["severe", "extreme", "unbearable", "terrible", "worst", "intense"],
-            "moderate": ["moderate", "medium", "noticeable", "significant"],
-            "mild": ["mild", "slight", "little", "minor", "small"],
-            "urgent": ["emergency", "urgent", "immediately", "right away", "now", "help"]
+            "severe": ["severe", "extreme", "unbearable", "terrible", "worst", "intense", "agony"],
+            "moderate": ["moderate", "medium", "noticeable", "significant", "bad"],
+            "mild": ["mild", "slight", "little", "minor", "small", "bit"],
+            "urgent": ["emergency", "urgent", "immediately", "right away", "now", "help", "911"]
         }
     
     def analyze_query(self, query: str) -> Dict:

@@ -1,0 +1,14 @@
+{
+  "labels":[
+    "ask_diet",
+    "ask_fluid_limit",
+    "get_lab_result",
+    "ask_medication",
+    "ask_symptom",
+    "set_reminder",
+    "ask_exercise",
+    "ask_emergency"
+  ],
+  "threshold":0.0,
+  "positive_label":null
+}
