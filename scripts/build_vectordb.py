@@ -1,8 +1,3 @@
-"""
-ChromaDB Vector Database Builder
-Builds a vector database from processed medical knowledge chunks
-"""
-
 import json
 import os
 import sys
@@ -15,6 +10,12 @@ import chromadb
 from chromadb.config import Settings
 from tqdm import tqdm
 
+# Add parent directory to path for config import
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Import project configuration
+import config
+
 # Import OpenAI embeddings (via OpenRouter)
 from openai_embeddings import OpenAIEmbeddings
 
@@ -24,30 +25,21 @@ class VectorDBBuilder:
     
     def __init__(
         self,
-        vectordb_dir: str = "data/vectordb_ready/documents",
-        db_path: str = "vectordb/chroma_db",
-        collection_name: str = "nephro_ai_medical_kb",
-        model_name: str = "openai/text-embedding-3-small",
+        vectordb_dir: str = None,
+        db_path: str = None,
+        collection_name: str = None,
+        model_name: str = None,
         api_key: str = None
     ):
-        """
-        Initialize vector database builder
-        
-        Args:
-            vectordb_dir: Directory containing vectordb_ready JSON files
-            db_path: Directory for ChromaDB storage
-            collection_name: Name for the collection
-            model_name: Embedding model to use (OpenAI via OpenRouter)
-            api_key: OpenRouter API key (if None, will use config)
-        """
-        self.vectordb_dir = vectordb_dir
-        self.db_path = db_path
-        self.collection_name = collection_name
-        self.model_name = model_name
-        self.api_key = api_key
+      
+        self.vectordb_dir = vectordb_dir or str(config.VECTORDB_READY_DIR)
+        self.db_path = db_path or str(config.CHROMA_DB_PATH)
+        self.collection_name = collection_name or config.COLLECTION_NAME
+        self.model_name = model_name or config.EMBEDDING_MODEL
+        self.api_key = api_key or config.OPENROUTER_API_KEY
         
         # Create DB directory
-        os.makedirs(db_path, exist_ok=True)
+        os.makedirs(self.db_path, exist_ok=True)
         
         print("=" * 70)
         print("️  CHROMADB VECTOR DATABASE BUILDER")
@@ -59,15 +51,7 @@ class VectorDBBuilder:
         print("=" * 70 + "\n")
     
     def load_data(self, existing_ids: set = None) -> Dict:
-        """
-        Load and merge all vectordb_ready JSON files (incremental mode)
-        
-        Args:
-            existing_ids: Set of document IDs already in the database (for incremental loading)
-            
-        Returns:
-            Dictionary with new documents only
-        """
+      
         print(" Loading vectordb_ready documents...")
         
         # Find all vectordb_ready JSON files
@@ -150,12 +134,7 @@ class VectorDBBuilder:
         return merged_data
     
     def initialize_chromadb(self, incremental: bool = True):
-        """
-        Initialize ChromaDB client and collection
-        
-        Args:
-            incremental: If True, add to existing collection; if False, recreate
-        """
+       
         print("\n Initializing ChromaDB...")
         
         # Create persistent client
@@ -187,17 +166,13 @@ class VectorDBBuilder:
         # Initialize OpenAI embedding model via OpenRouter
         print(f"\n Initializing embedding model: {self.model_name}...")
         
-        # Get API key from config if not provided
+        # Get API settings from config (already imported at top)
         if not self.api_key:
-            from config import OPENROUTER_API_KEY, OPENROUTER_API_URL, OPENROUTER_SITE_URL, OPENROUTER_SITE_NAME
-            self.api_key = OPENROUTER_API_KEY
-            api_url = OPENROUTER_API_URL
-            site_url = OPENROUTER_SITE_URL
-            site_name = OPENROUTER_SITE_NAME
-        else:
-            api_url = "https://openrouter.ai/api/v1/embeddings"
-            site_url = None
-            site_name = None
+            self.api_key = config.OPENROUTER_API_KEY
+        
+        api_url = config.OPENROUTER_API_URL
+        site_url = getattr(config, 'OPENROUTER_SITE_URL', None)
+        site_name = getattr(config, 'OPENROUTER_SITE_NAME', None)
         
         self.embedding_model = OpenAIEmbeddings(
             api_key=self.api_key,
@@ -224,16 +199,7 @@ class VectorDBBuilder:
         print(f"   - Current document count: {self.collection.count()}")
     
     def generate_embeddings(self, documents: List[str], batch_size: int = 100) -> List[List[float]]:
-        """
-        Generate embeddings for documents using OpenAI API
-        
-        Args:
-            documents: List of text documents
-            batch_size: Batch size for API calls (default 100 for OpenAI)
-            
-        Returns:
-            List of embedding vectors
-        """
+     
         print(f"\n Generating embeddings for {len(documents)} documents...")
         print(f"   API batch size: {batch_size}")
         print(f"   Note: Using OpenAI API via OpenRouter")
@@ -250,13 +216,7 @@ class VectorDBBuilder:
         return embeddings
     
     def add_to_collection(self, data: Dict, batch_size: int = 100):
-        """
-        Add documents to ChromaDB collection
-        
-        Args:
-            data: Dictionary with documents, metadatas, and ids
-            batch_size: Batch size for adding to ChromaDB
-        """
+     
         documents = data['documents']
         metadatas = data['metadatas']
         ids = data['ids']
@@ -283,7 +243,7 @@ class VectorDBBuilder:
         print(f"   Total documents in collection: {self.collection.count()}")
     
     def verify_collection(self):
-        """Verify the collection was created successfully"""
+       
         print("\n Verifying collection...")
         
         count = self.collection.count()
@@ -294,10 +254,16 @@ class VectorDBBuilder:
         print(f"   - Document count: {count}")
         print(f"   - Metadata: {metadata}")
         
-        # Test a simple query
+        # Test a simple query using OpenAI embeddings
         print("\n Testing query functionality...")
+        test_query = "What is chronic kidney disease?"
+        
+        # Generate embedding for test query using the same OpenAI model
+        test_embedding = self.embedding_model.encode([test_query])[0]
+        
+        # Query using the generated embedding (not query_texts which uses default model)
         test_results = self.collection.query(
-            query_texts=["What is chronic kidney disease?"],
+            query_embeddings=[test_embedding],
             n_results=3
         )
         
@@ -307,7 +273,7 @@ class VectorDBBuilder:
         print(f"   {test_results['documents'][0][0][:200]}...")
     
     def print_statistics(self):
-        """Print collection statistics"""
+        
         print("\n" + "=" * 70)
         print(" COLLECTION STATISTICS")
         print("=" * 70)
@@ -360,7 +326,7 @@ class VectorDBBuilder:
         print("=" * 70)
     
     def save_summary(self):
-        """Save build summary to file"""
+        
         summary_file = os.path.join(self.db_path, "build_summary.json")
         
         # Count source files
@@ -384,12 +350,7 @@ class VectorDBBuilder:
         print(f"\n Build summary saved to: {summary_file}")
     
     def build(self, incremental: bool = True):
-        """
-        Main build process
-        
-        Args:
-            incremental: If True, only add new documents; if False, rebuild from scratch
-        """
+       
         start_time = datetime.now()
         
         try:

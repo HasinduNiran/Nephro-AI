@@ -1,0 +1,19 @@
+{
+  "total_documents": 4,
+  "source_file": "About Living Donation-Patient Brochure_11_24_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\About Living Donation-Patient Brochure_11_24_chunks.json",
+  "preparation_date": "2025-11-19T02:22:20.592556",
+  "avg_word_count": 549.25,
+  "content_types": {
+    "evidence": 1,
+    "dietary": 1,
+    "recommendation": 2
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 3
+  }
+}

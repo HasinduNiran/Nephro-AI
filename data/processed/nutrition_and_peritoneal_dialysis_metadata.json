@@ -1,0 +1,17 @@
+{
+  "total_pages": 15,
+  "raw_text_length": 22831,
+  "cleaned_text_length": 23335,
+  "source_file": "nutrition_and_peritoneal_dialysis.pdf",
+  "extraction_date": "2025-11-18T15:17:42.350468",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "kidney function"
+  ],
+  "total_chunks": 7,
+  "avg_chunk_size": 570.0,
+  "processing_date": "2025-11-18T15:17:42.473340"
+}

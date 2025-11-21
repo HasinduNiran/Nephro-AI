@@ -9,6 +9,13 @@ from chromadb.config import Settings
 from pathlib import Path
 import sys
 
+# Add parent directory to path for config import
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Import project configuration and embeddings
+import config
+from openai_embeddings import OpenAIEmbeddings
+
 
 class VectorDBQuery:
     """Query interface for ChromaDB vector database"""
@@ -27,6 +34,13 @@ class VectorDBQuery:
         """
         self.db_path = db_path
         self.collection_name = collection_name
+        
+        # Initialize OpenAI embedding model
+        self.embedding_model = OpenAIEmbeddings(
+            api_key=config.OPENROUTER_API_KEY,
+            model=config.EMBEDDING_MODEL,
+            api_url=config.OPENROUTER_API_URL
+        )
         
         # Initialize client
         try:
@@ -70,8 +84,12 @@ class VectorDBQuery:
         Returns:
             Query results
         """
+        # Generate embedding for query using OpenAI model
+        query_embedding = self.embedding_model.encode([query_text])[0]
+        
+        # Query using the generated embedding
         results = self.collection.query(
-            query_texts=[query_text],
+            query_embeddings=[query_embedding],
             n_results=n_results,
             where=where
         )

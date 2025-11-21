@@ -1,0 +1,19 @@
+{
+  "total_pages": 23,
+  "raw_text_length": 90157,
+  "cleaned_text_length": 97540,
+  "source_file": "j-krcp-23-194.pdf",
+  "extraction_date": "2025-11-18T15:16:23.414919",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2025",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "renal",
+    "nephrology"
+  ],
+  "total_chunks": 25,
+  "avg_chunk_size": 576.72,
+  "processing_date": "2025-11-18T15:16:23.757894"
+}

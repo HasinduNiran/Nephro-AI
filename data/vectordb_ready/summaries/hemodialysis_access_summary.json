@@ -1,0 +1,19 @@
+{
+  "total_documents": 6,
+  "source_file": "hemodialysis_access_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\hemodialysis_access_chunks.json",
+  "preparation_date": "2025-11-19T02:22:20.975904",
+  "avg_word_count": 567.6666666666666,
+  "content_types": {
+    "evidence": 1,
+    "treatment": 2,
+    "recommendation": 3
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 6
+  }
+}

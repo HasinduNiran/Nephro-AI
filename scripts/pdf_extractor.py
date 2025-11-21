@@ -1,12 +1,19 @@
 import os
 import re
 import json
+import sys
 from pathlib import Path
 from typing import List, Dict, Tuple
 from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog
 import logging
+
+# Add parent directory to path for config import
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Import project configuration
+import config
 
 # Third-party libraries for PDF processing and NLP
 import PyPDF2          
@@ -39,9 +46,15 @@ class PDFKnowledgeExtractor:
     def __init__(self, pdf_path: str, output_dir: str = None):
         
         self.pdf_path = pdf_path
-        self.output_dir = output_dir or "data/processed"
+        self.output_dir = output_dir or str(config.PROCESSED_DATA_DIR)
         self.metadata = {}  # Stores document-level info (pages, length, title, etc.)
         self.chunks = []    # Stores processed text chunks
+        
+        # Load configuration settings
+        self.medical_entities = config.get_medical_entities()
+        self.content_type_keywords = config.get_content_types()
+        self.ckd_abbreviations = config.get_ckd_abbreviations()
+        self.chunk_settings = config.get_chunk_config()
         
         # Create output directory if it doesn't exist
         os.makedirs(self.output_dir, exist_ok=True)
@@ -111,6 +124,10 @@ class PDFKnowledgeExtractor:
         
         print("\n Cleaning text...")
         
+        # Step 1: Expand medical abbreviations to full terms
+        print("   Expanding medical abbreviations...")
+        text = self.expand_abbreviations(text)
+        
         # Remove excessive whitespace (multiple spaces, tabs, newlines → single space)
         text = re.sub(r'\s+', ' ', text)
         
@@ -151,6 +168,40 @@ class PDFKnowledgeExtractor:
         print(f" Cleaned text: {len(text)} characters")
         
         return text
+    
+    def expand_abbreviations(self, text: str) -> str:
+        """
+        Expand medical abbreviations using CKD_ABBREVIATIONS from config.
+        
+        Args:
+            text: Input text containing abbreviations
+            
+        Returns:
+            Text with abbreviations expanded to full terms
+        """
+        expanded_text = text
+        
+        # Sort by length (longest first) to avoid partial replacements
+        # E.g., "ACEI" before "ACE" to prevent "ACEI" → "angiotensin converting enzyme inhibitorI"
+        sorted_abbrevs = sorted(
+            self.ckd_abbreviations.items(), 
+            key=lambda x: len(x[0]), 
+            reverse=True
+        )
+        
+        expansion_count = 0
+        for abbrev, full_term in sorted_abbrevs:
+            # Use word boundaries to match whole words only
+            pattern = r'\b' + re.escape(abbrev) + r'\b'
+            matches = len(re.findall(pattern, expanded_text, flags=re.IGNORECASE))
+            if matches > 0:
+                expanded_text = re.sub(pattern, full_term, expanded_text, flags=re.IGNORECASE)
+                expansion_count += matches
+        
+        if expansion_count > 0:
+            print(f"   Expanded {expansion_count} medical abbreviations")
+        
+        return expanded_text
     
     def extract_metadata_from_content(self, text: str) -> Dict:
        
@@ -239,13 +290,12 @@ class PDFKnowledgeExtractor:
         
         # Filter 4: Must contain medical/kidney-related terminology
         # This ensures we keep domain-relevant content
-        medical_terms = [
-            'kidney', 'renal', 'ckd', 'gfr', 'dialysis', 'patient',
-            'disease', 'treatment', 'clinical', 'medical', 'health',
-            'therapy', 'diagnosis', 'symptom', 'recommendation'
-        ]
-        
-        has_medical_term = any(term in text_lower for term in medical_terms)
+        # Use comprehensive list from config instead of hardcoded terms
+        text_lower = text.lower()
+        has_medical_term = any(
+            entity.lower() in text_lower 
+            for entity in self.medical_entities
+        )
         
         return has_medical_term
     
@@ -342,37 +392,37 @@ class PDFKnowledgeExtractor:
             if section_match:
                 chunk['metadata']['section'] = section_match.group().strip()
             
-            # Classify content type based on keywords
+            # Classify content type using enhanced keyword matching from config
             text_lower = text.lower()
-            if 'recommend' in text_lower:
-                chunk['metadata']['content_type'] = 'recommendation'
-            elif 'definition' in text_lower or 'defined as' in text_lower:
-                chunk['metadata']['content_type'] = 'definition'
-            elif 'table' in text_lower or 'figure' in text_lower:
-                chunk['metadata']['content_type'] = 'reference'
-            elif any(word in text_lower for word in ['study', 'trial', 'evidence']):
-                chunk['metadata']['content_type'] = 'evidence'
-            else:
-                chunk['metadata']['content_type'] = 'general'
+            content_type = 'general'  # Default
+            max_matches = 0
             
-            # Detect medical entities for targeted retrieval
+            # Check each content type and count keyword matches
+            for ctype, keywords in self.content_type_keywords.items():
+                matches = sum(1 for keyword in keywords if keyword.lower() in text_lower)
+                if matches > max_matches:
+                    max_matches = matches
+                    content_type = ctype
+            
+            chunk['metadata']['content_type'] = content_type
+            chunk['metadata']['content_type_confidence'] = max_matches
+            
+            # Detect medical entities using comprehensive list from config
             medical_entities = []
-            patterns = {
-                'CKD': r'\bCKD\b',                    # Chronic Kidney Disease
-                'GFR': r'\b[e]?GFR\b',                # (estimated) Glomerular Filtration Rate
-                'dialysis': r'\bdialysis\b',          # Dialysis treatment
-                'proteinuria': r'\bproteinuria\b',    # Protein in urine
-                'albuminuria': r'\balbuminuria\b',    # Albumin in urine
-                'hypertension': r'\bhypertension\b',  # High blood pressure
-                'diabetes': r'\bdiabetes\b'           # Diabetes mellitus
-            }
+            text_lower = text.lower()
             
-            # Check each pattern in the chunk text
-            for entity, pattern in patterns.items():
-                if re.search(pattern, text, re.IGNORECASE):
+            # Check each medical entity from config
+            for entity in self.medical_entities:
+                # Use word boundaries for accurate matching
+                pattern = r'\b' + re.escape(entity.lower()) + r'\b'
+                if re.search(pattern, text_lower):
                     medical_entities.append(entity)
             
+            # Remove duplicates and limit to top 10 for cleaner metadata
+            medical_entities = list(dict.fromkeys(medical_entities))[:10]
+            
             chunk['metadata']['medical_entities'] = medical_entities
+            chunk['metadata']['entity_count'] = len(medical_entities)
         
         print(f" Metadata added to all chunks")
         
@@ -516,10 +566,11 @@ def main():
         print("️  No files selected. Exiting...")
         return None
     
-    # Step 2: Configuration - adjust these parameters as needed
-    OUTPUT_DIR = "data/processed"  # Where to save processed chunks
-    CHUNK_SIZE = 500              # Target words per chunk (affects retrieval granularity)
-    OVERLAP = 50                  # Words to overlap (preserves context between chunks)
+    # Step 2: Configuration - load from config.py for consistency
+    OUTPUT_DIR = str(config.PROCESSED_DATA_DIR)  # Where to save processed chunks
+    chunk_config = config.get_chunk_config()
+    CHUNK_SIZE = chunk_config.get('max_words', 600)  # Target words per chunk
+    OVERLAP = chunk_config.get('overlap_sentences', 2) * 10  # Convert sentences to ~words
     
     print("=" * 70)
     print("️  CONFIGURATION")

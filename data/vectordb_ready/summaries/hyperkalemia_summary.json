@@ -1,0 +1,17 @@
+{
+  "total_documents": 5,
+  "source_file": "hyperkalemia_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\hyperkalemia_chunks.json",
+  "preparation_date": "2025-11-19T02:22:20.995788",
+  "avg_word_count": 509.4,
+  "content_types": {
+    "dietary": 5
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 1,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 1
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "total_pages": 16,
+  "raw_text_length": 13990,
+  "cleaned_text_length": 14284,
+  "source_file": "vaccines_and_dialysis.pdf",
+  "extraction_date": "2025-11-18T15:18:08.593455",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "kidney function"
+  ],
+  "total_chunks": 4,
+  "avg_chunk_size": 593.25,
+  "processing_date": "2025-11-18T15:18:08.664623"
+}

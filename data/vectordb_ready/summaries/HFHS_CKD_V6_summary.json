@@ -1,0 +1,21 @@
+{
+  "total_documents": 41,
+  "source_file": "HFHS_CKD_V6_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\HFHS_CKD_V6_chunks.json",
+  "preparation_date": "2025-11-19T02:22:20.647251",
+  "avg_word_count": 572.0,
+  "content_types": {
+    "dietary": 10,
+    "treatment": 18,
+    "recommendation": 8,
+    "evidence": 3,
+    "monitoring": 2
+  },
+  "medical_entity_coverage": {
+    "CKD": 41,
+    "GFR": 26,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 9
+  }
+}

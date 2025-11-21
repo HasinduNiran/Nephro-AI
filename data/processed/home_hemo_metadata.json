@@ -1,0 +1,15 @@
+{
+  "total_pages": 32,
+  "raw_text_length": 24977,
+  "cleaned_text_length": 24404,
+  "source_file": "home_hemo.pdf",
+  "extraction_date": "2025-11-18T15:16:17.342766",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "dialysis"
+  ],
+  "total_chunks": 8,
+  "avg_chunk_size": 541.625,
+  "processing_date": "2025-11-18T15:16:17.444061"
+}

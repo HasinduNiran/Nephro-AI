@@ -1,0 +1,397 @@
+[
+  {
+    "chunk_id": 0,
+    "text": "Clinician factors include limited knowledge of chronic kidney disease, discomfort with its clinical complexity, and communication challenges. Clinical factors include conflicting guidance about screening for chronic kidney disease and the complexity of treating patients with multiple comorbid conditions. System factors include limited access to care and lack of clinical decision support tools. Primary care practice teams can help reduce disparities in care for chronic kidney disease through early identification, treatment, monitoring progression, collaborating with nephrologists and other specialists, building care teams and engaging patients. This educational guide is intended to foster the development of primary care practice teams in order to enhance care for vulnerable patients who are at risk of chronic kidney disease or who have chronic kidney disease and are at risk of progression of disease or complications. This guide addresses three aspects of care: identification of chronic kidney disease; treatment and monitoring progression; and delivering patient-centered care. It is meant to inform readers about disparities in the care of patients with chronic kidney disease, present potential actions that may improve care and suggest other available resources that may be used by primary care practice teams in caring for vulnerable patients. About Chronic Kidney Disease chronic kidney disease is progressive loss of renal function, beginning with asymptomatic kidney damage and potentially ending in near total kidney failureend-stage renal diseasewhich requires renal replacement therapy for ongoing survival. According to the Centers for Disease Control and Prevention (CDC), 37 million adults in the ultrasound have chronic kidney disease and most of them are unaware of their condition. The clinical stages of chronic kidney disease are defined by declining glomerular filtration rates (glomerular filtration rate) and albuminuria categories indicating increasing damage to kidney function. Equations for estimating glomerular filtration rate include adjustments for race, because non-Hispanic blacks have higher glomerular filtration rate than non-Hispanic whites at the same level of serum creatinine. Similarly, males have higher glomerular filtration rate than females and younger people have higher glomerular filtration rate than older people at the same levels of creatinine. of 19 April 2021 Introduction While chronic kidney disease is typically progressive, it does not affect all patients at the same rate. Racial minorities have a greater risk of progressing from chronic kidney disease to end-stage renal disease and progress more rapidly than their non-Hispanic white counterparts.",
+    "word_count": 384,
+    "char_count": 2720,
+    "sentence_count": 14,
+    "metadata": {
+      "source_file": "Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021.pdf",
+      "extraction_date": "2025-11-18T15:15:55.161705",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2000",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "dialysis",
+        "renal"
+      ],
+      "chunk_index": 0,
+      "total_chunks": 11,
+      "position": "1/11",
+      "content_type": "treatment",
+      "content_type_confidence": 2,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "kidney function",
+        "renal function",
+        "end-stage renal disease",
+        "albuminuria",
+        "creatinine",
+        "serum creatinine",
+        "screening",
+        "monitoring"
+      ],
+      "entity_count": 10
+    }
+  },
+  {
+    "chunk_id": 1,
+    "text": "Progression of chronic kidney disease of 19 April 2021 tnemtaerT egatS DKC seigetartS SC N o rm G F R c r e e n potassium D R F a c to a l fo r is potassium rs (e. g. , a n e m ia d is e a s e, m In c re a s e d C potassium D R is potassium C potassium D R is potassium R e d u c tio n; S C r e e n in g C o m p lic a tio n s, h y p e rte n s io n, h y p o g ly c e m ia, c a rd io v a s c u in e ra l a n d b o n e d is tu rb a n c e s, m a ln u tritio n d e p re s s io n ) potassium id n e y D e c re a s in g D a m a g e G F R D ia g n o s is T re a t T re a tm e n t; C o m p lic a tio n s, E s tim a te C potassium D S lo w P r o g re s s io n P ro g re s s io n la, r R eb T potassium id n e y F a ilu re p la c e m e n t y D ia ly s is o r r a n s p la n t D e a th Source: Adapted from Eckardt, potassium. U. , Coresh, J. , Devuyst, O. , Johnson, R. J. , Kottgen, A. , Levey, A. S. (2013). Evolving Importance of Kidney Disease: From Subspecialty to Global Health Burden. Global Kidney Disease. 382; 9887: 158-169. Available at It is also true that the vast majority of patients with chronic kidney disease do not ever progress to kidney failure. chronic kidney disease is considered a disease multiplier because it often occurs with other conditions such as diabetes, hypertension or heart disease. Notably, chronic kidney disease patients have a heightened risk of cardiovascular disease and death at every stage of chronic kidney disease. The two conditions are linked: chronic kidney disease and heart disease share risk factors such as diabetes and hypertension, and each condition can lead to or worsen the other. chronic kidney disease is diagnosed through a blood test measuring serum creatinine and a urine test to assess albumin. chronic kidney disease is staged using both results over a 3-month time period. In the early stages of chronic kidney disease (Stages 13), the focus of care is on slowing or preventing progression and treating complications; in the later stages (Stages 45), the focus of care shifts to planning for kidney failure. The Kidney Disease: Improving Global Outcomes Heat Map displays the risk of progression for each glomerular filtration rate category. Progression of chronic kidney disease is related to control of comorbidities, (diabetes, hypertension, cardiovascular disease), prevention of additional damage (acute kidney injury, nephrotoxic agents), optimizing health consequences (anemia, proteinuria), and recognition of population-based risk (race/ethnicity, age, family history). Early diagnosis and appropriate treatment can prevent or delay progression to later-stage chronic kidney disease, resulting in decreased morbidity, mortality and costs. Introduction Kidney Disease: Improving Global Outcomes Heat Map (Kidney Disease: Improving Global Outcomes, 2017) Source: Kidney Disease Improving Global Outcomes (Kidney Disease: Improving Global Outcomes). (2017).",
+    "word_count": 591,
+    "char_count": 2919,
+    "sentence_count": 17,
+    "metadata": {
+      "source_file": "Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021.pdf",
+      "extraction_date": "2025-11-18T15:15:55.161705",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2000",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "dialysis",
+        "renal"
+      ],
+      "chunk_index": 1,
+      "total_chunks": 11,
+      "position": "2/11",
+      "content_type": "dietary",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "acute kidney injury",
+        "glomerular filtration rate",
+        "kidney failure",
+        "proteinuria",
+        "creatinine",
+        "potassium",
+        "serum creatinine",
+        "anemia",
+        "cardiovascular disease"
+      ],
+      "entity_count": 10
+    }
+  },
+  {
+    "chunk_id": 2,
+    "text": "(2017). Kidney Disease: Improving Global Outcomes 2017 Clinical Practice Guideline Update for the Diagnosis, Evaluation, Prevention, and Treatment of Chronic Kidney Disease Mineral and Bone Disorder (chronic kidney disease-mineral and bone disorder). Available at Disease: Improving Global Outcomes. org/wp-content/uploads/2017/02/2017-Kidney Disease: Improving Global Outcomes-chronic kidney disease-mineral and bone disorder-GL-Update. pdf Primary Care Is Key to Reducing Disparities in Chronic Kidney Disease Interventions that can slow progression of chronic kidney disease include early identification, controlling blood pressure, controlling blood glucose, reducing albuminuria, eating a healthy diet and maintaining a healthy lifestyle. Primary care practice teams have an opportunity to apply population health strategies that may improve identification of individuals with chronic kidney disease, improve care for patients with chronic kidney disease and slow progression of the disease. As the front line of health care, primary care is especially important for conditions such as chronic kidney disease, which may not cause symptoms until the late stages of disease. By increasing awareness of known racial, ethnic and economic disparities in care for chronic kidney disease, this guide encourages primary care professionals to adopt strategies that can improve health care and health for vulnerable populations. of 19 April 2021 Introduction Example: Indian Health Service Improvements in Care for Chronic Kidney Disease The Indian Health Service (IHS) cut the rate of kidney failure in half for Rates of Kidney Failure from Diabetes by Race and Ethnicity: 1996 and 2013 Native Americans with diabetes by (Cases per 100, 000 people) applying population health approaches to patients with noted 60 socioeconomic disparities. In 1996, 50 American Indians and Alaska Natives 40 30 had the highest rates of diabetes20 related end-stage renal disease incidence, compared 10 with other racial and ethnic groups in 0 the ultrasound. By 2013, the incidence of Native Asians Blacks Whites Hispanics diabetes-related end-stage renal disease had Americans decreased from 57. 3 percent in 1996 1996 2013 to 26. 5 percent in 2013 (Bullock et al. , 2017). The decrease coincided with incorporating the assessment and treatment of chronic kidney disease into IHS standards for managing diabetes. While the IHS had previously adopted systematic approaches to controlling diabetes, including multidisciplinary team-based care, patient education, community outreach, and tracking process and outcome data, the revised standards included: Routine laboratory reporting of glomerular filtration rate in the electronic medical record. Annual monitoring of urine albumin excretion. Prescription of angiotensin converting enzyme (ACE) inhibitors and angiotensin II receptor blockers (angiotensin receptor blocker). To improve diabetes care, IHS also developed clinical education programs and tools, culturally relevant patient education materials and electronic medical record-based population management tools. With these efforts, the IHS was able to achieve a 54 percent decrease in age-adjusted incidence of diabetes-related end-stage renal disease for patients with well-documented socioeconomic disparities, including poverty, limited health care resources and disproportionate burden of comorbidities (Bullock et al. , 2017). How This Guide Is Organized This guide is written for primary care practice teams and is intended to raise awareness of disparities in chronic kidney disease and improve the care of vulnerable patients with chronic kidney disease, and suggests possible approaches to improve the care of vulnerable patients with chronic kidney disease. It is divided into the following sections: Summary. Approaches to Identifying Chronic Kidney Disease. Approaches to Treatment and Monitoring of chronic kidney disease Progression. Approaches to Centering Care on the Patient. of 19 April 2021 Introduction Each of the topical sections in the guide explains the importance of the issue and describes potential interventions that primary care practice teams can take to address disparities in care. The Suggested Steps and Resources sections include links to available resources.",
+    "word_count": 600,
+    "char_count": 4282,
+    "sentence_count": 28,
+    "metadata": {
+      "source_file": "Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021.pdf",
+      "extraction_date": "2025-11-18T15:15:55.161705",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2000",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "dialysis",
+        "renal"
+      ],
+      "chunk_index": 2,
+      "total_chunks": 11,
+      "position": "3/11",
+      "content_type": "monitoring",
+      "content_type_confidence": 4,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "kidney failure",
+        "end-stage renal disease",
+        "albuminuria",
+        "diet",
+        "patient education",
+        "monitoring",
+        "guideline"
+      ],
+      "entity_count": 9
+    }
+  },
+  {
+    "chunk_id": 3,
+    "text": "The Suggested Steps and Resources sections include links to available resources. Existing resources are paired with suggested action steps and are categorized by type (informational materials, practical tools, training materials) and format (chronic kidney disease tracking tool, letter template, mobile app, online calculator, pamphlet/handout, reference material, referral form, video, webpage). Clinicians and their teams can use this guide to educate themselves, encourage the development and use of protocols to identify people with chronic kidney disease, monitor progress, connect patients to appropriate resources and refer those who need specialty care. of 19 April 2021 Approaches to Identifying Chronic Kidney Disease Approaches to Identifying Chronic Kidney Disease Why Is It Important to Identify Chronic Kidney Disease? Why Is It Important to Identify Chronic Kidney Disease? Racial and ethnic minorities are more likely to progress from chronic kidney disease to renal failure than their non-Hispanic white counterparts. Beyond kidney failure, chronic kidney disease progression has other consequences, such as anemia, hypertension, hypoglycemia, mineral and bone disturbances, cardiovascular disease, polypharmacy, medication side effects and death. Most chronic kidney disease is a long-term consequence of difficult-to-control diabetes and hypertension, conditions that are more common among racial minorities and low-income populations. Early identification and intervention can slow or prevent chronic kidney disease progression. chronic kidney disease may have no symptoms in most stages, so many people are unaware of their chronic kidney disease status until late-stage disease. In addition, limited provider awareness of chronic kidney disease risk factors and surveillance guidelines can contribute to low patient awareness. Improving identification allows earlier treatment of chronic kidney disease, which may reduce the number of people who progress to later-stage chronic kidney disease, require transplant or dialysis or experience secondary consequences. Identification of chronic kidney disease typically includes screening at-risk individuals, determining the stage of disease and communicating results and next steps to patients. There are multiple challenges to improving disparities in identification of chronic kidney disease: Clinical care teams and people at risk need to understand more about chronic kidney disease, including its causes, stages and consequences. Primary care practice teams need protocols for detecting chronic kidney disease. Most guidelines agree that people with diabetes or hypertension should be screened. Research shows that older individuals, non-Hispanic blacks, Native Americans and Hispanics should also be considered for chronic kidney disease screening. Screening for chronic kidney disease may be conducted by community-based organizations that are not coordinated with primary care teams. Addressing these challenges can improve identification of chronic kidney disease in vulnerable populations, which has the potential to slow or prevent the progression of disease.",
+    "word_count": 426,
+    "char_count": 3139,
+    "sentence_count": 19,
+    "metadata": {
+      "source_file": "Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021.pdf",
+      "extraction_date": "2025-11-18T15:15:55.161705",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2000",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "dialysis",
+        "renal"
+      ],
+      "chunk_index": 3,
+      "total_chunks": 11,
+      "position": "4/11",
+      "content_type": "monitoring",
+      "content_type_confidence": 4,
+      "medical_entities": [
+        "chronic kidney disease",
+        "renal failure",
+        "kidney failure",
+        "dialysis",
+        "anemia",
+        "cardiovascular disease",
+        "screening"
+      ],
+      "entity_count": 7
+    }
+  },
+  {
+    "chunk_id": 4,
+    "text": "Improving Identification of chronic kidney disease: Suggested Steps of 19 April 2021 Approaches to Identifying Chronic Kidney Disease Improving Identification of chronic kidney disease: Suggested Steps Resources Informational Materials Develop and implement a chronic kidney disease detection protocol that defines the population Practical Tools at risk Training Materials Leverage health information systems to identify and track at-risk patients and prompt the clinical care team of the need for Practical Tools chronic kidney disease detection Develop scripts for the care team to explain the risks of chronic kidney disease and how it is detected Promote chronic kidney disease detection at every opportunity Include chronic kidney disease detection during preventive or well-care visits Informational Materials Integrate chronic kidney disease detection into care management programs (e. g. , diabetes, hypertension, heart disease) Practical Tools Coordinate with community-based chronic kidney disease screening activities that outreach to racial and ethnic minorities and low-income populations Use two tests to detect chronic kidney disease over a 3-month period Spot urine for albumin-to-creatinine ratio (albumin-creatinine ratio) to detect albuminuria Informational Materials Blood test for serum creatinine to estimate glomerular filtration rate Practical Tools Repeat positive tests over a 3-month period Determine risk or stage of chronic kidney disease and inform patient Use culturally and linguistically appropriate materials Informational Materials Have information available in various formats (written, visual, video, apps) Practical Tools Address emotional response Consider health literacy levels Measure, track and improve chronic kidney disease detection rates Informational Materials Examine differences based on race, ethnicity, other risk factors Training Materials Review with the clinical care team of 19 April 2021 Approaches to Treatment and Monitoring of chronic kidney disease Progression Approaches to Treatment and Monitoring of chronic kidney disease Progression Why Is It Important to Treat and Monitor Progression? Why Is It Important to Treat and Monitor chronic kidney disease Progression? Although the prevalence of chronic kidney disease is relatively similar across racial and ethnic groups, minorities are more likely to progress from chronic kidney disease to end-stage renal disease, and progress more rapidly than non-Hispanic whites. Clinical and system-wide interventions for slowing the progression of chronic kidney disease largely consist of controlling risk factors, developing treatment plans and encouraging lifestyle changes. Accordingly, management of chronic kidney disease often coexists with control of conditions such as diabetes, hypertension and cardiovascular disease. Care for chronic kidney disease consists of treating the risk factors for progression, including diabetes, hypertension, use of nephrotoxic medications, history of acute kidney injury, proteinuria and albuminuria, and treating the consequences of chronic kidney disease, including anemia, electrolyte abnormalities and mineral bone disorders. The main interventions usually include: Medical treatment (e. g. , control blood pressure and glucose, manage cardiovascular disease, reduce albuminuria). Prevention (administer vaccinations, avoid nephrotoxic medications, including NSAIDS such as ibuprofen or naproxen). Nutritional guidance (e. g. , limit sodium intake). Lifestyle modifications (e. g. , exercise, quit smoking). Although interventions to slow progression or treat consequences of chronic kidney disease are known, research suggests that many patients do not receive appropriate education about chronic kidney disease and controlling risk factors, and minority patients are least likely to receive the information. Recent studies have shown that chronic kidney disease registries have the potential to improve care for diverse populations in the areas of albuminuria monitoring, prescriptions for ACE inhibitors/ARBs, nephrotoxic medication use, hepatitis B immunizations, outpatient nephrology visits, vascular access placement and referral to transplant (Tuot et al. , 2018, Mendu et al. , 2019).",
+    "word_count": 572,
+    "char_count": 4243,
+    "sentence_count": 14,
+    "metadata": {
+      "source_file": "Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021.pdf",
+      "extraction_date": "2025-11-18T15:15:55.161705",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2000",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "dialysis",
+        "renal"
+      ],
+      "chunk_index": 4,
+      "total_chunks": 11,
+      "position": "5/11",
+      "section": "Improving Identification of chronic kidney disease:",
+      "content_type": "dietary",
+      "content_type_confidence": 4,
+      "medical_entities": [
+        "chronic kidney disease",
+        "acute kidney injury",
+        "glomerular filtration rate",
+        "end-stage renal disease",
+        "albuminuria",
+        "proteinuria",
+        "creatinine",
+        "sodium",
+        "serum creatinine",
+        "ACE inhibitors"
+      ],
+      "entity_count": 10
+    }
+  },
+  {
+    "chunk_id": 5,
+    "text": ", 2018, Mendu et al. , 2019). Challenges to improving disparities in chronic kidney disease treatment and fostering collaboration between primary care teams and specialists include: Clinical care teams need guidance on treating chronic kidney disease in the context of comorbid conditions such as diabetes, hypertension and cardiovascular disease. Clinical care teams need tools that address multifaceted and complex health care needs, coupled with other life challenges that can impact the progression of disease in minority and underserved populations. Although electronic health records have the potential to support chronic kidney disease care, they must be incorporated into the daily workflow and need additional functionality and customization to track clinical factors. Limited access to nephrologists for consultation. Addressing these barriers can improve chronic kidney disease management in vulnerable populations, which has the potential to reduce disparities and the risk of progression to end-stage renal disease. of 19 April 2021 Approaches to Treatment and Monitoring of chronic kidney disease Progression Improving Treatment and Monitoring of chronic kidney disease Progression: Suggested Steps Improving Treatment and Monitoring of chronic kidney disease Progression: Suggested Steps Resources Integrate chronic kidney disease guidelines into the control of diabetes, hypertension and cardiovascular conditions Control blood pressure: Set target goals and consider prescribing angiotensin receptor blockers (angiotensin receptor blocker)/angiotensin converting enzyme (ACE) inhibitors for patients with Informational Materials elevated blood pressure Practical Tools Control diabetes: Determine hemoglobin hemoglobin A1c targets, consider SGLT2 inhibitors for appropriate Training Materials patients Reduce albuminuria through RAAS therapy and blood pressure control Consider statin therapy for appropriate patients Educate patients about health behaviors that may affect progression of chronic kidney disease Promote healthy eating and monitoring of fluid intake: Consider referral for dietary counseling Informational Materials Encourage exercise and weight control Practical Tools Discourage smoking, illegal drug use, excessive alcohol consumption Training Materials Advise patients regarding use of over-the-counter nephrotoxic medications (e. g. , NSAIDs, protein-pump inhibitors, supplements) Address emotional response to diagnosis and recommendations to change behaviors Monitor chronic kidney disease progression Determine testing interval for monitoring glomerular filtration rate and albuminuria based on stage of chronic kidney disease and risk of progression Monitor medications that require dose adjustment based on level of kidney function Practical Tools and adjust as necessary Use health information systems to prompt clinicians of the need for chronic kidney disease monitoring and further follow-up when progression is identified (e. g. , automated urine albumin testing reminders) Establish relationships with nephrologists and other specialists Establish consulting relationships with nephrologists Informational Materials Identify triggers for referral to nephrology. Consider: level of complexity, glomerular filtration rate Practical Tools threshold, rapidity of decline in glomerular filtration rate and preparation for renal replacement therapy Consider eConsults for patients with potential delays in specialty referral of 19 April 2021 Approaches to Centering Care on the Patient Approaches to Centering Care on the Patient? Why Is It Important to Center Care on the Patient Why Is It Important to Center Care on the Patient? The Institute of Medicine defines patient centered care as care that is respectful of, and responsive to, individual patient preferences, needs and values and ensuring that patient values guide all clinical decisions (IOM, 2001). The Commonwealth Fund identified the following characteristics of a patient-centered primary care practice: superb access to care; patient engagement in care; clinical information systems that support high-quality care, practice-based learning and improvement; care coordination; integrated, comprehensive care and smooth information transfer across the provider team; ongoing, routine patient feedback; publicly available information on practices (Davis et al. , 2005).",
+    "word_count": 582,
+    "char_count": 4375,
+    "sentence_count": 13,
+    "metadata": {
+      "source_file": "Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021.pdf",
+      "extraction_date": "2025-11-18T15:15:55.161705",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2000",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "dialysis",
+        "renal"
+      ],
+      "chunk_index": 5,
+      "total_chunks": 11,
+      "position": "6/11",
+      "content_type": "dietary",
+      "content_type_confidence": 5,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "kidney function",
+        "end-stage renal disease",
+        "albuminuria",
+        "hemoglobin",
+        "supplements",
+        "angiotensin receptor blockers",
+        "cardiovascular disease",
+        "exercise"
+      ],
+      "entity_count": 10
+    }
+  },
+  {
+    "chunk_id": 6,
+    "text": ", 2005). Treatment for chronic kidney disease may be complicated by other health conditions and by socioeconomic challenges such as poverty, lack of health insurance, low health literacy, language barriers, inadequate access to healthy food, financial barriers to obtaining medications, limited transportation and environmental or safety concerns. Challenges to treating vulnerable chronic kidney disease patients in primary care include: Limited time during clinic visits. It takes time to educate patients about the causes, stages and consequences of chronic kidney disease and how to manage it. A diagnosis of chronic kidney disease can evoke an emotional response that can negatively affect the patients ability to learn how to manage it. Patients might have limited health literacy in chronic kidney disease-related topics. Living conditions can significantly affect an individuals health status. Complex social determinants such as unstable housing, food insecurity, poverty, lack of education, unsafe neighborhoods and access to transportation contribute to disparities in chronic kidney disease. Social Determinants of Health Health professionals are increasingly aware of the importance of nonmedical factors on health. Where and how a person lives can have a greater impact on health than medical care delivered by the health care system (Healthy People, 2019b). Organizations are working to develop tools for practices to address social determinants of health; for example, materials that educate teams about health disparities and health equity, assess implicit bias or offer guidance on collecting population data or building relationships with community-based organizations. These resources can help primary care practices evolve their care processes to meet patient needs more effectively. Delivering patient-centered care, forming multidisciplinary care teams (e. g. , pharmacists, community health workers, dieticians, social workers) and assessing social determinants of health can help address disparities in care for chronic kidney disease. Improving Patient-Centered Care: Suggested Steps of 19 April 2021 Approaches to Centering Care on the Patient Improving Patient-Centered Care: Suggested Steps Resources Assemble a multidisciplinary care team with defined roles and responsibilities Identify multidisciplinary care team members (e. g. , pharmacists, community health workers, Informational dieticians, social workers) Materials Consider creating care coordination agreements with specialists and team members to formally specify responsibilities Develop a strategy for educating patients about chronic kidney disease Determine the basic components of chronic kidney disease education and adapt available resources of chronic kidney disease education to your practice Review and refer patients to chronic kidney disease resources that include a variety of formats and platforms such as written materials, podcasts, videos, appsto address variability in learning styles and Informational level of health literacy Materials Connect patients to chronic kidney disease educational resources that are culturally and linguistically appropriate Training Consider community health workers, patient navigators and group educational efforts Materials Compile a list of community-based chronic kidney disease resources and initiatives to share with patients and caregivers Refer patients to benefits available through Medicare (e. g. , medical nutrition therapy services, chronic kidney disease education benefit) Understand and address the patients social determinants of health Ask patients about social determinants of health (e. g. , ability to pay for medications) Informational Incorporate chronic kidney disease detection into the practice workflow Materials Practical Tools Identify community resources that can address social determinants of health Connect patients with resources that can meet their needs Include family, caregivers and the patients community in treatment Informational and educational efforts Materials Incorporate patient and family/caregiver preferences (e. g. , cultural, religious, personal values) Training into treatment plans and educational efforts. Materials Periodically reassess the patients understanding of their diagnosis and treatment plan, Informational to encourage opportunities to iteratively address identified patient-centered barriers Materials of 19 April 2021 References References 1.",
+    "word_count": 600,
+    "char_count": 4450,
+    "sentence_count": 15,
+    "metadata": {
+      "source_file": "Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021.pdf",
+      "extraction_date": "2025-11-18T15:15:55.161705",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2000",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "dialysis",
+        "renal"
+      ],
+      "chunk_index": 6,
+      "total_chunks": 11,
+      "position": "7/11",
+      "content_type": "dietary",
+      "content_type_confidence": 4,
+      "medical_entities": [
+        "chronic kidney disease",
+        "nutrition"
+      ],
+      "entity_count": 2
+    }
+  },
+  {
+    "chunk_id": 7,
+    "text": "Acre, C. M. , Mitani, A. A. , Goldstein, B. A. , Winkelmayer, W. C. (2012). Hispanic Ethnicity and Vascular Access Use in Patients Initiating Hemodialysis in the United States Clin J Am Soc Nephrol, 7(2), 289-296. Available at 2. American Diabetes Association (ADA). (2018). Statistics About Diabetes. Available at 3. Bullock, A. , Rios Burrows, N. , Narva, A. , Sheff, potassium. , Hora, I. , Lekiachvili, A. , Cain, H. , Espey, D. (2017). Vital Signs: Decrease in Incidence of Diabetes-Related End-Stage Renal Disease Among American Indians/Alaska Natives United States, 1996-2013. MMWR Morb Mortal Wkly Rep. 66(1): 26-32. Available at 4. Centers for Disease Control and Prevention (CDC). (2019). Chronic Kidney Disease in the United States, 2019. Available at kidney disease-nationalfacts. html: : textchronic kidney disease%20Is%20Common%20Among%20US%20AdultstextMore%20than%201%20in%207, are%20estimated%20to%20 have%20CKD 5. Centers for Disease Control and Prevention (CDC). (2017). Hypertension Prevalence and Control Among Adults: United States, 2015-2016. Retrieved March 7, 2019. Available at 6. Davis, potassium. , Schoenbaum, S. C. , Audet, A. (2005). A 2020 Vision of Patient-Centered Primary Care. J Gen Intern Med. 20(10): 953-957. Available at 7. Derose, S. F. , Rutkowski, M. P. , Crooks, P. W. , Shi, J. M. , Wang, J. Q. , Kalantar-Zadeh, potassium. , Kovesdy, C. P. , Levin, N. W. , Jacobsen, S. J. (2013). Racial Differences in Estimated glomerular filtration rate Decline, end-stage renal disease, and Mortality in an Integrated System. Am J. Kidney Dis. 62(2): 236-44. Available at 8. Eckardt, potassium. U. , Coresh, J. , Devuyst, O. , Johnson, R. J. , Kottgen, A. , Levey, A. S. (2013). Evolving Importance of Kidney Disease: From Subspecialty to Global Health Burden. Global Kidney Disease. 382; 9887: 158-169. Available at 9. Fischer, M. J. , Hsu, J. Y. , Lora, C. M. , Ricardo, A. C. , Anderson, A. H. , Bazzano, L. , Cuevas, M. M. , Hsu, C. , Kusek, J. W. , Renteria, A. , Ojo, A. O. , Raj, D. S. , Rosas, S. E. , Pan, Q. , Yaffe, potassium. , Go, A. S. , Lash, J. P. , Chronic Renal Insufficiency Cohort (CRIC) Study Investigators. (2016). chronic kidney disease Progression and Mortality Among Hispanics and Non-Hispanics. JASN. 27(11): 3488-3497. Available at 0weight. MC_IDTMD0 10. Healthy People 2020. (2019a). Disparities. Available at 11. Healthy People 2020. (2019b). Social Determinants of Health. Available at 12. Institute of Medicine (IOM). (2001). Crossing the Quality Chasm: A New Health System for the 21st Century. Available at 13. iStock. (2019). Kidney Pictures, Images, and Stock Photos. Available at 14. Kidney Disease Improving Global Outcomes (Kidney Disease: Improving Global Outcomes). (2017). Kidney Disease: Improving Global Outcomes 2017 Clinical Practice Guideline Update for the Diagnosis, Evaluation, Prevention, and Treatment of Chronic Kidney Disease Mineral and Bone Disorder (chronic kidney disease-mineral and bone disorder). Available at Disease: Improving Global Outcomes. org/wpcontent/uploads/2017/02/2017-Kidney Disease: Improving Global Outcomes-chronic kidney disease-mineral and bone disorder-GL-Update. pdf 15. Kidney Failure Risk Equation (KFRE). (2019). Kidney Failure Risk Equation. Available at 16. Medicare Payment Advisory Commission (MedPAC). (2019). Report to the Congress: Medicare Payment Policy. Available at 17. Mendu, M. L. , Ahmed, S. , Maron, J. potassium. , Rao, S. potassium. , Chaguturu, S. potassium. , May, M. F. , Mutter, W. P. , Burdge, potassium. A. , Steele, D. J. R. , Mount, D. B. , Waikar, S. S. , Weilburg, J. B. , Sequist, T. D. (2019). Development of an Electronic Health Record-Based Chronic Kidney Disease Registry to Promote Population Health Management. BMC Nephrol. 20: 72. Available at 18. Molnar, A. O. , Hiremath, S. , Brown, P. A. , Akbari, A. (2016).",
+    "word_count": 599,
+    "char_count": 3862,
+    "sentence_count": 93,
+    "metadata": {
+      "source_file": "Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021.pdf",
+      "extraction_date": "2025-11-18T15:15:55.161705",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2000",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "dialysis",
+        "renal"
+      ],
+      "chunk_index": 7,
+      "total_chunks": 11,
+      "position": "8/11",
+      "content_type": "evidence",
+      "content_type_confidence": 2,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "kidney failure",
+        "end-stage renal disease",
+        "potassium",
+        "hemodialysis",
+        "vascular access",
+        "guideline"
+      ],
+      "entity_count": 8
+    }
+  },
+  {
+    "chunk_id": 8,
+    "text": "20: 72. Available at 18. Molnar, A. O. , Hiremath, S. , Brown, P. A. , Akbari, A. (2016). Risk Factors for Unplanned and Crash Dialysis Starts: A Protocol for a Systematic Review and Meta-Analysis. 5: 117. Available at 19. Narva, A. S. , Norton, J. M. , Boulware, L. E. (2016). Educating Patients about chronic kidney disease: The Path to Self-Management and Patient-Centered Care. Clin J Am Soc Nephrol, 11(4), 694-703. Available at 20. Nee, R. , Yuan, C. M. , Hurst, F. P. , Jindal, R. M. , Agodoa, L. Y. , Abbott, potassium. C. (2016). Impact of Poverty on Race and Pre-End-Stage Renal Disease Care Among Dialysis Patients in the United States Clin Kidney J. Available at 21. Tuot, D. S. , McCulloch, C. E. , Velasquez, A. , Schillinger, D. , Hsu, C. , Handley, N. , Powe, N. R. (2018). Impact of a Primary Care chronic kidney disease Registry in a ultrasound Public Safety-Net Health Care Delivery System: A Pragmatic Randomized Trial. Am J Kidney Dis. 72(2): 168-177. Available at 22. Waterman, A. D. , Browne, T. , Waterman, B. M. , Gladstone, E. H. , Hostetter, T. (2008). Attitudes and Behaviors of African Americans Regarding Early Detection of Kidney Disease. Am J Kidney Dis. 51: 554-562. of 19 April 2021 Comprehensive Resource List Comprehensive Resource List Informational Practical Training Patient - Alternative Resource Material Tool Material Focused Languages of 19 April 2021 DKC gniyfitnedI rof secruoseR detsegguS 1. Develop and implement a chronic kidney disease detection protocol that defines the population at-risk National Kidney FoundationMinorities and Kidney Disease (Webpage) BernsScreening in Asymptomatic Adults (Reference Material) National Kidney FoundationLaboratory Engagement Plan (Reference Material) National Kidney FoundationCritical Care Algorithm: How to Manage Your chronic kidney disease Patients (Reference Material) AAKPField Ambassadors (Webpage) National Kidney FoundationA Primary Care Approach to chronic kidney disease Management (Reference Material) 2. Leverage health information systems to identify and track at-risk patients and prompt clinical care team of the need for chronic kidney disease detection RPAPatient Identification Assessment Evaluation Tool (chronic kidney disease Tracking Tool) RPAPatient Identification Assessment Instructions (chronic kidney disease Tracking Tool) 3. Promote detection at every opportunity National Kidney FoundationKEEP Screening Events (Webpage) NKDEPKidney Sundays: A ToolkitGuide for Faith-Based Communities on Making the Kidney Connection (Reference Material) 4. Use two tests to detect chronic kidney disease over a 3-month period NKDEPMaking Sense of chronic kidney disease: A Concise Guide for Managing chronic kidney disease in Primary Care (Reference Material) NKDEPurine albumin-to-creatinine ratio In Evaluating Patients with Diabetes for Kidney Disease (Reference Material) National Kidney FoundationFrequently Asked Questions About glomerular filtration rate Estimates (Reference Material) National Kidney Foundationestimated glomerular filtration rate Calculator (Mobile App) NKDEPglomerular filtration rate Calculators (Online Calculator) National Kidney Foundationglomerular filtration rate Calculators (2) (Online Calculator) National Kidney FoundationScreening for Albuminuria in Patients with Diabetes (Reference Material) 5. Determine stage of chronic kidney disease and inform patient ANNAchronic kidney disease Fact Sheet (Reference Material) MEIchronic kidney disease: Take Charge of Your Health (Pamphlet/Handout) () NKDEPCommunicating Difficult Messages to Patients (Webpage) National Kidney FoundationKidney Disease Can Be TreatedPrintable Stages Chart (Pamphlet/Handout) National Kidney FoundationQuick Reference Guide on Kidney Disease Screening (Reference Material) NKDEPExplaining Your Kidney Test Results: A Tear-Off peripheral arterial disease for Clinical Use (Pamphlet/Handout) (Chinese, French, Spanish, Vietnamese) NKDEPYour Kidney Test Results (Pamphlet/Handout) (Spanish) National Kidney Foundationchronic kidney disease Risk Assessment Tool (Reference Material) 6.",
+    "word_count": 559,
+    "char_count": 4096,
+    "sentence_count": 29,
+    "metadata": {
+      "source_file": "Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021.pdf",
+      "extraction_date": "2025-11-18T15:15:55.161705",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2000",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "dialysis",
+        "renal"
+      ],
+      "chunk_index": 8,
+      "total_chunks": 11,
+      "position": "9/11",
+      "content_type": "evidence",
+      "content_type_confidence": 5,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "end-stage renal disease",
+        "albuminuria",
+        "creatinine",
+        "potassium",
+        "dialysis",
+        "screening"
+      ],
+      "entity_count": 8
+    }
+  },
+  {
+    "chunk_id": 9,
+    "text": "Measure, track, and improve chronic kidney disease detection rates National Kidney Foundationchronic kidney disease Change Package (Reference Material) CDCchronic kidney disease Surveillance System (Reference Material) Kirwan InstituteImplicit Bias Module Series (Reference Material) AAFPAddressing Implicit Bias in Health Care Delivery (Reference Material) Comprehensive Resource List of 19 April 2021 noissergorP DKC fo gnirotinoM dna tnemtaerT rof secruoseR detsegguS Informational Practical Training Patient - Alternative Resource Material Tool Material Focused Languages 1. Integrate chronic kidney disease guidelines into the control of diabetes, hypertension and cardiovascular conditions Upstate NY Practice-Based Research Networkchronic kidney disease Quick Reference Guide for the Primary Care Clinician (Reference Material) National Kidney FoundationCholesterol and Kidney Disease: What Your Need to Know (Pamphlet/Handout) NKDEPMaking Sense of chronic kidney disease: A Concise Guide for Managing chronic kidney disease in the Primary Care Setting (Reference Material) National Kidney FoundationHypertension and Antihypertensive Agents in chronic kidney disease (Reference Material) National Kidney FoundationCardiovascular Disease in chronic kidney disease (Reference Material) National Kidney FoundationHeart Failure and chronic kidney disease: What Your Need to Know (Pamphlet/Handout) University of BuffaloAn Algorithm for Managing chronic kidney disease in the Primary Care Setting (Reference Material) National Kidney FoundationCritical Care Algorithm: How to Manage Your chronic kidney disease Patients (Reference Material) SelectHealth and Intermountain HealthcareManagement of chronic kidney disease: Care Process Model (Reference Material) NKDEPchronic kidney disease Training Program for Diabetes Educators (Video) 2. Educate patients about health behaviors that may affect progression of chronic kidney disease NKDEPchronic kidney disease and Diet: Assessment, Management, and Treatment (Reference Material) NKDEPCollaborate with a Registered Dietician (Webpage) UnknownDietary Approaches to Stop Hypertension (DASH) Diet Modified for Adults with chronic kidney disease (Reference Material) NKDEPEating Right for Kidney Health (Pamphlet/Handout) (Spanish) NKDEPNutrition Tips for People with chronic kidney disease (Sodium, Protein, Phosphorus, Potassium, Food Label Reading) (SpanishSodium, (Pamphlet/Handout) Protein, Phosphorus, Potassium, Food Label Reading) ProsciaMyPlate for Healthy Eating with chronic kidney disease (Reference Material) NKDEPKeeping Kidneys Safe: Smart Choices About Medicines (Webpage) National Kidney FoundationPhosphorus and Your Kidney Diet (Pamphlet/Handout) National Kidney Foundationchronic kidney disease: Know the Risks of Medications and Imaging Studies (Safety Card for Patient Care) (Reference Material) AAKPUnderstanding Depression in Kidney Disease (Pamphlet/Handout) NKDEPchronic kidney disease Diet Counseling (Medical Nutrition Therapy) Referral Form (Referral Form) National Kidney FoundationCRN Pocket Guide to Nutrition Assessment in the Patient with chronic kidney disease Mobile App (Mobile App) AAKPNutrition Counter: A Reference for the Kidney Patient (Reference Material) (Spanish) NKDEPchronic kidney disease and Nutrition for Dietetic Educatorschronic kidney disease 101: Nutrition Educators (Reference Material) NKDEPchronic kidney disease Nutrition Management Training Program (Video) NKDEPKeeping Kidneys Safe: Pharmacists Role in Counseling High-Risk Patients on nonsteroidal anti-inflammatory drug Use to Prevent Kidney Injury (Video) 3. Monitor chronic kidney disease progression RPAPatient Management Assessment and Evaluation Tools and Instruction Document (chronic kidney disease Tracking Tool) Comprehensive Resource List Resources current as of April 2021; Cost associated with resource of 19 April 2021 tnemtaerT rof secruoseR detsegguS noissergorP DKC fo gnirotinoM dna Informational Practical Training Patient - Alternative Resource Material Tool Material Focused Languages RPAAdvanced chronic kidney disease Management Flow Sheet (chronic kidney disease Tracking Tool) Kidney Failure Risk Equation (Online Calculator) 4. Establish relationships with nephrologists and other specialists NKDEPCollaborate with a Nephrologist (Webpage) RPAAwareness Letter (Letter Template) RPAchronic kidney disease Post-Consult Letter (Letter Template) RPAReferring Physician Fax-Back Form (Referral Form) National Kidney FoundationRelative Risk, Monitoring and Referral in Patients with chronic kidney disease (Mobile App) NKDEPNephrology Referral Form (Referral Form) NKDEPchronic kidney disease Diet Counseling (Medical Nutrition Therapy) Referral Form (Referral Form) Ontario Renal NetworkOutpatient Nephrology Form for Primary Care Providers (Referral Form) tneitaP eht no eraC gniretneC rof secruoseR detsegguS 1.",
+    "word_count": 594,
+    "char_count": 4893,
+    "sentence_count": 5,
+    "metadata": {
+      "source_file": "Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021.pdf",
+      "extraction_date": "2025-11-18T15:15:55.161705",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2000",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "dialysis",
+        "renal"
+      ],
+      "chunk_index": 9,
+      "total_chunks": 11,
+      "position": "10/11",
+      "content_type": "dietary",
+      "content_type_confidence": 8,
+      "medical_entities": [
+        "chronic kidney disease",
+        "kidney failure",
+        "sodium",
+        "potassium",
+        "phosphorus",
+        "nutrition",
+        "diet",
+        "antihypertensive",
+        "monitoring"
+      ],
+      "entity_count": 9
+    }
+  },
+  {
+    "chunk_id": 10,
+    "text": "Assemble a multidisciplinary care team with defined roles and responsibilities NKDEPCollaborate with a Registered Dietician (Webpage) NKDEPCollaborate with a Nephrologist (Webpage) 2. Develop a strategy for educating patients about chronic kidney disease NKDEPKidney Disease Education Lesson Builder (Webpage) TuotAssessment of chronic kidney disease Patient Educational Materials (Reference Material) CDCChronic Kidney Disease in the United States (Pamphlet/Handout) AAKPKidney Beginnings: A Patients Guide to Living with Reduced Kidney Function (Reference Material) () AAKPPocket Guide to Managing Kidney Disease (Pamphlet/Handout) 3. Understand and address the patients social determinants of health (SDOH) NACHCPRAPARE Implementation and Action Toolkit (Reference Material) AAFPAddressing Social Determinants of Health in Primary Care (Reference Material) AAFPThe EveryONE Project Toolkit (Reference Material) BanerjeeFood Insecurity and chronic kidney disease (Reference Material) AAFPSocial Determinants of Health Screening Tools (Screening Form) (Spanish, Chinese, French, Korean, Tagalog, Vietnamese) 4. Include family, caregivers and the patients community in treatment and educational efforts NKDEPCommunicating Difficult Messages to Patients (Webpage) NKDEPFamily Reunion Health Guide (Reference Material) NKDEPKidney Sundays: A ToolkitGuide for Faith-Based Communities on Making the Kidney Connection (Reference Material) AAKPKidneyWorks Employment Resources (Reference Material) 5. Periodically reassess the patients understanding of their diagnosis and treatment plan to encourage opportunities to iteratively address identified patient-centered barriers RPAAppropriate Patient Preparation for Renal Replacement Therapy (Reference Material)",
+    "word_count": 207,
+    "char_count": 1754,
+    "sentence_count": 5,
+    "metadata": {
+      "source_file": "Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021.pdf",
+      "extraction_date": "2025-11-18T15:15:55.161705",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2000",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "dialysis",
+        "renal"
+      ],
+      "chunk_index": 10,
+      "total_chunks": 11,
+      "position": "11/11",
+      "content_type": "reference",
+      "content_type_confidence": 2,
+      "medical_entities": [
+        "chronic kidney disease",
+        "kidney function",
+        "screening"
+      ],
+      "entity_count": 3
+    }
+  }
+]

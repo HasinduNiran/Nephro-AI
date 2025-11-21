@@ -1,0 +1,17 @@
+{
+  "total_documents": 8,
+  "source_file": "dining_out_with_confidence_1_2_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\dining_out_with_confidence_1_2_chunks.json",
+  "preparation_date": "2025-11-19T02:22:20.921514",
+  "avg_word_count": 560.375,
+  "content_types": {
+    "dietary": 8
+  },
+  "medical_entity_coverage": {
+    "CKD": 2,
+    "GFR": 1,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}
