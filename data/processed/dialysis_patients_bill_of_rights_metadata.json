@@ -1,0 +1,15 @@
+{
+  "total_pages": 12,
+  "raw_text_length": 10740,
+  "cleaned_text_length": 10813,
+  "source_file": "dialysis_patients_bill_of_rights.pdf",
+  "extraction_date": "2025-11-18T15:15:57.539931",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "dialysis"
+  ],
+  "total_chunks": 4,
+  "avg_chunk_size": 499.0,
+  "processing_date": "2025-11-18T15:15:57.592925"
+}

@@ -1,0 +1,17 @@
+{
+  "total_pages": 26,
+  "raw_text_length": 20321,
+  "cleaned_text_length": 20272,
+  "source_file": "11-10_0502_2312_patbro_keepingfit_t1_final.pdf",
+  "extraction_date": "2025-11-18T15:15:39.276105",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "nephrology"
+  ],
+  "total_chunks": 7,
+  "avg_chunk_size": 511.85714285714283,
+  "processing_date": "2025-11-18T15:15:39.702188"
+}

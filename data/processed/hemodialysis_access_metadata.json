@@ -1,0 +1,15 @@
+{
+  "total_pages": 28,
+  "raw_text_length": 19348,
+  "cleaned_text_length": 19642,
+  "source_file": "hemodialysis_access.pdf",
+  "extraction_date": "2025-11-18T15:16:04.774219",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "dialysis"
+  ],
+  "total_chunks": 7,
+  "avg_chunk_size": 506.7142857142857,
+  "processing_date": "2025-11-18T15:16:04.843949"
+}

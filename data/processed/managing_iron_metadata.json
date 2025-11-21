@@ -1,0 +1,17 @@
+{
+  "total_pages": 16,
+  "raw_text_length": 14382,
+  "cleaned_text_length": 14825,
+  "source_file": "managing_iron.pdf",
+  "extraction_date": "2025-11-18T15:17:32.562300",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "kidney function"
+  ],
+  "total_chunks": 5,
+  "avg_chunk_size": 520.2,
+  "processing_date": "2025-11-18T15:17:32.678954"
+}

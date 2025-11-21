@@ -1,0 +1,20 @@
+{
+  "total_documents": 8,
+  "source_file": "s12955-020-01369-1_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\s12955-020-01369-1_chunks.json",
+  "preparation_date": "2025-11-19T02:22:21.239894",
+  "avg_word_count": 575.5,
+  "content_types": {
+    "evidence": 5,
+    "dietary": 1,
+    "monitoring": 1,
+    "reference": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 8,
+    "GFR": 3,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 3
+  }
+}

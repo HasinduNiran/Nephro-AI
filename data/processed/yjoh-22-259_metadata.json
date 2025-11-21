@@ -1,0 +1,19 @@
+{
+  "total_pages": 6,
+  "raw_text_length": 37285,
+  "cleaned_text_length": 37956,
+  "source_file": "yjoh-22-259.pdf",
+  "extraction_date": "2025-11-18T15:18:12.997418",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "renal",
+    "nephrology",
+    "proteinuria"
+  ],
+  "total_chunks": 10,
+  "avg_chunk_size": 577.1,
+  "processing_date": "2025-11-18T15:18:13.223264"
+}

@@ -1,0 +1,18 @@
+{
+  "total_documents": 8,
+  "source_file": "mineral_and_bone_disorder_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\mineral_and_bone_disorder_chunks.json",
+  "preparation_date": "2025-11-19T02:22:21.078111",
+  "avg_word_count": 588.875,
+  "content_types": {
+    "treatment": 1,
+    "dietary": 7
+  },
+  "medical_entity_coverage": {
+    "CKD": 1,
+    "GFR": 1,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 6
+  }
+}

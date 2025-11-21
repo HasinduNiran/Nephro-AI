@@ -1,0 +1,215 @@
+[
+  {
+    "chunk_id": 0,
+    "text": "STAGES 1-5 Chronic Kidney Disease Are you at risk? Join our free OONNLLIINNEE KKIIDDNNEEYY CCOOMMMMUUNNIITTIIEESS Youre not alone. Get support and hear from others who have experience with dialysis, transplant, living donation, and being a parent or care partneryou never know when youll inspire someone else! Join today at kidney. org/online-communities 2 NATIONAL KIDNEY FOUNDATION Contents About Chronic Kidney Disease 4 chronic kidney disease Risk Factors 5 Diabetes. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5 High Blood Pressure. . . . . . . . . . . . . . . . . . . . . . . . . 6 Age. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8 Obesity. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11 Heart Disease/Heart Failure. . . . . . . . . . . . . . . . . . . 12 Family History of chronic kidney disease. . . . . . . . . . . . . . . . . . . . . . . 14 Social Determinants of Health 15 chronic kidney disease and Race 18 chronic kidney disease Prevention 19 Stop chronic kidney disease in its Tracks. . . . . . . . . . . . . . . . . . . . . . 20 We Are Here To Help. . . . . . . . . . . . . . . . . . . . . . . . 25 Notes. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26 KIDNEY. ORG 3 About Chronic Kidney Disease Chronic kidney disease (chronic kidney disease) is a condition that develops when your kidneys arent working as well as they should. This means your kidneys cannot get rid of extra fluids and waste products in your blood. When the body cannot get rid of excess fluid and waste products serious problems, such as heart disease and stroke, can occur. If you have chronic kidney disease and it gets worse, then the waste products and fluids continue to build up in your blood and you will probably start to feel very unwell. Its also likely you may notice other problemssymptoms may include things like high blood pressure and anemia, a condition in which there is a short supply of red blood cells in the body. Bottom lineanemia makes people feel tired and typically, they have very little energy. chronic kidney disease also increases your risk of worsening heart and blood vessel disease. chronic kidney disease may progress slowly over a long time. Many people dont even know they have chronic kidney disease until it is very bad. If it is found and treated early, 4 NATIONAL KIDNEY FOUNDATION chronic kidney disease may often be slowed or stopped. If it worsens, however, chronic kidney disease can lead to kidney failure. People with kidney failure are coping with a very serious disease.",
+    "word_count": 595,
+    "char_count": 2610,
+    "sentence_count": 275,
+    "metadata": {
+      "source_file": "441-9471_2307_patbro_riskfactors_t3_002.pdf",
+      "extraction_date": "2025-11-18T15:15:44.899086",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function"
+      ],
+      "chunk_index": 0,
+      "total_chunks": 7,
+      "position": "1/7",
+      "content_type": "definition",
+      "content_type_confidence": 2,
+      "medical_entities": [
+        "chronic kidney disease",
+        "kidney failure",
+        "dialysis",
+        "anemia",
+        "heart failure"
+      ],
+      "entity_count": 5
+    }
+  },
+  {
+    "chunk_id": 1,
+    "text": "People with kidney failure are coping with a very serious disease. When you have a diagnosis of kidney failurethat means your kidneys no longer work well enough to keep you alive, and you need to go on dialysis or have a kidney transplant. chronic kidney disease Risk Factors Anyone can have chronic kidney diseaseat any age. However, some people are more likely than others to develop chronic kidney disease. The 2 most common chronic kidney disease risk factors are diabetes and/or high blood pressure (hypertension) You may have an increased risk for developing chronic kidney disease if you have obesity, over 60 years of age, have heart disease or heart failure, and/or have family members who have had chronic kidney disease or kidney failure. Diabetes Diabetes (also called sugar diabetes or sugar disease) is a disease that causes your blood sugar levels to be too high. Blood sugar is your bodys main source of energy. It comes from your food and is carried in your blood to your cells. When you have diabetes, your body either doesnt produce enough insulin or doesnt use insulin properly. Insulin is a hormone that helps your body use blood sugar for energy. KIDNEY. ORG 5 DIABETES AND chronic kidney disease: Diabetes damages the kidneys by making them work harder to filter blood. This can cause the kidneys to scar and lose their ability to filter waste products from the blood. High blood sugar can also damage your blood vessels in the kidneys, further reducing kidney function. In the United States, about 37 million people have diabetes, and about 1 in 3 will develop chronic kidney disease. PREVENTION: There is no cure for diabetes, but it can be managed with diet, exercise, and medication. By managing your diabetes, you can lower your risk of developing chronic kidney disease. If you have diabetes, it is important to have your kidneys checked regularly by a doctor. High Blood Pressure High blood pressure (hypertension) is a health problem that makes your blood pressure too high. This can hurt your kidneys over time and cause chronic kidney disease. H3 HIGH BLOOD PRESSURE AND chronic kidney disease: High blood pressure makes your kidneys work harder. This can cause scarring of the kidneys making them unable to filter blood well. High blood pressure can also damage the blood vessels in the kidneys. 6 NATIONAL KIDNEY FOUNDATION In the United States, about 1 in 2 adults have high blood pressure and about 1 in 5 adults with high blood pressure will develop chronic kidney disease. PREVENTION: There is no cure for high blood pressure, but it can be treated. By treating your high blood pressure, you can lower your risk of developing chronic kidney disease. This includes taking your medications as prescribed, eating a healthy diet, exercising regularly, and losing weight if you have obesity. If you have high blood pressure, it is important to have your kidneys checked regularly by a doctor. KIDNEY. ORG 7 Age As people age, kidneys are less able to filter waste products from the blood than in younger people. This is because kidneys naturally decline in function over time.",
+    "word_count": 523,
+    "char_count": 3110,
+    "sentence_count": 31,
+    "metadata": {
+      "source_file": "441-9471_2307_patbro_riskfactors_t3_002.pdf",
+      "extraction_date": "2025-11-18T15:15:44.899086",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function"
+      ],
+      "chunk_index": 1,
+      "total_chunks": 7,
+      "position": "2/7",
+      "content_type": "dietary",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "kidney function",
+        "kidney failure",
+        "diet",
+        "insulin",
+        "dialysis",
+        "kidney transplant",
+        "heart failure",
+        "exercise"
+      ],
+      "entity_count": 9
+    }
+  },
+  {
+    "chunk_id": 2,
+    "text": "This is because kidneys naturally decline in function over time. AGE AND chronic kidney disease: The exact cause of age-related chronic kidney disease is not fully understood, but it is thought to be due to a combination of factors, including: Natural aging process: Kidneys naturally decline in function over time Pre-existing conditions: People with other health conditions, such as high blood pressure, diabetes, obesity, and heart disease or heart failure, are at an increased risk of developing chronic kidney disease Exposure to toxins: Certain toxins, such as lead and mercury, can damage the kidneys and increase a persons risk of developing chronic kidney disease After the age of 40, it is normal to have a decline in your kidney filtration rates. 8 NATIONAL KIDNEY FOUNDATION PREVENTION: While you cannot prevent getting older, there are steps you can take to prevent developing chronic kidney disease as you age. These are some ways to keep your kidneys as healthy as possible as you are getting older: 1. Eat less salt: Many seniors dont realize just how much salt theyre consuming on a daily basis. Eating too much salt can increase blood pressure. Salt can also increase the chances of developing kidney stones, which can hurt your kidneys. 2. Keep diabetes well-controlled: chronic kidney disease is considered a secondary disease. This is because developing chronic kidney disease is often the direct result of other conditions, such as diabetes. If you do not have well-managed diabetes, you may be placing a lot of strain on your kidneys. 3. Stay well-hydrated: A key purpose of the kidneys is to filter toxins out of the blood and then get rid of the wastes through your urine (pee). If you dont drink enough water every KIDNEY. ORG 9 day, your body may not be able to fully remove the wastes from your body. If you are not wellhydrated, you increase the chances that you may develop kidney stones and chronic kidney disease. Its a good idea to check with your healthcare professional to see how much fluid you should drink daily. 4. Reduce alcohol and caffeine: The liquids you drink go through your body, pass through your kidneys, and leave your body in your urine. Drinking too much alcohol can dehydrate you and stress your kidneys, while too much caffeine can increase your blood pressure and also make your kidneys work harder. Plain water is the best liquid to drink. 5. Limit using painkillers: Be careful with pain medicine, some prescription and over-thecounter pain medicines can hurt your kidneys if you take them a lot. If you need to take pain medicine, talk to your doctor about the best ones for you. 6. Treat urinary tract infections: Urinary tract infections (UTIs) are germs that spread up the urethra (a duct, or tube that lets urine pee leave your body) and into the kidneys. When germs get into your kidneys, longterm damage can happen, so its important to treat UTIs as soon as possible. If it hurts when you urinate or if your pee looks cloudy, tell a doctor so you can get better. Antibiotic therapy can stop UTIs before the infection gets to your kidneys. 10 NATIONAL KIDNEY FOUNDATION Obesity Obesity is a condition in which a person has excess body fat. There are a number of ways to measure obesity, including body mass index (body mass index), body fat percentage, and waist circumference: body mass index is a measure of body fat based on height and weight, but it does not take into account factors such as muscle mass and body fat distribution.",
+    "word_count": 597,
+    "char_count": 3498,
+    "sentence_count": 31,
+    "metadata": {
+      "source_file": "441-9471_2307_patbro_riskfactors_t3_002.pdf",
+      "extraction_date": "2025-11-18T15:15:44.899086",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function"
+      ],
+      "chunk_index": 2,
+      "total_chunks": 7,
+      "position": "3/7",
+      "content_type": "dietary",
+      "content_type_confidence": 2,
+      "medical_entities": [
+        "chronic kidney disease",
+        "heart failure"
+      ],
+      "entity_count": 2
+    }
+  },
+  {
+    "chunk_id": 3,
+    "text": "Body fat percentage is a more accurate measure of obesity than body mass index. It is the percentage of body weight that is made up of fat. Waist circumference is another measure of obesity. It is the circumference of the waist at the level of the navel. A healthy waist circumference for adults ranges from under 40 inches for men and less than 35 inches for women. KIDNEY. ORG 11 Rising rates of obesity and diabetes in the United States are linked to increased risks of high blood pressure and are projected to cause an 11% to 18% surge in kidney failure by 2030. OBESITY AND chronic kidney disease: Obesity is a major risk factor for chronic kidney disease and it can lead to high blood pressure, which is the second leading cause of chronic kidney disease. High blood pressure can damage the blood vessels in the kidneys, making it difficult for the kidneys to filter waste products from the blood. Obesity can also lead to insulin resistance, which is a condition in which the bodys cells do not respond normally to insulin (a hormone that helps the body use glucose for energy). When cells are resistant to insulin, glucose builds up in the blood, which can damage the kidneys. PREVENTION: Obesity is a chronic disease, but it can be prevented or managed with a healthy diet, regular exercise, and a healthy weight. If you have obsity, it is important to talk to your doctor about how to lose weight and manage your risk of chronic kidney disease. Heart Disease/Heart Failure Heart disease and heart failure are two major conditions that affect the heart. Heart disease is a group of conditions that damage the heart and blood vessels. 12 NATIONAL KIDNEY FOUNDATION The most common cause of death in people with chronic kidney disease is heart disease. It can cause narrowed or blocked blood vessels and lead to a heart attack. Heart failure occurs when the heart cannot pump enough blood to meet the bodys needs. HEART DISEASE/HEART FAILURE AND chronic kidney disease: Both heart disease and heart failure are risk factors for developing chronic kidney disease because both conditions can damage the kidneys. The main causes of heart disease are the same as chronic kidney disease, which are diabetes and high blood pressure. If you already have chronic kidney disease, you are at higher risk for developing heart disease. PREVENTION: You can help prevent heart disease by eating healthy foods, exercising, and not smoking. Its also important to keep your blood pressure and cholesterol levels in check. If you have diabetes, its important to manage it well. Taking these steps can help keep your heart healthy and strong. KIDNEY. ORG 13 Family History of chronic kidney disease Some diseases are said to run in the family when more than one person has the same illness. Its true that some diseases and conditions, such as sickle cell anemia, that can affect multiple family members are caused by gene variants (also known as mutations) and can be inherited (passed down from parent to child). Since chronic kidney disease affects some families more than others understanding the factors that can lead to the disease is important so that you can prevent chronic kidney disease from developing. Also, if you know you are at risk for chronic kidney disease, then you can take the right stepsright awayto slow down or stop the disease from getting worse.",
+    "word_count": 573,
+    "char_count": 3359,
+    "sentence_count": 30,
+    "metadata": {
+      "source_file": "441-9471_2307_patbro_riskfactors_t3_002.pdf",
+      "extraction_date": "2025-11-18T15:15:44.899086",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function"
+      ],
+      "chunk_index": 3,
+      "total_chunks": 7,
+      "position": "4/7",
+      "content_type": "dietary",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "kidney failure",
+        "diet",
+        "insulin",
+        "anemia",
+        "heart failure",
+        "exercise"
+      ],
+      "entity_count": 7
+    }
+  },
+  {
+    "chunk_id": 4,
+    "text": "14 NATIONAL KIDNEY FOUNDATION Social Determinants of Health People develop chronic kidney disease for a number of reasons, and many factors can increase your chances of getting it. Some of these things are medical, like having high blood pressure or diabetes. However, environmental factors can also play a part. For example, breathing in dirty air can hurt our lungs, while while drinking contaminated water can cause stomach infections. In addition, there are social factors, which are things like how much money we have, our education level, and our relationships with family and friends can affect our health. Discrimination and not having access to healthcare can also increase the risk of developing chronic kidney disease. According to the ultrasound Department of Health and Human Services, Office of Disease Prevention and Health Promotion report, Healthy People 2030, these social factors are called Social Determinants of Health, (SDoH), and they are the conditions in the environments, such as where people are born, live, learn, work, play, worship, and age that affect a wide range of health, functioning, and quality-of-life outcomes and risks. For example, if you are not able to buy healthy food at a store near you, then it will be hard for you to eat well. People who cannot eat healthy foods are more likely to develop serious health conditions like heart disease, diabetes, obesity, and chronic kidney disease. KIDNEY. ORG 15 SDoH can contribute to developing serious long-term diseases such as high blood pressure, diabetes, lupus nephritis, and obesityall conditions that increase your risk of developing chronic kidney disease. In addition, your genetics or having family members with chronic kidney disease may also play a role. Its not always easy to be healthy or have a healthy lifestyle. And why is that? Wellthe short answer is that many people, especially people living, working, and learning in under-resourced communities, simply do not have access to the very basics that are needed, such as open and green spaces like parks, reliable public transportation, healthy foods to eat, and access to appropriate medical care. All of ultrasound Research Program, National Institutes of Health, ultrasound Department of Health Human services, Social determinants of health, Twitter, June 1, 2022. Accessed May 10, 2023. twitter. com/AllofUsResearch/status/1532106012576063488 16 NATIONAL KIDNEY FOUNDATION Other reasons include not having health insurance, not having a regular doctor who knows you and your medical history, and local healthcare and policy issues, which may not provide a clear path for patients to follow. For example, if you are pregnant and unable to get good prenatal care, you can develop eclampsia (a type of high blood pressure that can occur during pregnancy and cause seizureswhich can be lifethreatening to both baby and mom) and other conditions. Eclampsia can also lead to long-term kidney damage. KIDNEY. ORG 17 chronic kidney disease and Race Over 37 million adults in the United States have chronic kidney disease and the people who are most at risk self-identify their race as: Black/African American Hispanic/Latino American Indian/Alaska Native Asian American Native Hawaiian/Other Pacific Islander Biracial Multiracial The reason why some people are at higher risk of developing chronic kidney disease is due to the SDoH, which has been caused by race-based social, economic, and political decisions that were made decades ago. These unfair decisions have impacted many urban and rural areas throughout the ultrasound. Some racial groups have a higher risk of developing chronic kidney disease than othersbut their increased risk is not due to their race. 18 NATIONAL KIDNEY FOUNDATION chronic kidney disease Prevention While many are at risk for developing chronic kidney disease, not everyone does.",
+    "word_count": 598,
+    "char_count": 3862,
+    "sentence_count": 25,
+    "metadata": {
+      "source_file": "441-9471_2307_patbro_riskfactors_t3_002.pdf",
+      "extraction_date": "2025-11-18T15:15:44.899086",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function"
+      ],
+      "chunk_index": 4,
+      "total_chunks": 7,
+      "position": "5/7",
+      "content_type": "evidence",
+      "content_type_confidence": 1,
+      "medical_entities": [
+        "chronic kidney disease",
+        "nephritis"
+      ],
+      "entity_count": 2
+    }
+  },
+  {
+    "chunk_id": 5,
+    "text": "There are usually a number of factors that come together to cause the disease. Remember, knowing the risk factors lets you take charge of your health. If you have any risk factors, you should: Get tested for chronic kidney disease with 2 simple tests: A urine (pee) test (urine albumin/creatinine ratioalso known as urine albumin-to-creatinine ratio) checks to see if you have protein in your urine. Your body needs protein. But it should only be in the blood, not your urine. A small amount of protein in your urine may mean your kidneys are not filtering your blood well enough, which can be an early sign of chronic kidney disease. A blood test (estimated glomerular filtration rateestimated glomerular filtration rate) measures how well your kidneys work. Labs calculate estimated glomerular filtration rate using creatinine levels (a normal waste product in the blood), along with your age and gender. Get tested for diabetes, high blood pressure, and heart disease. If you dont know if you have diabetes, high blood pressure, or heart disease, its important for you to find out. KIDNEY. ORG 19 Stop chronic kidney disease in its Tracks And, if you already have chronic kidney disease, these tips can help you to slow down or stop chronic kidney disease from getting worse. SEE YOUR HEALTHCARE PROVIDER AT LEAST ONCE A YEAR You take your car in for a tune-up to make sure it runs smoothly, and you should take the same care of your body. Your doctor can check for kidney disease with 2 simple tests: a urine test and a blood test. Make sure to get tested at least once a year. CONTROL BLOOD PRESSURE High blood pressure can damage your kidneys. If your blood pressure remains high, your doctor may have you take medicine. Simple tweaks to your lifestyle, such as cutting back on salt and alcohol, losing excess weight, and exercising can help keep your blood pressure in check. 20 NATIONAL KIDNEY FOUNDATION MANAGE BLOOD SUGAR Blood sugar levels can be influenced by several factors, including those out of a persons control such as hormones, illness, or stress. Over time, high blood sugar levels can cause blood vessels inside the kidney to become narrow and clogged which can damage blood vessels and harm the kidneys. If you have diabetes, the best way to protect your kidneys is to manage blood sugar levels as best as possible. Your treatment plan may include changes to your diet, exercise, and medicine to lower your blood sugar levels. EAT A HEALTHY DIET A healthy diet plan, such as the Mediterranean Diet and the DASH (Dietary Approaches to Stop Hypertension) Diet, can help lower blood pressure and the amount of blood lipids (fat in the blood). KIDNEY. ORG 21 These meals include fresh fruits and vegetables, fatfree or low-fat milk and milk products, whole grains, fish, poultry, beans, seeds, and nuts. They also have less salt, sugars, fats, and red meats. KEEP ACTIVE Youve heard it before! But its important to repeat exercise can help you: Maintain a healthy weight Control your blood pressure and cholesterol Build strength and endurance Lower your chances of getting diabetes, heart disease, and kidney disease 22 NATIONAL KIDNEY FOUNDATION Many types of exercises can help you stay healthy including walking, household chores, playing a sport, or aerobic exercise (jogging, swimming, biking, climbing stairs, or hiking). STOP SMOKING Everyone is well aware of the dangers associated with smoking. Smoking causes diseases in every organ of the body, including the kidneys. If you cannot quit smoking on your own, ask your doctor about treatment options.",
+    "word_count": 598,
+    "char_count": 3579,
+    "sentence_count": 31,
+    "metadata": {
+      "source_file": "441-9471_2307_patbro_riskfactors_t3_002.pdf",
+      "extraction_date": "2025-11-18T15:15:44.899086",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function"
+      ],
+      "chunk_index": 5,
+      "total_chunks": 7,
+      "position": "6/7",
+      "content_type": "dietary",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "creatinine",
+        "diet",
+        "exercise"
+      ],
+      "entity_count": 5
+    }
+  },
+  {
+    "chunk_id": 6,
+    "text": "If you cannot quit smoking on your own, ask your doctor about treatment options. You can also visit smokefree. gov for free help and support to stop smoking. LIMIT OVER-THE-COUNTER PAIN MEDICATIONS Over-the-counter pain medications can cause kidney damage. These medications are called NSAIDs (nonsteroidal anti-inflammatory drugs) and include products like Advil (ibuprofen) and Aleve (naproxen). They are typically used to lower fevers like when someone has the flu and to reduce aches and pains due to inflammation like when we have a minor muscle ache from playing sports. KIDNEY. ORG 23 Studies have found that NSAIDs may increase the risk of developing kidney disease. Long-term use of NSAIDs, especially at high doses, reduces the blood flow to the kidney which can cause harm to kidney tissue. Its important to know that Tylenol (acetaminophen) is not an nonsteroidal anti-inflammatory drug and is an appropriate medication to use to lower fevers and reduce minor aches and pains associated with inflammation. If you are taking NSAIDs, you should ask your doctor about other medicines to manage pain, such as acetaminophen. 24 NATIONAL KIDNEY FOUNDATION We Are Here To Help There are two ways to learn about the many free resources available to you: Call the National Kidney Foundation Cares Patient Help Line toll-free at 855. National Kidney Foundation. CARES (855. 653. 2273) or email nkfcareskidney. org Learn more at kidney. org KIDNEY. ORG 25 Notes: 26 NATIONAL KIDNEY FOUNDATION Setting a Standard for Care The National Kidney Foundation, through its Kidney Disease Outcomes Quality Initiative (Kidney Disease Outcomes Quality Initiative), defines stages of kidney disease and offers guidelines that help your doctor and healthcare team make important decisions about your medical treatment. The information in this booklet is based on those recommended guidelines. The information contained in this publication is based on current data and expert guidance available at the time of publication. The information is intended to help patients become aware of their disease and its management. This publication is not intended to set out a preferred standard of care and should not be construed as one. Neither should the information be interpreted as prescribing an exclusive course of management. Patients should always consult with their healthcare providers regarding decisions about their individual plan of care. KIDNEY. ORG 27 The National Kidney Foundation is revolutionizing the fight to save lives by eliminating preventable kidney disease, accelerating innovation for the dignity of the patient experience, and dismantling structural inequities in kidney care, dialysis, and transplantation. 30 E. 33RD ST. NEW YORK, NY 10016 800. 622. 9010 KIDNEY. ORG 2023 National Kidney Foundation, Inc. 443-9471_2307",
+    "word_count": 432,
+    "char_count": 2826,
+    "sentence_count": 31,
+    "metadata": {
+      "source_file": "441-9471_2307_patbro_riskfactors_t3_002.pdf",
+      "extraction_date": "2025-11-18T15:15:44.899086",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function"
+      ],
+      "chunk_index": 6,
+      "total_chunks": 7,
+      "position": "7/7",
+      "content_type": "recommendation",
+      "content_type_confidence": 4,
+      "medical_entities": [
+        "dialysis"
+      ],
+      "entity_count": 1
+    }
+  }
+]
