@@ -1,0 +1,18 @@
+{
+  "total_pages": 116,
+  "raw_text_length": 228838,
+  "cleaned_text_length": 239410,
+  "source_file": "Economics-of-Kidney-Disease-full-report_accessible.pdf",
+  "extraction_date": "2025-11-21T14:29:42.432042",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2033",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "albuminuria"
+  ],
+  "total_chunks": 58,
+  "avg_chunk_size": 578.7758620689655,
+  "processing_date": "2025-11-21T14:29:43.221572"
+}

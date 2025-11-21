@@ -3,7 +3,7 @@
   "raw_text_length": 168156,
   "cleaned_text_length": 199624,
   "source_file": "HFHS_CKD_V6.pdf",
-  "extraction_date": "2025-11-18T15:16:14.882510",
+  "extraction_date": "2025-11-21T14:30:00.694703",
   "document_type": "medical_guideline",
   "language": "en",
   "keywords": [
@@ -13,5 +13,5 @@
   ],
   "total_chunks": 50,
   "avg_chunk_size": 574.8,
-  "processing_date": "2025-11-18T15:16:15.568056"
+  "processing_date": "2025-11-21T14:30:01.385692"
 }
