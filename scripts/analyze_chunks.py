@@ -266,18 +266,7 @@ def export_to_txt(vectordb_dir: str = "data/vectordb_ready/documents", output_fi
 
 
 def main():
-    """
-    Main execution function.
-    
-    Workflow:
-    1. Check if vectordb_ready directory exists
-    2. Load and analyze all chunks (print statistics to console)
-    3. Export chunks to readable text file for manual review
-    
-    Exit Conditions:
-    - If vectordb_ready directory doesn't exist → print error and exit
-    - If no vectordb_ready JSON files found → load_all_chunks() returns empty list
-    """
+  
     # Configuration
     vectordb_dir = "data/vectordb_ready/documents"
     
