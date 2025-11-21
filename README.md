@@ -24,14 +24,14 @@ An intelligent medical knowledge system for chronic kidney disease (CKD) care, f
 
 ## 📊 Current Statistics
 
-| Metric | Value |
-|--------|-------|
-| **Total Documents** | 537 chunks |
-| **Source Files** | 45 medical documents |
-| **Embedding Model** | OpenAI text-embedding-3-small (1536D) |
-| **Database Type** | ChromaDB (persistent) |
-| **Query Speed** | < 1 second |
-| **Content Types** | 7 types (recommendation, evidence, dietary, treatment, etc.) |
+| Metric              | Value                                                        |
+| ------------------- | ------------------------------------------------------------ |
+| **Total Documents** | 537 chunks                                                   |
+| **Source Files**    | 45 medical documents                                         |
+| **Embedding Model** | OpenAI text-embedding-3-small (1536D)                        |
+| **Database Type**   | ChromaDB (persistent)                                        |
+| **Query Speed**     | < 1 second                                                   |
+| **Content Types**   | 7 types (recommendation, evidence, dietary, treatment, etc.) |
 
 ---
 
@@ -56,6 +56,7 @@ python scripts/query_vectordb.py
 ```
 
 Then type your questions:
+
 ```
 🔍 Query: What are the stages of CKD?
 🔍 Query: What dietary changes are recommended?
@@ -123,13 +124,13 @@ Nephro-AI/
 
 ## 💻 Available Scripts
 
-| Script                | Purpose                      | Command                                         |
-| --------------------- | ---------------------------- | ----------------------------------------------- |
-| **query_vectordb.py** | Query the database           | `python scripts/query_vectordb.py "question"`  |
-| **build_vectordb.py** | Build/rebuild database       | `python scripts/build_vectordb.py`             |
-| **pdf_extractor.py**  | Process new PDFs             | `python scripts/pdf_extractor.py`              |
-| **prepare_vectordb.py** | Prepare chunks for vectorization | `python scripts/prepare_vectordb.py`     |
-| **analyze_chunks.py** | Analyze processed data       | `python scripts/analyze_chunks.py`             |
+| Script                  | Purpose                          | Command                                       |
+| ----------------------- | -------------------------------- | --------------------------------------------- |
+| **query_vectordb.py**   | Query the database               | `python scripts/query_vectordb.py "question"` |
+| **build_vectordb.py**   | Build/rebuild database           | `python scripts/build_vectordb.py`            |
+| **pdf_extractor.py**    | Process new PDFs                 | `python scripts/pdf_extractor.py`             |
+| **prepare_vectordb.py** | Prepare chunks for vectorization | `python scripts/prepare_vectordb.py`          |
+| **analyze_chunks.py**   | Analyze processed data           | `python scripts/analyze_chunks.py`            |
 
 ---
 
@@ -156,6 +157,7 @@ filter:dietary sodium restriction
 ### Metadata Filters
 
 Available content types:
+
 - `recommendation` - Clinical recommendations
 - `evidence` - Research evidence
 - `definition` - Medical definitions
@@ -234,18 +236,23 @@ answer = response.choices[0].message.content
 ## 🎯 Use Cases
 
 ### 1. Medical Chatbot
+
 Build a conversational AI that answers kidney care questions using RAG
 
 ### 2. Clinical Decision Support
+
 Help doctors find relevant guidelines and recommendations
 
 ### 3. Patient Education
+
 Generate patient-friendly explanations of medical conditions
 
 ### 4. Research Tool
+
 Search and retrieve evidence-based medical information
 
 ### 5. Knowledge Base
+
 Power a searchable medical knowledge repository
 
 ---
