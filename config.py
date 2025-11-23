@@ -19,6 +19,10 @@ EMBEDDING_DIMENSION = 1536
 OPENROUTER_API_KEY = "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"
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/embeddings"
 
+# ElevenLabs API Settings
+ELEVENLABS_API_KEY = "sk_93f5e8ed59287f18b686853f86264f7dc41694addc431217"
+ELEVENLABS_VOICE_ID = "21m00Tcm4TlvDq8ikWAM" # Default voice (Rachel)
+
 # Database Metadata
 DB_METADATA = {
     "description": "Nephro-AI Medical Knowledge Base",

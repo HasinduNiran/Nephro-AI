@@ -12,10 +12,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from scripts.patient_input import PatientInputHandler
 from scripts.rag_engine import RAGEngine
+from scripts.tts_engine import TTSEngine
 
 def main():
     print("=" * 70)
-    print("🤖 NEPHRO-AI KIDNEY CARE CHATBOT (RAG ENABLED)")
+    print("🤖 NEPHRO-AI KIDNEY CARE CHATBOT (RAG + TTS ENABLED)")
     print("=" * 70)
     print("Initializing components...")
     
@@ -30,6 +31,7 @@ def main():
         print(f"Loading Whisper model: {args.model}...")
         input_handler = PatientInputHandler(model_size=args.model)
         chatbot = RAGEngine()
+        tts = TTSEngine()
         print("\n✅ All systems ready!")
     except Exception as e:
         print(f"\n❌ Initialization failed: {e}")
@@ -75,13 +77,18 @@ def main():
             # Process Query
             print("\n🤔 Thinking...")
             result = chatbot.process_query(query)
+            response_text = result["response"]
             
             print("\n" + "="*50)
             print("🤖 NEPHRO-AI RESPONSE:")
             print("="*50)
-            print(result["response"])
+            print(response_text)
             print("\n" + "-"*50)
             print(f"📚 Sources Used: {len(result['source_documents'])}")
+            
+            # Voice Output (only in voice mode)
+            if current_mode == "voice":
+                tts.generate_and_play(response_text)
             
         except KeyboardInterrupt:
             print("\n👋 Goodbye!")
