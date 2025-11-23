@@ -96,6 +96,50 @@ class SinhalaNLUEngine:
             "original_query": text
         }
 
+    def generate_sinhala_response(self, english_text: str) -> str:
+        """
+        Translate/Style an English response into Sinhala using SinLLaMA.
+        
+        Args:
+            english_text: The medical response in English
+            
+        Returns:
+            Sinhala translation/styled response
+        """
+        if not self.model:
+            return f"[Model Not Loaded] {english_text}"
+
+        # Prompt format for SinLLaMA (Alpaca style)
+        prompt = f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+
+### Instruction:
+Translate the following English medical advice into natural, empathetic Sinhala.
+
+### Input:
+{english_text}
+
+### Response:
+"""
+        
+        inputs = self.tokenizer([prompt], return_tensors="pt").to("cuda")
+        
+        outputs = self.model.generate(
+            **inputs, 
+            max_new_tokens=512, 
+            use_cache=True,
+            temperature=0.7,
+        )
+        
+        generated_text = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)[0]
+        
+        # Extract the response part (after ### Response:)
+        if "### Response:" in generated_text:
+            response = generated_text.split("### Response:")[-1].strip()
+        else:
+            response = generated_text.strip()
+            
+        return response
+
 if __name__ == "__main__":
     nlu = SinhalaNLUEngine()
     result = nlu.analyze_query("මට කෙසල් කන්න පුළුවන්ද?")
