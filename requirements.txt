@@ -7,20 +7,6 @@ requests>=2.31.0
 # NLU (Natural Language Understanding)
 spacy>=3.7.2
 
-# Optional: Local embeddings (if not using OpenAI)
-# sentence-transformers>=2.2.2
-# transformers>=4.35.0
-
-# Speech to Text
-openai-whisper>=20231117
-sounddevice>=0.4.6
-soundfile>=0.12.1
-
-# PDF Processing
-PyPDF2>=3.0.1
-pdfplumber>=0.10.3
-pillow>=10.1.0
-
 # Natural Language Processing
 nltk>=3.8.1
 spacy>=3.7.2

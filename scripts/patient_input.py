@@ -84,12 +84,13 @@ class PatientInputHandler:
             print(f"❌ Recording failed: {e}")
             return None
 
-    def transcribe_audio(self, audio_path: str) -> str:
+    def transcribe_audio(self, audio_path: str, language: str = None) -> str:
         """
         Transcribe audio file to text using Whisper
         
         Args:
             audio_path: Path to audio file
+            language: Language code (e.g., 'en', 'si'). If None, auto-detects.
             
         Returns:
             Transcribed text
@@ -99,9 +100,19 @@ class PatientInputHandler:
             
         self._load_model()
         
-        print("🔄 Transcribing...")
+        print(f"🔄 Transcribing ({language if language else 'auto'})...")
         try:
-            result = self.whisper_model.transcribe(audio_path)
+            # Add initial prompt to guide Whisper (especially for Sinhala)
+            initial_prompt = None
+            if language == 'si':
+                initial_prompt = "මෙය වකුගඩු රෝගය පිළිබඳ සිංහලෙන් අසන ලද ප්‍රශ්නයකි." # "This is a question about kidney disease in Sinhala"
+            
+            result = self.whisper_model.transcribe(
+                audio_path, 
+                language=language,
+                initial_prompt=initial_prompt,
+                fp16=False # Fix for CPU warning
+            )
             text = result["text"].strip()
             print(f"🗣️ You said: \"{text}\"")
             return text
@@ -118,13 +129,14 @@ class PatientInputHandler:
         except Exception as e:
             print(f"⚠️ Could not play audio: {e}")
 
-    def get_input(self, mode: str = "text", debug_audio: bool = False) -> str:
+    def get_input(self, mode: str = "text", debug_audio: bool = False, language: str = None) -> str:
         """
         Get input from patient
         
         Args:
             mode: 'text' or 'voice'
             debug_audio: If True, plays back recorded audio
+            language: Language code for transcription (e.g., 'si')
             
         Returns:
             Patient query string
@@ -135,7 +147,7 @@ class PatientInputHandler:
                 if debug_audio:
                     print("🔊 Playing back recorded audio...")
                     self.play_audio(audio_path)
-                return self.transcribe_audio(audio_path)
+                return self.transcribe_audio(audio_path, language=language)
             return ""
         else:
             return input("\n👤 You: ").strip()
