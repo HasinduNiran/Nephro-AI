@@ -1,14 +1,12 @@
-"""
-Text-to-Speech Engine for Nephro-AI
-Handles conversion of text response to speech using ElevenLabs API.
-"""
-
 import sys
-import requests
+import wave
+import io
 import sounddevice as sd
 import soundfile as sf
-import io
+import numpy as np
 from pathlib import Path
+from google import genai
+from google.genai import types
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -18,12 +16,18 @@ import config
 class TTSEngine:
     def __init__(self):
         """Initialize TTS Engine with config"""
-        self.api_key = config.ELEVENLABS_API_KEY
-        self.voice_id = config.ELEVENLABS_VOICE_ID
-        self.api_url = f"https://api.elevenlabs.io/v1/text-to-speech/{self.voice_id}"
+        self.api_key = config.GOOGLE_API_KEY
+        self.voice_name = config.GOOGLE_TTS_VOICE
         
-        if not self.api_key:
-            print("⚠️ Warning: ELEVENLABS_API_KEY not found in config.")
+        if not self.api_key or self.api_key == "YOUR_GOOGLE_API_KEY":
+            print("⚠️ Warning: GOOGLE_API_KEY not set in config.")
+            self.client = None
+        else:
+            try:
+                self.client = genai.Client(api_key=self.api_key)
+            except Exception as e:
+                print(f"❌ TTS Init Error: {e}")
+                self.client = None
 
     def generate_and_play(self, text: str):
         """
@@ -32,38 +36,42 @@ class TTSEngine:
         Args:
             text: Text to convert to speech
         """
-        if not self.api_key:
-            print("❌ TTS Error: API Key missing")
+        if not self.client:
+            print("❌ TTS Error: Client not initialized (check API Key)")
             return
-
-        headers = {
-            "Accept": "audio/mpeg",
-            "Content-Type": "application/json",
-            "xi-api-key": self.api_key
-        }
-
-        data = {
-            "text": text,
-            "model_id": "eleven_multilingual_v2",
-            "voice_settings": {
-                "stability": 0.5,
-                "similarity_boost": 0.5
-            }
-        }
 
         try:
             print("🔊 Generating speech...")
-            response = requests.post(self.api_url, json=data, headers=headers)
+            response = self.client.models.generate_content(
+                model="gemini-2.5-flash-preview-tts",
+                contents=f"Say cheerfully: {text}",
+                config=types.GenerateContentConfig(
+                    response_modalities=["AUDIO"],
+                    speech_config=types.SpeechConfig(
+                        voice_config=types.VoiceConfig(
+                            prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                voice_name=self.voice_name,
+                            )
+                        )
+                    ),
+                )
+            )
             
-            if response.status_code == 200:
-                # Convert audio bytes to numpy array for sounddevice
-                audio_data, sample_rate = sf.read(io.BytesIO(response.content))
-                print("▶️ Playing audio...")
-                sd.play(audio_data, sample_rate)
-                sd.wait() # Wait for playback to finish
-            else:
-                print(f"❌ TTS API Error: {response.status_code} - {response.text}")
+            # Extract audio data
+            if response.candidates and response.candidates[0].content.parts:
+                audio_data_bytes = response.candidates[0].content.parts[0].inline_data.data
                 
+                # Play audio
+                print("▶️ Playing audio...")
+                # Convert raw PCM bytes to numpy array
+                # Google GenAI TTS returns raw PCM (16-bit, 24kHz by default for this model/config)
+                audio_data = np.frombuffer(audio_data_bytes, dtype=np.int16)
+                
+                sd.play(audio_data, samplerate=24000)
+                sd.wait()
+            else:
+                print("❌ TTS Error: No audio content in response")
+
         except Exception as e:
             print(f"❌ TTS Error: {e}")
 
