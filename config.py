@@ -16,12 +16,12 @@ EMBEDDING_MODEL = "openai/text-embedding-3-small"
 EMBEDDING_DIMENSION = 1536
 
 # OpenRouter API Settings
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = "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"
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/embeddings"
 
-# ElevenLabs API Settings
-ELEVENLABS_API_KEY = "sk_93f5e8ed59287f18b686853f86264f7dc41694addc431217"
-ELEVENLABS_VOICE_ID = "21m00Tcm4TlvDq8ikWAM" # Default voice (Rachel)
+# Google GenAI API Settings
+GOOGLE_API_KEY = "AIzaSyAGwHJuz5tEj-gigNvbMAVKrXOc4E1I0BM" # Placeholder
+GOOGLE_TTS_VOICE = "Kore"
 
 # Database Metadata
 DB_METADATA = {
