@@ -10,6 +10,11 @@ from typing import Dict, List, Tuple, Optional
 import re
 from pathlib import Path
 import json
+import sys
+
+# Add project root to path for config import
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from config import MEDICAL_ENTITIES, CKD_ABBREVIATIONS, CKD_REVERSE_ABBREVIATIONS
 
 
 class CKDNLUEngine:
@@ -46,6 +51,10 @@ class CKDNLUEngine:
         self._setup_intent_patterns()
         self._setup_medical_entities()
         self._setup_symptom_patterns()
+        
+        # Load abbreviations
+        self.abbreviations = CKD_ABBREVIATIONS
+        self.reverse_abbreviations = CKD_REVERSE_ABBREVIATIONS
         
         print("   ✓ NLU Engine ready!")
     
@@ -129,9 +138,8 @@ class CKDNLUEngine:
         """Define CKD-specific medical entities"""
         
         # Import from config
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from config import MEDICAL_ENTITIES
+        # Already imported at top level
+        # from config import MEDICAL_ENTITIES
         
         # Create phrase patterns for medical entities
         patterns = [self.nlp.make_doc(entity) for entity in MEDICAL_ENTITIES]
@@ -185,26 +193,32 @@ class CKDNLUEngine:
                 - emotion: Emotional state
                 - suggestions: Query enhancement suggestions
         """
-        # Process with spaCy
-        doc = self.nlp(query.lower())
+        # Expand abbreviations
+        expanded_query = self._expand_abbreviations(query)
+        doc = self.nlp(expanded_query.lower())
         
         # Extract components
         intent = self._detect_intent(doc)
         entities = self._extract_entities(doc)
+        lab_values = self._extract_lab_values(doc)
         symptoms = self._identify_symptoms(doc)
         severity = self._assess_severity(doc)
         emotion = self._detect_emotion(doc)
+        risk_factors = self._identify_risk_factors(doc)
         
         # Generate enhanced query suggestions
         suggestions = self._generate_query_enhancements(
-            query, intent, entities, symptoms, severity, emotion
+            query, intent, entities, symptoms, severity, emotion, risk_factors
         )
         
         analysis = {
             "original_query": query,
+            "expanded_query": expanded_query,
             "intent": intent,
             "entities": entities,
+            "lab_values": lab_values,
             "symptoms": symptoms,
+            "risk_factors": risk_factors,
             "severity": severity,
             "emotion": emotion,
             "query_enhancements": suggestions,
@@ -242,7 +256,9 @@ class CKDNLUEngine:
             "conditions": [],
             "medications": [],
             "procedures": [],
-            "measurements": []
+            "measurements": [],
+            "nutrients": [],  # New category
+            "foods": []       # New category
         }
         
         # Use spaCy NER
@@ -258,7 +274,14 @@ class CKDNLUEngine:
         matches = self.phrase_matcher(doc)
         for match_id, start, end in matches:
             span = doc[start:end]
-            entities["medical_terms"].append(span.text)
+            term = span.text
+            entities["medical_terms"].append(term)
+            
+            # Categorize specific terms
+            if any(n in term for n in ["potassium", "sodium", "phosphorus", "calcium", "protein"]):
+                entities["nutrients"].append(term)
+            if any(f in term for f in ["diet", "food", "eat", "meal"]):
+                entities["foods"].append(term)
         
         # Check against CKD term categories
         text = doc.text.lower()
@@ -273,6 +296,95 @@ class CKDNLUEngine:
         entities = {k: list(set(v)) for k, v in entities.items() if v}
         
         return entities
+
+    def _expand_abbreviations(self, text: str) -> str:
+        """Expand medical abbreviations"""
+        expanded_text = text
+        # Sort by length to handle overlapping abbreviations
+        sorted_abbrevs = sorted(self.abbreviations.items(), key=lambda x: len(x[0]), reverse=True)
+        
+        for abbrev, full_term in sorted_abbrevs:
+            # Use word boundaries
+            pattern = r'\b' + re.escape(abbrev.lower()) + r'\b'
+            expanded_text = re.sub(pattern, full_term, expanded_text, flags=re.IGNORECASE)
+            
+        return expanded_text
+
+    def _extract_lab_values(self, doc) -> List[Dict]:
+        """Extract lab values with units"""
+        lab_values = []
+        text = doc.text.lower()
+        
+        # Pattern for value extraction: (test name) (is/was/of) (value) (unit)?
+        # e.g. "creatinine is 2.5", "gfr of 45", "potassium 5.2"
+        
+        # Common lab tests to look for
+        lab_tests = ["creatinine", "egfr", "gfr", "potassium", "sodium", "calcium", 
+                     "phosphorus", "albumin", "hemoglobin", "bun", "urea"]
+        
+        for test in lab_tests:
+            if test in text:
+                # Look for number near the test name
+                # Simple regex: test name ... number ... (optional unit)
+                # Exclude common words from unit capture
+                pattern = re.search(rf'{test}.*?(\d+\.?\d*)\s*([a-z/]+)?', text)
+                if pattern:
+                    value = pattern.group(1)
+                    unit = pattern.group(2) if pattern.group(2) else "unknown"
+                    
+                    # Filter out invalid units (common words)
+                    if unit in ["and", "is", "of", "the", "with", "but", "or"]:
+                        unit = "unknown"
+                    
+                    # Verify it's not a stage number (e.g. stage 3)
+                    if test == "ckd" or "stage" in text[max(0, pattern.start()-10):pattern.start()]:
+                        continue
+                        
+                    lab_values.append({
+                        "test": test,
+                        "value": float(value),
+                        "unit": unit,
+                        "context": pattern.group(0)
+                    })
+        
+        return lab_values
+
+    def _identify_risk_factors(self, doc) -> List[str]:
+        """Identify CKD risk factors"""
+        risk_factors = []
+        text = doc.text.lower()
+        
+        risks = {
+            "diabetes": ["diabetes", "diabetic", "high blood sugar", "sugar"],
+            "hypertension": ["hypertension", "high blood pressure", "bp"],
+            "family_history": ["family history", "mother", "father", "parent", "genetic"],
+            "obesity": ["obese", "overweight", "bmi"],
+            "smoking": ["smoke", "smoking", "tobacco"]
+        }
+        
+        for risk, keywords in risks.items():
+            # Find which keyword matched
+            found_keyword = next((k for k in keywords if k in text), None)
+            if found_keyword:
+                # Check negation for the specific keyword found
+                if not self._check_negation(doc, found_keyword):
+                    risk_factors.append(risk)
+                    
+        return risk_factors
+
+    def _check_negation(self, doc, term: str) -> bool:
+        """Check if a term is negated in the text"""
+        # Simple dependency parsing or window-based negation
+        text = doc.text.lower()
+        negations = ["no", "not", "don't", "dont", "never", "without"]
+        
+        term_idx = text.find(term)
+        if term_idx == -1:
+            return False
+            
+        # Check window before term
+        pre_window = text[max(0, term_idx-20):term_idx]
+        return any(neg in pre_window.split() for neg in negations)
     
     def _identify_symptoms(self, doc) -> List[Dict[str, str]]:
         """Identify symptoms mentioned in query"""
@@ -337,7 +449,8 @@ class CKDNLUEngine:
         entities: Dict, 
         symptoms: List, 
         severity: str, 
-        emotion: List
+        emotion: List,
+        risk_factors: List = None
     ) -> List[str]:
         """Generate enhanced queries for better vector search"""
         
@@ -375,6 +488,17 @@ class CKDNLUEngine:
         if severity in ["severe", "urgent"]:
             enhancements.append(f"urgent {query}")
             enhancements.append(f"when to seek immediate care {query}")
+            
+        # Add nutrient specific queries
+        if entities.get("nutrients"):
+            for nutrient in entities["nutrients"]:
+                enhancements.append(f"foods high in {nutrient}")
+                enhancements.append(f"foods low in {nutrient}")
+                
+        # Add risk factor context
+        if risk_factors:
+            for risk in risk_factors:
+                enhancements.append(f"{risk} management in CKD")
         
         return list(set(enhancements))  # Remove duplicates
     
@@ -444,6 +568,9 @@ def test_nlu_engine():
         "When should I start dialysis?",
         "I was just diagnosed with CKD and I'm scared",
         "What foods should I avoid with high potassium?",
+        "My creatinine is 2.5 and egfr is 45",
+        "I don't have diabetes but my BP is high",
+        "Foods for low sodium diet"
     ]
     
     print("\n" + "=" * 70)
@@ -479,6 +606,14 @@ def test_nlu_engine():
         
         print(f"\n⚠️  SEVERITY: {analysis['severity']}")
         print(f"😊 EMOTION: {', '.join(analysis['emotion'])}")
+        
+        if analysis.get('lab_values'):
+            print(f"\n🧪 LAB VALUES:")
+            for lab in analysis['lab_values']:
+                print(f"   • {lab['test']}: {lab['value']} {lab['unit']}")
+                
+        if analysis.get('risk_factors'):
+            print(f"\n⚠️  RISK FACTORS: {', '.join(analysis['risk_factors'])}")
         
         print(f"\n🔍 ENHANCED QUERIES:")
         for j, enhanced in enumerate(analysis['query_enhancements'][:3], 1):
