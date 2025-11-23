@@ -13,16 +13,62 @@ from typing import List, Dict, Any
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import config
+from scripts.sinhala_nlu import SinhalaNLUEngine
 
 class LLMEngine:
     def __init__(self):
         """Initialize LLM Engine with config"""
         self.api_key = config.OPENROUTER_API_KEY
         self.api_url = "https://openrouter.ai/api/v1/chat/completions"
-        self.model = "openai/gpt-4.1" # Updated to GPT-4.1 as requested
+        self.model = "openai/gpt-4.1" # Bridge & Brain Model
+        
+        # Initialize Sinhala NLU (Style Layer)
+        self.sinhala_nlu = SinhalaNLUEngine()
         
         if not self.api_key:
             print("⚠️ Warning: OPENROUTER_API_KEY not found in config.")
+
+    def translate_to_english(self, text: str) -> str:
+        """
+        Bridge Layer: Translate Sinhala text to English.
+        """
+        # Simple check if text contains Sinhala characters (Unicode range)
+        is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in text)
+        
+        if not is_sinhala:
+            return text
+
+        print(f"🔄 Bridge: Translating '{text}' to English...")
+        
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "https://github.com/Nephro-AI",
+            "X-Title": "Nephro-AI",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": "You are a professional translator. Translate the following Sinhala text to English. Output ONLY the translation."},
+                {"role": "user", "content": text}
+            ],
+            "temperature": 0.3,
+            "max_tokens": 200
+        }
+        
+        try:
+            response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
+            if response.status_code == 200:
+                translation = response.json()['choices'][0]['message']['content'].strip()
+                print(f"✅ Bridge Output: {translation}")
+                return translation
+            else:
+                print(f"❌ Bridge Error: {response.text}")
+                return text # Fallback
+        except Exception as e:
+            print(f"❌ Bridge Exception: {e}")
+            return text
 
     def generate_response(
         self, 
@@ -31,19 +77,18 @@ class LLMEngine:
         patient_context: str
     ) -> str:
         """
-        Generate a response using RAG (Retrieval-Augmented Generation)
-        
-        Args:
-            query: User's question
-            context_documents: List of relevant text chunks from VectorDB
-            patient_context: String summary of patient data
-            
-        Returns:
-            Generated response string
+        Generate a response using the Sandwich Method:
+        1. Bridge: Sinhala -> English
+        2. Brain: RAG (English)
+        3. Style: English -> Sinhala
         """
         
-        # 1. Construct the System Prompt
-        # 1. Construct the System Prompt
+        # --- 1. BRIDGE LAYER (Sinhala -> English) ---
+        english_query = self.translate_to_english(query)
+        
+        # --- 2. BRAIN LAYER (English Logic + RAG) ---
+        
+        # Construct the System Prompt
         system_prompt = (
             "You are Nephro-AI, a specialized medical assistant for Chronic Kidney Disease (CKD) patients. "
             "Your goal is to provide accurate, empathetic, and personalized information based on the provided context.\n\n"
@@ -56,20 +101,19 @@ class LLMEngine:
             "5. NO SUMMARY/DISCLAIMER: Do NOT include a 'Summary' section or a 'Disclaimer' section at the end. Just provide the answer directly."
         )
 
-        # 2. Construct the User Prompt with Context
-        # Join top 3 documents to avoid token limits
+        # Construct the User Prompt with Context
         knowledge_context = "\n\n".join(context_documents[:3])
         
         user_prompt = (
             f"--- PATIENT PROFILE ---\n{patient_context}\n\n"
             f"--- MEDICAL KNOWLEDGE CONTEXT ---\n{knowledge_context}\n\n"
-            f"--- USER QUESTION ---\n{query}"
+            f"--- USER QUESTION ---\n{english_query}"
         )
 
-        # 3. Call API
+        # Call API for Brain Layer
         headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "HTTP-Referer": "https://github.com/Nephro-AI", # Required by OpenRouter
+            "HTTP-Referer": "https://github.com/Nephro-AI",
             "X-Title": "Nephro-AI",
             "Content-Type": "application/json"
         }
@@ -84,6 +128,7 @@ class LLMEngine:
             "max_tokens": 500
         }
 
+        english_response = ""
         try:
             response = requests.post(
                 self.api_url, 
@@ -94,18 +139,42 @@ class LLMEngine:
             
             if response.status_code == 200:
                 result = response.json()
-                return result['choices'][0]['message']['content'].strip()
+                english_response = result['choices'][0]['message']['content'].strip()
+                print(f"🧠 Brain Output: {english_response}")
             else:
                 return f"Error generating response: {response.status_code} - {response.text}"
                 
         except Exception as e:
             return f"Error communicating with LLM: {str(e)}"
 
+        # --- 3. STYLE LAYER (English -> Sinhala) ---
+        # Check if original query was Sinhala to decide if we should translate back
+        is_sinhala_query = any('\u0D80' <= char <= '\u0DFF' for char in query)
+        
+        if is_sinhala_query:
+            print("🎨 Style: Styling to Sinhala...")
+            sinhala_response = self.sinhala_nlu.generate_sinhala_response(english_response)
+            return sinhala_response
+        else:
+            return english_response
+
 if __name__ == "__main__":
     # Test
     llm = LLMEngine()
+    
+    # Test Case 1: English
+    print("\n--- TEST 1: English ---")
     print(llm.generate_response(
         "Can I eat bananas?", 
+        ["Bananas are high in potassium.", "High potassium is dangerous for Stage 3+ CKD."], 
+        "Patient Profile: Stage 3 CKD, High Potassium (5.2)"
+    ))
+    
+    # Test Case 2: Sinhala (Mocking the input)
+    print("\n--- TEST 2: Sinhala ---")
+    # "මට කෙසල් කන්න පුළුවන්ද?" (Can I eat bananas?)
+    print(llm.generate_response(
+        "මට කෙසල් කන්න පුළුවන්ද?", 
         ["Bananas are high in potassium.", "High potassium is dangerous for Stage 3+ CKD."], 
         "Patient Profile: Stage 3 CKD, High Potassium (5.2)"
     ))
