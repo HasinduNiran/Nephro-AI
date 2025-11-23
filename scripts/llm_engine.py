@@ -70,6 +70,42 @@ class LLMEngine:
             print(f"❌ Bridge Exception: {e}")
             return text
 
+    def translate_to_sinhala_fallback(self, text: str) -> str:
+        """
+        Fallback Style Layer: Translate English text to Sinhala using OpenAI.
+        Used when SinLLaMA is not available.
+        """
+        print(f"⚠️ Style: SinLLaMA not loaded. Using OpenAI fallback...")
+        
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "https://github.com/Nephro-AI",
+            "X-Title": "Nephro-AI",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": "You are a professional translator. Translate the following English medical advice into natural, empathetic Sinhala. Output ONLY the translation."},
+                {"role": "user", "content": text}
+            ],
+            "temperature": 0.5,
+            "max_tokens": 500
+        }
+        
+        try:
+            response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
+            if response.status_code == 200:
+                translation = response.json()['choices'][0]['message']['content'].strip()
+                return translation
+            else:
+                print(f"❌ Style Fallback Error: {response.text}")
+                return text # Ultimate fallback
+        except Exception as e:
+            print(f"❌ Style Fallback Exception: {e}")
+            return text
+
     def generate_response(
         self, 
         query: str, 
@@ -82,11 +118,16 @@ class LLMEngine:
         2. Brain: RAG (English)
         3. Style: English -> Sinhala
         """
+        print("\n" + "="*50)
+        print("🚀 STARTING PIPELINE")
+        print("="*50)
         
         # --- 1. BRIDGE LAYER (Sinhala -> English) ---
+        print("\n[1] 🌉 BRIDGE LAYER")
         english_query = self.translate_to_english(query)
         
         # --- 2. BRAIN LAYER (English Logic + RAG) ---
+        print("\n[2] 🧠 BRAIN LAYER")
         
         # Construct the System Prompt
         system_prompt = (
@@ -140,7 +181,7 @@ class LLMEngine:
             if response.status_code == 200:
                 result = response.json()
                 english_response = result['choices'][0]['message']['content'].strip()
-                print(f"🧠 Brain Output: {english_response}")
+                print(f"✅ Brain Output: {english_response}")
             else:
                 return f"Error generating response: {response.status_code} - {response.text}"
                 
@@ -148,14 +189,23 @@ class LLMEngine:
             return f"Error communicating with LLM: {str(e)}"
 
         # --- 3. STYLE LAYER (English -> Sinhala) ---
+        print("\n[3] 🎨 STYLE LAYER")
         # Check if original query was Sinhala to decide if we should translate back
         is_sinhala_query = any('\u0D80' <= char <= '\u0DFF' for char in query)
         
         if is_sinhala_query:
-            print("🎨 Style: Styling to Sinhala...")
-            sinhala_response = self.sinhala_nlu.generate_sinhala_response(english_response)
-            return sinhala_response
+            if self.sinhala_nlu.model:
+                print("✨ Using SinLLaMA for styling...")
+                sinhala_response = self.sinhala_nlu.generate_sinhala_response(english_response)
+                print(f"✅ Style Output: {sinhala_response}")
+                return sinhala_response
+            else:
+                print("⚠️ SinLLaMA not available. Falling back to OpenAI...")
+                sinhala_response = self.translate_to_sinhala_fallback(english_response)
+                print(f"✅ Style Output (Fallback): {sinhala_response}")
+                return sinhala_response
         else:
+            print("ℹ️ Query was English. Skipping Style Layer.")
             return english_response
 
 if __name__ == "__main__":

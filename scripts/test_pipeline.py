@@ -21,6 +21,19 @@ def test_style():
     print(f"Input: {english_text}")
     print(f"Output: {sinhala_text}")
 
+    print(f"Output: {sinhala_text}")
+
+def test_full_pipeline():
+    print("\n--- Testing Full Pipeline (Sandwich Method with Fallback) ---")
+    llm = LLMEngine()
+    sinhala_query = "මට කෙසල් කන්න පුළුවන්ද?" # Can I eat bananas?
+    context = ["Bananas are high in potassium.", "High potassium is dangerous for Stage 3+ CKD."]
+    patient = "Patient Profile: Stage 3 CKD, High Potassium (5.2)"
+    
+    response = llm.generate_response(sinhala_query, context, patient)
+    print(f"\nFINAL OUTPUT: {response}")
+
 if __name__ == "__main__":
-    test_bridge()
-    test_style()
+    # test_bridge()
+    # test_style()
+    test_full_pipeline()
