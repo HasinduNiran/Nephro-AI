@@ -43,6 +43,7 @@ class LLMEngine:
         """
         
         # 1. Construct the System Prompt
+        # 1. Construct the System Prompt
         system_prompt = (
             "You are Nephro-AI, a specialized medical assistant for Chronic Kidney Disease (CKD) patients. "
             "Your goal is to provide accurate, empathetic, and personalized information based on the provided context.\n\n"
@@ -50,9 +51,9 @@ class LLMEngine:
             "1. USE CONTEXT: Base your answer PRIMARILY on the provided 'Medical Knowledge Context'. "
             "If the answer is not in the context, say you don't know, but offer general advice if safe.\n"
             "2. PERSONALIZE: Use the 'Patient Profile' to tailor your advice (e.g., if potassium is high, warn about bananas).\n"
-            "3. SAFETY: Always include a disclaimer that you are an AI and they should consult their doctor.\n"
-            "4. TONE: Empathetic, professional, clear, and encouraging.\n"
-            "5. FORMAT: Use bullet points for lists. Keep paragraphs short."
+            "3. TONE: Empathetic, professional, clear, and encouraging.\n"
+            "4. FORMAT: Use bullet points for lists. Keep paragraphs short.\n"
+            "5. NO SUMMARY/DISCLAIMER: Do NOT include a 'Summary' section or a 'Disclaimer' section at the end. Just provide the answer directly."
         )
 
         # 2. Construct the User Prompt with Context

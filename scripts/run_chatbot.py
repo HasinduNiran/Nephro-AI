@@ -23,7 +23,7 @@ def main():
     
     import argparse
     parser = argparse.ArgumentParser(description="Nephro-AI Chatbot")
-    parser.add_argument("--model", type=str, default="small", help="Whisper model size (tiny, base, small, medium, large)")
+    parser.add_argument("--model", type=str, default="medium", help="Whisper model size (tiny, base, small, medium, large)")
     parser.add_argument("--debug-audio", action="store_true", help="Play back recorded audio for debugging")
     args = parser.parse_args()
 
