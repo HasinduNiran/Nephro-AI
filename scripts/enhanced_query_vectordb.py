@@ -46,15 +46,14 @@ class EnhancedVectorQuery(VectorDBQuery):
         
         # 2. Generate enhanced queries
         enhanced_queries = analysis["query_enhancements"]
-        print(f"🔍 Generated {len(enhanced_queries)} search variations")
+        if not enhanced_queries:
+            enhanced_queries = [query_text]
         
         # 3. Determine filters
         where_filter = None
         if use_intent_filtering:
             where_filter = self.nlu.generate_search_filters(query_text)
-            if where_filter:
-                print(f"🎯 Applied filters: {where_filter}")
-        
+            
         # 4. Execute searches for each variation
         all_results = []
         seen_ids = set()
