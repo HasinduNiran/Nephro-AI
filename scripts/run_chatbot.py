@@ -11,11 +11,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from scripts.patient_input import PatientInputHandler
-from scripts.enhanced_query_vectordb import EnhancedVectorQuery
+from scripts.rag_engine import RAGEngine
 
 def main():
     print("=" * 70)
-    print("🤖 NEPHRO-AI KIDNEY CARE CHATBOT")
+    print("🤖 NEPHRO-AI KIDNEY CARE CHATBOT (RAG ENABLED)")
     print("=" * 70)
     print("Initializing components...")
     
@@ -29,7 +29,7 @@ def main():
     try:
         print(f"Loading Whisper model: {args.model}...")
         input_handler = PatientInputHandler(model_size=args.model)
-        chatbot = EnhancedVectorQuery()
+        chatbot = RAGEngine()
         print("\n✅ All systems ready!")
     except Exception as e:
         print(f"\n❌ Initialization failed: {e}")
@@ -73,8 +73,15 @@ def main():
                 continue
             
             # Process Query
-            response = chatbot.query_with_nlu(query)
-            chatbot.display_enhanced_results(response, query)
+            print("\n🤔 Thinking...")
+            result = chatbot.process_query(query)
+            
+            print("\n" + "="*50)
+            print("🤖 NEPHRO-AI RESPONSE:")
+            print("="*50)
+            print(result["response"])
+            print("\n" + "-"*50)
+            print(f"📚 Sources Used: {len(result['source_documents'])}")
             
         except KeyboardInterrupt:
             print("\n👋 Goodbye!")
