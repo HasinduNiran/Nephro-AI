@@ -76,7 +76,38 @@ class EnhancedVectorQuery(VectorDBQuery):
                         })
                         seen_ids.add(doc_id)
         
-        # 5. Sort by relevance (distance)
+        # 5. Hybrid Re-ranking (Vector + Keyword)
+        print("⚖️  Applying Hybrid Search Re-ranking...")
+        
+        # Collect all entities for keyword matching
+        search_entities = []
+        if analysis.get('entities'):
+            for category, items in analysis['entities'].items():
+                search_entities.extend(items)
+        
+        # Deduplicate and lower case
+        search_entities = list(set([e.lower() for e in search_entities]))
+        
+        for result in all_results:
+            doc_text = result['document'].lower()
+            original_score = result['distance'] # Lower is better
+            
+            # Count keyword matches
+            matches = sum(1 for entity in search_entities if entity in doc_text)
+            
+            # Apply Boost: Reduce distance by 10% for each match (up to 50% max boost)
+            # We cap the boost to avoid negative distances or overpowering vector search completely
+            boost_factor = min(matches * 0.1, 0.5) 
+            adjusted_score = original_score * (1.0 - boost_factor)
+            
+            result['original_score'] = original_score
+            result['adjusted_score'] = adjusted_score
+            result['matches'] = matches
+            
+            # Update the main distance field for sorting, but keep original for reference
+            result['distance'] = adjusted_score
+
+        # 6. Sort by adjusted relevance
         all_results.sort(key=lambda x: x['distance'])
         
         return {
@@ -116,7 +147,10 @@ class EnhancedVectorQuery(VectorDBQuery):
         print("=" * 70)
         
         for i, result in enumerate(results, 1):
-            print(f"\nResult {i} (Relevance: {1 - result['distance']:.3f})")
+            print(f"\nResult {i} (Hybrid Score: {1 - result['distance']:.3f})")
+            if result.get('matches', 0) > 0:
+                print(f"   🚀 Boosted by {result['matches']} keyword match(es)")
+            print(f"   Original Vector Score: {1 - result.get('original_score', result['distance']):.3f}")
             print(f"   Source Query: '{result['query_used']}'")
             print(f"   Type: {result['metadata'].get('content_type', 'N/A')}")
             print(f"   Entities: {result['metadata'].get('medical_entities', 'N/A')}")
