@@ -15,6 +15,17 @@ import soundfile as sf
 from pathlib import Path
 from typing import Optional, Tuple
 
+# Add parent directory to path to import config
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+try:
+    from config import MEDICAL_ENTITIES, expand_abbreviations
+except ImportError:
+    # Fallback if config cannot be imported (e.g. running from wrong dir)
+    print("⚠️ Warning: Could not import MEDICAL_ENTITIES from config. Using default list.")
+    MEDICAL_ENTITIES = ["CKD", "Creatinine", "eGFR", "Dialysis", "Diabetes", "Blood Pressure"]
+    def expand_abbreviations(text): return text
+
 # Add FFmpeg to PATH if not present (Fix for WinError 2)
 ffmpeg_path = r"C:\Users\lasal\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin"
 if os.path.exists(ffmpeg_path) and ffmpeg_path not in os.environ["PATH"]:
@@ -102,11 +113,18 @@ class PatientInputHandler:
         
         print(f"🔄 Transcribing ({language if language else 'auto'})...")
         try:
-            # Add initial prompt to guide Whisper (especially for Sinhala)
-            initial_prompt = None
-            if language == 'si':
-                initial_prompt = "මෙය වකුගඩු රෝගය පිළිබඳ සිංහලෙන් අසන ලද ප්‍රශ්නයකි." # "This is a question about kidney disease in Sinhala"
+            # Add initial prompt to guide Whisper (especially for Sinhala and Medical terms)
+            # Construct a rich context using the top medical entities
+            medical_context = ", ".join(MEDICAL_ENTITIES[:30]) # Use top 30 terms to avoid token limit
             
+            base_prompt = f"This is a medical discussion about Chronic Kidney Disease (CKD). Terms like {medical_context} are used."
+            
+            initial_prompt = base_prompt
+            if language == 'si':
+                initial_prompt += " මෙය වකුගඩු රෝගය පිළිබඳ සිංහලෙන් අසන ලද ප්‍රශ්නයකි. මෙහි ඉංග්‍රීසි වෛද්‍ය වචන (Medical Terms) මිශ්‍ර සිංහල වාක්‍ය භාවිතා වේ." # "This is a question about kidney disease in Sinhala. English medical terms are mixed in Sinhala sentences."
+            
+            print(f"💡 Guided Prompt: {initial_prompt[:100]}...")
+
             result = self.whisper_model.transcribe(
                 audio_path, 
                 language=language,
@@ -115,7 +133,13 @@ class PatientInputHandler:
             )
             text = result["text"].strip()
             print(f"🗣️ You said: \"{text}\"")
-            return text
+            
+            # Normalize the medical terms immediately
+            expanded_text = expand_abbreviations(text)
+            if text != expanded_text:
+                print(f"🔄 Normalized to: \"{expanded_text}\"")
+                
+            return expanded_text
         except Exception as e:
             print(f"❌ Transcription failed: {e}")
             return ""
