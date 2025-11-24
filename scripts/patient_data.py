@@ -5,6 +5,8 @@ In production, this would connect to a MongoDB database.
 """
 
 from typing import Dict, Optional
+from datetime import datetime
+
 
 class PatientDataManager:
     def __init__(self):
@@ -27,7 +29,8 @@ class PatientDataManager:
                     "phosphorus": 3.9,
                     "albumin": 4.0
                 },
-                "dietary_restrictions": ["Moderate Sodium", "Monitor Potassium"]
+                "dietary_restrictions": ["Moderate Sodium", "Monitor Potassium"],
+                "last_updated": datetime.now().strftime("%Y-%m-%d") # Mock timestamp
             }
         }
     
@@ -51,7 +54,21 @@ class PatientDataManager:
         if not record:
             return "No patient record found."
             
+        # Calculate data age
+        last_updated = record.get('last_updated', 'Unknown')
+        data_age_warning = ""
+        try:
+            last_date = datetime.strptime(last_updated, "%Y-%m-%d")
+            days_old = (datetime.now() - last_date).days
+            if days_old > 0:
+                data_age_warning = f" (Data is {days_old} days old)"
+            else:
+                data_age_warning = " (Data is from today)"
+        except:
+            pass
+
         context = (
+            f"--- CRITICAL: CURRENT PATIENT STATE (As of {last_updated}{data_age_warning}) ---\n"
             f"Patient Profile:\n"
             f"- Name: {record['name']} ({record['age']} years)\n"
             f"- Diagnosis: {record['diagnosis']} ({record['stage']})\n"
