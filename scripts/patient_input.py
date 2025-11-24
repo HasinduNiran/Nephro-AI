@@ -26,11 +26,16 @@ except ImportError:
     MEDICAL_ENTITIES = ["CKD", "Creatinine", "eGFR", "Dialysis", "Diabetes", "Blood Pressure"]
     def expand_abbreviations(text): return text
 
-# Add FFmpeg to PATH if not present (Fix for WinError 2)
-ffmpeg_path = r"C:\Users\lasal\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin"
-if os.path.exists(ffmpeg_path) and ffmpeg_path not in os.environ["PATH"]:
-    print(f"🔧 Adding FFmpeg to PATH: {ffmpeg_path}")
-    os.environ["PATH"] += os.pathsep + ffmpeg_path
+import shutil
+
+# Check for FFmpeg
+if not shutil.which("ffmpeg"):
+    print("⚠️ Warning: FFmpeg not found in PATH. Audio processing may fail.")
+    print("   Please install FFmpeg and add it to your PATH.")
+    # You could optionally add a fallback check for common locations here if desired, 
+    # but relying on PATH is best practice.
+else:
+    print("✅ FFmpeg found.")
 
 class PatientInputHandler:
     def __init__(self, model_size: str = "base"):
