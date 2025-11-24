@@ -53,34 +53,67 @@ class PatientInputHandler:
             self.whisper_model = whisper.load_model(self.model_size)
             print("✅ Whisper model loaded!")
             
-    def record_audio(self, duration: int = None, sample_rate: int = 16000) -> Optional[str]:
+    def record_audio(self, duration: int = None, sample_rate: int = 16000, silence_threshold: float = 0.01, silence_duration: float = 2.0) -> Optional[str]:
         """
-        Record audio from microphone
+        Record audio from microphone using Voice Activity Detection (VAD)
         
         Args:
-            duration: Fixed duration in seconds (if None, records until stopped)
+            duration: Max duration in seconds (if None, defaults to 30s)
             sample_rate: Audio sample rate (Whisper expects 16000)
+            silence_threshold: RMS energy threshold for silence
+            silence_duration: Seconds of silence to trigger stop
             
         Returns:
             Path to saved temporary audio file
         """
-        print("\n🎤 Recording... (Press Ctrl+C to stop if no duration set)")
+        print("\n🎤 Recording... (Speak now, I'm listening...)")
         
         try:
-            if duration:
-                # Fixed duration recording
-                recording = sd.rec(int(duration * sample_rate), samplerate=sample_rate, channels=1)
-                sd.wait()
-            else:
-                # Indefinite recording until enter is pressed (simulated here with fixed time for safety in basic version)
-                # For a real interactive CLI, we'd use a key listener, but for now let's default to 5 seconds
-                # if no duration is specified to avoid hanging.
-                print("   (Defaulting to 5 seconds for safety)")
-                duration = 5
-                recording = sd.rec(int(duration * sample_rate), samplerate=sample_rate, channels=1)
-                sd.wait()
+            # VAD Parameters
+            chunk_duration = 0.1 # seconds
+            chunk_size = int(sample_rate * chunk_duration)
+            max_duration = duration if duration else 30 # Default max 30s
+            
+            audio_buffer = []
+            silent_chunks = 0
+            has_speech_started = False
+            consecutive_silence_limit = int(silence_duration / chunk_duration)
+            
+            with sd.InputStream(samplerate=sample_rate, channels=1, blocksize=chunk_size) as stream:
+                start_time = time.time()
                 
+                while (time.time() - start_time) < max_duration:
+                    # Read audio chunk
+                    data, overflowed = stream.read(chunk_size)
+                    audio_buffer.append(data)
+                    
+                    # Calculate energy (RMS)
+                    rms = np.sqrt(np.mean(data**2))
+                    
+                    # VAD Logic
+                    if rms > silence_threshold:
+                        if not has_speech_started:
+                            print("   (Speech detected...)")
+                            has_speech_started = True
+                        silent_chunks = 0
+                    else:
+                        if has_speech_started:
+                            silent_chunks += 1
+                            
+                    # Stop if silence persists after speech
+                    if has_speech_started and silent_chunks > consecutive_silence_limit:
+                        print("   (Silence detected, stopping...)")
+                        break
+                        
+                    # Stop if max duration reached
+                    if (time.time() - start_time) >= max_duration:
+                        print("   (Max duration reached)")
+                        break
+            
             print("⏹️ Recording finished.")
+            
+            # Concatenate all chunks
+            recording = np.concatenate(audio_buffer, axis=0)
             
             # Save to temp file
             temp_dir = Path("temp_audio")
