@@ -27,6 +27,18 @@ class LLMEngine:
         
         if not self.api_key:
             print("⚠️ Warning: OPENROUTER_API_KEY not found in config.")
+            
+        # Cache for common Sinhala terms to reduce latency
+        self.translation_cache = {
+            "වකුගඩු රෝගය": "Kidney Disease",
+            "දියවැඩියාව": "Diabetes",
+            "අධික රුධිර පීඩනය": "High Blood Pressure",
+            "ක්‍රියැටිනින්": "Creatinine",
+            "ඩයලිසිස්": "Dialysis",
+            "ප්‍රතිකාර": "Treatment",
+            "රෝග ලක්ෂණ": "Symptoms",
+            "ආහාර පාලනය": "Diet Control"
+        }
 
     def translate_to_english(self, text: str) -> str:
         """
@@ -37,6 +49,20 @@ class LLMEngine:
         
         if not is_sinhala:
             return text
+
+        # Check Cache first
+        for key, value in self.translation_cache.items():
+            if key in text:
+                print(f"⚡ Cache Hit: '{key}' -> '{value}'")
+                # Simple replacement for now, but ideally we want full sentence translation if it's complex
+                # For single terms/short phrases this works well
+                text = text.replace(key, value)
+                
+        # If text is mostly English now (after replacement), return it
+        # This is a heuristic: if < 20% chars are Sinhala, assume it's translated enough
+        sinhala_chars = sum(1 for char in text if '\u0D80' <= char <= '\u0DFF')
+        if sinhala_chars < len(text) * 0.2:
+             return text
 
         print(f"🔄 Bridge: Translating '{text}' to English...")
         
@@ -62,6 +88,10 @@ class LLMEngine:
             if response.status_code == 200:
                 translation = response.json()['choices'][0]['message']['content'].strip()
                 print(f"✅ Bridge Output: {translation}")
+                
+                # Dynamic Caching: Store result for next time
+                self.translation_cache[text] = translation
+                
                 return translation
             else:
                 print(f"❌ Bridge Error: {response.text}")
@@ -115,9 +145,13 @@ class LLMEngine:
         """
         Generate a response using the Sandwich Method:
         1. Bridge: Sinhala -> English
-        2. Brain: RAG (English)
+        2. Brain: RAG (English) - NEVER CACHED for safety
         3. Style: English -> Sinhala
         """
+        # SAFETY CRITICAL: Do NOT cache this function's output.
+        # Patient data (e.g., Potassium levels) changes over time.
+        # Caching the final response could lead to dangerous, outdated advice.
+        
         print("\n" + "="*50)
         print("🚀 STARTING PIPELINE")
         print("="*50)
@@ -139,16 +173,22 @@ class LLMEngine:
             "2. PERSONALIZE: Use the 'Patient Profile' to tailor your advice (e.g., if potassium is high, warn about bananas).\n"
             "3. TONE: Empathetic, professional, clear, and encouraging.\n"
             "4. FORMAT: Use bullet points for lists. Keep paragraphs short.\n"
-            "5. NO SUMMARY/DISCLAIMER: Do NOT include a 'Summary' section or a 'Disclaimer' section at the end. Just provide the answer directly."
+            "5. NO SUMMARY/DISCLAIMER: Do NOT include a 'Summary' section or a 'Disclaimer' section at the end. Just provide the answer directly.\n"
+            "6. LANGUAGE: If the 'Original Language' is Sinhala, you MUST reply in Sinhala directly. Do not output English."
         )
 
         # Construct the User Prompt with Context
         knowledge_context = "\n\n".join(context_documents[:3])
         
+        # Determine original language for the prompt
+        is_sinhala_query = any('\u0D80' <= char <= '\u0DFF' for char in query)
+        original_language = "Sinhala" if is_sinhala_query else "English"
+        
         user_prompt = (
             f"--- PATIENT PROFILE ---\n{patient_context}\n\n"
             f"--- MEDICAL KNOWLEDGE CONTEXT ---\n{knowledge_context}\n\n"
-            f"--- USER QUESTION ---\n{english_query}"
+            f"--- USER QUESTION ---\n{english_query}\n"
+            f"Original Language: {original_language}"
         )
 
         # Call API for Brain Layer
@@ -189,21 +229,30 @@ class LLMEngine:
             return f"Error communicating with LLM: {str(e)}"
 
         # --- 3. STYLE LAYER (English -> Sinhala) ---
+        # Optimization: If original query was Sinhala, the Brain Layer should have already replied in Sinhala.
+        # We only need the Style Layer if the Brain Layer failed to produce Sinhala (fallback check) or if we want to enforce NLU style.
+        
         print("\n[3] 🎨 STYLE LAYER")
-        # Check if original query was Sinhala to decide if we should translate back
-        is_sinhala_query = any('\u0D80' <= char <= '\u0DFF' for char in query)
         
         if is_sinhala_query:
-            if self.sinhala_nlu.model:
-                print("✨ Using SinLLaMA for styling...")
-                sinhala_response = self.sinhala_nlu.generate_sinhala_response(english_response)
-                print(f"✅ Style Output: {sinhala_response}")
-                return sinhala_response
+            # Check if response is already Sinhala
+            is_response_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in english_response)
+            
+            if is_response_sinhala:
+                print("✅ Brain Layer replied in Sinhala. Skipping explicit Style Layer translation.")
+                return english_response
             else:
-                print("⚠️ SinLLaMA not available. Falling back to OpenAI...")
-                sinhala_response = self.translate_to_sinhala_fallback(english_response)
-                print(f"✅ Style Output (Fallback): {sinhala_response}")
-                return sinhala_response
+                print("⚠️ Brain Layer replied in English. Activating Style Layer fallback...")
+                if self.sinhala_nlu.model:
+                    print("✨ Using SinLLaMA for styling...")
+                    sinhala_response = self.sinhala_nlu.generate_sinhala_response(english_response)
+                    print(f"✅ Style Output: {sinhala_response}")
+                    return sinhala_response
+                else:
+                    print("⚠️ SinLLaMA not available. Falling back to OpenAI...")
+                    sinhala_response = self.translate_to_sinhala_fallback(english_response)
+                    print(f"✅ Style Output (Fallback): {sinhala_response}")
+                    return sinhala_response
         else:
             print("ℹ️ Query was English. Skipping Style Layer.")
             return english_response
