@@ -23,7 +23,7 @@ class CKDNLUEngine:
     Identifies intents, extracts medical entities, and provides query context
     """
     
-    def __init__(self, model_name: str = "en_core_web_sm"):
+    def __init__(self, model_name: str = "en_core_web_md"):
         """
         Initialize NLU engine with spaCy model
         
