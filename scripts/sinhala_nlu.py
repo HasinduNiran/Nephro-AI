@@ -7,6 +7,7 @@ mathematically to English anchors, without needing a translator API.
 
 import numpy as np
 import sys
+import json
 from pathlib import Path
 from typing import Dict, List, Any
 from sentence_transformers import SentenceTransformer, util
@@ -56,6 +57,25 @@ class SinhalaNLUEngine:
         for intent, phrases in self.intent_anchors.items():
             self.anchor_embeddings[intent] = self.model.encode(phrases)
             
+        # 2. Load Sinhala Medical Dictionary
+        try:
+            dict_path = Path(__file__).parent.parent / "data" / "sinhala_med_dict.json"
+            with open(dict_path, "r", encoding="utf-8") as f:
+                self.sinhala_med_dict = json.load(f)
+            print(f"   Loaded {len(self.sinhala_med_dict)} terms from dictionary.")
+        except FileNotFoundError:
+            print("   ⚠️ Dictionary file not found. Using fallback.")
+            self.sinhala_med_dict = {
+                "වකුගඩු": "Kidney",
+                "දියවැඩියාව": "Diabetes",
+                "කෙසල්": "Banana",
+                "බත්": "Rice",
+                "ඉදිමීම": "Swelling",
+                "කැක්කුම": "Pain",
+                "ලේ": "Blood",
+                "පීඩනය": "Pressure"
+            }
+            
         print("✅ Sinhala NLU Ready!")
 
     def _detect_intent(self, query_embedding) -> Dict[str, float]:
@@ -86,24 +106,15 @@ class SinhalaNLUEngine:
             "symptoms": []
         }
         
-        # Simple Sinhala Medical Dictionary (Expand this list for your project)
-        sinhala_med_dict = {
-            "වකුගඩු": "Kidney",
-            "දියවැඩියාව": "Diabetes",
-            "කෙසල්": "Banana", # Food
-            "බත්": "Rice", # Food
-            "ඉදිමීම": "Swelling", # Symptom
-            "කැක්කුම": "Pain", # Symptom
-            "ලේ": "Blood",
-            "පීඩනය": "Pressure"
-        }
+        # Simple Sinhala Medical Dictionary (Loaded from JSON)
+        # self.sinhala_med_dict is initialized in __init__
         
         # Check for Dictionary Matches
-        for si_term, en_term in sinhala_med_dict.items():
+        for si_term, en_term in self.sinhala_med_dict.items():
             if si_term in text:
                 if en_term in ["Banana", "Rice"]:
                     found_entities["foods"].append(en_term)
-                elif en_term in ["Swelling", "Pain"]:
+                elif en_term in ["Swelling", "Pain", "Vomiting", "Dizziness", "Fatigue"]:
                     found_entities["symptoms"].append(en_term)
                 else:
                     found_entities["medical_terms"].append(en_term)
