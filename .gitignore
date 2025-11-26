@@ -49,22 +49,16 @@ logs/*.log
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Environment variables
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
 .env
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Data files (optional - uncomment if you don't want to commit data)
-# data/processed/*
-# !data/processed/.gitkeep
-
-# Model files
-*.pkl
-*.h5
-*.hdf5
-*.pt
-*.pth
-
-# Temporary files
-*.tmp
-*.bak
-*.cache
+# Expo
+.expo/
+web-build/
