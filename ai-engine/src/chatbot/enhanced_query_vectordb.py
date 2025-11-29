@@ -6,6 +6,7 @@ Integrates NLU engine with Vector DB for better search results
 import sys
 from pathlib import Path
 from typing import List, Dict, Any
+from sentence_transformers import CrossEncoder
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -22,6 +23,10 @@ class EnhancedVectorQuery(VectorDBQuery):
         """Initialize both Vector DB and NLU engine"""
         super().__init__()
         self.nlu = CKDNLUEngine()
+        # LOAD A RE-RANKER MODEL (TinyBERT is fast and accurate)
+        # This replaces your manual keyword counting logic
+        print("⚖️ Loading Cross-Encoder (Re-ranker)...")
+        self.cross_encoder = CrossEncoder('cross-encoder/ms-marco-TinyBERT-L-2-v2')
         
     def query_with_nlu(
         self,
@@ -76,43 +81,34 @@ class EnhancedVectorQuery(VectorDBQuery):
                         })
                         seen_ids.add(doc_id)
         
-        # 5. Hybrid Re-ranking (Vector + Keyword)
-        print("⚖️  Applying Hybrid Search Re-ranking...")
+        # 5. RE-RANKING UPGRADE (Cross-Encoder)
+        print("⚖️  Applying AI Re-ranking (Cross-Encoder)...")
         
-        # Collect all entities for keyword matching
-        search_entities = []
-        if analysis.get('entities'):
-            for category, items in analysis['entities'].items():
-                search_entities.extend(items)
-        
-        # Deduplicate and lower case
-        search_entities = list(set([e.lower() for e in search_entities]))
-        
-        for result in all_results:
-            doc_text = result['document'].lower()
-            original_score = result['distance'] # Lower is better
+        if all_results:
+            # Prepare pairs for the model: [[Query, Doc1], [Query, Doc2], ...]
+            ranking_inputs = [[query_text, res['document']] for res in all_results]
             
-            # Count keyword matches
-            matches = sum(1 for entity in search_entities if entity in doc_text)
+            # Get AI Scores (0.0 to 1.0)
+            scores = self.cross_encoder.predict(ranking_inputs)
             
-            # Apply Boost: Reduce distance by 10% for each match (up to 50% max boost)
-            # We cap the boost to avoid negative distances or overpowering vector search completely
-            boost_factor = min(matches * 0.1, 0.5) 
-            adjusted_score = original_score * (1.0 - boost_factor)
+            # Attach scores to results
+            for i, result in enumerate(all_results):
+                result['relevance_score'] = float(scores[i])
+                # Update distance for compatibility (1 - score makes it "distance-like")
+                result['distance'] = 1.0 - float(scores[i])
+                
+            # Sort by AI Score (Highest confidence first)
+            all_results.sort(key=lambda x: x['relevance_score'], reverse=True)
             
-            result['original_score'] = original_score
-            result['adjusted_score'] = adjusted_score
-            result['matches'] = matches
-            
-            # Update the main distance field for sorting, but keep original for reference
-            result['distance'] = adjusted_score
-
-        # 6. Sort by adjusted relevance
-        all_results.sort(key=lambda x: x['distance'])
+            # Filter out "Garbage" (Low relevance)
+            # This reduces hallucinations by removing irrelevant retrieved docs
+            final_results = [res for res in all_results if res['relevance_score'] > 0.01] # Lowered threshold slightly to be safe
+        else:
+            final_results = []
         
         return {
             'nlu_analysis': analysis,
-            'results': all_results[:n_results * 2] # Return more results than requested to show variety
+            'results': final_results[:n_results] 
         }
 
     def display_enhanced_results(self, response: Dict, query_text: str):
@@ -147,10 +143,10 @@ class EnhancedVectorQuery(VectorDBQuery):
         print("=" * 70)
         
         for i, result in enumerate(results, 1):
-            print(f"\nResult {i} (Hybrid Score: {1 - result['distance']:.3f})")
+            print(f"\nResult {i} (AI Relevance Score: {result.get('relevance_score', 0):.3f})")
             if result.get('matches', 0) > 0:
                 print(f"   🚀 Boosted by {result['matches']} keyword match(es)")
-            print(f"   Original Vector Score: {1 - result.get('original_score', result['distance']):.3f}")
+            # print(f"   Original Vector Score: {1 - result.get('original_score', result['distance']):.3f}")
             print(f"   Source Query: '{result['query_used']}'")
             print(f"   Type: {result['metadata'].get('content_type', 'N/A')}")
             print(f"   Entities: {result['metadata'].get('medical_entities', 'N/A')}")
