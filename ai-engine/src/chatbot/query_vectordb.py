@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import project configuration and embeddings
 import config
-from openai_embeddings import OpenAIEmbeddings
+from chatbot.openai_embeddings import OpenAIEmbeddings
 
 
 class VectorDBQuery:
@@ -22,8 +22,8 @@ class VectorDBQuery:
     
     def __init__(
         self,
-        db_path: str = "vectordb/chroma_db",
-        collection_name: str = "nephro_ai_medical_kb"
+        db_path: str = str(config.CHROMA_DB_PATH),
+        collection_name: str = config.COLLECTION_NAME
     ):
         """
         Initialize query interface

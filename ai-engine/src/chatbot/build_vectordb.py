@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import config
 
 # Import OpenAI embeddings (via OpenRouter)
-from openai_embeddings import OpenAIEmbeddings
+from chatbot.openai_embeddings import OpenAIEmbeddings
 
 
 class VectorDBBuilder:
@@ -437,10 +437,10 @@ Examples:
     
     # Configuration
     builder = VectorDBBuilder(
-        vectordb_dir="data/vectordb_ready/documents",
-        db_path="vectordb/chroma_db",
-        collection_name="nephro_ai_medical_kb",
-        model_name="openai/text-embedding-3-small"
+        vectordb_dir=str(config.VECTORDB_READY_DIR),
+        db_path=str(config.CHROMA_DB_PATH),
+        collection_name=config.COLLECTION_NAME,
+        model_name=config.EMBEDDING_MODEL
     )
     
     # Build the database (incremental by default)

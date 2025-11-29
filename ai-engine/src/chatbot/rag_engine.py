@@ -10,9 +10,9 @@ from typing import Dict, Any
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scripts.enhanced_query_vectordb import EnhancedVectorQuery
-from scripts.patient_data import PatientDataManager
-from scripts.llm_engine import LLMEngine
+from chatbot.enhanced_query_vectordb import EnhancedVectorQuery
+from chatbot.patient_data import PatientDataManager
+from chatbot.llm_engine import LLMEngine
 
 class RAGEngine:
     def __init__(self):

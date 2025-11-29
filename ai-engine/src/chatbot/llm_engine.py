@@ -13,7 +13,7 @@ from typing import List, Dict, Any
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import config
-from scripts.sinhala_nlu import SinhalaNLUEngine
+from chatbot.sinhala_nlu import SinhalaNLUEngine
 
 class LLMEngine:
     def __init__(self):

@@ -5,10 +5,10 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scripts.patient_input import PatientInputHandler
-from scripts.rag_engine import RAGEngine
-from scripts.tts_engine import TTSEngine
-from scripts.sinhala_nlu import SinhalaNLUEngine
+from chatbot.patient_input import PatientInputHandler
+from chatbot.rag_engine import RAGEngine
+from chatbot.tts_engine import TTSEngine
+from chatbot.sinhala_nlu import SinhalaNLUEngine
 
 def main():
     print("=" * 70)
