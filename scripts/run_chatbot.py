@@ -1,8 +1,3 @@
-"""
-Nephro-AI Chatbot Runner
-Integrates Patient Input (Voice/Text), NLU Engine, and Vector Database.
-"""
-
 import sys
 import time
 from pathlib import Path
