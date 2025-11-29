@@ -4,6 +4,7 @@ Orchestrates the flow between NLU, VectorDB, Patient Data, and LLM.
 """
 
 import sys
+import hashlib
 from pathlib import Path
 from typing import Dict, Any
 
@@ -21,7 +22,14 @@ class RAGEngine:
         self.vector_db = EnhancedVectorQuery()
         self.patient_data = PatientDataManager()
         self.llm = LLMEngine()
+        self.cache = {} # Simple in-memory cache (Use Redis for production)
         print("✅ RAG Engine Ready")
+
+    def get_cache_key(self, query, patient_id):
+        # Create a unique ID for this question + patient context
+        # We lowercase and strip to handle "What is CKD?" vs "what is ckd"
+        raw_key = f"{patient_id}:{query.lower().strip()}"
+        return hashlib.md5(raw_key.encode()).hexdigest()
 
     def process_query(self, query: str, patient_id: str = "default_patient") -> Dict[str, Any]:
         """
@@ -34,7 +42,13 @@ class RAGEngine:
         Returns:
             Dict containing response and metadata
         """
-        # 1. Retrieve Patient Context
+        # 1. CHECK CACHE (The "Real-Time" Secret)
+        cache_key = self.get_cache_key(query, patient_id)
+        if cache_key in self.cache:
+            print(f"⚡ CACHE HIT: Serving instant response for '{query}'")
+            return self.cache[cache_key]
+
+        # 2. Retrieve Patient Context
         patient_context = self.patient_data.get_patient_context_string(patient_id)
         
         # 2. Retrieve Medical Knowledge (using NLU-enhanced search)
@@ -56,11 +70,16 @@ class RAGEngine:
             patient_context=patient_context
         )
         
-        return {
+        response_payload = {
             "response": llm_response,
             "source_documents": context_documents[:3], # Return top sources for reference
             "nlu_analysis": search_results.get("nlu_analysis", {})
         }
+        
+        # 4. SAVE TO CACHE
+        self.cache[cache_key] = response_payload
+        
+        return response_payload
 
 if __name__ == "__main__":
     # Test
