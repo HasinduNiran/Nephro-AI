@@ -10,7 +10,7 @@ def load_artifacts():
     # or absolute. Let's assume the pkl files are in the root 'c:\Research\Nephro-AI\'
     
     base_path = os.path.dirname(os.path.abspath(__file__))
-    model_path = os.path.join(base_path, '..', 'models', 'ckd_model.pkl')
+    model_path = os.path.join(base_path, '..', '..', 'models', 'ckd_model.pkl')
     # encoder_path = os.path.join(base_path, 'label_encoder.pkl') # Not strictly needed if we just output the class index or if the model outputs the label directly if it was trained on strings (but notebook says it encoded)
     
     try:
@@ -42,7 +42,7 @@ def predict(data):
         # The last col is 'risk_category'. So label_enc should be fitted on 'risk_category'.
         
         base_path = os.path.dirname(os.path.abspath(__file__))
-        encoder_path = os.path.join(base_path, '..', 'models', 'label_encoder.pkl')
+        encoder_path = os.path.join(base_path, '..', '..', 'models', 'label_encoder.pkl')
         try:
             le = joblib.load(encoder_path)
             prediction_label = le.inverse_transform([prediction])[0]

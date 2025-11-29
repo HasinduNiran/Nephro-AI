@@ -31,6 +31,7 @@ exports.predictRisk = (req, res) => {
     "..",
     "ai-engine",
     "src",
+    "risk_prediction",
     "api_predict.py"
   );
 
