@@ -26,9 +26,15 @@ class RAGEngine:
         print("✅ RAG Engine Ready")
 
     def get_cache_key(self, query, patient_id):
-        # Create a unique ID for this question + patient context
-        # We lowercase and strip to handle "What is CKD?" vs "what is ckd"
-        raw_key = f"{patient_id}:{query.lower().strip()}"
+        # 1. Get the "Data Version" of the patient
+        # This returns a timestamp string like "2023-11-25 14:30:00"
+        # If the patient adds a new lab report, this timestamp changes.
+        data_version = self.patient_data.get_last_update_timestamp(patient_id)
+        
+        # 2. Combine Query + PatientID + DataVersion
+        # If ANY of these change, the cache is invalidated automatically.
+        raw_key = f"{patient_id}:{data_version}:{query.lower().strip()}"
+        
         return hashlib.md5(raw_key.encode()).hexdigest()
 
     def process_query(self, query: str, patient_id: str = "default_patient") -> Dict[str, Any]:

@@ -46,6 +46,16 @@ class PatientDataManager:
         """
         return self.mock_db.get(patient_id, {})
 
+    def get_last_update_timestamp(self, patient_id: str = "default_patient") -> str:
+        """
+        Get the last updated timestamp for a patient's data.
+        Used for cache invalidation.
+        """
+        record = self.get_patient_record(patient_id)
+        if not record:
+            return "unknown_version"
+        return record.get("last_updated", "unknown_version")
+
     def get_patient_context_string(self, patient_id: str = "default_patient") -> str:
         """
         Get a formatted string summary of patient context for the LLM
