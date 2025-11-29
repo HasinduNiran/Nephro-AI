@@ -15,6 +15,7 @@ import soundfile as sf
 from pathlib import Path
 from typing import Optional, Tuple
 from faster_whisper import WhisperModel
+import torch
 
 # Add parent directory to path to import config
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -55,68 +56,75 @@ class PatientInputHandler:
         # If you have an NVIDIA GPU, change device="cpu" to device="cuda"
         self.whisper_model = WhisperModel(model_size, device="cpu", compute_type="int8")
         print("✅ Model Loaded")
+
+        # 1. Load the Silero VAD model (Downloads once, then caches)
+        # We use the 'jit' version for speed (Just-In-Time compilation)
+        print("⏳ Loading VAD Model...")
+        self.vad_model, utils = torch.hub.load(
+            repo_or_dir='snakers4/silero-vad',
+            model='silero_vad',
+            force_reload=False,
+            trust_repo=True
+        )
+        (self.get_speech_timestamps, _, self.read_audio, _, _) = utils
+        print("✅ VAD Ready")
             
-    def record_audio(self, duration: int = None, sample_rate: int = 16000, silence_threshold: float = 0.01, silence_duration: float = 2.0) -> Optional[str]:
+    def record_audio(self, sample_rate=16000):
         """
-        Record audio from microphone using Voice Activity Detection (VAD)
+        Smart Recording Loop:
+        1. Buffers audio constantly.
+        2. Starts saving ONLY when 'Human Voice' is detected.
+        3. Stops automatically after 2.0 seconds of silence.
+        """
+        print("\n🎤 Listening... (Start speaking)")
         
-        Args:
-            duration: Max duration in seconds (if None, defaults to 30s)
-            sample_rate: Audio sample rate (Whisper expects 16000)
-            silence_threshold: RMS energy threshold for silence
-            silence_duration: Seconds of silence to trigger stop
-            
-        Returns:
-            Path to saved temporary audio file
-        """
-        print("\n🎤 Recording... (Speak now, I'm listening...)")
+        buffer = []
+        started_speaking = False
+        silence_start_time = None
+        
+        # Silero expects chunks of 512 samples (for 16k Hz)
+        # 512 samples @ 16kHz = ~32ms
+        chunk_size = 512 
         
         try:
-            # VAD Parameters
-            chunk_duration = 0.1 # seconds
-            chunk_size = int(sample_rate * chunk_duration)
-            max_duration = duration if duration else 30 # Default max 30s
-            
-            audio_buffer = []
-            silent_chunks = 0
-            has_speech_started = False
-            consecutive_silence_limit = int(silence_duration / chunk_duration)
-            
-            with sd.InputStream(samplerate=sample_rate, channels=1, blocksize=chunk_size) as stream:
-                start_time = time.time()
-                
-                while (time.time() - start_time) < max_duration:
+            with sd.InputStream(samplerate=sample_rate, channels=1, blocksize=chunk_size, dtype='float32') as stream:
+                while True:
                     # Read audio chunk
-                    data, overflowed = stream.read(chunk_size)
-                    audio_buffer.append(data)
+                    audio_chunk, _ = stream.read(chunk_size)
+                    audio_chunk = audio_chunk.flatten()
                     
-                    # Calculate energy (RMS)
-                    rms = np.sqrt(np.mean(data**2))
+                    # Convert to PyTorch Tensor for VAD
+                    audio_tensor = torch.from_numpy(audio_chunk)
+
+                    # Get confidence (0.0 to 1.0)
+                    # This is the "Neural" check - is this human speech?
+                    speech_prob = self.vad_model(audio_tensor, sample_rate).item()
                     
-                    # VAD Logic
-                    if rms > silence_threshold:
-                        if not has_speech_started:
-                            print("   (Speech detected...)")
-                            has_speech_started = True
-                        silent_chunks = 0
-                    else:
-                        if has_speech_started:
-                            silent_chunks += 1
-                            
-                    # Stop if silence persists after speech
-                    if has_speech_started and silent_chunks > consecutive_silence_limit:
-                        print("   (Silence detected, stopping...)")
-                        break
+                    # Logic: Is this speech?
+                    is_speech = speech_prob > 0.5  # Confidence threshold
+
+                    if is_speech:
+                        if not started_speaking:
+                            print("   (🗣️ Speech Detected - Recording...)")
+                            started_speaking = True
                         
-                    # Stop if max duration reached
-                    if (time.time() - start_time) >= max_duration:
-                        print("   (Max duration reached)")
-                        break
+                        silence_start_time = None # Reset silence timer
+                        buffer.append(audio_chunk)
+                    
+                    elif started_speaking:
+                        # We are in silence AFTER speech
+                        buffer.append(audio_chunk) # Keep recording silence briefly for natural flow
+                        
+                        if silence_start_time is None:
+                            silence_start_time = time.time()
+                        
+                        # If silence lasts > 1.5 seconds, STOP
+                        if time.time() - silence_start_time > 1.5:
+                            print("   (✅ End of sentence detected)")
+                            break
             
-            print("⏹️ Recording finished.")
-            
-            # Concatenate all chunks
-            recording = np.concatenate(audio_buffer, axis=0)
+            # Save Buffer to File
+            full_audio = np.concatenate(buffer)
             
             # Save to temp file
             temp_dir = Path("temp_audio")
@@ -124,9 +132,9 @@ class PatientInputHandler:
             timestamp = int(time.time())
             filename = temp_dir / f"recording_{timestamp}.wav"
             
-            sf.write(str(filename), recording, sample_rate)
+            sf.write(str(filename), full_audio, sample_rate)
             return str(filename)
-            
+
         except Exception as e:
             print(f"❌ Recording failed: {e}")
             return None

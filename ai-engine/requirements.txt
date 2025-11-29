@@ -70,3 +70,9 @@ google-genai
 
 # Speech to Text
 faster-whisper>=1.0.0
+
+# Audio Processing & VAD
+torch
+torchaudio
+sounddevice
+numpy
