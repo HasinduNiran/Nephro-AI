@@ -1,0 +1,18 @@
+{
+  "total_pages": 5,
+  "raw_text_length": 12694,
+  "cleaned_text_length": 13667,
+  "source_file": "the-stages-of-chronic-kidney-disease-3ihwageidf.pdf",
+  "extraction_date": "2025-11-21T14:30:02.420954",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2020",
+  "keywords": [
+    "chronic kidney disease",
+    "kidney function",
+    "renal"
+  ],
+  "total_chunks": 4,
+  "avg_chunk_size": 549.75,
+  "processing_date": "2025-11-21T14:30:02.506884"
+}

@@ -29,7 +29,8 @@ exports.predictRisk = (req, res) => {
     __dirname,
     "..",
     "..",
-    "scripts",
+    "ai-engine",
+    "src",
     "api_predict.py"
   );
 

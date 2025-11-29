@@ -1,0 +1,18 @@
+{
+  "total_documents": 9,
+  "source_file": "choosing_a_treatment_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\choosing_a_treatment_chunks.json",
+  "preparation_date": "2025-11-19T02:22:20.863388",
+  "avg_word_count": 555.3333333333334,
+  "content_types": {
+    "dietary": 6,
+    "recommendation": 3
+  },
+  "medical_entity_coverage": {
+    "CKD": 1,
+    "GFR": 1,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 8
+  }
+}

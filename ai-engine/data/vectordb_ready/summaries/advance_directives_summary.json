@@ -1,0 +1,20 @@
+{
+  "total_documents": 5,
+  "source_file": "advance_directives_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\advance_directives_chunks.json",
+  "preparation_date": "2025-11-19T02:22:20.848152",
+  "avg_word_count": 594.6,
+  "content_types": {
+    "recommendation": 2,
+    "definition": 1,
+    "dietary": 1,
+    "reference": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 5
+  }
+}

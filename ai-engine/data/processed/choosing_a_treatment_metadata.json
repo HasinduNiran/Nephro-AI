@@ -1,0 +1,17 @@
+{
+  "total_pages": 19,
+  "raw_text_length": 28582,
+  "cleaned_text_length": 29033,
+  "source_file": "choosing_a_treatment.pdf",
+  "extraction_date": "2025-11-18T15:15:52.108345",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "kidney function"
+  ],
+  "total_chunks": 9,
+  "avg_chunk_size": 555.3333333333334,
+  "processing_date": "2025-11-18T15:15:52.206744"
+}

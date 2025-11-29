@@ -1,0 +1,20 @@
+{
+  "total_pages": 3,
+  "raw_text_length": 9272,
+  "cleaned_text_length": 9352,
+  "source_file": "renal-failure-symptoms-understanding-the-warning-signs.pdf",
+  "extraction_date": "2025-11-21T14:30:07.403388",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2024",
+  "keywords": [
+    "dialysis",
+    "kidney function",
+    "renal",
+    "nephrology",
+    "proteinuria"
+  ],
+  "total_chunks": 3,
+  "avg_chunk_size": 450.6666666666667,
+  "processing_date": "2025-11-21T14:30:07.452841"
+}
