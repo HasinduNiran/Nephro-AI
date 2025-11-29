@@ -76,3 +76,8 @@ torch
 torchaudio
 sounddevice
 numpy
+
+# Medical NLU
+scispacy>=0.5.4
+negspacy>=1.0.4
+# Note: en_ner_bc5cdr_md is installed via direct URL, not PyPI

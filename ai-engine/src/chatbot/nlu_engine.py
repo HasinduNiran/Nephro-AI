@@ -11,6 +11,8 @@ import re
 from pathlib import Path
 import json
 import sys
+import scispacy
+from negspacy.negation import Negex
 
 # Add project root to path for config import
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -23,12 +25,12 @@ class CKDNLUEngine:
     Identifies intents, extracts medical entities, and provides query context
     """
     
-    def __init__(self, model_name: str = "en_core_web_md"):
+    def __init__(self, model_name: str = "en_ner_bc5cdr_md"):
         """
         Initialize NLU engine with spaCy model
         
         Args:
-            model_name: spaCy model to use (en_core_web_sm, en_core_web_md, en_core_web_lg)
+            model_name: spaCy model to use (default: en_ner_bc5cdr_md for medical terms)
         """
         print("🧠 Initializing Nephro-AI NLU Engine...")
         
@@ -38,10 +40,19 @@ class CKDNLUEngine:
             print(f"   ✓ Loaded spaCy model: {model_name}")
         except OSError:
             print(f"   ⚠ Model {model_name} not found. Downloading...")
+            # For scispacy models, we usually need to install via URL, but if it's a standard model:
             import subprocess
-            subprocess.run(["python", "-m", "spacy", "download", model_name])
+            if "bc5cdr" in model_name:
+                url = "https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_ner_bc5cdr_md-0.5.4.tar.gz"
+                subprocess.run(["pip", "install", url])
+            else:
+                subprocess.run(["python", "-m", "spacy", "download", model_name])
             self.nlp = spacy.load(model_name)
             print(f"   ✓ Downloaded and loaded: {model_name}")
+            
+        # Add Negex pipe
+        if "negex" not in self.nlp.pipe_names:
+            self.nlp.add_pipe("negex", config={"ent_types": ["DISEASE", "CHEMICAL"]})
         
         # Initialize matchers
         self.matcher = Matcher(self.nlp.vocab)
@@ -261,13 +272,20 @@ class CKDNLUEngine:
             "foods": []       # New category
         }
         
-        # Use spaCy NER
+        # Use spaCy NER (SciSpaCy uses DISEASE and CHEMICAL)
         for ent in doc.ents:
-            if ent.label_ in ["DISEASE", "SYMPTOM"]:
+            # Check for negation
+            if ent._.negex:
+                continue
+                
+            if ent.label_ == "DISEASE":
                 entities["conditions"].append(ent.text)
-            elif ent.label_ == "DRUG":
+            elif ent.label_ == "CHEMICAL":
                 entities["medications"].append(ent.text)
-            elif ent.label_ == "PERCENT" or ent.label_ == "QUANTITY":
+                # Also check if it's a nutrient
+                if any(n in ent.text.lower() for n in ["potassium", "sodium", "phosphorus", "calcium", "protein"]):
+                    entities["nutrients"].append(ent.text)
+            elif ent.label_ in ["PERCENT", "QUANTITY", "CARDINAL"]:
                 entities["measurements"].append(ent.text)
         
         # Use phrase matcher for medical entities
@@ -374,7 +392,10 @@ class CKDNLUEngine:
 
     def _check_negation(self, doc, term: str) -> bool:
         """Check if a term is negated in the text"""
-        # Simple dependency parsing or window-based negation
+        # Use Negex if available on entities, otherwise fallback to simple check
+        # But for arbitrary terms not in entities, we might need a manual check or run negex on custom spans
+        
+        # Fallback to simple window-based negation for non-entity terms
         text = doc.text.lower()
         negations = ["no", "not", "don't", "dont", "never", "without"]
         
