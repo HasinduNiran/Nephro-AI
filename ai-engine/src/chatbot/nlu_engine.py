@@ -11,6 +11,8 @@ import re
 from pathlib import Path
 import json
 import sys
+from sentence_transformers import SentenceTransformer, util
+import torch
 import scispacy
 from negspacy.negation import Negex
 
@@ -58,6 +60,48 @@ class CKDNLUEngine:
         self.matcher = Matcher(self.nlp.vocab)
         self.phrase_matcher = PhraseMatcher(self.nlp.vocab, attr="LOWER")
         
+        # --- Hybrid NLU: Load LaBSE for Sinhala/Singlish ---
+        print("   ⏳ Loading LaBSE Model (for Hybrid NLU)...")
+        try:
+            self.labse_model = SentenceTransformer('sentence-transformers/LaBSE')
+            print("   ✓ LaBSE Model Loaded")
+        except Exception as e:
+            print(f"   ⚠️ Failed to load LaBSE: {e}")
+            self.labse_model = None
+
+        # Define LaBSE Intent Descriptions (English anchors for Sinhala queries)
+        self.labse_intents = {
+            "ask_symptom": [
+                "I feel sick", "I have pain", "My body hurts", "Is this a symptom?", 
+                "I am tired", "I feel dizzy", "I am vomiting"
+            ],
+            "ask_diet": [
+                "What can I eat?", "Is this food good?", "Diet plan", "Can I eat rice?", 
+                "Foods to avoid", "Nutrition advice"
+            ],
+            "ask_medication": [
+                "What is this medicine?", "Side effects of drug", "How to take pill", 
+                "Treatment for kidney disease", "Is there a cure?"
+            ],
+            "ask_lab_result": [
+                "My creatinine is high", "What does my report mean?", "eGFR value", 
+                "Urine test result", "Blood test report"
+            ],
+            "ask_emergency": [
+                "I cannot breathe", "Chest pain", "Emergency help", "Call ambulance", 
+                "I am dying", "Very critical condition"
+            ],
+            "greeting": [
+                "Hello", "Hi", "Good morning", "Ayubowan", "Kohomada"
+            ]
+        }
+        
+        # Pre-compute embeddings for intents
+        if self.labse_model:
+            self.intent_embeddings = {}
+            for intent, phrases in self.labse_intents.items():
+                self.intent_embeddings[intent] = self.labse_model.encode(phrases, convert_to_tensor=True)
+
         # Setup custom patterns
         self._setup_intent_patterns()
         self._setup_medical_entities()
@@ -209,7 +253,20 @@ class CKDNLUEngine:
         doc = self.nlp(expanded_query.lower())
         
         # Extract components
-        intent = self._detect_intent(doc)
+        # Extract components
+        # 1. Try Rule-Based (SciSpaCy) first for high precision
+        intent_scores = self._detect_intent(doc)
+        primary_intent = max(intent_scores.items(), key=lambda x: x[1])[0]
+        
+        # 2. Hybrid Routing: If Rule-Based is unsure OR if query looks like Sinhala/Singlish, use LaBSE
+        # Simple heuristic: If primary intent is just "INFORMATION_SEEKING" (default), try LaBSE
+        if primary_intent == "INFORMATION_SEEKING" and self.labse_model:
+            labse_intent, labse_score = self._detect_intent_labse(query)
+            if labse_score > 0.4: # Threshold for LaBSE confidence
+                intent_scores = {labse_intent: labse_score}
+                print(f"   🔄 Hybrid NLU: Switched to LaBSE (Intent: {labse_intent}, Score: {labse_score:.2f})")
+
+        intent = intent_scores
         entities = self._extract_entities(doc)
         lab_values = self._extract_lab_values(doc)
         symptoms = self._identify_symptoms(doc)
@@ -238,6 +295,34 @@ class CKDNLUEngine:
         
         return analysis
     
+    def _detect_intent_labse(self, query: str) -> Tuple[str, float]:
+        """
+        Detect intent using LaBSE (Language-Agnostic BERT)
+        Best for Sinhala/Singlish queries that rule-based NLU misses.
+        """
+        if not self.labse_model:
+            return "INFORMATION_SEEKING", 0.0
+            
+        # Encode query
+        query_embedding = self.labse_model.encode(query, convert_to_tensor=True)
+        
+        best_intent = "INFORMATION_SEEKING"
+        best_score = 0.0
+        
+        # Compare against all intent clusters
+        for intent, anchor_embeddings in self.intent_embeddings.items():
+            # Compute cosine similarity with all anchor phrases for this intent
+            cosine_scores = util.cos_sim(query_embedding, anchor_embeddings)[0]
+            
+            # Take the max score (best matching phrase in this intent)
+            max_score = torch.max(cosine_scores).item()
+            
+            if max_score > best_score:
+                best_score = max_score
+                best_intent = intent
+                
+        return best_intent, best_score
+
     def _detect_intent(self, doc) -> Dict[str, float]:
         """Detect query intent with confidence scores"""
         
