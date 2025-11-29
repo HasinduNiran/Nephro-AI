@@ -84,3 +84,7 @@ negspacy>=1.0.4
 
 # Semantic Search & Hybrid NLU
 sentence-transformers>=2.2.2
+
+# TTS (Text-to-Speech)
+edge-tts>=6.1.9
+pygame>=2.5.2

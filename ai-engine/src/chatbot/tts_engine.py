@@ -1,81 +1,87 @@
-import sys
-import wave
-import io
-import sounddevice as sd
-import soundfile as sf
-import numpy as np
+
+import asyncio
+import edge_tts
+import pygame
+import os
+import hashlib
 from pathlib import Path
-from google import genai
-from google.genai import types
-
-# Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-import config
 
 class TTSEngine:
     def __init__(self):
-        """Initialize TTS Engine with config"""
-        self.api_key = config.GOOGLE_API_KEY
-        self.voice_name = config.GOOGLE_TTS_VOICE
+        print("🔊 Initializing Neural TTS Engine (Edge-TTS)...")
+        try:
+            pygame.mixer.init()
+        except Exception as e:
+            print(f"⚠️ Warning: Pygame mixer failed to init (Audio might not play): {e}")
         
-        if not self.api_key or self.api_key == "YOUR_GOOGLE_API_KEY":
-            print("⚠️ Warning: GOOGLE_API_KEY not set in config.")
-            self.client = None
-        else:
-            try:
-                self.client = genai.Client(api_key=self.api_key)
-            except Exception as e:
-                print(f"❌ TTS Init Error: {e}")
-                self.client = None
+        # Voice Configuration
+        self.voice_en = "en-US-AriaNeural"      # Excellent English Medical Voice
+        self.voice_si = "si-LK-ThiliniNeural"   # Native Sinhala Voice
+        
+        # Caching Setup (Best Practice)
+        self.cache_dir = Path("tts_cache")
+        self.cache_dir.mkdir(exist_ok=True)
+
+    def detect_language(self, text):
+        """Check if text contains Sinhala Unicode characters"""
+        if any('\u0D80' <= char <= '\u0DFF' for char in text):
+            return "si"
+        return "en"
+
+    async def _generate_audio_file(self, text, voice, output_path):
+        """Generate audio using Edge TTS"""
+        communicate = edge_tts.Communicate(text, voice)
+        await communicate.save(output_path)
 
     def generate_and_play(self, text: str):
         """
-        Generate speech from text and play it immediately
-        
-        Args:
-            text: Text to convert to speech
+        Generate speech with Caching and Language Switching
         """
-        if not self.client:
-            print("❌ TTS Error: Client not initialized (check API Key)")
+        if not text:
             return
 
+        # 1. Detect Language & Select Voice
+        lang = self.detect_language(text)
+        voice = self.voice_si if lang == "si" else self.voice_en
+        
+        print(f"🗣️ Speaking ({lang}): {text[:50]}...")
+
+        # 2. Check Cache (Industrial Best Practice)
+        # Create a unique filename based on the text hash
+        file_hash = hashlib.md5(text.encode()).hexdigest()
+        output_file = self.cache_dir / f"{file_hash}_{lang}.mp3"
+        
+        if not output_file.exists():
+            print("   ⚡ Generating new audio...")
+            try:
+                # Run async generation in sync context
+                asyncio.run(self._generate_audio_file(text, voice, str(output_file)))
+            except Exception as e:
+                print(f"❌ TTS Generation Error: {e}")
+                return
+        else:
+            print("   ⚡ Cache Hit! Playing existing audio...")
+
+        # 3. Play Audio (using Pygame for stability)
         try:
-            print("🔊 Generating speech...")
-            response = self.client.models.generate_content(
-                model="gemini-2.5-flash-preview-tts",
-                contents=f"Say cheerfully: {text}",
-                config=types.GenerateContentConfig(
-                    response_modalities=["AUDIO"],
-                    speech_config=types.SpeechConfig(
-                        voice_config=types.VoiceConfig(
-                            prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                                voice_name=self.voice_name,
-                            )
-                        )
-                    ),
-                )
-            )
+            pygame.mixer.music.load(str(output_file))
+            pygame.mixer.music.play()
             
-            # Extract audio data
-            if response.candidates and response.candidates[0].content.parts:
-                audio_data_bytes = response.candidates[0].content.parts[0].inline_data.data
+            # Wait for playback to finish
+            while pygame.mixer.music.get_busy():
+                pygame.time.Clock().tick(10)
                 
-                # Play audio
-                print("▶️ Playing audio...")
-                # Convert raw PCM bytes to numpy array
-                # Google GenAI TTS returns raw PCM (16-bit, 24kHz by default for this model/config)
-                audio_data = np.frombuffer(audio_data_bytes, dtype=np.int16)
-                
-                sd.play(audio_data, samplerate=24000)
-                sd.wait()
-            else:
-                print("❌ TTS Error: No audio content in response")
-
         except Exception as e:
-            print(f"❌ TTS Error: {e}")
+            print(f"❌ Playback Error: {e}")
 
+# Test
 if __name__ == "__main__":
-    # Test
     tts = TTSEngine()
-    tts.generate_and_play("Hello! I am Nephro-AI, your kidney care assistant.")
+    
+    # Test 1: English Medical
+    print("\n--- Test 1: English ---")
+    tts.generate_and_play("Your creatinine level is 5.1. This indicates Stage 3 CKD.")
+    
+    # Test 2: Sinhala Mixed
+    print("\n--- Test 2: Sinhala ---")
+    tts.generate_and_play("කරුණාකර වතුර වැඩිපුර බොන්න.") 
