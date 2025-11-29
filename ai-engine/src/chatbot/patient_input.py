@@ -14,6 +14,7 @@ import sounddevice as sd
 import soundfile as sf
 from pathlib import Path
 from typing import Optional, Tuple
+from faster_whisper import WhisperModel
 
 # Add parent directory to path to import config
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -38,7 +39,7 @@ else:
     print("✅ FFmpeg found.")
 
 class PatientInputHandler:
-    def __init__(self, model_size: str = "base"):
+    def __init__(self, model_size: str = "medium"):
         """
         Initialize Patient Input Handler
         
@@ -46,17 +47,14 @@ class PatientInputHandler:
             model_size: Whisper model size (tiny, base, small, medium, large)
         """
         self.model_size = model_size
-        self.whisper_model = None
         self.recording = False
         self.audio_queue = queue.Queue()
         
-    def _load_model(self):
-        """Lazy load Whisper model"""
-        if self.whisper_model is None:
-            print(f"⏳ Loading Whisper model ({self.model_size})... this may take a moment.")
-            import whisper
-            self.whisper_model = whisper.load_model(self.model_size)
-            print("✅ Whisper model loaded!")
+        print(f"⏳ Loading Faster-Whisper ({model_size})...")
+        # 'int8' is the magic setting for 4x speed on CPU
+        # If you have an NVIDIA GPU, change device="cpu" to device="cuda"
+        self.whisper_model = WhisperModel(model_size, device="cpu", compute_type="int8")
+        print("✅ Model Loaded")
             
     def record_audio(self, duration: int = None, sample_rate: int = 16000, silence_threshold: float = 0.01, silence_duration: float = 2.0) -> Optional[str]:
         """
@@ -134,50 +132,41 @@ class PatientInputHandler:
             return None
 
     def transcribe_audio(self, audio_path: str, language: str = None) -> str:
-        """
-        Transcribe audio file to text using Whisper
-        
-        Args:
-            audio_path: Path to audio file
-            language: Language code (e.g., 'en', 'si'). If None, auto-detects.
-            
-        Returns:
-            Transcribed text
-        """
         if not os.path.exists(audio_path):
             return ""
-            
-        self._load_model()
-        
-        print(f"🔄 Transcribing ({language if language else 'auto'})...")
-        try:
-            # Add initial prompt to guide Whisper (especially for Sinhala and Medical terms)
-            # Construct a rich context using the top medical entities
-            medical_context = ", ".join(MEDICAL_ENTITIES[:30]) # Use top 30 terms to avoid token limit
-            
-            base_prompt = f"This is a medical discussion about Chronic Kidney Disease (CKD). Terms like {medical_context} are used."
-            
-            initial_prompt = base_prompt
-            if language == 'si':
-                initial_prompt += " මෙය වකුගඩු රෝගය පිළිබඳ සිංහලෙන් අසන ලද ප්‍රශ්නයකි. මෙහි ඉංග්‍රීසි වෛද්‍ය වචන (Medical Terms) මිශ්‍ර සිංහල වාක්‍ය භාවිතා වේ." # "This is a question about kidney disease in Sinhala. English medical terms are mixed in Sinhala sentences."
-            
-            print(f"💡 Guided Prompt: {initial_prompt[:100]}...")
 
-            result = self.whisper_model.transcribe(
-                audio_path, 
+        print(f"🔄 Transcribing ({language if language else 'auto'})...")
+        
+        try:
+            # 1. Construct the Prompt (The most important part for Research)
+            # This teaches the model that "Sinhala" here involves English terms.
+            base_prompt = "This is a medical discussion about CKD. Common terms: Creatinine, eGFR, Potassium, Dialysis, Urea."
+            
+            if language == 'si':
+                # Force Singlish behavior
+                initial_prompt = base_prompt + " Sinhala sentences often contain English medical terms."
+            else:
+                initial_prompt = base_prompt
+
+            # 2. Run Inference
+            # faster-whisper returns a 'generator' (segments) which streams text as it processes
+            segments, info = self.whisper_model.transcribe(
+                audio_path,
                 language=language,
                 initial_prompt=initial_prompt,
-                fp16=False # Fix for CPU warning
+                beam_size=5, # Higher beam = better accuracy for slightly less speed
+                vad_filter=True, # Built-in Silero VAD to skip silence!
+                vad_parameters=dict(min_silence_duration_ms=500)
             )
-            text = result["text"].strip()
-            print(f"🗣️ You said: \"{text}\"")
+
+            # 3. Combine Segments
+            text_result = " ".join([segment.text for segment in segments]).strip()
             
-            # Normalize the medical terms immediately
-            expanded_text = expand_abbreviations(text)
-            if text != expanded_text:
-                print(f"🔄 Normalized to: \"{expanded_text}\"")
-                
-            return expanded_text
+            print(f"🗣️ Detected Language: {info.language} (Confidence: {info.language_probability:.2f})")
+            print(f"🗣️ Text: \"{text_result}\"")
+            
+            return text_result
+
         except Exception as e:
             print(f"❌ Transcription failed: {e}")
             return ""
