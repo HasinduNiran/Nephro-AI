@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 # Project Paths
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -306,6 +307,23 @@ CKD_ABBREVIATIONS = {
     "pt": "patient",
     "pts": "patients"
 }
+
+# Load Sinhala Medical Dictionary and merge
+SINHALA_MED_DICT_PATH = DATA_DIR / "sinhala_med_dict.json"
+if SINHALA_MED_DICT_PATH.exists():
+    try:
+        with open(SINHALA_MED_DICT_PATH, "r", encoding="utf-8") as f:
+            sinhala_dict = json.load(f)
+            # Remove comment if present
+            if "__COMMENT__" in sinhala_dict:
+                del sinhala_dict["__COMMENT__"]
+            
+            # Merge into CKD_ABBREVIATIONS
+            # We want Sinhala terms to be expanded to English concepts, just like abbreviations
+            CKD_ABBREVIATIONS.update(sinhala_dict)
+            print(f"✅ Loaded {len(sinhala_dict)} Sinhala/Singlish terms from dictionary.")
+    except Exception as e:
+        print(f"⚠️ Error loading Sinhala dictionary: {e}")
 
 # Reverse mapping for expansion (full term -> abbreviation)
 CKD_REVERSE_ABBREVIATIONS = {v: k for k, v in CKD_ABBREVIATIONS.items()}
