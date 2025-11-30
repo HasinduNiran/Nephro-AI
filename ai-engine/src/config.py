@@ -1,5 +1,10 @@
 from pathlib import Path
 import json
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Project Paths
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -17,11 +22,13 @@ EMBEDDING_MODEL = "openai/text-embedding-3-small"
 EMBEDDING_DIMENSION = 1536
 
 # OpenRouter API Settings
-OPENROUTER_API_KEY = "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"
+# OpenRouter API Settings
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/embeddings"
 
 # Google GenAI API Settings
-GOOGLE_API_KEY = "AIzaSyAGwHJuz5tEj-gigNvbMAVKrXOc4E1I0BM" # Placeholder
+# Google GenAI API Settings
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 GOOGLE_TTS_VOICE = "Kore"
 
 # Database Metadata

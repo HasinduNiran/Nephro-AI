@@ -87,4 +87,5 @@ sentence-transformers>=2.2.2
 
 # TTS (Text-to-Speech)
 edge-tts>=6.1.9
-pygame>=2.5.2
+# Environment Variables
+python-dotenv>=1.0.0
