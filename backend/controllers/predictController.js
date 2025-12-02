@@ -5,12 +5,7 @@ exports.predictRisk = (req, res) => {
   const { spo2, heart_rate, bp_systolic, age, diabetes, hypertension } =
     req.body;
 
-  if (
-    spo2 === undefined ||
-    heart_rate === undefined ||
-    bp_systolic === undefined ||
-    age === undefined
-  ) {
+  if (bp_systolic === undefined || age === undefined) {
     return res.status(400).json({ message: "Missing vital signs" });
   }
 

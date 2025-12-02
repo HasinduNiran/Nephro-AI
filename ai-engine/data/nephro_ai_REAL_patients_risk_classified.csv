@@ -84,12 +84,12 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10012055,70,97.49,133,75,0,0,Low Risk
 10012206,45,95.27,106,77,1,1,Medium Risk
 10012292,69,93.34,126,97,1,0,Medium Risk
-10012438,65,129.28,110,67,1,1,Medium Risk
+,,,,,,,
 10012476,88,98.26,119,59,1,0,Medium Risk
 10012552,78,95.91,128,83,1,0,Low Risk
 10012789,71,93.64,128,75,1,0,Medium Risk
 10012853,91,95.34,130,73,1,1,High Risk
-10013015,82,95.0,104,72,1,0,Low Risk
+10013015,82,95,104,72,1,0,Low Risk
 10013049,52,98.25,118,79,0,0,Low Risk
 10013151,37,96.27,98,97,0,0,Low Risk
 10013310,70,97.32,122,99,1,1,High Risk
@@ -157,7 +157,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10021312,55,95.28,124,88,1,0,Low Risk
 10021454,88,98.45,116,55,1,0,Medium Risk
 10021487,43,96.36,115,108,0,0,Low Risk
-10021666,87,95.0,137,69,1,0,Medium Risk
+10021666,87,95,137,69,1,0,Medium Risk
 10021818,82,95.68,112,91,1,1,High Risk
 10021927,65,94.9,103,101,1,0,Medium Risk
 10021938,65,96.94,151,79,1,0,Medium Risk
@@ -181,7 +181,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10023994,38,96.77,110,84,0,0,Low Risk
 10024043,67,97.14,123,66,1,1,Medium Risk
 10024331,72,97.66,109,92,1,1,High Risk
-10024483,82,97.0,95,81,1,1,Medium Risk
+10024483,82,97,95,81,1,1,Medium Risk
 10024681,80,96.19,130,104,1,1,High Risk
 10024913,73,97.7,121,73,1,1,Medium Risk
 10024982,78,98.03,120,79,1,0,Low Risk
@@ -190,7 +190,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10025612,82,95.78,101,86,0,0,Low Risk
 10025647,83,96.12,144,67,1,0,Medium Risk
 10025804,52,99.07,119,98,1,0,Medium Risk
-10026161,78,176.07,103,83,0,0,Low Risk
+,,,,,,,
 10026255,66,93.87,110,87,1,0,Medium Risk
 10026354,34,98.75,115,98,0,0,Low Risk
 10026406,45,95.45,120,81,0,0,Low Risk
@@ -201,7 +201,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10027704,40,96.21,121,97,0,0,Low Risk
 10027722,63,97.52,124,79,1,1,Medium Risk
 10027730,65,96.25,100,90,0,0,Low Risk
-10028930,65,97.0,125,72,0,0,Low Risk
+10028930,65,97,125,72,0,0,Low Risk
 10029057,89,96.56,129,84,1,0,Low Risk
 10029074,47,95.14,119,76,0,0,Low Risk
 10029224,87,97.93,107,81,1,0,Low Risk
@@ -220,7 +220,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10031229,88,96.2,123,73,1,1,Medium Risk
 10031316,56,98.48,113,88,1,1,Medium Risk
 10031358,58,97.2,129,73,1,1,Medium Risk
-10031404,82,95.0,132,114,1,0,Medium Risk
+10031404,82,95,132,114,1,0,Medium Risk
 10031757,67,96.45,122,97,1,0,Medium Risk
 10032176,75,94.2,150,65,1,1,High Risk
 10032207,58,97.45,122,75,0,0,Low Risk
@@ -274,10 +274,10 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10040973,61,95.59,111,118,1,0,Medium Risk
 10040984,76,97.61,125,69,1,0,Low Risk
 10041127,49,96.56,112,100,0,0,Low Risk
-10041218,32,97.0,112,87,0,1,Low Risk
+10041218,32,97,112,87,0,1,Low Risk
 10041599,71,94.83,130,78,1,0,Medium Risk
 10041668,45,98.2,135,100,0,0,Low Risk
-10041690,70,96.0,143,74,1,0,Medium Risk
+10041690,70,96,143,74,1,0,Medium Risk
 10041790,50,97.2,121,70,1,0,Low Risk
 10041894,78,94.87,120,71,1,0,Medium Risk
 10042377,88,96.82,105,80,0,0,Low Risk
@@ -296,13 +296,13 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10046166,67,96.39,130,56,1,1,High Risk
 10046234,66,95.89,126,72,1,1,Medium Risk
 10046298,46,96.09,112,87,1,0,Low Risk
-10046436,31,96.0,112,84,0,1,Low Risk
+10046436,31,96,112,84,0,1,Low Risk
 10046679,89,96.53,124,92,1,0,Medium Risk
 10046698,68,98.06,127,97,1,0,Medium Risk
 10046724,53,97.4,116,74,1,0,Low Risk
 10047172,73,96.89,131,79,1,1,High Risk
 10047351,71,93.95,113,49,0,0,Medium Risk
-10047484,69,94.0,145,82,1,0,Medium Risk
+10047484,69,94,145,82,1,0,Medium Risk
 10047587,74,94.68,129,73,1,1,High Risk
 10047599,63,97.13,108,91,1,0,Medium Risk
 10047682,34,99.13,100,114,0,0,Low Risk
@@ -358,7 +358,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10055729,62,98.22,117,82,1,1,Medium Risk
 10055828,75,96.37,123,71,1,0,Low Risk
 10055939,65,97.21,126,89,1,1,Medium Risk
-10056037,68,99.0,107,110,0,0,Low Risk
+10056037,68,99,107,110,0,0,Low Risk
 10056176,47,96.87,117,77,1,0,Low Risk
 10056200,25,97.15,111,78,0,0,Low Risk
 10056223,48,98.96,115,89,1,0,Low Risk
@@ -394,7 +394,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10062617,91,97.09,114,60,1,0,Low Risk
 10062774,71,93.45,122,72,1,0,Medium Risk
 10063224,65,94.61,104,91,1,1,High Risk
-10063488,63,98.0,110,83,0,0,Low Risk
+10063488,63,98,110,83,0,0,Low Risk
 10063534,77,97.22,112,66,1,0,Low Risk
 10063663,77,91.25,88,89,1,0,Medium Risk
 10063770,40,97.33,116,76,0,0,Low Risk
@@ -405,7 +405,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10064204,77,94.82,132,78,1,0,Medium Risk
 10064274,68,98.31,133,89,1,1,High Risk
 10064390,74,95.09,120,58,1,0,Medium Risk
-10064636,34,96.0,124,87,0,0,Low Risk
+10064636,34,96,124,87,0,0,Low Risk
 10064854,83,94.44,124,95,0,0,Medium Risk
 10065024,77,95.71,117,86,1,1,Medium Risk
 10065103,70,96.04,108,86,1,0,Low Risk
@@ -442,7 +442,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10070614,61,98.07,107,93,1,1,High Risk
 10070626,29,98.71,112,66,0,0,Low Risk
 10070678,62,96.05,121,72,1,1,Medium Risk
-10070928,87,96.0,97,71,1,0,Low Risk
+10070928,87,96,97,71,1,0,Low Risk
 10070932,36,97.38,96,74,0,0,Low Risk
 10071167,85,95.19,84,82,0,0,Low Risk
 10071302,65,98.41,112,96,1,0,Medium Risk
@@ -459,7 +459,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10073587,91,97.13,140,68,1,1,High Risk
 10073847,53,95.2,112,101,1,0,Medium Risk
 10074189,28,96.87,120,99,0,0,Low Risk
-10074323,85,97.0,124,86,0,1,Low Risk
+10074323,85,97,124,86,0,1,Low Risk
 10074387,70,98.98,108,75,1,1,Medium Risk
 10074474,61,98.06,95,90,1,0,Low Risk
 10074556,41,99.12,132,111,0,0,Medium Risk
@@ -489,7 +489,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10077421,51,97.12,105,98,1,0,Medium Risk
 10077499,67,92.29,111,64,1,0,Medium Risk
 10077619,82,95.16,110,80,1,0,Low Risk
-10078008,72,94.0,161,82,1,0,High Risk
+10078008,72,94,161,82,1,0,High Risk
 10078072,80,97.62,132,67,0,0,Low Risk
 10078115,50,99.52,137,69,1,0,Medium Risk
 10078297,68,99.37,115,62,1,0,Low Risk
@@ -518,7 +518,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10081883,52,97.52,119,82,0,0,Low Risk
 10082014,76,97.75,127,99,1,0,Medium Risk
 10082543,52,98.95,138,71,0,0,Low Risk
-10082560,86,136.58,108,104,1,0,Medium Risk
+,,,,,,,
 10082662,67,97.69,98,122,1,0,Medium Risk
 10082926,69,95.89,127,74,1,0,Low Risk
 10082986,74,94.98,116,113,1,1,High Risk
@@ -559,13 +559,13 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10089618,69,97.94,107,95,1,1,High Risk
 10090451,49,97.2,122,81,1,0,Low Risk
 10090454,84,90.4,146,79,1,0,Medium Risk
-10090569,91,99.0,122,72,1,1,Medium Risk
+10090569,91,99,122,72,1,1,Medium Risk
 10090828,33,99.11,112,66,0,0,Low Risk
 10091141,59,96.31,101,86,1,1,Medium Risk
 10091311,52,94.17,163,96,1,0,High Risk
 10091327,70,99.55,106,99,0,0,Low Risk
-10091724,69,94.0,113,92,1,1,High Risk
-10091871,72,97.0,128,80,1,1,Medium Risk
+10091724,69,94,113,92,1,1,High Risk
+10091871,72,97,128,80,1,1,Medium Risk
 10092020,69,95.1,125,65,0,0,Low Risk
 10092171,48,99.07,115,71,0,0,Low Risk
 10092175,47,89.88,110,84,0,1,Medium Risk
@@ -633,7 +633,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10102822,77,99.79,136,82,1,0,Medium Risk
 10102878,56,96.79,107,86,1,0,Low Risk
 10103224,47,97.97,104,98,0,0,Low Risk
-10103457,40,97.0,108,84,0,0,Low Risk
+10103457,40,97,108,84,0,0,Low Risk
 10103536,50,95.47,109,62,0,0,Low Risk
 10103653,91,97.87,112,83,1,0,Low Risk
 10103748,74,95.95,111,80,1,1,Medium Risk
@@ -641,7 +641,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10103795,58,97.58,137,67,1,0,Medium Risk
 10104012,27,99.11,118,69,0,0,Low Risk
 10104229,91,96.06,121,74,1,1,Medium Risk
-10104289,66,97.0,142,60,1,1,High Risk
+10104289,66,97,142,60,1,1,High Risk
 10104308,55,96.82,134,78,1,1,High Risk
 10104335,84,98.69,104,73,1,0,Low Risk
 10104450,82,95.06,99,84,1,1,Medium Risk
@@ -672,7 +672,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10108433,59,94.79,114,121,1,0,Medium Risk
 10108435,62,96.48,126,61,1,0,Low Risk
 10108609,74,96.09,114,83,1,0,Low Risk
-10108733,50,95.0,109,82,0,0,Low Risk
+10108733,50,95,109,82,0,0,Low Risk
 10108868,56,97.11,106,78,1,0,Low Risk
 10109015,57,96.78,134,69,1,1,High Risk
 10109081,66,96.04,100,97,0,0,Low Risk
@@ -714,7 +714,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10114253,71,96.04,124,92,1,1,High Risk
 10114694,49,97.28,128,67,0,0,Low Risk
 10114841,62,96.92,117,83,1,0,Low Risk
-10114932,53,98.0,110,73,0,0,Low Risk
+10114932,53,98,110,73,0,0,Low Risk
 10114939,48,96.5,132,78,1,1,High Risk
 10115024,52,97.74,117,70,1,0,Low Risk
 10115044,69,96.51,100,67,1,1,Medium Risk
@@ -729,7 +729,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10116905,58,97.7,111,72,1,1,Medium Risk
 10116910,70,96.81,115,100,1,0,Medium Risk
 10117130,44,97.19,114,102,1,1,High Risk
-10117230,60,191.16,118,73,1,0,Low Risk
+,,,,,,,
 10117273,70,94.29,101,70,1,1,High Risk
 10117734,40,96.16,116,113,0,0,Low Risk
 10117812,35,95.51,104,97,0,0,Low Risk
@@ -773,7 +773,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10123949,44,96.61,121,74,1,1,Medium Risk
 10124081,65,94.41,122,82,1,0,Medium Risk
 10124291,67,96.31,114,77,0,0,Low Risk
-10124367,57,97.0,143,72,1,0,Medium Risk
+10124367,57,97,143,72,1,0,Medium Risk
 10124428,64,96.75,118,106,0,0,Low Risk
 10124807,56,95.4,127,79,0,0,Low Risk
 10124825,65,96.66,149,84,1,0,Medium Risk
@@ -822,7 +822,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10130585,57,96.67,77,87,0,0,Low Risk
 10130937,80,98.32,110,94,1,0,Medium Risk
 10130966,72,95.01,109,82,0,0,Low Risk
-10131080,74,94.0,115,81,1,0,Medium Risk
+10131080,74,94,115,81,1,0,Medium Risk
 10131457,41,98.4,126,68,0,0,Low Risk
 10131638,57,91.07,93,76,1,0,Medium Risk
 10131647,59,94.68,111,110,0,0,Medium Risk
@@ -850,10 +850,10 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10135398,59,97.8,133,88,0,0,Low Risk
 10135557,50,92.77,124,82,1,1,High Risk
 10135595,88,97.02,114,84,1,1,Medium Risk
-10135647,53,98.0,106,90,0,0,Low Risk
+10135647,53,98,106,90,0,0,Low Risk
 10135720,59,98.24,118,85,1,0,Low Risk
 10135867,62,97.8,122,80,1,0,Low Risk
-10136479,32,96.0,113,59,0,0,Low Risk
+10136479,32,96,113,59,0,0,Low Risk
 10136619,88,93.48,117,80,1,0,Medium Risk
 10136781,22,98.29,127,96,0,0,Low Risk
 10136820,61,97.08,117,109,1,0,Medium Risk
@@ -864,7 +864,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10137651,73,97.19,156,76,1,0,Medium Risk
 10137806,82,96.9,100,72,0,0,Low Risk
 10137856,72,91.92,96,89,1,1,High Risk
-10138124,68,95.0,132,102,1,0,Medium Risk
+10138124,68,95,132,102,1,0,Medium Risk
 10138206,51,95.85,105,92,1,1,High Risk
 10138283,87,95.8,120,86,1,0,Low Risk
 10138454,42,96.93,105,138,0,0,Low Risk
@@ -887,7 +887,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10141035,77,99.18,105,95,1,0,Medium Risk
 10141173,71,95.83,104,72,1,0,Low Risk
 10141229,75,90.12,153,88,1,0,Medium Risk
-10141243,77,95.0,119,70,1,0,Low Risk
+10141243,77,95,119,70,1,0,Low Risk
 10141364,67,96.24,131,103,0,0,Medium Risk
 10141487,18,99.6,117,74,0,0,Low Risk
 10141524,68,96.32,133,98,1,0,Medium Risk
@@ -1002,7 +1002,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10157404,67,95.78,111,98,0,0,Low Risk
 10157454,62,95.9,123,95,1,1,High Risk
 10157542,75,94.17,111,97,1,1,High Risk
-10157674,76,90.0,92,99,1,0,Medium Risk
+10157674,76,90,92,99,1,0,Medium Risk
 10157718,83,96.06,149,78,1,1,High Risk
 10158799,66,95.33,150,63,1,1,High Risk
 10158991,79,93.96,136,64,1,0,Medium Risk
@@ -1046,7 +1046,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10165018,24,98.02,116,80,0,0,Low Risk
 10165522,55,96.25,75,92,1,0,Medium Risk
 10165555,54,95.75,127,111,1,1,High Risk
-10165875,64,95.0,137,79,1,1,High Risk
+10165875,64,95,137,79,1,1,High Risk
 10165930,46,92.95,123,80,1,0,Medium Risk
 10165963,66,98.07,124,91,1,1,High Risk
 10166031,22,98.91,119,88,0,0,Low Risk
@@ -1073,7 +1073,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10169796,29,96.7,137,82,0,0,Low Risk
 10169876,83,92.67,148,58,1,1,High Risk
 10170022,87,92.5,118,100,0,0,Medium Risk
-10170435,44,98.0,116,98,1,1,High Risk
+10170435,44,98,116,98,1,1,High Risk
 10170562,27,95.65,135,103,0,0,Medium Risk
 10170670,52,97.92,116,103,0,0,Low Risk
 10170980,48,99.15,102,78,0,0,Low Risk
@@ -1081,7 +1081,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10171247,76,93.19,121,67,1,0,Medium Risk
 10171405,63,96.85,102,80,1,0,Low Risk
 10171525,27,99.77,108,94,0,0,Low Risk
-10171587,67,97.0,111,95,1,0,Medium Risk
+10171587,67,97,111,95,1,0,Medium Risk
 10171967,67,96.87,124,89,1,0,Low Risk
 10172118,79,95.96,142,91,0,0,Medium Risk
 10172206,61,97.68,113,65,0,0,Low Risk
@@ -1098,7 +1098,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10173425,63,97.42,130,68,1,0,Medium Risk
 10173670,73,97.68,133,73,1,1,High Risk
 10173672,72,98.7,138,85,1,1,High Risk
-10173815,49,99.0,108,92,0,0,Low Risk
+10173815,49,99,108,92,0,0,Low Risk
 10173928,54,97.6,121,100,0,0,Low Risk
 10174039,70,97.75,118,76,0,1,Low Risk
 10174086,50,96.07,128,94,0,0,Low Risk
@@ -1146,7 +1146,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10179938,84,95.5,145,94,1,1,High Risk
 10180042,42,96.51,140,72,0,0,Low Risk
 10180095,74,96.39,106,101,0,1,Medium Risk
-10180134,67,94.0,124,74,1,0,Medium Risk
+10180134,67,94,124,74,1,0,Medium Risk
 10180139,91,96.46,125,79,1,1,Medium Risk
 10180204,88,93.73,152,90,1,0,Medium Risk
 10180407,56,97.57,117,90,0,0,Low Risk
@@ -1256,7 +1256,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10197902,91,94.31,116,77,1,0,Medium Risk
 10197945,65,95.27,132,86,1,1,High Risk
 10198086,60,96.49,137,80,1,0,Medium Risk
-10198136,64,99.0,122,73,1,1,Medium Risk
+10198136,64,99,122,73,1,1,Medium Risk
 10198197,80,95.31,117,76,0,0,Low Risk
 10198270,68,96.62,119,103,1,1,High Risk
 10198310,52,96.61,128,71,1,0,Low Risk
@@ -1332,10 +1332,10 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10208557,81,95.06,125,68,0,0,Low Risk
 10208612,85,94.95,143,76,1,0,Medium Risk
 10208781,59,93.92,124,71,0,0,Low Risk
-10208884,72,97.0,137,88,1,0,Medium Risk
+10208884,72,97,137,88,1,0,Medium Risk
 10208917,49,96.36,125,86,1,0,Low Risk
 10208954,82,95.22,106,97,1,0,Medium Risk
-10209126,61,96.0,113,93,1,1,High Risk
+10209126,61,96,113,93,1,1,High Risk
 10209298,54,98.65,133,75,1,0,Medium Risk
 10209410,66,95.91,111,92,1,0,Medium Risk
 10209431,70,96.8,119,83,0,0,Low Risk
@@ -1352,7 +1352,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10212183,91,94.95,119,100,1,0,Medium Risk
 10212427,66,96.19,121,91,1,0,Medium Risk
 10212609,38,98.04,95,74,0,0,Low Risk
-10212705,70,98.0,103,118,0,1,Medium Risk
+10212705,70,98,103,118,0,1,Medium Risk
 10213275,64,95.76,118,91,1,1,High Risk
 10213338,48,98.72,121,90,1,1,Medium Risk
 10213344,88,98.53,120,94,1,0,Medium Risk
@@ -1388,10 +1388,10 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10218191,91,95.22,108,87,1,1,Medium Risk
 10218214,85,96.75,124,71,1,0,Low Risk
 10218368,77,55.87,146,64,1,1,High Risk
-10218413,60,95.0,108,80,0,0,Low Risk
+10218413,60,95,108,80,0,0,Low Risk
 10218444,67,99.85,101,76,0,0,Low Risk
 10218466,38,98.57,123,80,1,0,Low Risk
-10218965,60,96.0,135,92,0,0,Low Risk
+10218965,60,96,135,92,0,0,Low Risk
 10219029,74,98.8,80,96,1,1,High Risk
 10219100,60,94.8,139,97,1,1,High Risk
 10219301,71,97.04,104,67,1,1,Medium Risk
@@ -1400,7 +1400,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10219493,49,94.81,137,60,1,0,Medium Risk
 10219508,72,95.58,109,68,1,0,Low Risk
 10219697,43,95.43,148,78,1,0,Medium Risk
-10219906,40,95.87,138,311,1,0,Medium Risk
+,,,,,,,
 10219998,69,95.49,119,70,1,0,Low Risk
 10220107,80,95.67,110,71,1,1,Medium Risk
 10220125,91,95.35,99,91,1,0,Medium Risk
@@ -1478,7 +1478,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10232455,67,97.05,111,76,1,0,Low Risk
 10232572,37,97.61,110,93,0,0,Low Risk
 10232836,49,96.4,116,79,1,1,Medium Risk
-10232943,56,90.0,93,106,0,0,Medium Risk
+10232943,56,90,93,106,0,0,Medium Risk
 10233088,52,96.59,107,95,1,0,Medium Risk
 10233195,75,95.75,124,72,1,1,Medium Risk
 10233233,40,97.41,98,88,1,0,Low Risk
@@ -1494,7 +1494,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10234909,66,99.06,116,105,1,1,High Risk
 10234917,77,97.88,154,69,1,0,Medium Risk
 10235089,37,96.26,127,71,1,0,Low Risk
-10235444,70,98.0,121,85,1,0,Low Risk
+10235444,70,98,121,85,1,0,Low Risk
 10235988,86,96.28,107,73,1,0,Low Risk
 10235995,24,97.22,117,75,1,0,Low Risk
 10236009,38,98.71,146,100,1,1,High Risk
@@ -1505,7 +1505,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10236332,48,97.99,104,75,0,0,Low Risk
 10236415,91,96.32,120,81,0,1,Low Risk
 10236513,73,97.98,121,82,0,0,Low Risk
-10236534,65,98.0,122,71,1,0,Low Risk
+10236534,65,98,122,71,1,0,Low Risk
 10236621,59,97.66,105,77,1,0,Low Risk
 10236768,55,95.87,115,74,0,0,Low Risk
 10236942,64,98.48,98,92,0,0,Low Risk
@@ -1527,7 +1527,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10239650,91,94.84,92,60,1,0,Medium Risk
 10239721,81,98.24,151,57,1,1,High Risk
 10239917,44,99.13,134,68,0,0,Low Risk
-10240091,46,96.0,121,80,0,0,Low Risk
+10240091,46,96,121,80,0,0,Low Risk
 10240102,70,97.67,119,86,1,0,Low Risk
 10240327,70,95.91,120,69,1,0,Low Risk
 10240409,55,97.71,135,80,1,0,Medium Risk
@@ -1540,9 +1540,9 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10240746,32,96.35,117,78,0,1,Low Risk
 10240784,67,97.23,110,71,1,1,Medium Risk
 10240862,29,97.91,129,81,1,1,Medium Risk
-10240923,51,97.0,124,102,0,1,Medium Risk
+10240923,51,97,124,102,0,1,Medium Risk
 10241802,66,96.9,127,73,0,0,Low Risk
-10241833,63,97.0,112,74,1,1,Medium Risk
+10241833,63,97,112,74,1,1,Medium Risk
 10241953,46,95.7,113,98,0,1,Medium Risk
 10241988,84,98.14,110,82,0,0,Low Risk
 10242290,71,98.93,156,64,1,1,High Risk
@@ -1554,7 +1554,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10243987,62,96.79,106,98,1,0,Medium Risk
 10244046,80,96.5,140,99,1,0,Medium Risk
 10244356,69,94.03,141,90,1,0,Medium Risk
-10244629,60,94.0,131,81,0,0,Medium Risk
+10244629,60,94,131,81,0,0,Medium Risk
 10244884,74,97.43,117,85,1,1,Medium Risk
 10245048,74,97.11,119,86,1,0,Low Risk
 10245082,77,96.73,117,91,1,1,High Risk
@@ -1562,7 +1562,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10245250,49,96.18,111,92,1,1,High Risk
 10245374,70,96.54,108,98,1,0,Medium Risk
 10245522,70,97.21,107,76,1,0,Low Risk
-10245574,37,98.0,135,76,0,0,Low Risk
+10245574,37,98,135,76,0,0,Low Risk
 10245646,60,96.24,104,84,0,1,Low Risk
 10245890,91,95.97,101,76,0,0,Low Risk
 10245923,56,94.96,138,99,1,1,High Risk
@@ -1570,14 +1570,14 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10246107,71,95.78,123,76,1,1,Medium Risk
 10246110,58,95.01,110,110,1,0,Medium Risk
 10246238,57,93.35,84,92,1,0,Medium Risk
-10246275,37,96.0,111,93,1,1,High Risk
+10246275,37,96,111,93,1,1,High Risk
 10246350,61,94.64,107,82,1,1,High Risk
 10246405,47,97.58,133,75,1,0,Medium Risk
 10246643,59,93.33,106,105,1,0,Medium Risk
 10246670,44,99.44,111,86,1,1,Medium Risk
 10246764,30,98.25,111,84,0,0,Low Risk
 10246786,82,96.47,129,63,1,1,Medium Risk
-10246872,68,96.0,143,57,1,1,High Risk
+10246872,68,96,143,57,1,1,High Risk
 10246901,51,99.32,109,81,1,1,Medium Risk
 10246985,48,99.04,124,81,1,1,Medium Risk
 10247013,88,96.89,112,85,1,0,Low Risk
@@ -1628,7 +1628,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10253747,42,98.24,140,85,1,1,High Risk
 10253803,59,98.09,132,64,1,1,High Risk
 10253919,91,95.92,111,83,0,0,Low Risk
-10254097,60,96.0,113,90,0,0,Low Risk
+10254097,60,96,113,90,0,0,Low Risk
 10254215,73,97.61,126,86,1,0,Low Risk
 10254249,30,96.49,114,79,1,0,Low Risk
 10254291,68,95.58,123,66,1,0,Low Risk
@@ -1645,7 +1645,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10255799,77,95.4,117,91,1,0,Medium Risk
 10255915,22,95.55,125,86,0,0,Low Risk
 10255928,40,98.58,116,97,0,0,Low Risk
-10256017,82,91.0,138,47,1,0,High Risk
+10256017,82,91,138,47,1,0,High Risk
 10256096,69,95.72,148,87,1,1,High Risk
 10256229,59,95.49,121,56,0,0,Low Risk
 10256269,91,96.54,157,75,1,0,Medium Risk
@@ -1675,7 +1675,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10260349,78,96.03,112,71,1,0,Low Risk
 10260642,74,96.16,108,71,1,0,Low Risk
 10260762,67,97.67,109,79,1,0,Low Risk
-10260936,31,100.0,123,100,0,0,Low Risk
+10260936,31,100,123,100,0,0,Low Risk
 10261084,91,88.54,88,77,1,0,Medium Risk
 10261086,64,97.73,114,79,1,0,Low Risk
 10261230,22,94.88,141,93,0,0,Medium Risk
@@ -1721,7 +1721,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10267019,74,94.43,130,81,1,0,Medium Risk
 10267064,48,95.56,133,93,1,0,Medium Risk
 10267084,68,94.41,107,84,0,0,Low Risk
-10267191,68,97.0,119,76,0,1,Low Risk
+10267191,68,97,119,76,0,1,Low Risk
 10267680,46,97.49,121,85,1,0,Low Risk
 10267709,65,96.68,136,93,1,1,High Risk
 10267773,35,99.14,132,97,1,1,High Risk
@@ -1755,7 +1755,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10271174,76,94.57,95,105,0,0,Medium Risk
 10271227,89,95.95,103,96,1,0,Medium Risk
 10271338,87,94.84,130,77,0,0,Medium Risk
-10271367,85,97.0,78,99,0,0,Low Risk
+10271367,85,97,78,99,0,0,Low Risk
 10272054,50,95.85,120,84,1,1,Medium Risk
 10272100,85,96.02,118,75,1,0,Low Risk
 10272120,91,96.47,136,89,1,1,High Risk
@@ -1822,9 +1822,9 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10280839,46,98.59,120,81,1,0,Low Risk
 10281078,65,94.98,119,79,1,1,High Risk
 10281281,67,98.24,118,69,1,0,Low Risk
-10281337,82,94.0,102,41,1,1,High Risk
+10281337,82,94,102,41,1,1,High Risk
 10281385,75,98.68,146,79,1,1,High Risk
-10281517,75,97.0,164,96,1,0,Medium Risk
+10281517,75,97,164,96,1,0,Medium Risk
 10281589,43,96.74,111,91,0,0,Low Risk
 10281759,70,92.78,126,104,1,0,Medium Risk
 10281808,72,95.84,126,96,1,1,High Risk
@@ -1848,7 +1848,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10284532,85,95.08,107,85,1,0,Low Risk
 10284680,71,93.57,132,78,1,0,Medium Risk
 10284764,69,98.32,106,78,1,0,Low Risk
-10284990,53,99.0,125,113,1,0,Medium Risk
+10284990,53,99,125,113,1,0,Medium Risk
 10285309,66,97.14,119,74,0,0,Low Risk
 10285325,69,98.16,123,91,1,0,Medium Risk
 10285349,75,94.39,116,93,1,1,High Risk
@@ -1915,7 +1915,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10292371,48,97.34,104,72,0,0,Low Risk
 10292388,74,97.76,116,71,1,0,Low Risk
 10292430,50,95.99,106,83,1,0,Low Risk
-10292574,88,98.0,91,95,1,0,Medium Risk
+10292574,88,98,91,95,1,0,Medium Risk
 10292598,63,95.12,102,93,1,0,Medium Risk
 10292730,82,96.22,126,96,1,1,High Risk
 10292870,33,95.34,118,82,0,0,Low Risk
@@ -1991,11 +1991,11 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10303503,23,98.01,106,113,0,0,Low Risk
 10303555,54,97.31,101,105,0,0,Low Risk
 10303594,60,92.67,125,83,1,1,High Risk
-10303776,58,94.0,104,92,0,0,Medium Risk
+10303776,58,94,104,92,0,0,Medium Risk
 10303799,78,99.66,112,96,1,1,High Risk
 10303904,53,96.91,103,82,1,0,Low Risk
 10304137,67,95.94,122,93,1,1,High Risk
-10304210,73,99.0,99,72,1,1,Medium Risk
+10304210,73,99,99,72,1,1,Medium Risk
 10304339,56,97.87,136,101,0,0,Medium Risk
 10304606,65,98.42,105,72,1,1,Medium Risk
 10304614,65,97.96,114,71,0,0,Low Risk
@@ -2065,7 +2065,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10313183,63,95.9,108,92,0,0,Low Risk
 10313200,70,96.45,154,72,1,1,High Risk
 10313626,53,92.3,109,84,1,1,High Risk
-10313700,55,96.0,128,107,1,0,Medium Risk
+10313700,55,96,128,107,1,0,Medium Risk
 10313733,61,93.96,128,101,1,1,High Risk
 10313987,66,95.5,116,75,1,0,Low Risk
 10314068,65,96.56,142,58,1,0,Medium Risk
@@ -2113,7 +2113,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10319601,66,97.65,114,99,0,0,Low Risk
 10319651,83,96.72,141,63,1,1,High Risk
 10319938,56,98.3,121,71,0,0,Low Risk
-10320037,88,98.0,116,62,1,0,Low Risk
+10320037,88,98,116,62,1,0,Low Risk
 10320090,33,96.93,107,77,1,0,Low Risk
 10320289,53,96.21,164,70,1,0,Medium Risk
 10320313,75,95.41,107,93,1,1,High Risk
@@ -2267,11 +2267,11 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10344200,91,95.49,143,80,0,0,Low Risk
 10344594,73,97.06,128,82,0,0,Low Risk
 10344614,46,93.63,109,76,0,0,Low Risk
-10344628,63,96.0,155,72,0,0,Low Risk
+10344628,63,96,155,72,0,0,Low Risk
 10344684,61,95.81,106,95,0,0,Low Risk
 10344732,91,98.34,113,70,0,0,Low Risk
 10344852,61,94.22,123,78,0,0,Low Risk
-10344957,53,97.0,115,70,0,0,Low Risk
+10344957,53,97,115,70,0,0,Low Risk
 10345163,52,96.18,123,82,0,0,Low Risk
 10345212,69,96.97,102,78,0,0,Low Risk
 10345346,86,97.74,164,63,0,0,Medium Risk
@@ -2345,7 +2345,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10356799,65,95.61,150,75,0,0,Low Risk
 10356845,73,97.67,108,75,0,0,Low Risk
 10356874,63,98.47,107,82,0,0,Low Risk
-10356985,91,88.0,86,92,0,0,Medium Risk
+10356985,91,88,86,92,0,0,Medium Risk
 10357013,80,96.88,120,80,0,0,Low Risk
 10357053,53,97.92,106,92,0,0,Low Risk
 10357102,40,96.87,102,106,0,0,Low Risk
@@ -2359,7 +2359,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10358380,85,95.72,146,72,0,0,Low Risk
 10358529,47,98.27,149,81,0,0,Low Risk
 10358580,82,97.61,107,71,0,0,Low Risk
-10358620,36,99.0,118,67,0,0,Low Risk
+10358620,36,99,118,67,0,0,Low Risk
 10358788,84,93.77,117,82,0,0,Low Risk
 10359112,81,96.97,149,62,0,0,Low Risk
 10359261,80,94.87,98,92,0,0,Medium Risk
@@ -2439,7 +2439,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10370700,80,97.66,123,69,0,0,Low Risk
 10370773,51,97.79,113,83,0,0,Low Risk
 10370962,53,96.2,109,59,0,0,Low Risk
-10371197,73,94.0,118,74,0,0,Low Risk
+10371197,73,94,118,74,0,0,Low Risk
 10371441,37,95.86,129,82,0,0,Low Risk
 10371464,79,97.69,106,77,0,0,Low Risk
 10371495,71,96.93,115,83,0,0,Low Risk
@@ -2484,7 +2484,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10378032,69,96.13,131,63,0,0,Low Risk
 10378217,64,96.8,112,95,0,0,Low Risk
 10378479,63,98.35,131,102,0,0,Medium Risk
-10378539,66,97.0,113,79,0,0,Low Risk
+10378539,66,97,113,79,0,0,Low Risk
 10378641,83,93.72,127,82,0,0,Low Risk
 10378991,65,95.99,135,93,0,0,Low Risk
 10379177,56,96.46,121,104,0,0,Low Risk
@@ -2581,12 +2581,12 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10392073,73,98.14,116,73,0,0,Low Risk
 10392222,64,98.46,110,98,0,0,Low Risk
 10392369,77,92.51,135,91,0,0,Medium Risk
-10392668,91,92.0,118,85,0,0,Low Risk
-10392686,66,97.0,118,68,0,0,Low Risk
+10392668,91,92,118,85,0,0,Low Risk
+10392686,66,97,118,68,0,0,Low Risk
 10392889,91,99.05,137,70,0,0,Low Risk
 10392956,40,93.5,104,59,0,0,Medium Risk
 10393028,53,97.4,122,60,0,0,Low Risk
-10393214,61,100.0,74,86,0,0,Low Risk
+10393214,61,100,74,86,0,0,Low Risk
 10393331,48,97.19,129,58,0,0,Low Risk
 10393491,74,95.47,111,71,0,0,Low Risk
 10393494,56,95.11,105,92,0,0,Low Risk
@@ -2634,7 +2634,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10401384,61,94.23,134,110,0,0,Medium Risk
 10401617,59,96.2,111,113,0,0,Low Risk
 10401797,52,94.28,120,83,0,0,Low Risk
-10402064,58,96.0,134,73,0,0,Low Risk
+10402064,58,96,134,73,0,0,Low Risk
 10402177,66,96.19,111,72,0,0,Low Risk
 10402372,58,95.78,108,105,0,0,Low Risk
 10402406,63,94.44,101,100,0,0,Medium Risk
@@ -2650,7 +2650,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10404210,46,96.23,113,80,0,0,Low Risk
 10404360,73,96.15,112,69,0,0,Low Risk
 10404398,70,94.8,122,90,0,0,Low Risk
-10404451,89,91.0,112,121,0,0,Medium Risk
+10404451,89,91,112,121,0,0,Medium Risk
 10404551,81,92.72,130,89,0,0,Medium Risk
 10404585,81,96.67,125,73,0,0,Low Risk
 10404814,77,96.74,150,72,0,0,Low Risk
@@ -2678,7 +2678,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10407740,63,93.84,110,91,0,0,Medium Risk
 10408070,85,95.13,135,90,0,0,Low Risk
 10408132,79,97.35,111,71,0,0,Low Risk
-10408355,58,99.0,123,72,0,0,Low Risk
+10408355,58,99,123,72,0,0,Low Risk
 10408470,28,97.12,108,76,0,0,Low Risk
 10408562,28,95.26,123,85,0,0,Low Risk
 10408681,55,96.5,129,90,0,0,Low Risk
@@ -2749,7 +2749,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10419638,46,96.86,112,88,0,0,Low Risk
 10419965,53,97.7,105,67,0,0,Low Risk
 10420013,56,98.28,105,94,0,0,Low Risk
-10420250,62,98.0,145,86,0,0,Low Risk
+10420250,62,98,145,86,0,0,Low Risk
 10420314,59,96.68,135,70,0,0,Low Risk
 10420494,49,96.12,117,92,0,0,Low Risk
 10420630,76,97.21,131,83,0,0,Low Risk
@@ -2765,7 +2765,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10422501,80,88.69,109,109,0,0,Medium Risk
 10422510,78,97.25,137,89,0,0,Low Risk
 10422517,91,98.25,116,68,0,0,Low Risk
-10422690,64,98.0,120,72,0,0,Low Risk
+10422690,64,98,120,72,0,0,Low Risk
 10422699,82,96.3,123,83,0,0,Low Risk
 10422844,78,85.38,94,79,0,0,Medium Risk
 10423002,38,94.38,110,93,0,0,Medium Risk
@@ -2777,7 +2777,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10423865,91,96.02,110,87,0,0,Low Risk
 10424018,63,96.88,120,113,0,0,Low Risk
 10424034,62,98.02,115,89,0,0,Low Risk
-10424199,61,96.0,120,91,0,0,Low Risk
+10424199,61,96,120,91,0,0,Low Risk
 10424473,65,92.54,116,91,0,0,Medium Risk
 10424595,43,97.7,120,68,0,0,Low Risk
 10424641,46,95.64,119,109,0,0,Low Risk
@@ -2893,7 +2893,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10441044,55,94.44,117,74,0,0,Low Risk
 10441168,47,95.07,127,88,0,0,Low Risk
 10441206,49,94.26,102,73,0,0,Low Risk
-10441335,65,91.0,93,129,0,0,Medium Risk
+10441335,65,91,93,129,0,0,Medium Risk
 10441613,61,99.78,120,78,0,0,Low Risk
 10441831,76,96.31,107,84,0,0,Low Risk
 10442477,91,94.67,126,79,0,0,Low Risk
@@ -2913,7 +2913,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10444896,63,97.36,104,65,0,0,Low Risk
 10445331,81,95.72,126,71,0,0,Low Risk
 10445502,63,97.17,94,91,0,0,Low Risk
-10445631,82,96.0,123,68,0,0,Low Risk
+10445631,82,96,123,68,0,0,Low Risk
 10445790,59,97.54,96,78,0,0,Low Risk
 10445927,32,95.93,117,102,0,0,Low Risk
 10446094,53,94.13,128,90,0,0,Low Risk
@@ -2936,7 +2936,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10448058,83,95.28,104,102,0,0,Low Risk
 10448074,58,96.04,113,90,0,0,Low Risk
 10448292,67,98.31,115,103,0,0,Low Risk
-10448602,81,95.0,75,111,0,0,Low Risk
+10448602,81,95,75,111,0,0,Low Risk
 10448789,86,98.44,109,95,0,0,Low Risk
 10448831,84,95.62,110,81,0,0,Low Risk
 10448948,80,94.47,111,74,0,0,Low Risk
@@ -2948,7 +2948,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10450386,53,95.34,132,89,0,0,Low Risk
 10450519,81,95.93,118,100,0,0,Low Risk
 10450591,72,97.56,97,83,0,0,Low Risk
-10450918,75,98.0,112,84,0,0,Low Risk
+10450918,75,98,112,84,0,0,Low Risk
 10450923,57,97.09,105,84,0,0,Low Risk
 10450953,76,99.47,121,84,0,0,Low Risk
 10451157,73,95.6,82,97,0,0,Low Risk
@@ -2979,7 +2979,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10455364,34,95.67,132,85,0,0,Low Risk
 10455369,48,94.56,140,79,0,0,Medium Risk
 10455482,54,95.24,136,80,0,0,Low Risk
-10455613,79,94.0,107,98,0,0,Medium Risk
+10455613,79,94,107,98,0,0,Medium Risk
 10455679,40,98.52,106,84,0,0,Low Risk
 10455694,54,97.25,135,94,0,0,Low Risk
 10455855,83,97.45,152,62,0,0,Low Risk
@@ -2993,7 +2993,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10456939,51,97.74,114,87,0,0,Low Risk
 10456955,37,96.45,135,74,0,0,Low Risk
 10456956,67,95.93,128,77,0,0,Low Risk
-10457178,59,99.0,111,80,0,0,Low Risk
+10457178,59,99,111,80,0,0,Low Risk
 10457410,82,98.62,140,72,0,0,Low Risk
 10457524,58,96.65,107,94,0,0,Low Risk
 10457599,78,97.07,105,77,0,0,Low Risk
@@ -3026,7 +3026,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10462493,51,94.9,129,112,0,0,Medium Risk
 10462540,50,97.3,100,88,0,0,Low Risk
 10462584,64,96.37,123,66,0,0,Low Risk
-10462639,64,96.0,101,109,0,0,Low Risk
+10462639,64,96,101,109,0,0,Low Risk
 10462684,27,94.43,102,79,0,0,Low Risk
 10462700,27,97.86,126,81,0,0,Low Risk
 10462866,66,96.79,110,95,0,0,Low Risk
@@ -3044,7 +3044,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10464570,35,96.91,104,135,0,0,Low Risk
 10464640,50,97.15,104,68,0,0,Low Risk
 10464644,75,96.64,109,110,0,0,Low Risk
-10464753,86,125.09,106,103,0,0,Low Risk
+,,,,,,,
 10464896,68,98.54,116,75,0,0,Low Risk
 10464977,85,96.9,122,75,0,0,Low Risk
 10465041,66,97.1,106,87,0,0,Low Risk
@@ -3074,7 +3074,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10470152,28,97.38,106,57,0,0,Low Risk
 10470189,58,97.82,109,66,0,0,Low Risk
 10470531,38,99.73,102,77,0,0,Low Risk
-10470555,71,93.0,118,64,0,0,Low Risk
+10470555,71,93,118,64,0,0,Low Risk
 10471192,80,98.3,132,80,0,0,Low Risk
 10471205,43,97.8,96,86,0,0,Low Risk
 10471448,64,95.2,98,97,0,0,Low Risk
@@ -3089,10 +3089,10 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10472840,61,97.78,101,93,0,0,Low Risk
 10473036,25,99.76,113,74,0,0,Low Risk
 10473091,39,94.67,119,79,0,0,Low Risk
-10473247,80,98.0,145,72,0,0,Low Risk
+10473247,80,98,145,72,0,0,Low Risk
 10473631,69,96.43,129,75,0,0,Low Risk
 10473653,78,96.47,153,69,0,0,Low Risk
-10473769,71,98.0,124,71,0,0,Low Risk
+10473769,71,98,124,71,0,0,Low Risk
 10474102,63,89.08,121,105,0,0,Medium Risk
 10474329,75,94.98,106,105,0,0,Medium Risk
 10474526,19,96.31,109,78,0,0,Low Risk
@@ -3154,7 +3154,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10483570,59,96.19,141,76,0,0,Low Risk
 10483653,65,96.9,96,73,0,0,Low Risk
 10483660,67,97.05,119,82,0,0,Low Risk
-10483945,20,95.0,98,60,0,0,Low Risk
+10483945,20,95,98,60,0,0,Low Risk
 10484069,76,98.74,110,85,0,0,Low Risk
 10484071,65,94.12,125,95,0,0,Medium Risk
 10484456,56,97.88,123,69,0,0,Low Risk
@@ -3219,7 +3219,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10494275,41,96.48,119,84,0,0,Low Risk
 10494276,63,97.03,111,76,0,0,Low Risk
 10494449,64,95.48,117,82,0,0,Low Risk
-10494486,55,100.0,91,120,0,0,Low Risk
+10494486,55,100,91,120,0,0,Low Risk
 10494990,54,96.72,135,61,0,0,Low Risk
 10495076,68,97.59,117,67,0,0,Low Risk
 10495206,86,96.1,132,104,0,0,Medium Risk
@@ -3305,7 +3305,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10507767,66,96.66,105,92,0,0,Low Risk
 10507925,69,98.07,104,105,0,0,Low Risk
 10507969,77,98.33,124,74,0,0,Low Risk
-10508110,77,98.0,122,71,0,0,Low Risk
+10508110,77,98,122,71,0,0,Low Risk
 10508131,80,97.19,118,94,0,0,Low Risk
 10508152,56,96.79,147,104,0,0,Medium Risk
 10508174,61,96.84,121,93,0,0,Low Risk
@@ -3339,7 +3339,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10512064,45,98.87,132,82,0,0,Low Risk
 10512110,68,96.65,106,68,0,0,Low Risk
 10512303,65,98.24,116,85,0,0,Low Risk
-10512325,61,98.0,107,84,0,0,Low Risk
+10512325,61,98,107,84,0,0,Low Risk
 10512377,66,96.58,118,70,0,0,Low Risk
 10512468,81,97.7,119,75,0,0,Low Risk
 10512500,86,96.64,93,103,0,0,Low Risk
@@ -3361,7 +3361,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10515313,73,94.93,145,85,0,0,Medium Risk
 10515522,59,96.54,104,67,0,0,Low Risk
 10515638,57,97.03,127,95,0,0,Low Risk
-10515753,85,94.0,124,93,0,0,Medium Risk
+10515753,85,94,124,93,0,0,Medium Risk
 10515759,31,96.36,128,98,0,0,Low Risk
 10516010,72,99.5,102,102,0,0,Low Risk
 10516113,62,96.98,139,84,0,0,Low Risk
@@ -3405,7 +3405,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10521848,58,97.75,116,79,0,0,Low Risk
 10522136,64,96.7,102,72,0,0,Low Risk
 10522319,38,93.52,125,89,0,0,Low Risk
-10522669,91,96.0,120,56,0,0,Low Risk
+10522669,91,96,120,56,0,0,Low Risk
 10522893,80,90.23,141,82,0,0,Medium Risk
 10523060,91,96.46,137,81,0,0,Low Risk
 10523402,51,99.81,114,80,0,0,Low Risk
@@ -3426,7 +3426,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10524755,91,96.98,113,88,0,0,Low Risk
 10524900,83,96.68,100,77,0,0,Low Risk
 10525033,88,96.39,111,111,0,0,Low Risk
-10525200,47,94.0,122,77,0,0,Low Risk
+10525200,47,94,122,77,0,0,Low Risk
 10525236,73,96.13,107,87,0,0,Low Risk
 10525349,51,97.62,106,77,0,0,Low Risk
 10525376,91,97.55,103,82,0,0,Low Risk
@@ -3455,7 +3455,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10528331,72,96.9,134,93,0,0,Low Risk
 10528589,84,97.19,109,85,0,0,Low Risk
 10528629,51,91.17,104,80,0,0,Low Risk
-10528948,74,96.0,115,58,0,0,Low Risk
+10528948,74,96,115,58,0,0,Low Risk
 10529136,59,98.3,120,80,0,0,Low Risk
 10529284,83,95.06,125,79,0,0,Low Risk
 10529348,76,95.76,108,103,0,0,Low Risk
@@ -3466,16 +3466,16 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10529902,50,95.35,110,106,0,0,Low Risk
 10530907,37,95.75,122,76,0,0,Low Risk
 10530931,85,97.42,118,81,0,0,Low Risk
-10531130,84,89.0,97,105,0,0,Medium Risk
+10531130,84,89,97,105,0,0,Medium Risk
 10531153,70,96.56,109,65,0,0,Low Risk
 10531372,86,99.68,121,104,0,0,Low Risk
 10531609,76,94.1,99,68,0,0,Low Risk
 10531678,70,93.75,131,76,0,0,Medium Risk
-10531790,83,100.0,136,88,0,0,Low Risk
+10531790,83,100,136,88,0,0,Low Risk
 10531818,37,95.25,119,84,0,0,Low Risk
 10532095,51,93.82,97,84,0,0,Low Risk
 10532326,66,97.95,116,109,0,0,Low Risk
-10532392,91,97.0,114,90,0,0,Low Risk
+10532392,91,97,114,90,0,0,Low Risk
 10532466,78,95.46,102,120,0,0,Low Risk
 10532582,77,98.89,105,84,0,0,Low Risk
 10532734,48,98.82,118,73,0,0,Low Risk
@@ -3556,7 +3556,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10543355,44,98.2,103,75,0,0,Low Risk
 10543435,85,94.87,101,107,0,0,Medium Risk
 10543727,49,97.38,120,81,0,0,Low Risk
-10543835,84,97.0,177,82,0,0,Medium Risk
+10543835,84,97,177,82,0,0,Medium Risk
 10543994,84,92.25,107,81,0,0,Low Risk
 10544056,71,97.05,140,106,0,0,Medium Risk
 10544221,45,98.94,103,100,0,0,Low Risk
@@ -3577,7 +3577,7 @@ patient_id,age,spo2,bp_systolic,heart_rate,hypertension,diabetes,risk_category
 10546009,21,97.59,117,56,0,0,Low Risk
 10546256,34,98.13,107,65,0,0,Low Risk
 10546272,75,95.43,131,83,0,0,Low Risk
-10546439,77,95.0,100,84,0,0,Low Risk
+10546439,77,95,100,84,0,0,Low Risk
 10546500,44,97.45,94,104,0,0,Low Risk
 10546543,50,96.3,102,73,0,0,Low Risk
 10546561,19,98.56,98,88,0,0,Low Risk
