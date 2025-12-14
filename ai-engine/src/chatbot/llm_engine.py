@@ -136,6 +136,29 @@ class LLMEngine:
             print(f"❌ Style Fallback Exception: {e}")
             return text
 
+    def _generate_system_prompt(self, patient_context: str) -> str:
+        """
+        Builds the system prompt with strict brevity constraints.
+        """
+        system_prompt = f"""
+        You are a smart, empathetic Nephrology Voice Assistant named 'Nephro-AI'.
+        
+        PATIENT CONTEXT:
+        {patient_context}
+        
+        CRITICAL INSTRUCTIONS:
+        1. YOU ARE SPEAKING, NOT WRITING. Do not use bullet points, bold text, or lists.
+        2. BE CONCISE BUT EMPATHETIC. Keep your answer under 50 words (3-4 sentences max).
+        3. ANSWER DIRECTLY. Do not say "Based on your results..." or "Here is what you need to know". Just give the answer.
+        4. IF DANGEROUS: Warn the patient immediately and prioritize safety over brevity.
+        
+        Example Interaction:
+        User: "Can I eat bananas?"
+        Bad Answer: "Bananas are high in potassium. Given your level of 4.8, you should avoid them. Apples are better."
+        Good Answer: "Please avoid bananas tonight since your potassium is 4.8, but the apple is perfectly safe."
+        """
+        return system_prompt
+
     def generate_response(
         self, 
         query: str, 
@@ -164,18 +187,7 @@ class LLMEngine:
         print("\n[2] 🧠 BRAIN LAYER")
         
         # Construct the System Prompt
-        system_prompt = (
-            "You are Nephro-AI, a specialized medical assistant for Chronic Kidney Disease (CKD) patients. "
-            "Your goal is to provide accurate, empathetic, and personalized information based on the provided context.\n\n"
-            "GUIDELINES:\n"
-            "1. USE CONTEXT: Base your answer PRIMARILY on the provided 'Medical Knowledge Context'. "
-            "If the answer is not in the context, say you don't know, but offer general advice if safe.\n"
-            "2. PERSONALIZE: Use the 'Patient Profile' to tailor your advice (e.g., if potassium is high, warn about bananas).\n"
-            "3. TONE: Empathetic, professional, clear, and encouraging.\n"
-            "4. FORMAT: Use bullet points for lists. Keep paragraphs short.\n"
-            "5. NO SUMMARY/DISCLAIMER: Do NOT include a 'Summary' section or a 'Disclaimer' section at the end. Just provide the answer directly.\n"
-            "6. LANGUAGE: If the 'Original Language' is Sinhala, you MUST reply in Sinhala directly. Do not output English."
-        )
+        system_prompt = self._generate_system_prompt(patient_context)
 
         # Construct the User Prompt with Context
         knowledge_context = "\n\n".join(context_documents[:3])
@@ -184,8 +196,8 @@ class LLMEngine:
         is_sinhala_query = any('\u0D80' <= char <= '\u0DFF' for char in query)
         original_language = "Sinhala" if is_sinhala_query else "English"
         
+        # Note: Patient Prompfile is already in System Prompt, so we separate Knowledge here
         user_prompt = (
-            f"--- PATIENT PROFILE ---\n{patient_context}\n\n"
             f"--- MEDICAL KNOWLEDGE CONTEXT ---\n{knowledge_context}\n\n"
             f"--- USER QUESTION ---\n{english_query}\n"
             f"Original Language: {original_language}"
