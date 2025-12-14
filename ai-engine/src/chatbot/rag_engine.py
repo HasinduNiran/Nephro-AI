@@ -5,6 +5,7 @@ Orchestrates the flow between NLU, VectorDB, Patient Data, and LLM.
 
 import sys
 import hashlib
+import time
 from pathlib import Path
 from typing import Dict, Any
 
@@ -59,7 +60,9 @@ class RAGEngine:
         
         # 2. Retrieve Medical Knowledge (using NLU-enhanced search)
         # We use the existing query_with_nlu method which handles NLU analysis + ChromaDB search
+        t_retrieval_start = time.time()
         search_results = self.vector_db.query_with_nlu(query)
+        t_retrieval_end = time.time()
         
         # Extract document text from results
         context_documents = []
@@ -73,17 +76,23 @@ class RAGEngine:
         
         # 3. Generate Response with LLM
         print("🧠 Generating response with LLM...")
+        t_llm_start = time.time()
         llm_response = self.llm.generate_response(
             query=query,
             context_documents=context_documents,
             patient_context=patient_context
         )
+        t_llm_end = time.time()
         
         response_payload = {
             "response": llm_response,
             "source_documents": context_documents[:3], # Return top sources for reference
             "source_metadata": source_metadata[:3],    # NEW: Return filenames
-            "nlu_analysis": search_results.get("nlu_analysis", {})
+            "nlu_analysis": search_results.get("nlu_analysis", {}),
+            "timing": {
+                "retrieval": t_retrieval_end - t_retrieval_start,
+                "llm_generation": t_llm_end - t_llm_start
+            }
         }
         
         # 4. SAVE TO CACHE

@@ -42,7 +42,8 @@ print("⚙️ Loading AI Engines...")
 try:
     rag_engine = RAGEngine()
     # model_size="tiny" or "base" is faster for development; "medium" for accuracy
-    stt_engine = PatientInputHandler(model_size="medium")
+    # Changed to "small" for better speed/accuracy balance (Research Grade)
+    stt_engine = PatientInputHandler(model_size="small")
     print("✅ All Engines Loaded Successfully")
 except Exception as e:
     print(f"❌ Error loading engines: {e}")

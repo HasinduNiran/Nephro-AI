@@ -40,7 +40,7 @@ else:
     print("✅ FFmpeg found.")
 
 class PatientInputHandler:
-    def __init__(self, model_size: str = "medium"):
+    def __init__(self, model_size: str = "small"):
         """
         Initialize Patient Input Handler
         
@@ -54,7 +54,12 @@ class PatientInputHandler:
         print(f"⏳ Loading Faster-Whisper ({model_size})...")
         # 'int8' is the magic setting for 4x speed on CPU
         # If you have an NVIDIA GPU, change device="cpu" to device="cuda"
-        self.whisper_model = WhisperModel(model_size, device="cpu", compute_type="int8")
+        self.whisper_model = WhisperModel(
+            model_size_or_path=model_size,
+            device="cpu",
+            compute_type="int8",
+            cpu_threads=4  # Optimized for speed
+        )
         print("✅ Model Loaded")
 
         # 1. Load the Silero VAD model (Downloads once, then caches)
@@ -162,8 +167,10 @@ class PatientInputHandler:
                 audio_path,
                 language=language,
                 initial_prompt=initial_prompt,
-                beam_size=5, # Higher beam = better accuracy for slightly less speed
-                vad_filter=True, # Built-in Silero VAD to skip silence!
+                beam_size=1,             # <--- THE MAGIC FIX (Default is 5). 1 = Greedy Search (Fastest)
+                best_of=1,               # Don't re-evaluate candidates
+                temperature=0.0,         # Deterministic (Faster)
+                vad_filter=True,         # Built-in Silero VAD to skip silence!
                 vad_parameters=dict(min_silence_duration_ms=500)
             )
 
