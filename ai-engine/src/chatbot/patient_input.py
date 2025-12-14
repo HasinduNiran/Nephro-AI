@@ -21,7 +21,7 @@ import torch
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
-    from config import MEDICAL_ENTITIES, expand_abbreviations
+    from chatbot.config import MEDICAL_ENTITIES, expand_abbreviations
 except ImportError:
     # Fallback if config cannot be imported (e.g. running from wrong dir)
     print("⚠️ Warning: Could not import MEDICAL_ENTITIES from config. Using default list.")

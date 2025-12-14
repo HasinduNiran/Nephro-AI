@@ -173,7 +173,7 @@ def test_embeddings():
     # Add parent directory to path to import config
     sys.path.insert(0, str(Path(__file__).parent.parent))
     
-    from config import OPENROUTER_API_KEY, EMBEDDING_MODEL
+    from chatbot.config import OPENROUTER_API_KEY, EMBEDDING_MODEL
     
     print("Testing OpenAI Embeddings via OpenRouter...")
     print("=" * 70)

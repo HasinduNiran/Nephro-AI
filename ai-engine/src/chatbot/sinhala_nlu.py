@@ -14,7 +14,7 @@ from sentence_transformers import SentenceTransformer, util
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from config import MEDICAL_ENTITIES
+from chatbot.config import MEDICAL_ENTITIES
 
 class SinhalaNLUEngine:
     def __init__(self):

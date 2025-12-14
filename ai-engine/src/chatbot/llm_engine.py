@@ -12,7 +12,7 @@ from typing import List, Dict, Any
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import config
+from chatbot import config
 from chatbot.sinhala_nlu import SinhalaNLUEngine
 
 class LLMEngine:
