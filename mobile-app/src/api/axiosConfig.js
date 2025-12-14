@@ -1,10 +1,28 @@
 import axios from "axios";
-import { Platform } from "react-native";
+import Constants from "expo-constants";
 
-// For physical device, use your computer's IP address
-// For Android Emulator, it will use 10.0.2.2
-// For iOS Simulator, it will use localhost
-const BASE_URL = "http://192.168.8.103:5000/api";
+// Function to dynamically get the base URL
+const getBaseUrl = () => {
+  // 1. If you have a production URL set in env vars, use it
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+
+  // 2. For Expo Go (Development)
+  // hostUri contains the IP and port of your computer (e.g., 192.168.1.5:8081)
+  const hostUri = Constants.expoConfig?.hostUri;
+  
+  if (hostUri) {
+    const ip = hostUri.split(':')[0];
+    // Assuming your backend runs on port 5000
+    return `http://${ip}:5000/api`;
+  }
+
+  // 3. Fallback for Simulators/Emulators if hostUri is missing
+  return "http://localhost:5000/api";
+};
+
+const BASE_URL = getBaseUrl();
 
 console.log("API Base URL:", BASE_URL);
 
