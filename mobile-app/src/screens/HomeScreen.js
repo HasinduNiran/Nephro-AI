@@ -53,7 +53,7 @@ const HomeScreen = ({ navigation, route }) => {
       subtitle: "Chat & Support",
       icon: "chatbubbles",
       color: "#9013FE", // Purple
-      onPress: () => console.warn("Chatbot Pressed"),
+      onPress: () => navigation.navigate("Chatbot"),
     },
   ];
 
