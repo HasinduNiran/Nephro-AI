@@ -83,9 +83,24 @@ async def generate_tts_file(text: str) -> Path:
         return output_path
 
     # Otherwise, generate
+    # Otherwise, generate
     print(f"🔊 Generating New TTS ({voice})...")
-    communicate = edge_tts.Communicate(text, voice)
-    await communicate.save(str(output_path))
+    try:
+        communicate = edge_tts.Communicate(text, voice)
+        await communicate.save(str(output_path))
+    except edge_tts.exceptions.NoAudioReceived:
+        print(f"❌ TTS Error: No audio generated for text: '{text}'")
+        # Create a silent file or use a fallback logic is handled by caller or frontend handling empty file?
+        # Better: Create a 1-second silence or basically valid empty mp3 to prevent frontend error
+        # For now, just empty file which browser might ignore or show 0:00
+        with open(output_path, 'wb') as f:
+            f.write(b'')
+    except Exception as e:
+        print(f"❌ TTS Critical Error: {e}")
+        # Create simple safety file
+        with open(output_path, 'wb') as f:
+            f.write(b'')
+            
     return output_path
 
 # -----------------------------------------------------------------------------
