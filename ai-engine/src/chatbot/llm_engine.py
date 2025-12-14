@@ -163,7 +163,8 @@ class LLMEngine:
         self, 
         query: str, 
         context_documents: List[str], 
-        patient_context: str
+        patient_context: str,
+        history: List[Dict[str, str]] = []
     ) -> str:
         """
         Generate a response using the Sandwich Method:
@@ -211,12 +212,20 @@ class LLMEngine:
             "Content-Type": "application/json"
         }
         
+        # Prepare Messages
+        messages = [{"role": "system", "content": system_prompt}]
+        
+        # 1. Inject History (Last 6 turns)
+        if history:
+            for turn in history[-6:]:
+                messages.append(turn)
+        
+        # 2. Add Current Query (with Context)
+        messages.append({"role": "user", "content": user_prompt})
+
         payload = {
             "model": self.model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
+            "messages": messages,
             "temperature": 0.7,
             "max_tokens": 500
         }

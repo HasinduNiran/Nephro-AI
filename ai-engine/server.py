@@ -38,6 +38,9 @@ app.add_middleware(
 # -----------------------------------------------------------------------------
 # GLOBAL ENGINES
 # -----------------------------------------------------------------------------
+# GLOBAL MEMORY (For Demo Only - In production use Redis/Database)
+CHAT_HISTORY = [] 
+
 print("⚙️ Loading AI Engines...")
 try:
     rag_engine = RAGEngine()
@@ -95,8 +98,16 @@ def health_check():
 @app.post("/chat/text")
 async def text_chat(request: ChatRequest):
     # Run the blocking RAG process in a thread pool to keep server responsive
+    # Run the blocking RAG process in a thread pool to keep server responsive
     loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(None, rag_engine.process_query, request.text, request.patient_id)
+    result = await loop.run_in_executor(None, rag_engine.process_query, request.text, request.patient_id, CHAT_HISTORY)
+    
+    # Update Memory
+    CHAT_HISTORY.append({"role": "user", "content": request.text})
+    CHAT_HISTORY.append({"role": "assistant", "content": result["response"]})
+    if len(CHAT_HISTORY) > 10:
+        CHAT_HISTORY.pop(0)
+        CHAT_HISTORY.pop(0)
     
     return {
         "response": result["response"],
@@ -146,8 +157,18 @@ async def audio_chat(
             response_text = "Please try speaking again."
         else:
             # 3. Process RAG (Run in Thread)
-            rag_result = await loop.run_in_executor(None, rag_engine.process_query, transcribed_text, patient_id)
+            # Pass Global Memory
+            rag_result = await loop.run_in_executor(None, rag_engine.process_query, transcribed_text, patient_id, CHAT_HISTORY)
             response_text = rag_result["response"]
+
+            # 2. Update Memory
+            CHAT_HISTORY.append({"role": "user", "content": transcribed_text})
+            CHAT_HISTORY.append({"role": "assistant", "content": response_text})
+            
+            # Optional: Keep memory short (last 10 turns) to prevent lag
+            if len(CHAT_HISTORY) > 10:
+                CHAT_HISTORY.pop(0)
+                CHAT_HISTORY.pop(0)
 
         # 4. Generate TTS (Async native)
         output_audio_path = await generate_tts_file(response_text)

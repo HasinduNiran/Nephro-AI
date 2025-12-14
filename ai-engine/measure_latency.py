@@ -57,7 +57,11 @@ def benchmark_system(auto_mode=False, test_file="test_audio.wav"):
         t_stt_end = time.time()
         
         print(f"📝 STT Output: '{text}'")
-        if not text: continue
+        
+        # CHECK IF EMPTY (New Check)
+        if not text:
+            print("🔄 Input ignored (Silence or Wrong Language). Resetting...")
+            continue  # Skip to next loop iteration
 
         # --- STEP 2: RAG ---
         # Note: We now have granular timing in rag_engine.py

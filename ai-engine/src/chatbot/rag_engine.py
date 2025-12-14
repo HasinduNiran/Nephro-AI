@@ -7,7 +7,7 @@ import sys
 import hashlib
 import time
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -38,7 +38,7 @@ class RAGEngine:
         
         return hashlib.md5(raw_key.encode()).hexdigest()
 
-    def process_query(self, query: str, patient_id: str = "default_patient") -> Dict[str, Any]:
+    def process_query(self, query: str, patient_id: str = "default_patient", chat_history: List[Dict[str, str]] = []) -> Dict[str, Any]:
         """
         Process a user query through the full RAG pipeline
         
@@ -80,7 +80,8 @@ class RAGEngine:
         llm_response = self.llm.generate_response(
             query=query,
             context_documents=context_documents,
-            patient_context=patient_context
+            patient_context=patient_context,
+            history=chat_history
         )
         t_llm_end = time.time()
         

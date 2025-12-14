@@ -178,6 +178,19 @@ class PatientInputHandler:
             text_result = " ".join([segment.text for segment in segments]).strip()
             
             print(f"🗣️ Detected Language: {info.language} (Confidence: {info.language_probability:.2f})")
+            
+            # 1. Check Detected Language
+            # ALLOWED LANGUAGES: English ('en') and Sinhala ('si')
+            if info.language not in ['en', 'si']:
+                print(f"⚠️ Ignoring non-supported language: {info.language}")
+                return ""  # Return empty string to cancel pipeline
+
+            # 2. Filter "Ghost" Hallucinations
+            # Whisper often outputs these specific phrases during silence
+            hallucinations = ["you", "thank you", "thanks", "start speaking", "subtitle", "music"]
+            if not text_result or len(text_result) < 2 or text_result.lower().strip(" .") in hallucinations:
+                print("⚠️ Ignoring silence/hallucination")
+                return ""
             print(f"🗣️ Text: \"{text_result}\"")
             
             return text_result

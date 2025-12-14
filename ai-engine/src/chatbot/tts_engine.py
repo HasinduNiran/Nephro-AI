@@ -30,8 +30,16 @@ class TTSEngine:
 
     async def _generate_audio_file(self, text, voice, output_path):
         """Generate audio using Edge TTS"""
-        communicate = edge_tts.Communicate(text, voice)
-        await communicate.save(output_path)
+        try:
+            communicate = edge_tts.Communicate(text, voice)
+            await communicate.save(output_path)
+        except edge_tts.exceptions.NoAudioReceived:
+            print(f"❌ TTS Error: No audio generated for text: '{text}'")
+            # Create a silent file or fallback to prevent crash
+            with open(output_path, 'wb') as f:
+                f.write(b'') 
+        except Exception as e:
+            print(f"❌ TTS Critical Error: {e}")
 
     def generate_and_play(self, text: str):
         """
