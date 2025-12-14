@@ -25,7 +25,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./images/Nephro-logo.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "usesCleartextTraffic": true
     },
     "web": {
       "favicon": "./images/Nephro-logo.png"
