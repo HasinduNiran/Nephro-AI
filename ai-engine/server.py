@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 import edge_tts
+from pydub import AudioSegment # NEW: For Audio Normalization
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -114,9 +115,24 @@ async def audio_chat(
         await out_file.write(content)
         
     try:
+        # 1.5 NORMALIZE AUDIO (Server-Side Quality Fix)
+        # Load audio (pydub handles m4a/mp3 via ffmpeg)
+        print("   🔊 Normalizing Audio...")
+        audio = AudioSegment.from_file(str(input_path))
+        # Normalize to -20dBFS (Standard voice level)
+        normalized_audio = audio.apply_gain(-20.0 - audio.dBFS)
+        # Export as clean WAV for Whisper
+        normalized_path = input_path.with_name(f"clean_{input_path.name}")
+        normalized_audio.export(str(normalized_path), format="wav")
+        
+        # Update input_path to use the clean version
+        # We keep the original for cleanup, but standard cleanup logic handles list of files or folder
+        # For simplicity, we just use the new path for STT and register it for cleanup too
+        background_tasks.add_task(cleanup_file, str(normalized_path))
+        
         # 2. Transcribe (Run in Thread)
         loop = asyncio.get_event_loop()
-        transcribed_text = await loop.run_in_executor(None, stt_engine.transcribe_audio, str(input_path))
+        transcribed_text = await loop.run_in_executor(None, stt_engine.transcribe_audio, str(normalized_path))
         print(f"   📝 Transcribed: '{transcribed_text}'")
         
         if not transcribed_text:

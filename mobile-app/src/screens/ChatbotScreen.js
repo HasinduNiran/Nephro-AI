@@ -33,6 +33,7 @@ const ChatbotScreen = ({ navigation }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [sound, setSound] = useState(null);
+  const [metering, setMetering] = useState(-160); // Decibels (Quiet)
 
   // 1. Permission & Audio Setup
   useEffect(() => {
@@ -42,6 +43,8 @@ const ChatbotScreen = ({ navigation }) => {
         Alert.alert('Permission Denied', 'Microphone access is required for voice chat.');
       }
       // Configure audio mode for voice chat (Playback + Recording)
+      // Configure audio mode for voice chat (Playback + Recording)
+      // shouldDuckAndroid: true triggers Android's internal AGC (Auto Gain Control)
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
@@ -51,6 +54,13 @@ const ChatbotScreen = ({ navigation }) => {
       });
     })();
   }, []);
+
+  const updateMetering = (status) => {
+    if (status.isRecording) {
+        // status.metering is usually between -160 (Silence) and 0 (Loud)
+        setMetering(status.metering || -160);
+    }
+  };
 
   // 2. Start Recording
   const startRecording = async () => {
@@ -66,8 +76,13 @@ const ChatbotScreen = ({ navigation }) => {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       
       const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
+        Audio.RecordingOptionsPresets.HIGH_QUALITY,
+        (status) => updateMetering(status) // Callback for volume levels
       );
+      
+      // Request updates every 100ms
+      await recording.setProgressUpdateInterval(100); 
+
       setRecording(recording);
       setIsRecording(true);
     } catch (err) {
@@ -266,12 +281,32 @@ const ChatbotScreen = ({ navigation }) => {
           )}
         </View>
         {isLoading && <ActivityIndicator style={{marginBottom: 10}} color="#4A90E2" />}
+        
+        {/* Visual Feedback Bar for Mic Level */}
+        {isRecording && (
+        <View style={styles.meterBarContainer}>
+            <View 
+                style={[
+                    styles.meterLevel, 
+                    { 
+                        width: `${Math.min(100, Math.max(0, (metering + 160) / 1.6))}%`, // Map -160..0 to 0..100%
+                        backgroundColor: metering > -30 ? '#34C759' : '#FF3B30' // Green vs Red
+                    } 
+                ]} 
+            />
+            <Text style={styles.meterText}>
+                {metering > -30 ? "Good Volume" : "Speak Closer"}
+            </Text>
+        </View>
+        )}
+
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  // ... existing styles ...
   container: { flex: 1, backgroundColor: '#F5F7FA' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, backgroundColor: '#FFF' },
   headerTitle: { fontSize: 18, fontWeight: 'bold' },
@@ -287,6 +322,30 @@ const styles = StyleSheet.create({
   sendButton: { backgroundColor: '#4A90E2', padding: 10, borderRadius: 25 },
   micButton: { backgroundColor: '#34C759', padding: 10, borderRadius: 25 }, // Green for mic
   micActive: { backgroundColor: '#FF3B30', transform: [{ scale: 1.2 }] }, // Red when recording
+
+  // New Styles for Metering
+  meterBarContainer: {
+    height: 20,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 10,
+    marginHorizontal: 20,
+    marginBottom: 10,
+    overflow: 'hidden',
+    justifyContent: 'center',
+  },
+  meterLevel: {
+    height: '100%',
+    position: 'absolute',
+    left: 0,
+    top: 0
+  },
+  meterText: {
+      fontSize: 10,
+      textAlign: 'center',
+      color: '#555',
+      fontWeight: 'bold',
+      zIndex: 1
+  }
 });
 
 export default ChatbotScreen;
