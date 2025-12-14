@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -8,22 +9,20 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
   Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import axios from 'axios';
-import { Buffer } from 'buffer';
 import * as Haptics from 'expo-haptics';
 import Markdown from 'react-native-markdown-display';
 
 // ⚠️ CHANGE THIS TO YOUR LAPTOP'S IP ADDRESS
 // Find it by running 'ipconfig' (Windows) or 'ifconfig' (Mac/Linux)
-const BACKEND_URL = 'http://192.168.1.5:8000'; 
+const BACKEND_URL = 'http://10.143.248.166:8000';  
 
 const COLORS = {
   primary: '#2E86DE',    // Professional Blue
@@ -141,7 +140,7 @@ const ChatbotScreen = ({ navigation }) => {
       const response = await axios.post(`${BACKEND_URL}/chat/audio`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         responseType: 'arraybuffer',
-        timeout: 10000,
+        timeout: 30000,
       });
 
       const b64ResponseText = response.headers['x-response-b64'];
@@ -151,15 +150,32 @@ const ChatbotScreen = ({ navigation }) => {
       let sourcesText = "";
       
       try {
-          if (b64ResponseText) responseText = Buffer.from(b64ResponseText, 'base64').toString('utf-8');
-          if (b64Sources) sourcesText = Buffer.from(b64Sources, 'base64').toString('utf-8');
+          // Native Base64 Decode (Standard JS)
+          if (b64ResponseText) responseText = decodeURIComponent(escape(window.atob(b64ResponseText)));
+          if (b64Sources) sourcesText = decodeURIComponent(escape(window.atob(b64Sources)));
       } catch (e) {
           console.log("Error decoding headers", e);
       }
 
       const fileUri = FileSystem.documentDirectory + 'response.mp3';
-      const base64Data =  Buffer.from(response.data, 'binary').toString('base64');
-      await FileSystem.writeAsStringAsync(fileUri, base64Data, { encoding: FileSystem.EncodingType.Base64 });
+      
+      // 2. Convert Binary to Base64 (Using our safe helper)
+      const base64Data = arrayBufferToBase64(response.data);
+
+      // 3. Write to disk
+      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      
+      // 4. Verification
+      const fileInfo = await FileSystem.getInfoAsync(fileUri);
+      console.log("💾 Saved Audio File:", fileInfo);
+
+      if (fileInfo.size < 100) {
+        console.error("⚠️ Warning: Audio file is too small. Likely corrupted.");
+        Alert.alert("Audio Error", "Received empty audio from server.");
+        return; 
+      }
 
       playResponseAudio(fileUri);
 
@@ -540,3 +556,14 @@ const styles = StyleSheet.create({
 });
 
 export default ChatbotScreen;
+
+// Helper: Convert ArrayBuffer to Base64
+const arrayBufferToBase64 = (buffer) => {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+};
