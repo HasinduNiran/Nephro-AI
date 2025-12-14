@@ -63,10 +63,13 @@ class RAGEngine:
         
         # Extract document text from results
         context_documents = []
+        source_metadata = [] # NEW: Capture filenames
         if search_results and 'results' in search_results:
             for item in search_results['results']:
                 if item.get('document'):
                     context_documents.append(item['document'])
+                if item.get('metadata'):
+                    source_metadata.append(item['metadata'])
         
         # 3. Generate Response with LLM
         print("🧠 Generating response with LLM...")
@@ -79,6 +82,7 @@ class RAGEngine:
         response_payload = {
             "response": llm_response,
             "source_documents": context_documents[:3], # Return top sources for reference
+            "source_metadata": source_metadata[:3],    # NEW: Return filenames
             "nlu_analysis": search_results.get("nlu_analysis", {})
         }
         

@@ -23,6 +23,10 @@ from src.chatbot.patient_input import PatientInputHandler
 
 app = FastAPI(title="Nephro-AI Context-Aware Chatbot API")
 
+class ChatRequest(BaseModel):
+    text: str
+    patient_id: str = "default_patient"
+
 # Setup CORS
 app.add_middleware(
     CORSMiddleware,
@@ -95,6 +99,7 @@ async def text_chat(request: ChatRequest):
     
     return {
         "response": result["response"],
+        "sources": result.get("source_metadata", []), # CHANGED: Return metadata (filenames) instead of full text
         "nlu_analysis": result.get("nlu_analysis", {})
     }
 
@@ -150,6 +155,11 @@ async def audio_chat(
         # We Base64 encode the Sinhala text so HTTP doesn't break
         safe_transcription = base64.b64encode(transcribed_text.encode('utf-8')).decode('ascii')
         safe_response = base64.b64encode(response_text.encode('utf-8')).decode('ascii')
+        
+        # Sources Header (Simple comma-separated string of filenames)
+        sources_list = [m.get('source', 'Unknown') for m in rag_result.get("source_metadata", [])]
+        sources_str = ", ".join(sources_list)
+        safe_sources = base64.b64encode(sources_str.encode('utf-8')).decode('ascii')
 
         # Register cleanup task to run AFTER response is sent
         background_tasks.add_task(cleanup_file, str(input_path))
@@ -159,7 +169,8 @@ async def audio_chat(
             media_type="audio/mpeg",
             headers={
                 "X-Transcription-B64": safe_transcription,
-                "X-Response-B64": safe_response
+                "X-Response-B64": safe_response,
+                "X-Sources-B64": safe_sources # NEW: Sources Header
             }
         )
 

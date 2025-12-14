@@ -19,6 +19,7 @@ import * as FileSystem from 'expo-file-system';
 import axios from 'axios';
 import { Buffer } from 'buffer';
 import * as Haptics from 'expo-haptics';
+import Markdown from 'react-native-markdown-display';
 
 // ⚠️ CHANGE THIS TO YOUR LAPTOP'S IP ADDRESS
 // Find it by running 'ipconfig' (Windows) or 'ifconfig' (Mac/Linux)
@@ -46,8 +47,15 @@ const ChatbotScreen = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [sound, setSound] = useState(null);
   const [metering, setMetering] = useState(-160);
+  const flatListRef = useRef(); // NEW: Auto-scroll ref
 
   const suggestions = ["Diet Plan 🍎", "My Lab Results 🧪", "Symptoms 🤒", "Help 🆘"];
+  
+  const markdownStyles = {
+    body: { color: COLORS.textDark, fontSize: 16 },
+    bullet_list: { marginTop: 5, marginBottom: 5 },
+    strong: { fontWeight: 'bold', color: COLORS.primary } 
+  };
 
   // 1. Permission & Audio Setup
   useEffect(() => {
@@ -137,9 +145,14 @@ const ChatbotScreen = ({ navigation }) => {
       });
 
       const b64ResponseText = response.headers['x-response-b64'];
+      const b64Sources = response.headers['x-sources-b64']; // NEW: Read sources header
+      
       let responseText = "Audio Response";
+      let sourcesText = "";
+      
       try {
           if (b64ResponseText) responseText = Buffer.from(b64ResponseText, 'base64').toString('utf-8');
+          if (b64Sources) sourcesText = Buffer.from(b64Sources, 'base64').toString('utf-8');
       } catch (e) {
           console.log("Error decoding headers", e);
       }
@@ -153,7 +166,9 @@ const ChatbotScreen = ({ navigation }) => {
       setMessages(prev => [...prev, { 
         id: (Date.now() + 1).toString(), 
         text: responseText, 
-        sender: 'bot' 
+        sender: 'bot',
+        sources: sourcesText,
+        audioUri: fileUri // NEW: Save audio URI for replay
       }]);
 
     } catch (error) {
@@ -193,7 +208,9 @@ const ChatbotScreen = ({ navigation }) => {
       setMessages(prev => [...prev, { 
         id: (Date.now() + 1).toString(), 
         text: res.data.response, 
-        sender: 'bot' 
+        sender: 'bot',
+        sources: res.data.sources && res.data.sources.length > 0 ? 
+                 res.data.sources.map(s => s.source).join(", ") : "" 
       }]);
     } catch (error) {
         console.error("Text API Error", error);
@@ -218,9 +235,34 @@ const ChatbotScreen = ({ navigation }) => {
         styles.messageBubble,
         item.sender === 'user' ? styles.userBubble : styles.botBubble,
       ]}>
-        <Text style={[styles.messageText, item.sender === 'user' ? styles.userText : styles.botText]}>
-          {item.text}
-        </Text>
+        {item.sender === 'user' ? (
+           <Text style={styles.userText}>{item.text}</Text>
+        ) : (
+           <View>
+              <Markdown style={markdownStyles}>
+                {item.text}
+              </Markdown>
+              {/* Audio Replay Button */}
+              {item.audioUri && (
+                <TouchableOpacity 
+                   style={styles.audioButton} 
+                   onPress={() => playResponseAudio(item.audioUri)}
+                >
+                  <Ionicons name="play-circle" size={32} color={COLORS.primary} />
+                  <Text style={styles.audioText}>Play Audio</Text>
+                </TouchableOpacity>
+              )}
+           </View>
+        )}
+        
+        {/* Source Attribution Tag */}
+        {item.sender === 'bot' && item.sources ? (
+            <View style={{ marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#EFF2F7' }}>
+                <Text style={{ fontSize: 10, color: '#636E72', fontStyle: 'italic' }}>
+                    📚 Source: {item.sources}
+                </Text>
+            </View>
+        ) : null}
       </View>
     </View>
   );
@@ -237,10 +279,12 @@ const ChatbotScreen = ({ navigation }) => {
       </View>
 
       <FlatList
+        ref={flatListRef} // NEW: Ref
         data={messages}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.messagesList}
+        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })} // NEW: Auto-scroll
         ListFooterComponent={
             isLoading ? (
               <View style={{ flexDirection: 'row', justifyContent: 'flex-start', marginBottom: 12 }}>
@@ -387,6 +431,17 @@ const styles = StyleSheet.create({
   userText: { color: COLORS.white },
   botText: { color: COLORS.textDark },
   
+  audioButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F2F5',
+    padding: 8,
+    borderRadius: 20,
+    marginTop: 8,
+    alignSelf: 'flex-start'
+  },
+  audioText: { marginLeft: 8, color: COLORS.primary, fontWeight: '600' },
+
   avatarContainer: {
     width: 32,
     height: 32,
