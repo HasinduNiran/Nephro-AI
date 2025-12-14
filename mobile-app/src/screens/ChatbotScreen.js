@@ -22,7 +22,19 @@ import * as Haptics from 'expo-haptics';
 
 // ⚠️ CHANGE THIS TO YOUR LAPTOP'S IP ADDRESS
 // Find it by running 'ipconfig' (Windows) or 'ifconfig' (Mac/Linux)
-const BACKEND_URL = 'http://10.143.248.166:8000'; 
+const BACKEND_URL = 'http://192.168.1.5:8000'; 
+
+const COLORS = {
+  primary: '#2E86DE',    // Professional Blue
+  primaryLight: '#E3F2FD',
+  accent: '#10AC84',     // Calming Green (Success)
+  danger: '#EE5253',     // Soft Red (Error/Recording)
+  background: '#F7F9FC', // Very light grey-blue
+  card: '#FFFFFF',
+  textDark: '#2D3436',
+  textLight: '#636E72',
+  white: '#FFFFFF'
+};
 
 const ChatbotScreen = ({ navigation }) => {
   const [message, setMessage] = useState('');
@@ -33,7 +45,9 @@ const ChatbotScreen = ({ navigation }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [sound, setSound] = useState(null);
-  const [metering, setMetering] = useState(-160); // Decibels (Quiet)
+  const [metering, setMetering] = useState(-160);
+
+  const suggestions = ["Diet Plan 🍎", "My Lab Results 🧪", "Symptoms 🤒", "Help 🆘"];
 
   // 1. Permission & Audio Setup
   useEffect(() => {
@@ -42,9 +56,6 @@ const ChatbotScreen = ({ navigation }) => {
       if (status !== 'granted') {
         Alert.alert('Permission Denied', 'Microphone access is required for voice chat.');
       }
-      // Configure audio mode for voice chat (Playback + Recording)
-      // Configure audio mode for voice chat (Playback + Recording)
-      // shouldDuckAndroid: true triggers Android's internal AGC (Auto Gain Control)
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
@@ -57,7 +68,6 @@ const ChatbotScreen = ({ navigation }) => {
 
   const updateMetering = (status) => {
     if (status.isRecording) {
-        // status.metering is usually between -160 (Silence) and 0 (Loud)
         setMetering(status.metering || -160);
     }
   };
@@ -65,22 +75,19 @@ const ChatbotScreen = ({ navigation }) => {
   // 2. Start Recording
   const startRecording = async () => {
     try {
-      // Stop any playing audio
       if (sound) {
         await sound.unloadAsync();
         setSound(null);
       }
 
       console.log('Starting recording..');
-      // Haptic Feedback: Heavy impact for "Start"
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       
       const { recording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY,
-        (status) => updateMetering(status) // Callback for volume levels
+        (status) => updateMetering(status)
       );
       
-      // Request updates every 100ms
       await recording.setProgressUpdateInterval(100); 
 
       setRecording(recording);
@@ -102,10 +109,8 @@ const ChatbotScreen = ({ navigation }) => {
     const uri = recording.getURI(); 
     console.log('Recording stored at', uri);
     
-    // Haptic Feedback: Light impact for "Stop"
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    // Send to Backend
     await sendAudioToBackend(uri);
   };
 
@@ -113,72 +118,41 @@ const ChatbotScreen = ({ navigation }) => {
   const sendAudioToBackend = async (uri) => {
     setIsLoading(true);
     
-    // Create form data
     const formData = new FormData();
     formData.append('file', {
       uri: uri,
-      type: Platform.OS === 'ios' ? 'audio/m4a' : 'audio/mp4', // Common mobile formats
+      type: Platform.OS === 'ios' ? 'audio/m4a' : 'audio/mp4',
       name: 'voice_input.m4a',
     });
-    formData.append('patient_id', 'p_001'); // Hardcoded for demo
+    formData.append('patient_id', 'p_001');
 
-    // Add user placeholder message
     const userMsgId = Date.now().toString();
     setMessages(prev => [...prev, { id: userMsgId, text: '🎤 (Voice Message)', sender: 'user' }]);
 
     try {
       const response = await axios.post(`${BACKEND_URL}/chat/audio`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        responseType: 'arraybuffer', // Expect binary audio data back
-        timeout: 10000, // 10s Timeout for Network Resilience
+        responseType: 'arraybuffer',
+        timeout: 10000,
       });
 
-      // Handle Text Headers (Encoded in Base64 by server.py)
-      // Note: Axios headers are lowercased
-      const b64Transcript = response.headers['x-transcription-b64'];
       const b64ResponseText = response.headers['x-response-b64'];
-
-      // Decode Base64 (Using built-in atob or Buffer logic needed, 
-      // but React Native needs a polyfill or simple hack)
-      // Quick Hack for Demo: Just trust the server or use a library like 'base-64'
-      // If server sends raw text in body, we can't get file. 
-      // So we rely on headers or dual request. Ideally, install 'base-64' package.
-      
-      // Update UI with Transcription
-      // (For this snippet, we will assume headers worked, or just show "Audio Received")
-      let transcriptText = "Audio Processed";
       let responseText = "Audio Response";
       try {
-          if (b64Transcript) transcriptText = Buffer.from(b64Transcript, 'base64').toString('utf-8');
           if (b64ResponseText) responseText = Buffer.from(b64ResponseText, 'base64').toString('utf-8');
       } catch (e) {
           console.log("Error decoding headers", e);
       }
 
-      // Save Response Audio
       const fileUri = FileSystem.documentDirectory + 'response.mp3';
-      
-      // Convert binary to base64 for saving (Expo FileSystem requires string)
-      // This part is tricky in RN without libraries. 
-      // BETTER APPROACH for student project: Download the file directly.
-      // But since we have arraybuffer, let's try a simple blob save if using standard fetch,
-      // or simply play the buffer.
-      
-      // SIMPLER METHOD FOR EXPO:
-      // Use FileSystem.downloadAsync instead of axios for the file download part
-      // But let's finish the Axios flow for logic consistency.
-      
-      // Easier Path for Audio Playback from API Response:
       const base64Data =  Buffer.from(response.data, 'binary').toString('base64');
       await FileSystem.writeAsStringAsync(fileUri, base64Data, { encoding: FileSystem.EncodingType.Base64 });
 
-      // Play Response
       playResponseAudio(fileUri);
 
-      // Add Bot Message
       setMessages(prev => [...prev, { 
         id: (Date.now() + 1).toString(), 
-        text: responseText, // Decode b64ResponseText here if you install 'base-64'
+        text: responseText, 
         sender: 'bot' 
       }]);
 
@@ -201,17 +175,18 @@ const ChatbotScreen = ({ navigation }) => {
   };
 
   // Text Chat Implementation
-  const sendTextMessage = async () => {
-    if (!message.trim()) return;
+  const sendTextMessage = async (textToSend) => {
+    const text = textToSend || message;
+    if (!text.trim()) return;
 
-    const userText = message;
-    setMessage('');
-    setMessages(prev => [...prev, { id: Date.now().toString(), text: userText, sender: 'user' }]);
+    if (!textToSend) setMessage(''); // Clear input if typed
+    
+    setMessages(prev => [...prev, { id: Date.now().toString(), text: text, sender: 'user' }]);
     setIsLoading(true);
 
     try {
       const res = await axios.post(`${BACKEND_URL}/chat/text`, {
-        text: userText,
+        text: text,
         patient_id: 'p_001'
       });
       
@@ -227,24 +202,35 @@ const ChatbotScreen = ({ navigation }) => {
     }
   };
 
-  // UI Components
   const renderItem = ({ item }) => (
-    <View style={[
+    <View style={{ 
+      flexDirection: 'row', 
+      justifyContent: item.sender === 'user' ? 'flex-end' : 'flex-start',
+      marginBottom: 12 
+    }}>
+      {item.sender === 'bot' && (
+        <View style={styles.avatarContainer}>
+          <Ionicons name="medkit" size={16} color="white" />
+        </View>
+      )}
+      
+      <View style={[
         styles.messageBubble,
         item.sender === 'user' ? styles.userBubble : styles.botBubble,
       ]}>
-      <Text style={[styles.messageText, item.sender === 'user' ? styles.userText : styles.botText]}>
-        {item.text}
-      </Text>
+        <Text style={[styles.messageText, item.sender === 'user' ? styles.userText : styles.botText]}>
+          {item.text}
+        </Text>
+      </View>
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F5F7FA" />
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.card} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1E" />
+          <Ionicons name="arrow-back" size={24} color={COLORS.textDark} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Nephro Assistant</Text>
         <View style={{ width: 24 }} /> 
@@ -255,19 +241,53 @@ const ChatbotScreen = ({ navigation }) => {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.messagesList}
+        ListFooterComponent={
+            isLoading ? (
+              <View style={{ flexDirection: 'row', justifyContent: 'flex-start', marginBottom: 12 }}>
+                 <View style={styles.avatarContainer}>
+                    <Ionicons name="medkit" size={16} color="white" />
+                 </View>
+                 <View style={[styles.messageBubble, styles.botBubble]}>
+                    <Text style={{ color: '#999', fontStyle: 'italic' }}>
+                       Thinking... 🩺
+                    </Text>
+                 </View>
+              </View>
+            ) : null
+        }
       />
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        {/* Chips */}
+        <View style={{ height: 50, marginBottom: 5 }}>
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={suggestions}
+            renderItem={({ item }) => (
+              <TouchableOpacity 
+                style={styles.chip} 
+                onPress={() => sendTextMessage(item)}
+              >
+                <Text style={styles.chipText}>{item}</Text>
+              </TouchableOpacity>
+            )}
+            keyExtractor={item => item}
+            contentContainerStyle={{ paddingHorizontal: 16 }}
+          />
+        </View>
+
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
             placeholder="Type or speak..."
             value={message}
             onChangeText={setMessage}
+            placeholderTextColor={COLORS.textLight}
           />
           
           {message.length > 0 ? (
-             <TouchableOpacity onPress={sendTextMessage} style={styles.sendButton}>
+             <TouchableOpacity onPress={() => sendTextMessage()} style={styles.sendButton}>
                <Ionicons name="send" size={24} color="white" />
              </TouchableOpacity>
           ) : (
@@ -280,71 +300,187 @@ const ChatbotScreen = ({ navigation }) => {
             </TouchableOpacity>
           )}
         </View>
-        {isLoading && <ActivityIndicator style={{marginBottom: 10}} color="#4A90E2" />}
         
-        {/* Visual Feedback Bar for Mic Level */}
+        {/* Overlay */}
         {isRecording && (
-        <View style={styles.meterBarContainer}>
-            <View 
-                style={[
-                    styles.meterLevel, 
+          <View style={styles.recordingOverlay}>
+            <View style={styles.recordingCard}>
+              <Ionicons name="mic" size={48} color={COLORS.danger} />
+              <Text style={styles.recordingTitle}>Listening...</Text>
+              
+              <View style={styles.meterTrack}>
+                <View 
+                  style={[
+                    styles.meterFill, 
                     { 
-                        width: `${Math.min(100, Math.max(0, (metering + 160) / 1.6))}%`, // Map -160..0 to 0..100%
-                        backgroundColor: metering > -30 ? '#34C759' : '#FF3B30' // Green vs Red
+                      width: `${Math.min(100, Math.max(5, (metering + 160) / 1.0))}%`,
+                      backgroundColor: metering > -30 ? COLORS.accent : COLORS.danger
                     } 
-                ]} 
-            />
-            <Text style={styles.meterText}>
-                {metering > -30 ? "Good Volume" : "Speak Closer"}
-            </Text>
-        </View>
+                  ]} 
+                />
+              </View>
+              <Text style={styles.recordingHint}>
+                {metering > -30 ? "Perfect Volume" : "Please speak closer"}
+              </Text>
+            </View>
+          </View>
         )}
-
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  // ... existing styles ...
-  container: { flex: 1, backgroundColor: '#F5F7FA' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, backgroundColor: '#FFF' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold' },
+  container: { 
+    flex: 1, 
+    backgroundColor: COLORS.background 
+  },
+  header: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between', 
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 20,
+    paddingBottom: 15,
+    backgroundColor: COLORS.card,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+    zIndex: 10
+  },
+  headerTitle: { 
+    fontSize: 20, 
+    fontWeight: '700', 
+    color: COLORS.textDark,
+    letterSpacing: 0.5 
+  },
   messagesList: { padding: 16 },
-  messageBubble: { padding: 12, borderRadius: 16, marginBottom: 12, maxWidth: '80%' },
-  userBubble: { alignSelf: 'flex-end', backgroundColor: '#4A90E2' },
-  botBubble: { alignSelf: 'flex-start', backgroundColor: '#FFF' },
-  messageText: { fontSize: 16 },
-  userText: { color: '#FFF' },
-  botText: { color: '#000' },
-  inputContainer: { flexDirection: 'row', padding: 10, backgroundColor: '#FFF', alignItems: 'center' },
-  input: { flex: 1, backgroundColor: '#F2F2F7', borderRadius: 20, padding: 10, marginRight: 10 },
-  sendButton: { backgroundColor: '#4A90E2', padding: 10, borderRadius: 25 },
-  micButton: { backgroundColor: '#34C759', padding: 10, borderRadius: 25 }, // Green for mic
-  micActive: { backgroundColor: '#FF3B30', transform: [{ scale: 1.2 }] }, // Red when recording
-
-  // New Styles for Metering
-  meterBarContainer: {
-    height: 20,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 10,
-    marginHorizontal: 20,
-    marginBottom: 10,
-    overflow: 'hidden',
+  messageBubble: { 
+    padding: 16, 
+    borderRadius: 20, 
+    maxWidth: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1
+  },
+  userBubble: { 
+    alignSelf: 'flex-end', 
+    backgroundColor: COLORS.primary,
+    borderBottomRightRadius: 4 
+  },
+  botBubble: { 
+    alignSelf: 'flex-start', 
+    backgroundColor: COLORS.white,
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: '#EFF2F7'
+  },
+  messageText: { 
+    fontSize: 16, 
+    lineHeight: 24, 
+    color: COLORS.textDark 
+  },
+  userText: { color: COLORS.white },
+  botText: { color: COLORS.textDark },
+  
+  avatarContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+    marginTop: 10
   },
-  meterLevel: {
-    height: '100%',
+
+  // Input & Chips
+  inputContainer: { 
+    flexDirection: 'row', 
+    padding: 10, 
+    backgroundColor: COLORS.card, 
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#EFF2F7'
+  },
+  input: { 
+    flex: 1, 
+    backgroundColor: '#F2F2F7', 
+    borderRadius: 20, 
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    marginRight: 10,
+    fontSize: 16,
+    color: COLORS.textDark
+  },
+  sendButton: { backgroundColor: COLORS.primary, padding: 10, borderRadius: 25 },
+  micButton: { backgroundColor: COLORS.accent, padding: 10, borderRadius: 25 },
+  micActive: { backgroundColor: COLORS.danger, transform: [{ scale: 1.2 }] },
+  
+  chip: {
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: COLORS.primaryLight,
+    justifyContent: 'center'
+  },
+  chipText: {
+    color: COLORS.primary,
+    fontWeight: '600',
+    fontSize: 14
+  },
+  
+  // Overlay
+  recordingOverlay: {
     position: 'absolute',
-    left: 0,
-    top: 0
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100
   },
-  meterText: {
-      fontSize: 10,
-      textAlign: 'center',
-      color: '#555',
+  recordingCard: {
+    backgroundColor: 'white',
+    padding: 30,
+    borderRadius: 25,
+    alignItems: 'center',
+    width: '80%',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10
+  },
+  recordingTitle: {
+      fontSize: 18,
       fontWeight: 'bold',
-      zIndex: 1
+      marginTop: 20,
+      marginBottom: 10,
+      color: COLORS.textDark
+  },
+  recordingHint: {
+      marginTop: 10,
+      fontSize: 14,
+      color: COLORS.textLight
+  },
+  meterTrack: {
+    width: '100%',
+    height: 10,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 5,
+    marginTop: 20,
+    overflow: 'hidden'
+  },
+  meterFill: {
+    height: '100%',
+    borderRadius: 5
   }
 });
 
