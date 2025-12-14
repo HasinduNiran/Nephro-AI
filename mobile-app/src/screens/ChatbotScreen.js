@@ -18,6 +18,7 @@ import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import axios from 'axios';
 import { Buffer } from 'buffer';
+import * as Haptics from 'expo-haptics';
 
 // ⚠️ CHANGE THIS TO YOUR LAPTOP'S IP ADDRESS
 // Find it by running 'ipconfig' (Windows) or 'ifconfig' (Mac/Linux)
@@ -61,6 +62,9 @@ const ChatbotScreen = ({ navigation }) => {
       }
 
       console.log('Starting recording..');
+      // Haptic Feedback: Heavy impact for "Start"
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      
       const { recording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
@@ -82,6 +86,9 @@ const ChatbotScreen = ({ navigation }) => {
     await recording.stopAndUnloadAsync();
     const uri = recording.getURI(); 
     console.log('Recording stored at', uri);
+    
+    // Haptic Feedback: Light impact for "Stop"
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     // Send to Backend
     await sendAudioToBackend(uri);
@@ -108,6 +115,7 @@ const ChatbotScreen = ({ navigation }) => {
       const response = await axios.post(`${BACKEND_URL}/chat/audio`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         responseType: 'arraybuffer', // Expect binary audio data back
+        timeout: 10000, // 10s Timeout for Network Resilience
       });
 
       // Handle Text Headers (Encoded in Base64 by server.py)
