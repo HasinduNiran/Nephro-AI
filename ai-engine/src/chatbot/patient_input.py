@@ -149,6 +149,7 @@ class PatientInputHandler:
     def transcribe_audio(self, audio_path: str, language: str = None) -> str:
         """
         Sends audio to Groq Cloud and returns text.
+        Includes a 'Prompt' to guide Whisper towards Medical/Diet context.
         """
         if not self.client:
             print("❌ Error: Groq client not initialized.")
@@ -159,6 +160,16 @@ class PatientInputHandler:
 
         print(f"🔄 Transcribing ({language if language else 'auto'})...")
 
+        # RESEARCH FIX: CONTEXT PROMPT
+        # We give Whisper a hint about what the audio contains.
+        # This drastically improves accuracy for short phrases.
+        context_prompt = (
+            "This is a patient asking a doctor about Chronic Kidney Disease (CKD), "
+            "diet, food, symptoms, and medication in Sinhala or Singlish. "
+            "Keywords: Kanna (Eat), Bonna (Drink), Ridenawa (Pain), Wakkugadu (Kidney), "
+            "Le (Blood), Beheth (Medicine), Kesel (Banana), Amba (Mango)."
+        )
+
         try:
             # 1. Open and Send File with RETRY LOGIC
             text = ""
@@ -168,44 +179,40 @@ class PatientInputHandler:
                         # Groq API Call
                         transcription = self.client.audio.transcriptions.create(
                             file=(audio_path, file.read()),
-                            model="whisper-large-v3", # The smartest model
-                            response_format="text",   # Just give us the string
-                            language="si" if language == 'si' else None, # Force 'si' if requested
+                            model="whisper-large-v3", 
+                            response_format="text", 
+                            # ✅ FIX: ADD THE PROMPT HERE
+                            prompt=context_prompt, 
+                            # ✅ FIX: Let it Auto-Detect or Force based on logic
+                            # Sometimes removing 'si' is better because it captures Singlish
+                            language="si" if language == 'si' else None, 
                         )
                     text = transcription.strip()
-                    break # Success!
+                    break 
                 except Exception as e:
                     if attempt == 0:
                         print(f"⚠️ Attempt {attempt+1} failed ({e}). Retrying...")
-                        time.sleep(1) # Brief pause
+                        time.sleep(1) 
                     else:
-                        raise e # Re-raise if final attempt fails
+                        raise e 
             
-            # 2. SAFETY FILTER (Replaces VAD filtering from local whisper)
-            # Whisper hallucinating on silence usually outputs these specific phrases:
+            # 2. SAFETY FILTER
             ghosts = [
                 "you", "thank you", "thanks", "start speaking", 
                 "subtitle", "music", "watching", "amara.org", "mbc"
             ]
             
-            # If text is empty, too short, or a known ghost -> Ignore it
             if not text or len(text) < 2 or text.lower().strip(" .!?") in ghosts:
                 print(f"🚫 Ignored Hallucination/Silence: '{text}'")
-                # Auto Cleanup on failure too
-                try:
-                    os.remove(audio_path)
-                except:
-                    pass
+                try: os.remove(audio_path)
+                except: pass
                 return ""
 
             print(f"📝 STT Output: '{text}'")
             
-            # ✅ AUTO CLEANUP
             try:
                 os.remove(audio_path)
-                print(f"🧹 Deleted temp file: {audio_path}")
-            except Exception as e:
-                print(f"⚠️ Cleanup failed: {e}")
+            except: pass
                 
             return text
 
