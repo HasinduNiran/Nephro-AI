@@ -30,7 +30,7 @@ import Markdown from "react-native-markdown-display";
 
 // ⚠️ CHANGE THIS TO YOUR LAPTOP'S IP ADDRESS
 // Find it by running 'ipconfig' (Windows) or 'ifconfig' (Mac/Linux)
-const BACKEND_URL = "http://172.24.236.166:8000";
+const BACKEND_URL = "http://10.143.248.166:8000";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 

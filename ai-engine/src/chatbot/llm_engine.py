@@ -20,7 +20,7 @@ class LLMEngine:
         """Initialize LLM Engine with config"""
         self.api_key = config.OPENROUTER_API_KEY
         self.api_url = "https://openrouter.ai/api/v1/chat/completions"
-        self.model = "openai/gpt-4.1" # Bridge & Brain Model
+        self.model = "google/gemini-2.0-flash-001" # Bridge & Brain Model
         
         # Initialize Sinhala NLU (Style Layer)
         self.sinhala_nlu = SinhalaNLUEngine()
@@ -148,7 +148,7 @@ class LLMEngine:
         
         CRITICAL INSTRUCTIONS:
         1. YOU ARE SPEAKING, NOT WRITING. Do not use bullet points, bold text, or lists.
-        2. BE CONCISE BUT EMPATHETIC. Keep your answer under 50 words (3-4 sentences max).
+        2. BE CONCISE BUT EMPATHETIC. Keep your answer under 80 words (5-6 sentences max).
         3. ANSWER DIRECTLY. Do not say "Based on your results..." or "Here is what you need to know". Just give the answer.
         4. IF DANGEROUS: Warn the patient immediately and prioritize safety over brevity.
         

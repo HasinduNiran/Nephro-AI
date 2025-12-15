@@ -97,7 +97,11 @@ class RAGEngine:
         }
         
         # 4. SAVE TO CACHE
-        self.cache[cache_key] = response_payload
+        # Fix: Prevent "Cache Poisoning" by not caching errors
+        if "Error" not in llm_response and "trouble connecting" not in llm_response:
+            self.cache[cache_key] = response_payload
+        else:
+            print(f"⚠️ Network/LLM error detected ('{llm_response[:30]}...'). Not caching this response.")
         
         return response_payload
 
