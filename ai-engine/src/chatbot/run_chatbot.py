@@ -97,12 +97,12 @@ def main():
             print("\n🤔 Thinking...")
             
             # Handle Sinhala Input (Text or Voice)
+            # Handle Sinhala Input (Text or Voice)
             if current_mode == "sinhala" or current_mode == "sinhala_voice":
                 print(f"🇱🇰 Analyzing Sinhala: '{query}'...")
-                analysis = sinhala_nlu.analyze_query(query)
-                translated_query = analysis.get("translated_query", query)
-                print(f"🔤 Translated/Mapped to: '{translated_query}'")
-                query = translated_query # Use translated query for RAG
+                # REMOVED: Redundant NLU translation. 
+                # The new LLMEngine "Bridge Layer" handles this better internally.
+                # We pass the raw Sinhala to process_query so the engine detects it.
             
             result = chatbot.process_query(query)
             response_text = result["response"]
@@ -114,8 +114,8 @@ def main():
             print("\n" + "-"*50)
             print(f"📚 Sources Used: {len(result['source_documents'])}")
             
-            # Voice Output (only in voice modes)
-            # Note: TTS is currently English-only (ElevenLabs default)
+            # Voice Output (en/si)
+            # Uses Edge TTS (High Quality + Free)
             if current_mode == "voice" or current_mode == "sinhala_voice":
                 tts.generate_and_play(response_text)
             
