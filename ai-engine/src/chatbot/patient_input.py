@@ -160,14 +160,14 @@ class PatientInputHandler:
 
         print(f"🔄 Transcribing ({language if language else 'auto'})...")
 
-        # RESEARCH FIX: CONTEXT PROMPT
-        # We give Whisper a hint about what the audio contains.
-        # This drastically improves accuracy for short phrases.
+        # RESEARCH FIX 1: THE "GOLDEN" CONTEXT PROMPT
+        # We mix English and Singlish to tell Whisper exactly what to expect.
         context_prompt = (
-            "This is a patient asking a doctor about Chronic Kidney Disease (CKD), "
-            "diet, food, symptoms, and medication in Sinhala or Singlish. "
-            "Keywords: Kanna (Eat), Bonna (Drink), Ridenawa (Pain), Wakkugadu (Kidney), "
-            "Le (Blood), Beheth (Medicine), Kesel (Banana), Amba (Mango)."
+            "Medical conversation in Sri Lanka. "
+            "Topics: Kidney Disease (CKD), Diet, Symptoms. "
+            "Keywords: Mata, Mage, Kanna, Bonna, Puluwanda, Ridenawa, "
+            "Wakkugadu (Kidney), Le (Blood), Beheth (Medicine), "
+            "Kesel (Banana), Amba (Mango), Aba, Kochchara, Pramanayak."
         )
 
         try:
@@ -176,33 +176,42 @@ class PatientInputHandler:
             for attempt in range(2):
                 try:
                     with open(audio_path, "rb") as file:
-                        # Groq API Call
                         transcription = self.client.audio.transcriptions.create(
                             file=(audio_path, file.read()),
                             model="whisper-large-v3", 
                             response_format="text", 
-                            # ✅ FIX: ADD THE PROMPT HERE
                             prompt=context_prompt, 
-                            # ✅ FIX: Let it Auto-Detect or Force based on logic
-                            # Sometimes removing 'si' is better because it captures Singlish
+                            # RESEARCH FIX 2: FORCE TEMPERATURE TO 0
+                            # This stops the model from being "creative" and hallucinating Korean/Greek.
+                            temperature=0.0, 
+                            # Keep 'si' if you want Sinhala Script output.
+                            # If you want Singlish output (English letters), remove this line!
                             language="si" if language == 'si' else None, 
                         )
                     text = transcription.strip()
                     break 
                 except Exception as e:
                     if attempt == 0:
-                        print(f"⚠️ Attempt {attempt+1} failed ({e}). Retrying...")
+                        print(f"⚠️ Attempt {attempt+1} failed. Retrying...")
                         time.sleep(1) 
                     else:
                         raise e 
             
-            # 2. SAFETY FILTER
+            # RESEARCH FIX 3: AGGRESSIVE GARBAGE FILTER
+            # Filter out common Whisper hallucinations
             ghosts = [
                 "you", "thank you", "thanks", "start speaking", 
-                "subtitle", "music", "watching", "amara.org", "mbc"
+                "subtitle", "music", "watching", "amara.org", "mbc",
+                "felip", "goddess", "naruhodou"
             ]
             
-            if not text or len(text) < 2 or text.lower().strip(" .!?") in ghosts:
+            text_lower = text.lower()
+            
+            # Check for specific garbage characters that indicate hallucination
+            if (not text) or (len(text) < 2) or \
+               (text_lower.strip(" .!?") in ghosts) or \
+               any(x in text_lower for x in ["맞", "τέ", "ل", "그랑"]): # Detect foreign scripts
+               
                 print(f"🚫 Ignored Hallucination/Silence: '{text}'")
                 try: os.remove(audio_path)
                 except: pass

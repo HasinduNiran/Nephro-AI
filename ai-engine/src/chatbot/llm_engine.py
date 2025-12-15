@@ -60,18 +60,86 @@ class LLMEngine:
         except Exception: pass
 
     def _is_sinhala_or_singlish(self, text: str) -> bool:
-        """Detects if text is Sinhala (Unicode) OR Singlish (Heuristic)."""
-        # 1. Unicode Check
+        """
+        Detects if text is Sinhala (Unicode) OR Singlish.
+        UPDATED: Uses substring matching to handle concatenated STT outputs.
+        """
+        # 1. Unicode Check (Standard Sinhala)
         if any('\u0D80' <= char <= '\u0DFF' for char in text):
             return True
-        # 2. Singlish Keyword Check
+            
+        # 2. Singlish Keyword Check (Expanded for Medical/CKD Context)
         singlish_keywords = [
-            "mage", "mata", "kanna", "bonna", "puluwanda", "kohomada", 
-            "ridenawa", "kakul", "oluwa", "bada", "beheth", "le", 
-            "wakkugadu", "idimila", "wage", "mokakda", "karanna", "amaru"
+            # --- Pronouns & Question Words ---
+            "mage", "mata", "mam", "mama", "api", "ape", "oyage", "oya",
+            "mokakda", "monawada", "kohomada", "kawadada", "koheda", "ai", 
+            "kawuda", "neda", "ane", "puluwan", "puluwanda", "ba", "bane",
+            
+            # --- Body Parts (Anatomy) ---
+            "wakkugadu", "wakugadu", "kidney", # Kidney
+            "kakul", "kakula", "dath", "atha", "ath", # Legs/Hands
+            "oluwa", "his", "hisa", # Head
+            "bada", "papuwa", "pappuwa", # Stomach/Chest
+            "muthra", "mutra", "chu", "choo", # Urine (Critical for CKD)
+            " le ", "lee", "blood", # Blood (Padded ' le ' to avoid matching 'apple')
+            "angili", "angilla", # Fingers
+            "hama", "skin", # Skin
+            
+            # --- Symptoms & Feelings ---
+            "ridenawa", "redena", "kakkumai", "kakkuma", # Pain
+            "idimila", "edimila", "idimuma", # Swelling (Edema)
+            "mahansiyi", "mahansi", "weda", # Tiredness/Fatigue
+            "karakillai", "karakilla", # Dizziness
+            "wamaney", "wamane", "okkara", # Vomiting/Nausea
+            "kessai", "kessa", # Cough
+            "una", "heat", "rasnei", # Fever/Heat
+            "dawillai", "davilla", # Burning sensation
+            "amaru", "amarui", # Difficult/Painful
+            "bayayi", "baya", # Scared
+            "nidimathai", "ninda", # Sleepy
+            
+            # --- Food & Diet (Critical for CKD) ---
+            "kanna", "kana", "kema", "kaama", "kam", # Eat/Food
+            "bonna", "bila", "beela", # Drink
+            "wathura", "watura", "water", # Water
+            "lunu", "salt", # Salt
+            "seeni", "sugar", # Sugar
+            "thel", "tel", # Oil
+            "bath", "bat", "rice", # Rice
+            "parippu", "dhal", # Lentils
+            "elawalu", "elavalu", # Vegetables
+            "palathuru", "palaturu", "fruit", # Fruits
+            "mas", "malu", "biththara", "bittara", # Meat/Fish/Eggs
+            "kiri", "tea", # Milk/Tea
+            "koththamalli", "thambili", # Herbal/King Coconut
+            # Specific Fruits/Veg common in queries:
+            "kesel", "kehel", "banana",
+            "amba", "aba", "mango",
+            "papol", "papaya",
+            "del", "kos", "jackfruit",
+            
+            # --- Medical Actions & Terms ---
+            "beheth", "behet", "pethi", "peti", # Medicine/Pills
+            "injection", "vidda", 
+            "check", "pariksha", "test", "report", # Tests
+            "doctar", "dosthara", "nurse", # Staff
+            "nawaththanna", "nawathanna", # Stop
+            "ganna", "gaththa", # Take/Took
+            "adui", "wadi", "godak", "tika", # Low/High/Lot/Little
+            "pressure", "presha", "bp", # Blood Pressure
+            "sugar", "sini", "diabetic", # Diabetes
+            "clinic", "hospital", "issaraha", # Locations
+            "pramanaya", "kochchara", "koccara" # Quantity
         ]
+        
         text_lower = text.lower()
-        return any(word in text_lower.split() for word in singlish_keywords)
+        
+        # FIX: Check if keyword is INSIDE the text, not just an exact split
+        for keyword in singlish_keywords:
+            if keyword in text_lower:
+                return True
+                
+        return False
 
     def translate_to_english(self, text: str) -> str:
         """[BRIDGE LAYER] Translates Sinhala/Singlish to English."""
