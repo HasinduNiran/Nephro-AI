@@ -28,9 +28,11 @@ import axios from "axios";
 import * as Haptics from "expo-haptics";
 import Markdown from "react-native-markdown-display";
 
-// ⚠️ CHANGE THIS TO YOUR LAPTOP'S IP ADDRESS
-// Find it by running 'ipconfig' (Windows) or 'ifconfig' (Mac/Linux)
-const BACKEND_URL = "http://10.143.248.166:8000";
+// OLD (Wi-Fi IP)
+// const BACKEND_URL = "http://10.143.248.166:8000";
+
+// NEW (USB Tunneling)
+const BACKEND_URL = "http://127.0.0.1:8000";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -290,14 +292,25 @@ const ChatbotScreen = ({ navigation }) => {
     ]);
 
     try {
-      const response = await axios.post(`${BACKEND_URL}/chat/audio`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        responseType: "arraybuffer",
-        timeout: 30000,
+      console.log("Uploading audio to:", `${BACKEND_URL}/chat/audio`);
+      
+      // ✅ FIX: Use 'fetch' instead of 'axios' for reliable file uploads
+      const response = await fetch(`${BACKEND_URL}/chat/audio`, {
+        method: 'POST',
+        body: formData, 
+        // Note: NO headers object. Fetch will automatically set Content-Type: multipart/form-data; boundary=...
       });
 
-      const b64ResponseText = response.headers["x-response-b64"];
-      const b64Sources = response.headers["x-sources-b64"]; // NEW: Read sources header
+      if (!response.ok) {
+        throw new Error(`Server Error: ${response.status}`);
+      }
+
+      // Read headers
+      const b64ResponseText = response.headers.get("x-response-b64");
+      const b64Sources = response.headers.get("x-sources-b64");
+      
+      // Get binary data
+      const arrayBuffer = await response.arrayBuffer();
 
       let responseText = "Audio Response";
       let sourcesText = "";
@@ -317,7 +330,7 @@ const ChatbotScreen = ({ navigation }) => {
       const fileUri = FileSystem.documentDirectory + "response.mp3";
 
       // 2. Convert Binary to Base64 (Using our safe helper)
-      const base64Data = arrayBufferToBase64(response.data);
+      const base64Data = arrayBufferToBase64(arrayBuffer);
 
       // 3. Write to disk
       await FileSystem.writeAsStringAsync(fileUri, base64Data, {
