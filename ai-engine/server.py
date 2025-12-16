@@ -60,12 +60,15 @@ Path("tts_cache").mkdir(exist_ok=True)
 # HELPERS
 # -----------------------------------------------------------------------------
 def cleanup_file(path: str):
-    """Background task to remove temp files after response is sent"""
+    """Safely delete a file without crashing if it's already gone."""
     try:
-        os.remove(path)
-        print(f"🧹 Cleaned up: {path}")
+        file_path = Path(path)
+        if file_path.exists():
+            os.remove(file_path)
+            print(f"🧹 Cleaned up: {path}")
     except Exception as e:
-        print(f"⚠️ Cleanup failed for {path}: {e}")
+        # Just log it, don't crash
+        print(f"⚠️ Cleanup warning: {e}")
 
 async def generate_tts_file(text: str) -> Path:
     # 1. Logic for language detection

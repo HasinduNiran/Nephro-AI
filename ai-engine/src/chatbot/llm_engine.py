@@ -23,7 +23,8 @@ class LLMEngine:
         self.api_url = "https://openrouter.ai/api/v1/chat/completions"
         
         # RESEARCH NOTE: 'flash' models are critical for the <2s latency requirement
-        self.model = "google/gemini-2.0-flash-001" 
+        self.model = "openai/gpt-4o-mini" 
+        # If you want to test the heavy model, use: "openai/gpt-4o" 
         
         # Initialize Sinhala NLU
         self.sinhala_nlu = SinhalaNLUEngine()
@@ -77,7 +78,7 @@ class LLMEngine:
             
             # --- Body Parts (Anatomy) ---
             "wakkugadu", "wakugadu", "kidney", # Kidney
-            "kakul", "kakula", "dath", "atha", "ath", # Legs/Hands
+            "kakul", "kakula", "kakuldke", "dath", "atha", "ath", # Legs/Hands
             "oluwa", "his", "hisa", # Head
             "bada", "papuwa", "pappuwa", # Stomach/Chest
             "muthra", "mutra", "chu", "choo", # Urine (Critical for CKD)
@@ -87,7 +88,7 @@ class LLMEngine:
             
             # --- Symptoms & Feelings ---
             "ridenawa", "redena", "kakkumai", "kakkuma", # Pain
-            "idimila", "edimila", "idimuma", # Swelling (Edema)
+            "idimila", "edimila", "idimuma", "idimenne", "dimenne", # Swelling (Edema)
             "mahansiyi", "mahansi", "weda", # Tiredness/Fatigue
             "karakillai", "karakilla", # Dizziness
             "wamaney", "wamane", "okkara", # Vomiting/Nausea
@@ -129,7 +130,9 @@ class LLMEngine:
             "pressure", "presha", "bp", # Blood Pressure
             "sugar", "sini", "diabetic", # Diabetes
             "clinic", "hospital", "issaraha", # Locations
-            "pramanaya", "kochchara", "koccara" # Quantity
+            "pramanaya", "kochchara", "koccara", # Quantity
+            "nedde", "nadda", # Negative questions
+            "etokota", "ethakota" # Then/So
         ]
         
         text_lower = text.lower()
@@ -160,13 +163,23 @@ class LLMEngine:
             "Content-Type": "application/json"
         }
         
+        system_instruction = (
+            "You are a medical translator for Sri Lankan Singlish (Sinhala written in English). "
+            "Your Goal: Accurately translate patient queries to English for a Nephrologist.\n\n"
+            "RULES:"
+            "1. CORRECTION: First, fix phonetic typos. (e.g., 'kakulli' -> 'kakul' (legs), 'dimenne' -> 'idimenne' (swelling)). "
+            "2. CONTEXT: If a word is ambiguous, choose the MEDICAL meaning (e.g., 'bada' is Stomach, not 'half'). "
+            "3. OUTPUT: Return ONLY the English translation. No explanations."
+        )
+
         payload = {
             "model": self.model,
             "messages": [
-                {"role": "system", "content": "You are a medical translator. Translate the Sinhala/Singlish query to English. Output ONLY the translation."},
+                {"role": "system", "content": system_instruction},
                 {"role": "user", "content": text}
             ],
-            "temperature": 0.1
+            "temperature": 0.2, # Low temperature reduces hallucinations
+            "max_tokens": 200
         }
         
         try:
