@@ -28,6 +28,10 @@ console.log("API Base URL:", BASE_URL);
 
 const instance = axios.create({
   baseURL: BASE_URL,
+  timeout: 120000, 
+  headers: {
+    'Content-Type': 'multipart/form-data',
+  },
 });
 
 export default instance;

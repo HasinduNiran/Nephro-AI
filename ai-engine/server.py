@@ -24,7 +24,7 @@ from src.chatbot.patient_input import PatientInputHandler
 
 # --- CONFIGURATION ---
 # ✅ UPDATE THIS EVERY TIME KAGGLE RESTARTS
-KAGGLE_API_URL = "https://88b458e88eaaa19abe.gradio.live" 
+KAGGLE_API_URL = "https://d10eaf9179cb275d4d.gradio.live" 
 REF_AUDIO_FILE = "ref_voice.wav" 
 
 app = FastAPI(title="Nephro-AI Context-Aware Chatbot API")
