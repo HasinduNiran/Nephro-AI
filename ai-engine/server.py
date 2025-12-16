@@ -7,13 +7,12 @@ import asyncio
 from pathlib import Path
 import aiofiles  
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks, Request
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import edge_tts
 from pydub import AudioSegment 
-from gradio_client import Client, handle_file
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -21,16 +20,12 @@ sys.path.insert(0, str(Path(__file__).parent))
 from src.chatbot.rag_engine import RAGEngine
 from src.chatbot.patient_input import PatientInputHandler
 
-# --- CONFIGURATION ---
-# ✅ UPDATE THIS URL EVERY TIME KAGGLE RESTARTS
-KAGGLE_API_URL = "https://d10eaf9179cb275d4d.gradio.live"  
-REF_AUDIO_FILE = "ref_voice.wav" 
-
 app = FastAPI(title="Nephro-AI Context-Aware Chatbot API")
 
 # --- DATA MODELS ---
 class LoginRequest(BaseModel):
-    email: str
+    email: str = None
+    username: str = None
     password: str
 
 class ChatRequest(BaseModel):
@@ -75,57 +70,31 @@ def cleanup_file(path: str):
 
 async def generate_tts_file(text: str) -> Path:
     """
-    Hybrid TTS: Uses Kaggle GPU for Sinhala, EdgeTTS for English/Backup.
+    Pure EdgeTTS Generator (No External GPU required)
     """
+    # 1. Detect Language
     is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in text)
     
-    file_hash = hashlib.md5(f"{text}_F5".encode()).hexdigest()
+    # 2. Check Cache
+    file_hash = hashlib.md5(f"{text}_Edge".encode()).hexdigest()
     output_path = Path("tts_cache") / f"{file_hash}.mp3"
     
     if output_path.exists():
         print(f"⚡ Serving Cached TTS: {file_hash[:8]}...")
         return output_path
 
-    # 3. TRY KAGGLE GPU (Only for Sinhala)
-    if is_sinhala:
-        print(f"☁️ Sending to Kaggle GPU: {text[:20]}...")
-        try:
-            # ✅ FIX: Add headers to bypass Ngrok warning page
-            client = Client(
-                KAGGLE_API_URL, 
-                headers={'ngrok-skip-browser-warning': 'true'}
-            )
-            
-            loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(
-                None, 
-                lambda: client.predict(
-                    text, 
-                    handle_file(REF_AUDIO_FILE), 
-                    "Reference text", 
-                    api_name="/predict"
-                )
-            )
-            
-            generated_wav = result[0]
-            shutil.copy(generated_wav, str(output_path))
-            print(f"✅ Kaggle TTS Success: {output_path}")
-            return output_path
-
-        except Exception as e:
-            # Print the exact error so we know why it failed
-            print(f"⚠️ Kaggle Failed: {e}") 
-            print("🔄 Switching to Backup...")
-
-    # 4. BACKUP: EDGE TTS
+    # 3. Select Voice
+    # si-LK-ThiliniNeural is the best available free Sinhala voice
     voice = "si-LK-ThiliniNeural" if is_sinhala else "en-US-AriaNeural"
-    print(f"🔊 Generating EdgeTTS Backup ({voice})...")
+    print(f"🔊 Generating EdgeTTS ({voice})...")
     
     try:
         communicate = edge_tts.Communicate(text, voice)
         await communicate.save(str(output_path))
+        print(f"✅ TTS Success: {output_path}")
     except Exception as e:
         print(f"❌ TTS Critical Error: {e}")
+        # Create silent file to prevent crash
         with open(output_path, 'wb') as f: f.write(b'')
             
     return output_path
@@ -134,13 +103,12 @@ async def generate_tts_file(text: str) -> Path:
 # ENDPOINTS
 # -----------------------------------------------------------------------------
 
-# ✅ FIX: MOCK LOGIN ENDPOINT (Supports /login and /api/login)
 @app.post("/login")
 @app.post("/api/login")
-@app.post("/auth/login") # ✅ Added this line
+@app.post("/auth/login")
 async def login(request: LoginRequest):
-    print(f"🔓 Login attempt for: {request.email}")
-    # Always return success for the prototype
+    user_id = request.email or request.username or "unknown_user"
+    print(f"🔓 Login attempt for: {user_id}")
     return {
         "access_token": "mock-token-123",
         "token_type": "bearer",
@@ -153,7 +121,7 @@ def health_check():
     return {"status": "active"}
 
 @app.post("/chat/text")
-@app.post("/api/chat/text") # Alias for safety
+@app.post("/api/chat/text")
 async def text_chat(request: ChatRequest):
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, rag_engine.process_query, request.text, request.patient_id, CHAT_HISTORY)
@@ -169,7 +137,7 @@ async def text_chat(request: ChatRequest):
     }
 
 @app.post("/chat/audio")
-@app.post("/api/chat/audio") # Alias for safety
+@app.post("/api/chat/audio")
 async def audio_chat(
     background_tasks: BackgroundTasks, 
     file: UploadFile = File(...), 
@@ -185,6 +153,7 @@ async def audio_chat(
         await out_file.write(content)
         
     try:
+        # 2. Normalize Audio
         print("   🔊 Normalizing Audio...")
         audio = AudioSegment.from_file(str(input_path))
         normalized_audio = audio.apply_gain(-20.0 - audio.dBFS)
@@ -192,6 +161,7 @@ async def audio_chat(
         normalized_audio.export(str(normalized_path), format="wav")
         background_tasks.add_task(cleanup_file, str(normalized_path))
         
+        # 3. Transcribe
         loop = asyncio.get_event_loop()
         transcribed_text = await loop.run_in_executor(None, stt_engine.transcribe_audio, str(normalized_path))
         print(f"   📝 Transcribed: '{transcribed_text}'")
@@ -213,6 +183,7 @@ async def audio_chat(
             CHAT_HISTORY.append({"role": "assistant", "content": response_text})
             if len(CHAT_HISTORY) > 10: CHAT_HISTORY.pop(0); CHAT_HISTORY.pop(0)
 
+        # 5. Generate TTS (Pure EdgeTTS)
         output_audio_path = await generate_tts_file(response_text)
         
         safe_transcription = base64.b64encode(transcribed_text.encode('utf-8')).decode('ascii')
@@ -239,5 +210,4 @@ async def audio_chat(
 
 if __name__ == "__main__":
     import uvicorn
-    # ✅ Port 8000
     uvicorn.run(app, host="0.0.0.0", port=8000)
