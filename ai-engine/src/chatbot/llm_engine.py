@@ -197,38 +197,61 @@ class LLMEngine:
         return text
 
     def translate_to_sinhala_fallback(self, text: str) -> str:
-        """[STYLE LAYER] Translates English to Sinhala."""
+        """[STYLE LAYER] Translates English to Sinhala with MEDICAL ACCURACY."""
         print(f"⚠️ Style: Translating response to Sinhala...")
         
+        # 1. DEFINE THE OUTPUT DICTIONARY (English -> Sinhala)
+        dictionary = """
+        CRITICAL MEDICAL DICTIONARY:
+        - Stomach -> Bada (බඩ)
+        - Kidney -> Wakkugadu (වකුගඩු)   <-- NEVER USE 'KADULU'
+        - Pain -> Ridenawa (රිදෙනවා) or Kakkuma (කැක්කුම)
+        - Urine -> Muthra (මුත්‍රා)
+        - Blood -> Le (ලේ)
+        - Fever -> Una (උණ)
+        - Vomiting -> Wamane (වමනය)
+        - Diabetes -> Diyawadiyawa (දියවැඩියාව)
+        - Swelling -> Idimuma (ඉදිමුම)
+        - Doctor -> Waidyawaraya (වෛද්‍යවරයා)
+        - Medicine -> Beheth (බෙහෙත්)
+        - Water -> Wathura (වතුර)
+        """
+
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "HTTP-Referer": "https://github.com/Nephro-AI",
             "Content-Type": "application/json"
         }
         
-        system_prompt = """
-        Translate the medical advice into natural, spoken Sinhala.
-        RULES:
-        1. Keep Drug Names in English (e.g. 'Losartan').
-        2. Keep Numbers in English (e.g. '5.2').
-        3. Be empathetic.
-        """
+        system_prompt = (
+            "You are a helpful Sri Lankan medical assistant. Translate the advice into NATURAL, SPOKEN Sinhala.\n"
+            f"{dictionary}\n"
+            "RULES:\n"
+            "1. Use the Dictionary terms strictly.\n"
+            "2. Keep English numbers (e.g., '5.2', '120/80').\n"
+            "3. Keep drug names in English (e.g., 'Panadol', 'Losartan').\n"
+            "4. Tone: Empathetic, polite, and simple (not overly formal)."
+        )
         
         payload = {
-            "model": self.model,
+            "model": "openai/gpt-4o-mini", # Use Mini for speed, but prompt for quality
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": text}
             ],
-            "temperature": 0.5
+            "temperature": 0.3 # Low temperature to stick to the dictionary
         }
         
         try:
             response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
             if response.status_code == 200:
-                return response.json()['choices'][0]['message']['content'].strip()
-        except Exception:
+                translation = response.json()['choices'][0]['message']['content'].strip()
+                print(f"✅ Style Output: {translation}")
+                return translation
+        except Exception as e:
+            print(f"❌ Style Layer Error: {e}")
             pass
+            
         return text 
 
     def _generate_system_prompt(self, patient_context: str) -> str:
