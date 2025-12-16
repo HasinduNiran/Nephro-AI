@@ -145,50 +145,51 @@ class LLMEngine:
         return False
 
     def translate_to_english(self, text: str) -> str:
-        """[BRIDGE LAYER] Translates Sinhala/Singlish to English."""
-        
-        if not self._is_sinhala_or_singlish(text):
-            return text
+        """
+        Translates Singlish/Sinhala to English with a STRICT Dictionary.
+        """
+        # 1. HARDCODED DICTIONARY (The AI cannot ignore this)
+        dictionary = """
+        MANDATORY DICTIONARY:
+        - Amba / Aba -> Mango
+        - Kanna -> Eat
+        - Hondaydu / Hodada -> Is it good?
+        - Bada -> Stomach
+        - Ridenawa -> Pain
+        - Wakkugadu -> Kidney
+        - Kakul -> Legs
+        """
 
-        # Cache Check
-        if text in self.translation_cache:
-            print(f"⚡ Cache Hit: '{text}' -> '{self.translation_cache[text]}'")
-            return self.translation_cache[text]
+        system_instruction = (
+            "You are a medical translator. \n"
+            f"{dictionary}\n"
+            "RULES:\n"
+            "1. IF a word from the dictionary appears, you MUST use the English meaning provided.\n"
+            "2. DO NOT interpret idioms. (e.g., 'Mata amba kanna' -> 'Can I eat mango?', NOT 'good appetite').\n"
+            "3. OUTPUT: Return ONLY the English translation. No explanations."
+        )
 
-        print(f"🔄 Bridge: Translating '{text}' to English...")
-        
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "HTTP-Referer": "https://github.com/Nephro-AI",
             "Content-Type": "application/json"
         }
-        
-        system_instruction = (
-            "You are a medical translator for Sri Lankan Singlish (Sinhala written in English). "
-            "Your Goal: Accurately translate patient queries to English for a Nephrologist.\n\n"
-            "RULES:"
-            "1. CORRECTION: First, fix phonetic typos. (e.g., 'kakulli' -> 'kakul' (legs), 'dimenne' -> 'idimenne' (swelling)). "
-            "2. CONTEXT: If a word is ambiguous, choose the MEDICAL meaning (e.g., 'bada' is Stomach, not 'half'). "
-            "3. OUTPUT: Return ONLY the English translation. No explanations."
-        )
 
         payload = {
-            "model": self.model,
+            "model": "openai/gpt-4o-mini", # Force GPT-4o-mini for better reasoning
             "messages": [
                 {"role": "system", "content": system_instruction},
                 {"role": "user", "content": text}
             ],
-            "temperature": 0.2, # Low temperature reduces hallucinations
-            "max_tokens": 200
+            "temperature": 0.0 # Strict
         }
-        
+
         try:
+            print(f"🔄 Bridge: Translating '{text}' (Strict Mode)...")
             response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=10)
             if response.status_code == 200:
                 translation = response.json()['choices'][0]['message']['content'].strip()
                 print(f"✅ Bridge Output: {translation}")
-                self.translation_cache[text] = translation
-                self._save_translations() 
                 return translation
         except Exception as e:
             print(f"❌ Bridge Error: {e}")

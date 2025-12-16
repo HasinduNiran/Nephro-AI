@@ -96,3 +96,4 @@ uvicorn
 python-multipart
 aiofiles
 pydub
+gradio_client
