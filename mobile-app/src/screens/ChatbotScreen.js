@@ -61,7 +61,7 @@ const ChatbotScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([
     {
       id: "1",
-      text: "Hello! 👋 I'm your **Nephro-AI** assistant. I'm here to help you with kidney health questions, diet recommendations, and understanding your lab results.\n\nYou can speak to me or type your questions!",
+      text: "Hello! 👋 I'm your **Nephro-AI** assistant. I'm here to help you with kidney health.",
       sender: "bot",
       timestamp: new Date().toLocaleTimeString([], {
         hour: "2-digit",
@@ -570,18 +570,10 @@ const ChatbotScreen = ({ navigation }) => {
   // Welcome Tips Component
   const WelcomeTips = () => (
     <View style={styles.tipsContainer}>
-      <Text style={styles.tipsTitle}>💡 Quick Tips</Text>
+      <Text style={styles.tipsTitle}>💡 Quick Tip</Text>
       <View style={styles.tipItem}>
         <Ionicons name="mic" size={16} color={COLORS.accent} />
         <Text style={styles.tipText}>Hold the mic button to speak</Text>
-      </View>
-      <View style={styles.tipItem}>
-        <Ionicons name="chatbubble" size={16} color={COLORS.primary} />
-        <Text style={styles.tipText}>Type your questions below</Text>
-      </View>
-      <View style={styles.tipItem}>
-        <Ionicons name="flash" size={16} color={COLORS.warning} />
-        <Text style={styles.tipText}>Use quick chips for common queries</Text>
       </View>
     </View>
   );

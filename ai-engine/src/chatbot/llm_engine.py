@@ -158,6 +158,12 @@ class LLMEngine:
         - Ridenawa -> Pain
         - Wakkugadu -> Kidney
         - Kakul -> Legs
+        
+        # ✅ NEW FIXES (Swelling & Disease)
+        - Idimenne / Idimuma / Idime / Indimenne -> Swelling
+        - Amaru -> Disease / Trouble / Pain
+        - Walata -> Due to / For
+        - Nedda / Nadda -> Isn't it?
         """
 
         system_instruction = (
