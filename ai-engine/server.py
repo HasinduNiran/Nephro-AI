@@ -42,7 +42,10 @@ app.add_middleware(
 # -----------------------------------------------------------------------------
 # GLOBAL ENGINES
 # -----------------------------------------------------------------------------
-CHAT_HISTORY = [] 
+# -----------------------------------------------------------------------------
+# GLOBAL ENGINES
+# -----------------------------------------------------------------------------
+SESSIONS = {} 
 
 print("⚙️ Loading AI Engines...")
 try:
@@ -108,11 +111,15 @@ async def generate_tts_file(text: str) -> Path:
 @app.post("/auth/login")
 async def login(request: LoginRequest):
     user_id = request.email or request.username or "unknown_user"
-    print(f"🔓 Login attempt for: {user_id}")
+    
+    # Initialize session for this specific user
+    SESSIONS[user_id] = [] 
+    
+    print(f"🔓 Login attempt for: {user_id}. History cleared.")
     return {
         "access_token": "mock-token-123",
         "token_type": "bearer",
-        "user_id": "p_001",
+        "user_id": user_id, 
         "message": "Login Successful"
     }
 
@@ -123,12 +130,24 @@ def health_check():
 @app.post("/chat/text")
 @app.post("/api/chat/text")
 async def text_chat(request: ChatRequest):
-    loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(None, rag_engine.process_query, request.text, request.patient_id, CHAT_HISTORY)
+    patient_id = request.patient_id
     
-    CHAT_HISTORY.append({"role": "user", "content": request.text})
-    CHAT_HISTORY.append({"role": "assistant", "content": result["response"]})
-    if len(CHAT_HISTORY) > 10: CHAT_HISTORY.pop(0); CHAT_HISTORY.pop(0)
+    # Retrieve THIS patient's history (default to empty list if new)
+    user_history = SESSIONS.get(patient_id, [])
+    
+    loop = asyncio.get_event_loop()
+    # Pass user_history instead of CHAT_HISTORY
+    result = await loop.run_in_executor(None, rag_engine.process_query, request.text, patient_id, user_history)
+    
+    # Update THIS patient's history
+    user_history.append({"role": "user", "content": request.text})
+    user_history.append({"role": "assistant", "content": result["response"]})
+    
+    # Keep only last 10 messages (Sliding Window)
+    if len(user_history) > 10: 
+        user_history = user_history[-10:]
+    
+    SESSIONS[patient_id] = user_history # Save back to global dict
     
     return {
         "response": result["response"],
@@ -169,19 +188,23 @@ async def audio_chat(
         gibberish_triggers = ["Tamb", "Hue", "כש", "subs", "Amara", "Unara"]
         is_garbage = any(x in transcribed_text for x in gibberish_triggers) or len(transcribed_text) < 2
         
-        rag_result = {} 
+        rag_result = {}
+        # Retrieve THIS patient's history (default to empty list if new)
+        user_history = SESSIONS.get(patient_id, [])
 
         if is_garbage:
             print("   ⚠️ Detected Silence/Gibberish. Skipping processing.")
             transcribed_text = "(Silence/Noise)"
             response_text = "I couldn't hear you clearly. Please try again."
         else:
-            rag_result = await loop.run_in_executor(None, rag_engine.process_query, transcribed_text, patient_id, CHAT_HISTORY)
+            rag_result = await loop.run_in_executor(None, rag_engine.process_query, transcribed_text, patient_id, user_history)
             response_text = rag_result["response"]
 
-            CHAT_HISTORY.append({"role": "user", "content": transcribed_text})
-            CHAT_HISTORY.append({"role": "assistant", "content": response_text})
-            if len(CHAT_HISTORY) > 10: CHAT_HISTORY.pop(0); CHAT_HISTORY.pop(0)
+            user_history.append({"role": "user", "content": transcribed_text})
+            user_history.append({"role": "assistant", "content": response_text})
+            if len(user_history) > 10: 
+                user_history = user_history[-10:]
+            SESSIONS[patient_id] = user_history # Save back to global dict
 
         # 5. Generate TTS (Pure EdgeTTS)
         output_audio_path = await generate_tts_file(response_text)

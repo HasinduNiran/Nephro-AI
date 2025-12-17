@@ -148,40 +148,44 @@ class LLMEngine:
         """
         Translates Sinhala to English with CONTEXT AWARENESS.
         """
-        # 1. Get Context from History (Last 2 exchanges)
-        context_str = ""
+        # 1. Get Context (What did the Doctor ask last?)
+        context_str = "No previous context."
         if chat_history:
-            last_turns = chat_history[-2:] # Get last user/bot exchange
-            for msg in last_turns:
-                role = "Doctor" if msg['role'] == 'assistant' else "Patient"
-                context_str += f"{role}: {msg['content']}\n"
+            # Get the last message from the Assistant (Doctor)
+            last_doctor_msg = next((msg['content'] for msg in reversed(chat_history) if msg['role'] == 'assistant'), None)
+            if last_doctor_msg:
+                context_str = f"Doctor previously asked: '{last_doctor_msg}'"
 
-        # 2. Updated Dictionary
+        # 2. UPDATED DICTIONARY (Fixing Ambiguity)
         dictionary = """
         MANDATORY DICTIONARY:
-        - Bada yanne / Yanne / Gilla -> Passing stool / Diarrhea / Defecating
-        - Wathura wage -> Watery
-        - Kottu -> Kottu (Spicy flatbread dish)
-        - Parak -> Times (e.g., 10 times)
-        - Loose motion -> Diarrhea
-        - Iye idan -> Since yesterday
-        - Iye idan -> Since yesterday
-        - Amaru -> Difficulty / Pain / Disease
-        - Kakkumai / Kakkuma -> Cramping / Pain / Ache
+        # --- Severity / Adjectives ---
+        - Podi / Poddak / Tikak -> Mild / Slight / A little bit (IF describing pain/symptom)
+        - Godak / Hari -> Severe / Very / A lot
+        - Loku -> Severe / Big
+        
+        # --- Symptoms ---
+        - Kakkumai / Kakkuma -> Pain / Ache / Cramping
+        - Oluwa -> Head
+        - Ridenawa -> Pain
+        - Idimenne / Idimuma -> Swelling
+        - Hathiya -> Difficulty breathing
+        
+        # --- Context ---
+        - Ekak -> One (But implies 'A type of' in this context)
         """
 
         system_instruction = (
-            "You are a medical translator for a doctor-patient conversation.\n"
-            f"PREVIOUS CONTEXT:\n{context_str}\n" # <--- CONTEXT INJECTED HERE
+            "You are a medical translator. \n"
+            f"CONTEXT: {context_str}\n" 
             f"{dictionary}\n"
             "RULES:\n"
-            "1. Use the Context to resolve ambiguous words (e.g., 'yanne' after 'diarrhea' means 'passing stool', not 'walking').\n"
-            "2. Keep food names like 'Kottu, parata, dosa, idli, vada' in English.\n"
+            "1. USE CONTEXT: If the Doctor asked about 'Pain severity', and user says 'Podi ekak', translate as 'It is mild pain' (NOT 'A small child').\n"
+            "2. 'Podi' usually means 'Mild' or 'Slight' in symptom context.\n"
             "3. Output ONLY the English translation."
         )
 
         try:
-            print(f"🔄 Bridge: Translating '{text}' (Strict Mode)...")
             headers = {
                 "Authorization": f"Bearer {self.api_key}",
                 "HTTP-Referer": "https://github.com/Nephro-AI",
@@ -196,15 +200,11 @@ class LLMEngine:
                 "temperature": 0.0
             }
             response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=10)
-            if response.status_code == 200:
-                translation = response.json()['choices'][0]['message']['content'].strip()
-                print(f"✅ Bridge Output: {translation}")
-                return translation
+            return response.json()['choices'][0]['message']['content'].strip()
             
         except Exception as e:
             print(f"❌ Bridge Error: {e}")
-        
-        return text
+            return text
 
     def translate_to_sinhala_fallback(self, text: str) -> str:
         """[STYLE LAYER] Translates English to Sinhala with MEDICAL ACCURACY."""
@@ -266,20 +266,28 @@ class LLMEngine:
 
     def _generate_system_prompt(self, patient_context: str) -> str:
         return f"""
-        You are 'Nephro-AI', an expert medical consultant.
+        You are 'Nephro-AI', a wise and efficient medical assistant.
         PATIENT CONTEXT: {patient_context}
 
+        YOUR GOAL: Triage -> Investigate (Briefly) -> Advise.
+
         BEHAVIOR PROTOCOL:
-        1. **INTERNAL LOGIC**: You must internally check for Red Flags (Chest pain, breathing issues), but **DO NOT** talk to the patient about "Red Flags" or "Categories". Just act.
-        
-        2. **IF DANGER**: Say: "This sounds serious. Please go to the hospital."
-        
-        3. **IF SAFE**: Just ask the next logical medical question (SOCRATES method). 
-           - DO NOT say "This is not serious." 
-           - DO NOT say "Let me ask you questions." 
-           - JUST ASK THE QUESTION.
-           
-        4. **TONE**: Empathetic, professional, direct.
+        1. 🚨 **RED FLAG CHECK**: If the user has chest pain, difficulty breathing, or severe bleeding, STOP and send them to the ER immediately.
+
+        2. 🛑 **THE "2-QUESTION" RULE (CRITICAL)**:
+           - Do not ask more than 2 clarifying questions in a row.
+           - Check the conversation history. If you have already asked about the "Nature of pain" and "Duration", DO NOT ask more. 
+           - **MOVE TO ADVICE**.
+
+        3. 🔍 **INVESTIGATE (SOCRATES)**: 
+           - If the user's complaint is vague (e.g., "My stomach hurts"), ask ONE specific question (e.g., "Where exactly?").
+           - If the user asks a direct question (e.g., "Can I eat mango?"), **ANSWER IT DIRECTLY**. Do not ask about symptoms unless relevant.
+
+        4. 💡 **PROVIDE SOLUTION**:
+           - Once you have enough info (or hit the 2-question limit), give a recommendation (Home remedy, Diet change, or "See a doctor").
+           - ALWAYS end with a "Safety Net" (e.g., "If it gets worse, go to the hospital").
+
+        5. **TONE**: Empathetic but decisive. Don't be chatty.
         """
 
     def generate_response(
@@ -300,10 +308,26 @@ class LLMEngine:
         
         # --- 2. BRAIN LAYER ---
         print("\n[2] 🧠 BRAIN LAYER")
+        
+        # 1. Base System Prompt
         system_prompt = self._generate_system_prompt(patient_context)
         knowledge_context = "\n\n".join(context_documents[:3])
         
-        user_prompt = f"CONTEXT:\n{knowledge_context}\n\nQUESTION:\n{english_query}"
+        # 2. Construct Message List with History
+        messages = [{"role": "system", "content": system_prompt}]
+        
+        # Inject History (Limit to last 4 turns to save tokens)
+        if history:
+            valid_history = history[-4:] 
+            for msg in valid_history:
+                # Map roles correctly to OpenAI format
+                role = "user" if msg['role'] == "user" else "assistant"
+                messages.append({"role": role, "content": msg['content']})
+
+        # 3. Add Current User Question with RAG Context
+        # We wrap the RAG context here so the model sees it with the latest question
+        user_message_content = f"KNOWLEDGE BASE:\n{knowledge_context}\n\nCURRENT PATIENT QUERY:\n{english_query}"
+        messages.append({"role": "user", "content": user_message_content})
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -313,7 +337,7 @@ class LLMEngine:
         
         payload = {
             "model": self.model,
-            "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
+            "messages": messages, # ✅ SEND FULL CONVERSATION
             "temperature": 0.7
         }
 

@@ -22,6 +22,7 @@ import {
   MaterialCommunityIcons,
   FontAwesome5,
 } from "@expo/vector-icons";
+import LottieView from 'lottie-react-native';
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system/legacy";
 import axios from "axios";
@@ -32,7 +33,7 @@ import Markdown from "react-native-markdown-display";
 // const BACKEND_URL = "http://10.143.248.166:8000";
 
 // NEW (USB Tunneling)
-const BACKEND_URL = "http://10.143.248.166:8001";
+const BACKEND_URL = "http://10.228.226.166:8001";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -72,6 +73,12 @@ const ChatbotScreen = ({ navigation }) => {
   const [recording, setRecording] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  // Replaced loadingText string with loadingStep object and loadingType
+  const [loadingStep, setLoadingStep] = useState({ 
+    text: "Processing...", 
+    icon: "dots-horizontal" 
+  });
+  const [loadingType, setLoadingType] = useState('text'); // 'audio' or 'text'
   const [sound, setSound] = useState(null);
   const [metering, setMetering] = useState(-160);
   const [inputFocused, setInputFocused] = useState(false);
@@ -172,6 +179,44 @@ const ChatbotScreen = ({ navigation }) => {
     }
   }, [isLoading]);
 
+  // Dynamic Thinking Text Animation
+  useEffect(() => {
+    let interval;
+    if (isLoading) {
+      // 1. Define the Reality Steps (Icon + Text)
+      
+      // 🎙️ Sequence for Voice Input
+      const audioSteps = [
+        { text: "Listening to audio...", icon: "ear-hearing" },    // Ear Icon
+        { text: "Translating Sinhala...", icon: "translate" },     // Translate Icon
+        { text: "Analyzing symptoms...", icon: "brain" },          // Brain Icon
+        { text: "Checking safety...", icon: "shield-check" },      // Shield Icon
+        { text: "Formulating advice...", icon: "doctor" }          // Doctor Icon
+      ];
+
+      // ⌨️ Sequence for Text Input
+      const textSteps = [
+        { text: "Reading message...", icon: "email-open" },        // Email/Read Icon
+        { text: "Analyzing symptoms...", icon: "brain" },          // Brain Icon
+        { text: "Consulting database...", icon: "database-search"},// Database Icon
+        { text: "Checking safety...", icon: "shield-check" },      // Shield Icon
+        { text: "Typing response...", icon: "keyboard" }           // Keyboard Icon
+      ];
+
+      // 2. Select the correct list based on input type
+      const steps = loadingType === 'audio' ? audioSteps : textSteps;
+
+      let i = 0;
+      setLoadingStep(steps[0]); // Start immediately
+      
+      interval = setInterval(() => {
+        i = (i + 1) % steps.length; // Loop through steps
+        setLoadingStep(steps[i]);
+      }, 1500); // Update every 1.5 seconds
+    }
+    return () => clearInterval(interval);
+  }, [isLoading, loadingType]);
+
   // 1. Permission & Audio Setup
   useEffect(() => {
     (async () => {
@@ -267,6 +312,7 @@ const ChatbotScreen = ({ navigation }) => {
   // 4. API Logic: Upload Audio
   const sendAudioToBackend = async (uri) => {
     setIsLoading(true);
+    setLoadingType('audio'); // Set type for animation
     setIsTyping(true);
 
     const formData = new FormData();
@@ -421,6 +467,7 @@ const ChatbotScreen = ({ navigation }) => {
       },
     ]);
     setIsLoading(true);
+    setLoadingType('text'); // Set type for animation
     setIsTyping(true);
 
     try {
@@ -643,31 +690,20 @@ const ChatbotScreen = ({ navigation }) => {
                   styles.typingBubble,
                 ]}
               >
-                <View style={styles.typingIndicator}>
-                  {[0, 1, 2].map((i) => (
-                    <Animated.View
-                      key={i}
-                      style={[
-                        styles.typingDot,
-                        {
-                          opacity: typingDots.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0.3, 1],
-                          }),
-                          transform: [
-                            {
-                              translateY: typingDots.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0, -8],
-                              }),
-                            },
-                          ],
-                        },
-                      ]}
+                  {/* Replaced old typing indicator with Dynamic Status */}
+                  {/* Replaced old typing indicator with Dynamic Status */}
+                  <View style={styles.loadingContainer}>
+                    {/* 🌟 DYNAMIC ICON: Changes based on the current step */}
+                    <MaterialCommunityIcons 
+                      name={loadingStep.icon} 
+                      size={34} 
+                      color={COLORS.primary} 
+                      style={{ marginBottom: 0 }} // Zero because flex-row handles layout in container style
                     />
-                  ))}
-                </View>
-                <Text style={styles.typingText}>Nephro-AI is thinking...</Text>
+                    
+                    {/* 🌟 DYNAMIC TEXT */}
+                    <Text style={styles.loadingText}>{loadingStep.text}</Text>
+                  </View>
               </View>
             </View>
           ) : null
@@ -1301,6 +1337,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textMedium,
     marginLeft: 10,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    marginVertical: 4,
+    flexDirection: 'row',
+    gap: 10
+  },
+  loadingText: {
+    color: COLORS.textMedium,
+    fontSize: 14,
+    fontWeight: '600',
+    fontStyle: 'italic'
   },
 });
 

@@ -55,13 +55,27 @@ class RAGEngine:
             print(f"⚡ CACHE HIT: Serving instant response for '{query}'")
             return self.cache[cache_key]
 
-        # 2. Retrieve Patient Context
+        # 2. BRIDGE LAYER (Pass chat_history!)
+        english_query = query
+        is_sinhala = self.llm.sinhala_nlu.is_sinhala(query) if hasattr(self.llm, 'sinhala_nlu') else False # Or simple check
+        
+        # Simple Sinhala Check if NLU not available
+        if not is_sinhala:
+             is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in query)
+
+        if is_sinhala:
+            print(f"🔄 Bridge: Translating '{query}'...")
+            # ✅ THE FIX: Pass chat_history here
+            english_query = self.llm.translate_to_english(query, chat_history) 
+            print(f"✅ Bridge Output: {english_query}")
+
+        # 3. Retrieve Patient Context
         patient_context = self.patient_data.get_patient_context_string(patient_id)
         
-        # 2. Retrieve Medical Knowledge (using NLU-enhanced search)
+        # 4. Retrieve Medical Knowledge (using NLU-enhanced search)
         # We use the existing query_with_nlu method which handles NLU analysis + ChromaDB search
         t_retrieval_start = time.time()
-        search_results = self.vector_db.query_with_nlu(query)
+        search_results = self.vector_db.query_with_nlu(english_query) # Use English Query here
         t_retrieval_end = time.time()
         
         # Extract document text from results
