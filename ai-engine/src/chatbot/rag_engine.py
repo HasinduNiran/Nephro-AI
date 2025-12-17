@@ -77,11 +77,13 @@ class RAGEngine:
         # 3. Generate Response with LLM
         print("🧠 Generating response with LLM...")
         t_llm_start = time.time()
+        
+        # IMPORTANT: Pass history for Context-Aware Translation
         llm_response = self.llm.generate_response(
             query=query,
             context_documents=context_documents,
             patient_context=patient_context,
-            history=chat_history
+            history=chat_history 
         )
         t_llm_end = time.time()
         

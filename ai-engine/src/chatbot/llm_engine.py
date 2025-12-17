@@ -144,67 +144,63 @@ class LLMEngine:
                 
         return False
 
-    def translate_to_english(self, text: str) -> str:
+    def translate_to_english(self, text: str, chat_history: List[Dict] = []) -> str:
         """
-        Translates Singlish/Sinhala to English with a STRICT Dictionary.
+        Translates Sinhala to English with CONTEXT AWARENESS.
         """
+        # 1. Get Context from History (Last 2 exchanges)
+        context_str = ""
+        if chat_history:
+            last_turns = chat_history[-2:] # Get last user/bot exchange
+            for msg in last_turns:
+                role = "Doctor" if msg['role'] == 'assistant' else "Patient"
+                context_str += f"{role}: {msg['content']}\n"
+
+        # 2. Updated Dictionary
         dictionary = """
-        MANDATORY MEDICAL DICTIONARY:
-        # --- Body Parts ---
-        - Amba / Aba -> Mango
-        - Bada / Udaraya -> Stomach
-        - Wakkugadu -> Kidney
-        - Kakul -> Legs
-        - Papuwa / Laya -> Chest  <-- CRITICAL ADDITION
-        - Oluwa / Hisa -> Head
-        
-        # --- Symptoms ---
-        - Ridenawa / Kakkuma -> Pain
-        - Idimenne / Idimuma -> Swelling
-        - Hathiya / Husma ganna amaru -> Difficulty breathing / Shortness of breath
-        - Karakewilla -> Dizziness
-        - Wamane -> Vomiting
-        - Pana na -> Weakness / No energy
-        
-        # --- Context ---
-        - Kanna -> Eat
-        - Hondaydu / Hodada -> Is it good?
-        - Amarui -> Severe / Difficult / Serious condition
-        - Godak -> A lot / Very
+        MANDATORY DICTIONARY:
+        - Bada yanne / Yanne / Gilla -> Passing stool / Diarrhea / Defecating
+        - Wathura wage -> Watery
+        - Kottu -> Kottu (Spicy flatbread dish)
+        - Parak -> Times (e.g., 10 times)
+        - Loose motion -> Diarrhea
+        - Iye idan -> Since yesterday
+        - Iye idan -> Since yesterday
+        - Amaru -> Difficulty / Pain / Disease
+        - Kakkumai / Kakkuma -> Cramping / Pain / Ache
         """
 
         system_instruction = (
-            "You are a medical translator. \n"
+            "You are a medical translator for a doctor-patient conversation.\n"
+            f"PREVIOUS CONTEXT:\n{context_str}\n" # <--- CONTEXT INJECTED HERE
             f"{dictionary}\n"
             "RULES:\n"
-            "1. IF a word from the dictionary appears, you MUST use the English meaning provided.\n"
-            "2. 'Papuwa ridenawa' MUST translate to 'Chest pain'.\n"
+            "1. Use the Context to resolve ambiguous words (e.g., 'yanne' after 'diarrhea' means 'passing stool', not 'walking').\n"
+            "2. Keep food names like 'Kottu, parata, dosa, idli, vada' in English.\n"
             "3. Output ONLY the English translation."
         )
-        
-
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "HTTP-Referer": "https://github.com/Nephro-AI",
-            "Content-Type": "application/json"
-        }
-
-        payload = {
-            "model": "openai/gpt-4o-mini", # Force GPT-4o-mini for better reasoning
-            "messages": [
-                {"role": "system", "content": system_instruction},
-                {"role": "user", "content": text}
-            ],
-            "temperature": 0.0 # Strict
-        }
 
         try:
             print(f"🔄 Bridge: Translating '{text}' (Strict Mode)...")
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "HTTP-Referer": "https://github.com/Nephro-AI",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "model": "openai/gpt-4o-mini",
+                "messages": [
+                    {"role": "system", "content": system_instruction},
+                    {"role": "user", "content": text}
+                ],
+                "temperature": 0.0
+            }
             response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=10)
             if response.status_code == 200:
                 translation = response.json()['choices'][0]['message']['content'].strip()
                 print(f"✅ Bridge Output: {translation}")
                 return translation
+            
         except Exception as e:
             print(f"❌ Bridge Error: {e}")
         
@@ -273,24 +269,17 @@ class LLMEngine:
         You are 'Nephro-AI', an expert medical consultant.
         PATIENT CONTEXT: {patient_context}
 
-        YOUR PRIORITY PROTOCOL:
+        BEHAVIOR PROTOCOL:
+        1. **INTERNAL LOGIC**: You must internally check for Red Flags (Chest pain, breathing issues), but **DO NOT** talk to the patient about "Red Flags" or "Categories". Just act.
         
-        1. 🚨 RED FLAG CHECK (DO THIS FIRST):
-           If the user mentions any of these, STOP asking questions and tell them to go to a hospital IMMEDIATELY:
-           - **Chest Pain** (Papuwa ridenawa)
-           - **Difficulty Breathing** (Hathiya)
-           - **Sudden Dizziness/Fainting**
-           - **Vomiting Blood**
+        2. **IF DANGER**: Say: "This sounds serious. Please go to the hospital."
+        
+        3. **IF SAFE**: Just ask the next logical medical question (SOCRATES method). 
+           - DO NOT say "This is not serious." 
+           - DO NOT say "Let me ask you questions." 
+           - JUST ASK THE QUESTION.
            
-           Example Response: "That sounds serious. Chest pain can be a sign of a heart emergency. Please go to the nearest hospital immediately. Do not wait."
-
-        2. 🕵️ INVESTIGATE (SOCRATES):
-           If (and ONLY if) there are no Red Flags, act like a doctor investigating a symptom.
-           - Ask about the nature of the pain (Sharp/Dull).
-           - Ask about timing.
-           
-        3. 🛡️ SAFETY NET:
-           Always advise consulting a real doctor if symptoms persist.
+        4. **TONE**: Empathetic, professional, direct.
         """
 
     def generate_response(
@@ -307,7 +296,7 @@ class LLMEngine:
         # --- 1. BRIDGE LAYER ---
         print("\n[1] 🌉 BRIDGE LAYER")
         is_sinhala_query = self._is_sinhala_or_singlish(query)
-        english_query = self.translate_to_english(query)
+        english_query = self.translate_to_english(query, history)
         
         # --- 2. BRAIN LAYER ---
         print("\n[2] 🧠 BRAIN LAYER")

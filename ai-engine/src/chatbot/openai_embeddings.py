@@ -56,14 +56,17 @@ class OpenAIEmbeddings:
     
     def _make_request(self, texts: Union[str, List[str]]) -> List[List[float]]:
         """
-        Make API request to generate embeddings
-        
-        Args:
-            texts: Single text or list of texts
-            
-        Returns:
-            List of embedding vectors
+        Make request to OpenRouter API with robust error handling.
         """
+        # 1. Sanity Check: Don't send empty text
+        if isinstance(texts, str):
+            texts = [texts]
+            
+        valid_texts = [t for t in texts if t and t.strip()]
+        if not valid_texts:
+            print("⚠️ Warning: Attempted to embed empty text. Returning zero vector.")
+            return [[0.0] * 1536] * len(texts) # Return dummy zero vector
+
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
@@ -77,43 +80,37 @@ class OpenAIEmbeddings:
         
         payload = {
             "model": self.model,
-            "input": texts,
+            "input": valid_texts,
             "encoding_format": "float"
         }
         
-        # Retry logic
-        for attempt in range(self.max_retries):
-            try:
-                response = requests.post(
-                    self.api_url,
-                    headers=headers,
-                    data=json.dumps(payload),
-                    timeout=30
-                )
-                
-                if response.status_code == 200:
-                    result = response.json()
-                    # Extract embeddings in order
-                    embeddings = [item['embedding'] for item in sorted(result['data'], key=lambda x: x['index'])]
-                    return embeddings
-                else:
-                    error_msg = f"API request failed with status {response.status_code}: {response.text}"
-                    if attempt < self.max_retries - 1:
-                        print(f"   Warning: {error_msg}")
-                        print(f"   Retrying in {self.retry_delay} seconds... (Attempt {attempt + 1}/{self.max_retries})")
-                        time.sleep(self.retry_delay)
-                    else:
-                        raise Exception(error_msg)
-                        
-            except requests.exceptions.RequestException as e:
-                if attempt < self.max_retries - 1:
-                    print(f"   Warning: Network error - {str(e)}")
-                    print(f"   Retrying in {self.retry_delay} seconds... (Attempt {attempt + 1}/{self.max_retries})")
-                    time.sleep(self.retry_delay)
-                else:
-                    raise Exception(f"Network error after {self.max_retries} attempts: {str(e)}")
-        
-        raise Exception("Failed to generate embeddings after all retry attempts")
+        try:
+            response = requests.post(
+                self.api_url,
+                headers=headers,
+                data=json.dumps(payload),
+                timeout=30
+            )
+            
+            # 2. Check for HTTP Errors
+            if response.status_code != 200:
+                print(f"❌ Embedding API Error: {response.status_code} - {response.text}")
+                # Return dummy vectors to prevent crash
+                return [[0.0] * 1536] * len(texts)
+
+            result = response.json()
+            
+            # 3. Check for JSON Structure (The Fix for KeyError)
+            if 'data' not in result:
+                print(f"❌ Invalid API Response (No 'data' field): {result}")
+                return [[0.0] * 1536] * len(texts)
+
+            embeddings = [item['embedding'] for item in sorted(result['data'], key=lambda x: x['index'])]
+            return embeddings
+
+        except Exception as e:
+            print(f"❌ Embedding Connection Failed: {e}")
+            return [[0.0] * 1536] * len(texts)
     
     def encode(
         self,
