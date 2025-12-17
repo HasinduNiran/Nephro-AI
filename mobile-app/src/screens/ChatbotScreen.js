@@ -32,7 +32,7 @@ import Markdown from "react-native-markdown-display";
 // const BACKEND_URL = "http://10.143.248.166:8000";
 
 // NEW (USB Tunneling)
-const BACKEND_URL = "http://127.0.0.1:8000";
+const BACKEND_URL = "http://10.143.248.166:8001";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
