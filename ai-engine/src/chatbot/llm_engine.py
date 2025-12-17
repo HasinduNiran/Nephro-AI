@@ -148,22 +148,29 @@ class LLMEngine:
         """
         Translates Singlish/Sinhala to English with a STRICT Dictionary.
         """
-        # 1. HARDCODED DICTIONARY (The AI cannot ignore this)
         dictionary = """
-        MANDATORY DICTIONARY:
+        MANDATORY MEDICAL DICTIONARY:
+        # --- Body Parts ---
         - Amba / Aba -> Mango
-        - Kanna -> Eat
-        - Hondaydu / Hodada -> Is it good?
-        - Bada -> Stomach
-        - Ridenawa -> Pain
+        - Bada / Udaraya -> Stomach
         - Wakkugadu -> Kidney
         - Kakul -> Legs
+        - Papuwa / Laya -> Chest  <-- CRITICAL ADDITION
+        - Oluwa / Hisa -> Head
         
-        # ✅ NEW FIXES (Swelling & Disease)
-        - Idimenne / Idimuma / Idime / Indimenne -> Swelling
-        - Amaru -> Disease / Trouble / Pain
-        - Walata -> Due to / For
-        - Nedda / Nadda -> Isn't it?
+        # --- Symptoms ---
+        - Ridenawa / Kakkuma -> Pain
+        - Idimenne / Idimuma -> Swelling
+        - Hathiya / Husma ganna amaru -> Difficulty breathing / Shortness of breath
+        - Karakewilla -> Dizziness
+        - Wamane -> Vomiting
+        - Pana na -> Weakness / No energy
+        
+        # --- Context ---
+        - Kanna -> Eat
+        - Hondaydu / Hodada -> Is it good?
+        - Amarui -> Severe / Difficult / Serious condition
+        - Godak -> A lot / Very
         """
 
         system_instruction = (
@@ -171,9 +178,10 @@ class LLMEngine:
             f"{dictionary}\n"
             "RULES:\n"
             "1. IF a word from the dictionary appears, you MUST use the English meaning provided.\n"
-            "2. DO NOT interpret idioms. (e.g., 'Mata amba kanna' -> 'Can I eat mango?', NOT 'good appetite').\n"
-            "3. OUTPUT: Return ONLY the English translation. No explanations."
+            "2. 'Papuwa ridenawa' MUST translate to 'Chest pain'.\n"
+            "3. Output ONLY the English translation."
         )
+        
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -262,12 +270,27 @@ class LLMEngine:
 
     def _generate_system_prompt(self, patient_context: str) -> str:
         return f"""
-        You are 'Nephro-AI'.
+        You are 'Nephro-AI', an expert medical consultant.
         PATIENT CONTEXT: {patient_context}
-        INSTRUCTIONS:
-        1. Be concise (max 60 words).
-        2. Answer directly.
-        3. Warn if dangerous.
+
+        YOUR PRIORITY PROTOCOL:
+        
+        1. 🚨 RED FLAG CHECK (DO THIS FIRST):
+           If the user mentions any of these, STOP asking questions and tell them to go to a hospital IMMEDIATELY:
+           - **Chest Pain** (Papuwa ridenawa)
+           - **Difficulty Breathing** (Hathiya)
+           - **Sudden Dizziness/Fainting**
+           - **Vomiting Blood**
+           
+           Example Response: "That sounds serious. Chest pain can be a sign of a heart emergency. Please go to the nearest hospital immediately. Do not wait."
+
+        2. 🕵️ INVESTIGATE (SOCRATES):
+           If (and ONLY if) there are no Red Flags, act like a doctor investigating a symptom.
+           - Ask about the nature of the pain (Sharp/Dull).
+           - Ask about timing.
+           
+        3. 🛡️ SAFETY NET:
+           Always advise consulting a real doctor if symptoms persist.
         """
 
     def generate_response(
