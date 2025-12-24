@@ -272,28 +272,27 @@ class LLMEngine:
         YOUR GOAL: Triage -> Investigate (Briefly) -> Advise.
 
         BEHAVIOR PROTOCOL:
-        1. 👋 **GREETINGS**:
-           - If the user says "Hi" or "How are you", reply warmly and briefly.
-           - Example: "Hello! I am Nephro-AI. How can I help you with your health today?"
-           - **DO NOT** mention translations or your internal rules.
+        1. 👋 **GREETINGS & RE-GREETINGS**:
+           - If the user says "Hi", "Hello", or "How are you", reply warmly.
+           - **CRITICAL:** Even if the chat history shows you already greeted them, **GREET THEM AGAIN** if they say "Hi" again.
+           - Do NOT say "I misunderstood" or "As I said before." Just answer the new greeting fresh.
 
-        2. 🚨 **RED FLAG CHECK**: If the user has chest pain, difficulty breathing, or severe bleeding, STOP and send them to the ER immediately.
+        2. 🚨 **RED FLAG CHECK**: 
+           - Chest pain, difficulty breathing, severe bleeding -> STOP -> Hospital Advice.
 
-        3. 🛑 **THE "2-QUESTION" RULE (CRITICAL)**:
+        3. 🛑 **THE "2-QUESTION" RULE**:
            - Do not ask more than 2 clarifying questions in a row.
-           - Check the conversation history. If you have already asked about the "Nature of pain" and "Duration", DO NOT ask more. 
-           - **MOVE TO ADVICE**.
+           - If history exists, provide advice now.
 
-        4. 🔍 **INVESTIGATE (SOCRATES)**: 
-           - If the user's complaint is vague (e.g., "My stomach hurts"), ask ONE specific question (e.g., "Where exactly?").
-           - If the user asks a direct question (e.g., "Can I eat mango?"), **ANSWER IT DIRECTLY**. Do not ask about symptoms unless relevant.
+        4. 🔍 **INVESTIGATE**: 
+           - Ask specific questions for vague symptoms.
 
         5. 💡 **PROVIDE SOLUTION**:
-           - Once you have enough info (or hit the 2-question limit), give a recommendation (Home remedy, Diet change, or "See a doctor").
-           - ALWAYS end with a "Safety Net" (e.g., "If it gets worse, go to the hospital").
+           - Diagnosis hypothesis + Home remedy + Safety Net.
 
-        6. **TONE**: Empathetic but decisive. Don't be chatty.
+        6. **TONE**: Empathetic, professional, decisive.
         """
+
 
     def generate_response(
         self, 
@@ -302,36 +301,28 @@ class LLMEngine:
         patient_context: str,
         history: List[Dict[str, str]] = []
     ) -> str:
-        print("\n" + "="*50)
-        print("🚀 STARTING PIPELINE")
-        print("="*50)
-        
-        # --- 1. BRIDGE LAYER ---
-        print("\n[1] 🌉 BRIDGE LAYER")
-        is_sinhala_query = self._is_sinhala_or_singlish(query)
-        english_query = self.translate_to_english(query, history)
-        
-        # --- 2. BRAIN LAYER ---
-        print("\n[2] 🧠 BRAIN LAYER")
+        """
+        Pure Brain Layer: Generates response based on provided English Query & Context.
+        (Translation is handled externally by RAGEngine)
+        """
+        print("\n[2] 🧠 BRAIN LAYER (Generating Response...)")
         
         # 1. Base System Prompt
         system_prompt = self._generate_system_prompt(patient_context)
         knowledge_context = "\n\n".join(context_documents[:3])
         
-        # 2. Construct Message List with History
+        # 2. Construct Message List
         messages = [{"role": "system", "content": system_prompt}]
         
-        # Inject History (Limit to last 4 turns to save tokens)
+        # 3. Inject History (Limit to last 4 turns)
         if history:
             valid_history = history[-4:] 
             for msg in valid_history:
-                # Map roles correctly to OpenAI format
                 role = "user" if msg['role'] == "user" else "assistant"
                 messages.append({"role": role, "content": msg['content']})
 
-        # 3. Add Current User Question with RAG Context
-        # We wrap the RAG context here so the model sees it with the latest question
-        user_message_content = f"KNOWLEDGE BASE:\n{knowledge_context}\n\nCURRENT PATIENT QUERY:\n{english_query}"
+        # 4. Add Current User Question with RAG Context
+        user_message_content = f"KNOWLEDGE BASE:\n{knowledge_context}\n\nCURRENT PATIENT QUERY:\n{query}"
         messages.append({"role": "user", "content": user_message_content})
 
         headers = {
@@ -342,34 +333,20 @@ class LLMEngine:
         
         payload = {
             "model": self.model,
-            "messages": messages, # ✅ SEND FULL CONVERSATION
+            "messages": messages, 
             "temperature": 0.7
         }
 
-        english_response = ""
         try:
             response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
             if response.status_code == 200:
                 english_response = response.json()['choices'][0]['message']['content'].strip()
                 print(f"✅ Brain Output: {english_response}")
+                return english_response
             else:
                 return f"Error: {response.status_code}"
         except Exception as e:
             return f"Error: {str(e)}"
-
-        # --- 3. STYLE LAYER ---
-        print("\n[3] 🎨 STYLE LAYER")
-        
-        if is_sinhala_query:
-            if any('\u0D80' <= char <= '\u0DFF' for char in english_response):
-                return english_response
-            else:
-                sinhala_response = self.translate_to_sinhala_fallback(english_response)
-                print(f"✅ Style Output: {sinhala_response}")
-                return sinhala_response
-        else:
-            print("ℹ️ Query was English. Skipping Style Layer.")
-            return english_response
 
 if __name__ == "__main__":
     llm = LLMEngine()
