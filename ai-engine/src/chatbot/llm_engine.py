@@ -156,23 +156,28 @@ class LLMEngine:
             if last_doctor_msg:
                 context_str = f"Doctor previously asked: '{last_doctor_msg}'"
 
-        # 2. UPDATED DICTIONARY (Fixing Ambiguity)
+        # 2. UPDATED DICTIONARY
         dictionary = """
         MANDATORY DICTIONARY:
+        # --- Multi-Word Medical Terms (High Priority) ---
+        - Wakugadu amaru / Wakkugadu amaru -> Kidney disease / Kidney trouble
+        - Bada amaru /Bade amaru/ bada ridenawa -> Stomach ache
+        - Papuwe amaru -> Chest pain / Heart trouble
+        
         # --- Severity / Adjectives ---
-        - Podi / Poddak / Tikak -> Mild / Slight / A little bit (IF describing pain/symptom)
-        - Godak / Hari -> Severe / Very / A lot
-        - Loku -> Severe / Big
+        - Podi / Poddak / Tikak / chuttak/ chuti/ chooti -> Mild / Slight / A little bit
+        - Godak /loku -> Severe / Very
         
         # --- Symptoms ---
-        - Kakkumai / Kakkuma -> Pain / Ache / Cramping
-        - Oluwa -> Head
-        - Ridenawa -> Pain
+        - Kakkumai / Kakkuma -> Pain
+        - Ridenawa -> Pain / Hurts
+        - Amaru -> Difficulty / Trouble / Disease (Depends on context)
         - Idimenne / Idimuma -> Swelling
         - Hathiya -> Difficulty breathing
         
         # --- Context ---
-        - Ekak -> One (But implies 'A type of' in this context)
+        - Thiyanwada / Thiyenawada -> Do I have? / Is there?
+        - Mata -> I / To me
         """
 
         system_instruction = (
@@ -180,8 +185,8 @@ class LLMEngine:
             f"CONTEXT: {context_str}\n" 
             f"{dictionary}\n"
             "RULES:\n"
-            "1. USE CONTEXT: If the Doctor asked about 'Pain severity', and user says 'Podi ekak', translate as 'It is mild pain' (NOT 'A small child').\n"
-            "2. 'Podi' usually means 'Mild' or 'Slight' in symptom context.\n"
+            "1. **COMPOUND WORDS FIRST**: Check for 2-word phrases like 'Wakugadu amaru' BEFORE translating individual words.\n"
+            "2. 'Wakugadu amaru' implies 'Kidney Disease', NOT just 'Kidney pain'.\n"
             "3. Output ONLY the English translation."
         )
 
@@ -207,14 +212,14 @@ class LLMEngine:
             return text
 
     def translate_to_sinhala_fallback(self, text: str) -> str:
-        """[STYLE LAYER] Translates English to Sinhala with MEDICAL ACCURACY."""
-        print(f"⚠️ Style: Translating response to Sinhala...")
+        """[STYLE LAYER] Translates English to NATURAL SPOKEN Sinhala (Katha Wahara)."""
+        print(f"⚠️ Style: Translating response to Spoken Sinhala...")
         
         # 1. DEFINE THE OUTPUT DICTIONARY (English -> Sinhala)
         dictionary = """
         CRITICAL MEDICAL DICTIONARY:
         - Stomach -> Bada (බඩ)
-        - Kidney -> Wakkugadu (වකුගඩු)   <-- NEVER USE 'KADULU'
+        - Kidney -> Wakkugadu (වකුගඩු)
         - Pain -> Ridenawa (රිදෙනවා) or Kakkuma (කැක්කුම)
         - Urine -> Muthra (මුත්‍රා)
         - Blood -> Le (ලේ)
@@ -222,7 +227,7 @@ class LLMEngine:
         - Vomiting -> Wamane (වමනය)
         - Diabetes -> Diyawadiyawa (දියවැඩියාව)
         - Swelling -> Idimuma (ඉදිමුම)
-        - Doctor -> Waidyawaraya (වෛද්‍යවරයා)
+        - Doctor -> Dosthara (දොස්තර)
         - Medicine -> Beheth (බෙහෙත්)
         - Water -> Wathura (වතුර)
         """
@@ -233,23 +238,36 @@ class LLMEngine:
             "Content-Type": "application/json"
         }
         
+        # 2. THE "SPOKEN SINHALA" PROMPT
         system_prompt = (
-            "You are a helpful Sri Lankan medical assistant. Translate the advice into NATURAL, SPOKEN Sinhala.\n"
-            f"{dictionary}\n"
-            "RULES:\n"
-            "1. Use the Dictionary terms strictly.\n"
-            "2. Keep English numbers (e.g., '5.2', '120/80').\n"
-            "3. Keep drug names in English (e.g., 'Panadol', 'Losartan').\n"
-            "4. Tone: Empathetic, polite, and simple (not overly formal)."
+            "You are a kind Sri Lankan doctor speaking to a patient. "
+            "Translate the advice into **CASUAL, SPOKEN SINHALA (Katha Wahara)**.\n\n"
+            
+            f"{dictionary}\n\n"
+            
+            "⛔ STRICT GRAMMAR RULES (DO NOT IGNORE):\n"
+            "1. **NEVER use 'Oba' (ඔබ).** ALWAYS use 'Oya' (ඔයා).\n"
+            "2. **NEVER use 'Yuthuya' (යුතුය) or 'Kala hekiya' (කළ හැකිය).** Use 'Karanna' (කරන්න) or 'Puluwan' (පුළුවන්).\n"
+            "3. **End sentences naturally.** instead of 'Peheth ganeema awashyaya', say 'Beheth ganna ona'.\n"
+            "4. **Keep English numbers** (e.g., '120/80', '5mg').\n"
+            "5. **Keep drug names in English** (e.g., 'Panadol', 'Losartan').\n"
+            "6. **Tone:** Warm, empathetic, and simple. Don't sound like a textbook.\n\n"
+
+            "EXAMPLES:\n"
+            "❌ Formal: Obata wigasata rohalata yama sudusuya.\n"
+            "✅ Spoken: Oya ikmanata hospital ekata yanna ona.\n\n"
+            
+            "❌ Formal: Wakkugadu rogaya sadaha beheth gatha yuthuya.\n"
+            "✅ Spoken: Wakkugadu amaruwata beheth ganna wenawa."
         )
         
         payload = {
-            "model": "openai/gpt-4o-mini", # Use Mini for speed, but prompt for quality
+            "model": "openai/gpt-4o-mini", 
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": text}
             ],
-            "temperature": 0.3 # Low temperature to stick to the dictionary
+            "temperature": 0.4 # Increased slightly to allow for more natural flow
         }
         
         try:
