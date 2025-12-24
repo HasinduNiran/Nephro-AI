@@ -37,50 +37,49 @@ class RAGEngine:
         - 'si' if input has Sinhala chars OR Singlish keywords.
         - 'en' if input has English keywords.
         """
-        text_lower = text.lower()
+        text_lower = f" {text.lower()} " # Pad text for safer matching
 
         # 1. CHECK FOR SINHALA UNICODE (Absolute Truth)
         if any('\u0D80' <= char <= '\u0DFF' for char in text):
             return 'si'
 
-        # 2. CHECK FOR ENGLISH KEYWORDS (Substring matching)
-        # We check if these roots exist inside the words (e.g., 'kidney' in 'kidneys')
+        # 2. CHECK FOR ENGLISH KEYWORDS
+        # Added 'make', 'do', 'can' to cover more ground
         english_roots = [
-            ' i ', ' my ', ' you ', ' the ', ' is ', ' are ', ' am ', # Spaced to avoid partials inside other words
-            'pain', 'hurt', 'ache', 'sick', 'doctor', 'hospital',
-            'kidney', 'stomach', 'head', 'leg', 'chest', 'breath',
-            'vomit', 'nausea', 'dizzy', 'fever', 'swell',
-            'what', 'where', 'when', 'how', 'who', 'why',
-            'hi', 'hello', 'hey', 'morning', 'evening', 'help'
+            ' i ', ' my ', ' you ', ' the ', ' is ', ' are ', ' am ', 
+            ' pain', ' hurt', ' ache', ' sick', ' doctor', ' hospital',
+            ' kidney', ' stomach', ' head', ' leg', ' chest', ' breath',
+            ' vomit', ' nausea', ' dizzy', ' fever', ' swell',
+            ' what', ' where', ' when', ' how ', ' who', ' why',
+            ' hi ', ' hello', ' hey', ' morning', ' evening', ' help',
+            ' make ', ' do ', ' can ', ' to ', ' for '
         ]
         
-        # 3. CHECK FOR SINGLISH KEYWORDS
+        # 3. CHECK FOR SINGLISH KEYWORDS (FIXED: Padded short words)
         singlish_roots = [
             'mata', 'mage', 'oyage', 'ape', 'apata',
             'ridenawa', 'kakkuma', 'amaru', 'idimenawa', 'idimuma',
             'bada', 'oluwa', 'papuwa', 'kakula', 'atha',
-            'mokakda', 'koheda', 'kawadada', 'kohomada', 'ai',
+            'mokakda', 'koheda', 'kawadada', 'kohomada',
             'podi', 'loku', 'godak', 'hari', 'tikak',
-            'beheth', 'le', 'kanna', 'bonna', 'yanne',
-            'nadda', 'nedda', 'ne', 'na', 'ow', 'epa'
+            'beheth', 'kanna', 'bonna', 'yanne', 'epaa',
+            # ⚠️ DANGEROUS SHORT WORDS (Now Padded with spaces)
+            ' ai ', ' ne ', ' na ', ' ow ', ' le ', ' ane '
         ]
 
-        # Count matches (Robust Substring Check)
-        english_score = sum(1 for root in english_roots if root.strip() in text_lower)
+        # Count matches
+        english_score = sum(1 for root in english_roots if root in text_lower)
         singlish_score = sum(1 for root in singlish_roots if root in text_lower)
 
         print(f"🔍 Lang Detect: English Score={english_score}, Singlish Score={singlish_score}")
 
         # LOGIC:
-        # If English score is high, it's English (even if "bada" appears in "badass" - unlikely but possible)
-        # If Singlish score is strictly higher, it's Sinhala.
         if english_score > 0 and english_score >= singlish_score:
             return 'en'
         
         if singlish_score > 0:
             return 'si'
             
-        # Fallback: If no keywords found (e.g., "12345"), default to English
         return 'en'
 
     def process_query(self, query: str, patient_id: str = "default_patient", chat_history: List[Dict[str, str]] = []) -> Dict[str, Any]:
