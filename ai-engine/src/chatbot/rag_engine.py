@@ -57,11 +57,9 @@ class RAGEngine:
 
         # 2. BRIDGE LAYER (Pass chat_history!)
         english_query = query
-        is_sinhala = self.llm.sinhala_nlu.is_sinhala(query) if hasattr(self.llm, 'sinhala_nlu') else False # Or simple check
         
-        # Simple Sinhala Check if NLU not available
-        if not is_sinhala:
-             is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in query)
+        # Simple Sinhala Check using Unicode range
+        is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in query)
 
         if is_sinhala:
             print(f"🔄 Bridge: Translating '{query}'...")
