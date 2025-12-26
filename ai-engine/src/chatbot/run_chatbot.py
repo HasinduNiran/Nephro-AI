@@ -44,6 +44,7 @@ def main():
     print("-" * 70)
     
     current_mode = "text"
+    chat_history = [] # Initialize history
     
     while True:
         try:
@@ -97,15 +98,19 @@ def main():
             print("\n🤔 Thinking...")
             
             # Handle Sinhala Input (Text or Voice)
-            # Handle Sinhala Input (Text or Voice)
             if current_mode == "sinhala" or current_mode == "sinhala_voice":
                 print(f"🇱🇰 Analyzing Sinhala: '{query}'...")
-                # REMOVED: Redundant NLU translation. 
-                # The new LLMEngine "Bridge Layer" handles this better internally.
-                # We pass the raw Sinhala to process_query so the engine detects it.
             
-            result = chatbot.process_query(query)
+            # Pass History to RAG Engine
+            result = chatbot.process_query(query, chat_history=chat_history)
             response_text = result["response"]
+            
+            # Update History
+            chat_history.append({"role": "user", "content": query})
+            chat_history.append({"role": "assistant", "content": response_text})
+            # Limit to last 10 turns
+            if len(chat_history) > 10:
+                chat_history = chat_history[-10:]
             
             print("\n" + "="*50)
             print("🤖 NEPHRO-AI RESPONSE:")

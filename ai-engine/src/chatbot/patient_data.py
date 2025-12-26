@@ -31,6 +31,28 @@ class PatientDataManager:
                 },
                 "dietary_restrictions": ["Moderate Sodium", "Monitor Potassium"],
                 "last_updated": datetime.now().strftime("%Y-%m-%d") # Mock timestamp
+            },
+            "lasal": {
+                "id": "P002",
+                "name": "Lasal",
+                "age": 24,
+                "gender": "Male",
+                "district": "Anuradhapura",
+                "diagnosis": "High Risk (CKD Suspect)",
+                "stage": "Observation",
+                "egfr": 95, # Inferred Normal for Age 24
+                "comorbidities": ["Uncontrolled Hypertension", "Diabetes Mellitus"],
+                "medications": ["Metformin", "Losartan"],
+                "recent_labs": {
+                    "creatinine": 0.9, # Normal
+                    "potassium": 4.2,
+                    "sodium": 140,
+                    "calcium": 9.5,
+                    "phosphorus": 3.5,
+                    "albumin": 4.5
+                },
+                "dietary_restrictions": ["Low Sugar", "Low Salt"],
+                "last_updated": datetime.now().strftime("%Y-%m-%d")
             }
         }
     
