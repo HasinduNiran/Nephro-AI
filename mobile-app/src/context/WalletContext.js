@@ -72,7 +72,7 @@ export const WalletProvider = ({ children }) => {
   };
 
   // Add nutrients to wallet (when meal is consumed)
-  const addNutrients = (nutrients) => {
+  const addNutrients = async (nutrients) => {
     console.log('➕ [WalletContext] Adding nutrients:', JSON.stringify(nutrients, null, 2));
     console.log('➕ [WalletContext] Current wallet:', JSON.stringify(wallet, null, 2));
     
@@ -84,7 +84,8 @@ export const WalletProvider = ({ children }) => {
     };
     
     console.log('➕ [WalletContext] New wallet:', JSON.stringify(newWallet, null, 2));
-    saveWallet(newWallet);
+    await saveWallet(newWallet);
+    console.log('✅ [WalletContext] Nutrients added and saved');
   };
 
   // Reset wallet (start new day)
@@ -135,6 +136,7 @@ export const WalletProvider = ({ children }) => {
     wallet,
     ckdStage,
     limits: getLimits(),
+    getLimits,
     addNutrients,
     resetWallet,
     updateStage,

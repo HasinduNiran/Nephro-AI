@@ -3,25 +3,75 @@ const router = express.Router();
 const multer = require('multer');
 const axios = require('axios');
 const FormData = require('form-data');
-const { foodDatabase } = require('../mealPlate/foodData');
+const { foodDatabase } = require('../mealPlate/foodData'); 
 const NutrientWallet = require('../models/NutrientWallet');
 const { getCKDLimits } = require('../utils/nutrientLimits'); 
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-// HELPER: Get today's date "YYYY-MM-DD"
+// --- 1. FOOD MAPPING DICTIONARY (The Translator) ---
+// LEFT: The Class Name your AI Model detects
+// RIGHT: The exact Key in your foodData.js
+const foodMapping = {
+    // Typos & Exact Fixes
+    "pieapple": "pineapple",       
+    "avacado": "avacado", 
+
+    // Name Translations (AI Name -> DB Name)
+    "coconut_sambol": "Pol sambol", 
+    "coconut_roti": "roti",         
+    "fish": "fish curry",           
+    "dahl_curry": "dahl curry",     
+    "food": null, // Too generic, ignore
+    
+    // Underscore & Case Normalization
+    "beans_curry": "Beans curry",
+    "fried_rice": "fried rice",
+    "white_rice": "white rice",
+    "red_rice": "red rice",
+    "tempered_sprats": "tempered sprats",
+    "mallum": "mallum",
+    "beetroot": "beetroot",
+    "chicken": "chicken",
+    "cutlet": "cutlet"
+};
+
+// --- HELPER: SMART MATCHER ---
+// Tries to find the correct DB key using Mapping -> Direct -> Fuzzy
+const findFoodInDb = (aiName) => {
+    if (!aiName) return null;
+
+    // STEP 1: Check Manual Mapping (Fastest & most accurate)
+    if (foodMapping[aiName]) {
+        return foodMapping[aiName];
+    }
+
+    // STEP 2: Try Direct Match (e.g. "pineapple" == "pineapple")
+    if (foodDatabase[aiName]) return aiName;
+
+    // STEP 3: Try Fuzzy Match (Ignore case & underscores)
+    // "Beans_Curry" -> "beanscurry" vs "Beans curry" -> "beanscurry"
+    const normalize = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const aiNormalized = normalize(aiName);
+
+    const dbKeys = Object.keys(foodDatabase);
+    const match = dbKeys.find(key => normalize(key) === aiNormalized);
+
+    // Return match if found, otherwise return the original AI name (fallback)
+    return match || aiName;
+};
+
+// --- HELPER: GET DATE ---
 const getTodayDate = () => new Date().toISOString().split('T')[0];
 
-// HELPER: Get or Create Wallet
+// --- HELPER: GET/CREATE WALLET ---
 const getWallet = async (userId) => {
     const today = getTodayDate();
     let wallet = await NutrientWallet.findOne({ userId, date: today });
 
     if (!wallet) {
-        // --- HARDCODED STAGE (For now) ---
-        // Later, fetch this from User Profile: const user = await User.findById(userId);
+        // Default to Stage 3 limits (Hardcoded for now)
         const currentStage = 3; 
-        
         const dailyLimits = getCKDLimits(currentStage);
 
         wallet = new NutrientWallet({
@@ -45,19 +95,27 @@ router.post('/detect', upload.single('image'), async (req, res) => {
         const form = new FormData();
         form.append('image', req.file.buffer, 'meal.jpg');
 
-        // Call Python AI
+        // Call AI Engine
+        console.log("🔍 Sending image to AI...");
         const aiResponse = await axios.post('http://127.0.0.1:5001/predict_meal', form, {
             headers: { ...form.getHeaders() }
         });
 
-        const detectedNames = aiResponse.data.foods || [];
+        const rawDetectedNames = aiResponse.data.foods || [];
+        console.log("🔍 AI Detected (Raw):", rawDetectedNames);
 
-        // Attach Unit Options
-        const results = detectedNames.map(foodName => {
-            const data = foodDatabase[foodName];
+        // --- MAP RESULTS ---
+        const results = rawDetectedNames.map(rawName => {
+            // Find the correct DB key using our Helper
+            const dbKey = findFoodInDb(rawName);
+            const data = foodDatabase[dbKey];
+
+            console.log(`🔹 Mapping: "${rawName}" -> "${dbKey}" | Units found: ${!!data}`);
+
             return {
-                food: foodName,
-                availableUnits: data ? Object.keys(data.units) : ['grams'] 
+                food: dbKey, // Send the Corrected Name to Frontend
+                // Send the custom units (e.g. ['tbsp', 'small_piece']) or default to grams
+                availableUnits: data ? Object.keys(data.units) : ['grams']
             };
         });
 
@@ -70,7 +128,7 @@ router.post('/detect', upload.single('image'), async (req, res) => {
 });
 
 // ---------------------------------------------------------
-// ROUTE 2: CALCULATE & CHECK SAFETY
+// ROUTE 2: CALCULATE & CONFIRM MEAL
 // ---------------------------------------------------------
 router.post('/confirm-meal', async (req, res) => {
     const { userId, items, confirm } = req.body; 
@@ -80,15 +138,16 @@ router.post('/confirm-meal', async (req, res) => {
     let mealNutrients = { sodium: 0, potassium: 0, phosphorus: 0, protein: 0 };
     let breakdown = [];
 
-    // 1. Calculate Nutrition for THIS Meal
     items.forEach(item => {
         const foodEntry = foodDatabase[item.food];
+        
         if (foodEntry) {
-            // Formula: Unit Weight * Amount
+            // Get weight for the selected unit (e.g. 'small_piece' -> 50g)
             const unitWeight = foodEntry.units[item.unit] || 0;
+            // Total grams = unit weight * quantity (e.g. 50g * 2 = 100g)
             const totalGrams = unitWeight * parseFloat(item.amount);
             
-            // Nutrients are per 100g in DB
+            // Nutrients are stored per 100g in DB
             const n = foodEntry.nutrients;
             
             const s = (n.sodium * totalGrams) / 100;
@@ -105,14 +164,14 @@ router.post('/confirm-meal', async (req, res) => {
                 food: item.food,
                 details: `${item.amount} ${item.unit} (${totalGrams}g) : ${k.toFixed(0)}mg K+, ${s.toFixed(0)}mg Na`
             });
+        } else {
+             breakdown.push({ food: item.food, details: "Nutrient info not available" });
         }
     });
 
     try {
-        // 2. Fetch Wallet (Current Consumption)
         const wallet = await getWallet(userId);
 
-        // 3. Calculate Projected Total (Already Eaten + This Meal)
         const projected = {
             sodium: wallet.consumed.sodium + mealNutrients.sodium,
             potassium: wallet.consumed.potassium + mealNutrients.potassium,
@@ -120,7 +179,6 @@ router.post('/confirm-meal', async (req, res) => {
             protein: wallet.consumed.protein + mealNutrients.protein
         };
 
-        // 4. Check Safety against DAILY LIMITS
         let isSafe = true;
         let warnings = [];
 
@@ -129,7 +187,6 @@ router.post('/confirm-meal', async (req, res) => {
                 isSafe = false;
                 warnings.push(`❌ ${name} exceeded! (${total.toFixed(0)}/${limit})`);
             } else if (total > (limit * 0.85)) {
-                // Warning if > 85% of limit
                 warnings.push(`⚠️ ${name} is getting high (${total.toFixed(0)}/${limit})`);
             }
         };
@@ -139,7 +196,6 @@ router.post('/confirm-meal', async (req, res) => {
         checkLimit("Phosphorus", projected.phosphorus, wallet.limits.phosphorus);
         checkLimit("Protein", projected.protein, wallet.limits.protein);
 
-        // 5. Update DB (Only if user clicks "Confirm & Eat")
         if (confirm === true) {
             wallet.consumed.sodium = projected.sodium;
             wallet.consumed.potassium = projected.potassium;
@@ -161,7 +217,9 @@ router.post('/confirm-meal', async (req, res) => {
     }
 });
 
-// ROUTE 3: DASHBOARD STATUS
+// ---------------------------------------------------------
+// ROUTE 3: STATUS (For Dashboard)
+// ---------------------------------------------------------
 router.get('/status/:userId', async (req, res) => {
     try {
         const wallet = await getWallet(req.params.userId);
