@@ -10,7 +10,6 @@ import { useWallet } from '../context/WalletContext';
 import { Ionicons } from '@expo/vector-icons'; 
 
 // --- LOCAL DATABASE ---
-// This acts as a fallback and search source for foods
 const foodNutrientDB = {
   "avacado": { protein: 2, sodium: 7, potassium: 485, phosphorus: 52, units: { "whole_fruit": 200, "half_fruit": 100, "tbsp": 15 } },
   "Beans curry": { protein: 2, sodium: 200, potassium: 250, phosphorus: 40, units: { "tbsp": 15 } },
@@ -37,14 +36,11 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
 
-  // --- TRACK IF SCAN HAS HAPPENED ---
-  const [hasScanned, setHasScanned] = useState(false); 
-
-  // --- SEARCH STATE ---
+  const [showGuidelines, setShowGuidelines] = useState(false);
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [hasScanned, setHasScanned] = useState(false); 
 
-  // --- 1. LOAD USER ID ---
   useEffect(() => {
     const loadUserId = async () => {
       if (!userId) {
@@ -65,7 +61,18 @@ const MealAnalysisScreen = ({ route, navigation }) => {
     loadUserId();
   }, []);
 
-  // --- 2. CAMERA & GALLERY ---
+  const handleCameraPress = () => {
+    setShowGuidelines(true);
+  };
+
+  const confirmAndOpenCamera = () => {
+    setShowGuidelines(false);
+    setTimeout(() => {
+        pickImageCamera();
+    }, 300);
+  };
+
+  // --- CAMERA & GALLERY ---
   const pickImageCamera = async () => {
     try {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -108,12 +115,12 @@ const MealAnalysisScreen = ({ route, navigation }) => {
     }
   };
 
-  // --- 3. BACKEND DETECTION ---
+  // --- DETECT ---
   const detectFoods = async (uri) => {
     setLoading(true);
     setAnalysisResult(null); 
     setItems([]); 
-    setHasScanned(false); // Reset while loading
+    setHasScanned(false); 
 
     const formData = new FormData();
     formData.append('image', {
@@ -131,7 +138,6 @@ const MealAnalysisScreen = ({ route, navigation }) => {
 
       const initialItems = detectedData.map((item) => {
         let units = item.availableUnits || [];
-        // Fallback logic if backend didn't find units
         if (!units || units.length === 0 || (units.length === 1 && units[0] === 'grams')) {
           const localFood = foodNutrientDB[item.food];
           if (localFood && localFood.units) {
@@ -160,11 +166,11 @@ const MealAnalysisScreen = ({ route, navigation }) => {
       Alert.alert("Error", "Could not analyze the image. You can add food manually.");
     } finally {
       setLoading(false);
-      setHasScanned(true); // <--- SHOW "ADD FOOD" BUTTON NOW
+      setHasScanned(true);
     }
   };
 
-  // --- 4. CALCULATION & SAFETY ---
+  // --- CALCULATE ---
   const calculateMealNutrients = () => {
     let totalNutrients = { sodium: 0, potassium: 0, phosphorus: 0, protein: 0 };
     let breakdown = [];
@@ -198,6 +204,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
     return { totalNutrients, breakdown };
   };
 
+  // --- SAVE ---
   const handleAnalyze = async (confirm = false) => {
     if (items.length === 0) {
       Alert.alert("Error", "No food items to analyze. Please add a food.");
@@ -228,7 +235,28 @@ const MealAnalysisScreen = ({ route, navigation }) => {
 
     if (confirm) {
       await addNutrients(totalNutrients);
-      Alert.alert("Success ✅", "Meal confirmed!", [{ text: "OK", onPress: () => navigation.goBack() }]);
+
+      if (userId && userId !== 'temp_user_001') {
+          try {
+              console.log("💾 Saving to history...");
+              await axios.post('/mealPlate/save-meal', {
+                  userId: userId,
+                  items: items.map(i => ({
+                      food: i.food,
+                      amount: i.amount,
+                      unit: i.unit,
+                      grams: breakdown.find(b => b.food === i.food)?.grams || 0
+                  })),
+                  totalNutrients: totalNutrients,
+                  date: new Date().toISOString().split('T')[0]
+              });
+              console.log("✅ History saved!");
+          } catch (saveError) {
+              console.error("Failed to save history:", saveError);
+          }
+      }
+
+      Alert.alert("Success ✅", "Meal confirmed and saved!", [{ text: "OK", onPress: () => navigation.goBack() }]);
     } else {
       setAnalysisResult({
         isSafe: safetyCheck.safe && isSafe,
@@ -250,7 +278,6 @@ const MealAnalysisScreen = ({ route, navigation }) => {
     }
   };
 
-  // --- 5. ITEM MANAGEMENT (Edit/Delete/Add) ---
   const updateRow = (index, field, value) => {
     const updated = [...items];
     updated[index][field] = value;
@@ -305,7 +332,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         )}
 
         <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.scanBtn} onPress={pickImageCamera} disabled={loading}>
+            <TouchableOpacity style={styles.scanBtn} onPress={handleCameraPress} disabled={loading}>
               {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>📸 Camera</Text>}
             </TouchableOpacity>
 
@@ -314,14 +341,12 @@ const MealAnalysisScreen = ({ route, navigation }) => {
             </TouchableOpacity>
         </View>
 
-        {/* --- ADD FOOD BUTTON (Visible only after scan) --- */}
         {hasScanned && (
             <TouchableOpacity style={styles.addFoodBtn} onPress={() => setSearchModalVisible(true)}>
                 <Text style={styles.addFoodText}>+ Add Food Manually</Text>
             </TouchableOpacity>
         )}
 
-        {/* --- LIST OF FOODS --- */}
         {items.length > 0 && (
           <View style={styles.listContainer}>
               <Text style={styles.subHeader}>Verify Portions:</Text>
@@ -329,7 +354,6 @@ const MealAnalysisScreen = ({ route, navigation }) => {
               {items.map((item, index) => (
                   <View key={index} style={styles.row}>
                       <Text style={styles.foodLabel}>{item.food}</Text>
-                      
                       <TextInput
                           style={styles.input}
                           keyboardType="numeric"
@@ -337,7 +361,6 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                           onChangeText={(text) => updateRow(index, 'amount', text)}
                           placeholder="Qty"
                       />
-
                       <View style={styles.pickerContainer}>
                           <Picker
                               selectedValue={item.unit}
@@ -349,7 +372,6 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                               ))}
                           </Picker>
                       </View>
-
                       <TouchableOpacity onPress={() => removeItem(index)} style={styles.trashBtn}>
                           <Ionicons name="trash-outline" size={24} color="#dc3545" />
                       </TouchableOpacity>
@@ -362,7 +384,6 @@ const MealAnalysisScreen = ({ route, navigation }) => {
           </View>
         )}
 
-        {/* --- RESULTS BOX --- */}
         {analysisResult && (
           <View style={[styles.resultBox, analysisResult.isSafe ? styles.safe : styles.unsafe]}>
               <Text style={styles.resultTitle}>
@@ -387,13 +408,86 @@ const MealAnalysisScreen = ({ route, navigation }) => {
               )}
 
               <View style={styles.divider} />
-
               <TouchableOpacity style={styles.eatBtn} onPress={() => handleAnalyze(true)}>
                   <Text style={styles.btnText}>Confirm & Eat</Text>
               </TouchableOpacity>
           </View>
         )}
       </ScrollView>
+
+      {/* --- PROTOCOL MODAL (UPDATED) --- */}
+      <Modal
+        visible={showGuidelines}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowGuidelines(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.guidelineBox}>
+            <Text style={styles.guideTitle}>📸 Photo Instructions</Text>
+            
+            {/* STEP 1: SEPARATION */}
+            <Text style={styles.sectionTitle}>1. Food Arrangement</Text>
+            <View style={styles.guideRow}>
+              {/* Bad Example */}
+              <View style={styles.guideItem}>
+                <View style={[styles.plateCircle, {backgroundColor: '#ffe6e6', borderColor: '#ffcccc'}]}>
+                    <View style={styles.pileOfFood}>
+                        <Ionicons name="alert-circle" size={40} color="#ff4d4d" />
+                    </View>
+                </View>
+                <Text style={styles.badLabel}>Don't Pile</Text>
+                <Text style={styles.guideDesc}>We can't see food hidden under curry.</Text>
+              </View>
+
+              {/* Good Example */}
+              <View style={styles.guideItem}>
+                <View style={[styles.plateCircle, {backgroundColor: '#e6fffa', borderColor: '#ccffeb'}]}>
+                    <View style={{flexDirection:'row'}}>
+                        <View style={[styles.miniFood, {backgroundColor:'#ddd'}]} /> 
+                        <View style={[styles.miniFood, {backgroundColor:'#ffb366'}]} />
+                    </View>
+                </View>
+                <Text style={styles.goodLabel}>Spread Out</Text>
+                <Text style={styles.guideDesc}>Serve items side-by-side.</Text>
+              </View>
+            </View>
+
+            <View style={styles.dividerLight} />
+
+            {/* STEP 2: CAMERA ANGLE */}
+            <Text style={styles.sectionTitle}>2. Camera Angle</Text>
+            <View style={styles.guideRow}>
+              {/* Bad Angle */}
+              <View style={styles.guideItem}>
+                 <Ionicons name="phone-portrait-outline" size={40} color="#dc3545" style={{transform: [{rotate: '45deg'}]}} />
+                 <Text style={styles.badLabel}>Side View ❌</Text>
+                 <Text style={styles.guideDesc}>Don't shoot from the side.</Text>
+              </View>
+
+              {/* Good Angle */}
+              <View style={styles.guideItem}>
+                 <View style={{borderWidth: 2, borderColor: '#28a745', padding: 5, borderRadius: 8}}>
+                    <Ionicons name="camera-outline" size={30} color="#28a745" />
+                 </View>
+                 <Text style={styles.goodLabel}>Top View ✅</Text>
+                 <Text style={styles.guideDesc}>Hold camera directly above plate.</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity 
+              style={styles.iUnderstandBtn} 
+              onPress={confirmAndOpenCamera}
+            >
+              <Text style={styles.btnText}>I Understand, Open Camera</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setShowGuidelines(false)}>
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* --- SEARCH MODAL --- */}
       <Modal
@@ -409,7 +503,6 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                     <Ionicons name="close" size={28} color="#333" />
                 </TouchableOpacity>
             </View>
-
             <TextInput
                 style={styles.searchInput}
                 placeholder="Type food name (e.g. rice)..."
@@ -417,7 +510,6 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                 onChangeText={setSearchText}
                 autoFocus={true}
             />
-
             <FlatList
                 data={filteredFoods}
                 keyExtractor={(item) => item}
@@ -447,11 +539,8 @@ const styles = StyleSheet.create({
   checkBtn: { backgroundColor: '#6c757d', padding: 15, borderRadius: 8, alignItems: 'center', marginTop: 10 },
   eatBtn: { backgroundColor: '#28a745', padding: 15, borderRadius: 8, alignItems: 'center', marginTop: 15 },
   btnText: { color: 'white', fontSize: 16, fontWeight: 'bold' },
-  
-  // Add Food Button
   addFoodBtn: { backgroundColor: '#E7F9EE', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 5, marginBottom: 15, borderWidth: 1, borderColor: '#28a745' },
   addFoodText: { color: '#28a745', fontSize: 16, fontWeight: '600' },
-
   listContainer: { marginTop: 10 },
   row: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, borderWidth: 1, borderColor: '#eee', padding: 5, borderRadius: 8 },
   foodLabel: { flex: 1.5, fontSize: 16, fontWeight: '500', paddingLeft: 5, textTransform: 'capitalize' }, 
@@ -459,7 +548,6 @@ const styles = StyleSheet.create({
   pickerContainer: { flex: 1.7, borderWidth: 1, borderColor: '#ccc', borderRadius: 5 },
   picker: { height: 50, width: '100%' },
   trashBtn: { marginLeft: 10, padding: 5 },
-
   resultBox: { marginTop: 20, padding: 15, borderRadius: 10 },
   safe: { backgroundColor: '#d4edda', borderColor: '#c3e6cb', borderWidth: 1 },
   unsafe: { backgroundColor: '#f8d7da', borderColor: '#f5c6cb', borderWidth: 1 },
@@ -467,7 +555,88 @@ const styles = StyleSheet.create({
   detailText: { fontSize: 14, marginBottom: 4 },
   divider: { height: 1, backgroundColor: 'rgba(0,0,0,0.1)', marginVertical: 10 },
 
-  // Modal Styles
+  // --- IMPROVED MODAL STYLES ---
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  guidelineBox: {
+    width: '90%',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    elevation: 20,
+  },
+  guideTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#051C60',
+    textAlign: 'center'
+  },
+  sectionTitle: {
+    width: '100%',
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
+    marginTop: 5,
+    textAlign: 'left',
+    paddingLeft: 10
+  },
+  guideRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginBottom: 15,
+  },
+  guideItem: {
+    alignItems: 'center',
+    width: '45%',
+  },
+  plateCircle: {
+    width: 70, // Smaller to fit two rows
+    height: 70,
+    borderRadius: 35,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  pileOfFood: {
+    width: 40, height: 40, backgroundColor: '#ffcccc', borderRadius: 20, justifyContent: 'center', alignItems: 'center'
+  },
+  miniFood: {
+    width: 25, height: 25, borderRadius: 12, margin: 2
+  },
+  badLabel: { color: '#dc3545', fontWeight: 'bold', fontSize: 14, marginBottom: 2 },
+  goodLabel: { color: '#28a745', fontWeight: 'bold', fontSize: 14, marginBottom: 2 },
+  guideDesc: { textAlign: 'center', fontSize: 11, color: '#666', lineHeight: 14 },
+  
+  dividerLight: {
+    width: '100%', height: 1, backgroundColor: '#eee', marginVertical: 10
+  },
+
+  iUnderstandBtn: {
+    backgroundColor: '#007BFF',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    marginTop: 10,
+    marginBottom: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  cancelText: {
+    color: '#888',
+    fontSize: 14,
+    padding: 5
+  },
+
+  // Search Modal
   modalContainer: { flex: 1, padding: 20, paddingTop: 50, backgroundColor: '#fff' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#051C60' },
