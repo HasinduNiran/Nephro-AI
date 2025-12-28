@@ -120,17 +120,24 @@ class RAGEngine:
                     source_metadata.append(item['metadata'])
         
         print(f"   ↳ Found {len(context_documents)} documents ({t_retrieval_end - t_retrieval_start:.2f}s)")
-        if len(context_documents) > 0:
-            print(f"   ↳ Top Source: {source_metadata[0].get('fileName', 'Unknown')}")
 
-        # 5. GENERATE RESPONSE (Brain Layer)
+        # 5. RETRIEVE PATIENT DATA (WITH NEW LOGS)
+        # -----------------------------------------------------------------
+        patient_context = self.patient_data.get_patient_context_string(patient_id)
+        print(f"👤 PATIENT DATA: Loaded record for '{patient_id}'")
+        # Print a short preview of the medical data to confirm it's correct
+        preview = patient_context.replace('\n', ' ')[:100] 
+        print(f"   ↳ Context Preview: {preview}...")
+        # -----------------------------------------------------------------
+
+        # 6. GENERATE RESPONSE (Brain Layer)
         print("🧠 BRAIN: Generating Medical Response...")
         t_llm_start = time.time()
         
         llm_response = self.llm.generate_response(
             query=english_query, 
             context_documents=context_documents,
-            patient_context=self.patient_data.get_patient_context_string(patient_id),
+            patient_context=patient_context,
             history=chat_history 
         )
         t_llm_end = time.time()

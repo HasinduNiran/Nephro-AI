@@ -212,20 +212,20 @@ class LLMEngine:
             return text
 
     def translate_to_sinhala_fallback(self, text: str) -> str:
-        """[STYLE LAYER] Translates English to NATURAL SPOKEN Sinhala (Unicode)."""
-        print(f"⚠️ Style: Translating response to Sinhala Script...")
+        """[STYLE LAYER] Translates English to NATURAL SPOKEN Sinhala (Code-Mixed)."""
+        print(f"⚠️ Style: Translating response to Spoken Sinhala (Code-Mixed)...")
         
+        # We explicitly map complex concepts to simple spoken words
         dictionary = """
-        CRITICAL MEDICAL DICTIONARY:
-        - Kidney -> Wakkugadu (වකුගඩු)
+        VOCABULARY RULES:
         - Pain -> Ridenawa (රිදෙනවා) or Kakkuma (කැක්කුම)
         - Urine -> Muthra (මුත්‍රා)
-        - Blood -> Le (ලේ)
-        - Fever -> Una (උණ)
-        - Diabetes -> Diyawadiyawa (දියවැඩියාව)
         - Swelling -> Idimuma (ඉදිමුම)
+        - Fatigue -> Mahansiya (මහන්සිය)
+        - Vomiting -> Wamane (වමනය)
         - Doctor -> Dosthara (දොස්තර)
         - Medicine -> Beheth (බෙහෙත්)
+        - Kidney -> Wakkugadu (වකුගඩු)
         """
 
         headers = {
@@ -234,17 +234,39 @@ class LLMEngine:
             "Content-Type": "application/json"
         }
         
-        # 🚨 THE FIX: Explicitly demanding Sinhala Script (Unicode)
+        # 🚨 THE "GOLD STANDARD" PROMPT FOR SRI LANKAN DOCTORS
         system_prompt = (
-            "You are a Sri Lankan doctor. Translate the medical advice into **SPOKEN SINHALA (Katha Wahara)**.\n"
-            f"{dictionary}\n"
-            "⛔ CRITICAL RULES:\n"
-            "1. **OUTPUT MUST BE IN SINHALA SCRIPT (Unicode) ONLY.** (e.g., 'ඔයාට බෙහෙත් ගන්න වෙනවා')\n"
-            "2. **DO NOT** use Singlish/English letters (e.g., NO 'Oya beheth ganna').\n"
-            "3. Keep numbers in English (e.g., 120/80).\n"
-            "4. Keep Drug Names in English (e.g., Panadol).\n"
-            "5. Do NOT repeat sentences. Be direct and simple.\n"
-            "6. Use 'Oya' (ඔයා) instead of 'Oba' (ඔබ)."
+            "You are a Sri Lankan doctor speaking to a patient. Translate the advice into **CASUAL, SPOKEN SINHALA (Katha Wahara)**.\n"
+            f"{dictionary}\n\n"
+            
+            "⛔ RULE 1: ENGLISH MEDICAL TERMS (CODE-MIXING)\n"
+            "   - **DO NOT TRANSLATE** these terms: **Pressure, Sugar, Creatinine, eGFR, Cholesterol, Clinic, Report, Test, Scan, X-ray**.\n"
+            "   - Keep them in English and add Sinhala suffixes ('eka', 'walata', 'wala').\n"
+            "   - Example: 'Your blood pressure is high' -> 'Oyage Pressure eka wadi.'\n"
+            "   - Example: 'Check your sugar' -> 'Sugar check karaganna.'\n\n"
+
+            "⛔ RULE 2: FORBIDDEN FORMAL WORDS (LIKITHA WAHARA)\n"
+            "   - ❌ NO 'Oba' (ඔබ) -> ✅ Use 'Oya' (ඔයා)\n"
+            "   - ❌ NO 'Yuthuya/Sudusuya' (යුතුය) -> ✅ Use 'Ona' (ඕන) or 'Karanna' (කරන්න)\n"
+            "   - ❌ NO 'Awasanawanthai' -> ✅ Use 'Kanagatui' (කණගාටුයි)\n"
+            "   - ❌ NO 'Pathikada' -> ✅ Use 'Wisthara' (විස්තර)\n"
+            "   - ❌ NO 'Sakriya' -> ✅ Use 'Selakilimath' (සැලකිලිමත්)\n\n"
+
+            "💡 EXAMPLES (FEW-SHOT LEARNING):\n"
+            "   - Input: 'You must take your medication.'\n"
+            "     ❌ Bad: Oba beheth gatha yuthuya.\n"
+            "     ✅ Good: Oya beheth ganna ona.\n"
+            "   - Input: 'Your eGFR is low.'\n"
+            "     ❌ Bad: Obage eGFR agaya adu wee atha.\n"
+            "     ✅ Good: Oyage eGFR eka adu wela.\n"
+            "   - Input: 'Come to the clinic.'\n"
+            "     ❌ Bad: Sayanayata paminenna.\n"
+            "     ✅ Good: Clinic ekata enna.\n\n"
+
+            "⛔ FINAL OUTPUT FORMAT:\n"
+            "1. Use UNICODE SINHALA SCRIPT only (except for the English terms).\n"
+            "2. Use commas (,) frequently for breathing pauses.\n"
+            "3. NO Markdown bolding (**). Plain text only."
         )
         
         payload = {
@@ -253,14 +275,16 @@ class LLMEngine:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": text}
             ],
-            "temperature": 0.3 # Low temperature prevents hallucination loops
+            "temperature": 0.3 # Low temperature for consistency
         }
         
         try:
             response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
             if response.status_code == 200:
                 translation = response.json()['choices'][0]['message']['content'].strip()
-                print(f"✅ Style Output: {translation[:50]}...") # Log first 50 chars
+                # Clean up any Markdown that slips through
+                translation = translation.replace("**", "").replace("*", "")
+                print(f"✅ Style Output: {translation[:50]}...") 
                 return translation
         except Exception as e:
             print(f"❌ Style Layer Error: {e}")

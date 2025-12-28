@@ -59,8 +59,37 @@ const base64Decode = (str) => {
     buffer = chars.indexOf(buffer);
   }
 
-  return decodeURIComponent(escape(output));
+  // UTF-8 decode without using deprecated escape()
+  try {
+    // Convert the string to a byte array
+    const bytes = [];
+    for (let i = 0; i < output.length; i++) {
+      bytes.push(output.charCodeAt(i));
+    }
+    
+    // Decode UTF-8
+    let result = '';
+    let i = 0;
+    while (i < bytes.length) {
+      const c = bytes[i];
+      if (c < 128) {
+        result += String.fromCharCode(c);
+        i++;
+      } else if (c > 191 && c < 224) {
+        result += String.fromCharCode(((c & 31) << 6) | (bytes[i + 1] & 63));
+        i += 2;
+      } else {
+        result += String.fromCharCode(((c & 15) << 12) | ((bytes[i + 1] & 63) << 6) | (bytes[i + 2] & 63));
+        i += 3;
+      }
+    }
+    return result;
+  } catch (e) {
+    // Fallback to simple output if UTF-8 decoding fails
+    return output;
+  }
 };
+
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -151,7 +180,7 @@ const ChatbotScreen = ({ route, navigation }) => {
     const options = {
       language: isSinhala ? 'si-LK' : 'en-US', // Use the Google Voice code
       pitch: 1.0,
-      rate: isSinhala ? 0.9 : 1.0, // Slow down Sinhala slightly for clarity
+      rate: isSinhala ? 0.75 : 1.0, // 👈 CHANGED from 0.9 to 0.75 (Slower is clearer)
     };
 
     console.log(`🗣️ Speaking in ${isSinhala ? "SINHALA" : "ENGLISH"}...`);

@@ -4,6 +4,7 @@ import shutil
 import hashlib
 import base64
 import asyncio
+import re  # <--- NEW IMPORT FOR CLEANING TEXT
 from pathlib import Path
 import aiofiles  
 
@@ -71,22 +72,37 @@ def cleanup_file(path: str):
     except Exception as e:
         print(f"⚠️ Cleanup warning: {e}")
 
+def clean_text_for_tts(text: str) -> str:
+    """Removes Markdown symbols and unsupported characters."""
+    # Remove bold/italic markers (*, _)
+    text = re.sub(r'[\*_#]', '', text) 
+    # Remove markdown links [text](url) -> text
+    text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
+    # Remove emojis and unsupported chars (keep only Sinhala, English, numbers, punctuation)
+    text = re.sub(r'[^\w\s\u0D80-\u0DFF\.,\?!a-zA-Z0-9]', '', text)
+    return text
+
 async def generate_tts_file(text: str) -> Path:
+    """
+    Pure EdgeTTS Generator (No External GPU required)
+    """
+    # 0. CLEAN THE TEXT (Fixes 'Tharuwa' issue)
+    clean_text = clean_text_for_tts(text)
+
     # 1. Detect Language (Explicit Log)
-    # Check for Sinhala Unicode range
     is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in text)
     
-    print(f"🔊 TTS REQUEST: Length={len(text)} chars | Detected={'SINHALA' if is_sinhala else 'ENGLISH'}")
+    print(f"🔊 TTS REQUEST: Length={len(clean_text)} chars | Detected={'SINHALA' if is_sinhala else 'ENGLISH'}")
 
     # 2. Check Cache
-    file_hash = hashlib.md5(f"{text}_Edge".encode()).hexdigest()
+    file_hash = hashlib.md5(f"{clean_text}_Edge".encode()).hexdigest()
     output_path = Path("tts_cache") / f"{file_hash}.mp3"
     
     if output_path.exists():
         print(f"   ↳ ⚡ Serving Cached Audio")
         return output_path
 
-    # 3. Select Voice (Debug Log)
+    # 3. Select Voice
     if is_sinhala:
         voice = "si-LK-ThiliniNeural"
     else:
@@ -95,7 +111,8 @@ async def generate_tts_file(text: str) -> Path:
     print(f"   ↳ Generating new audio using voice: [{voice}]")
     
     try:
-        communicate = edge_tts.Communicate(text, voice)
+        # Send CLEAN text to TTS
+        communicate = edge_tts.Communicate(clean_text, voice)
         await communicate.save(str(output_path))
         print(f"   ✅ TTS Generation Successful")
     except Exception as e:
