@@ -168,23 +168,23 @@ const ChatbotScreen = ({ route, navigation }) => {
 
   // 👇 [NEW] The Magic TTS Function
   const speakResponse = (text) => {
-    // 1. Stop any current speech so they don't overlap
     Speech.stop();
-
     if (!text) return;
 
-    // 2. Detect if the text is Sinhala (Checks for Sinhala Unicode characters)
+    // Clean text before speaking (Remove * and # visually for the speech engine)
+    const cleanText = text.replace(/[*#]/g, '');
+
     const isSinhala = /[\u0D80-\u0DFF]/.test(text);
 
-    // 3. Configure options based on language
     const options = {
-      language: isSinhala ? 'si-LK' : 'en-US', // Use the Google Voice code
+      language: isSinhala ? 'si-LK' : 'en-US',
       pitch: 1.0,
-      rate: isSinhala ? 0.75 : 1.0, // 👈 CHANGED from 0.9 to 0.75 (Slower is clearer)
+      // 👇 CHANGED: Increased from 0.75 to 0.9 (Faster but clear)
+      rate: isSinhala ? 0.9 : 1.0, 
     };
 
     console.log(`🗣️ Speaking in ${isSinhala ? "SINHALA" : "ENGLISH"}...`);
-    Speech.speak(text, options);
+    Speech.speak(cleanText, options);
   };
 
   // Pulse animation for recording
@@ -370,11 +370,19 @@ const ChatbotScreen = ({ route, navigation }) => {
 
     try {
       console.log("Uploading audio to:", `${BACKEND_URL}/chat/audio`);
+      console.log("Patient ID:", userID || "default_patient");
+      
+      // Create an AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
       
       const response = await fetch(`${BACKEND_URL}/chat/audio`, {
         method: 'POST',
-        body: formData, 
+        body: formData,
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`Server Error: ${response.status}`);
