@@ -57,7 +57,9 @@ const COLORS = {
   overlay: "rgba(0,0,0,0.5)",
 };
 
-const ChatbotScreen = ({ navigation }) => {
+const ChatbotScreen = ({ route, navigation }) => {
+  const { userID, userName } = route.params || {}; // Validate params exist
+  console.log("Chatbot Initialized for:", { userID, userName }); // Debug log
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([
     {
@@ -321,7 +323,7 @@ const ChatbotScreen = ({ navigation }) => {
       type: Platform.OS === "ios" ? "audio/m4a" : "audio/mp4",
       name: "voice_input.m4a",
     });
-    formData.append("patient_id", "p_001");
+    formData.append("patient_id", userID || "default_patient");
 
     const userMsgId = Date.now().toString();
     setMessages((prev) => [
@@ -473,7 +475,7 @@ const ChatbotScreen = ({ navigation }) => {
     try {
       const res = await axios.post(`${BACKEND_URL}/chat/text`, {
         text: text,
-        patient_id: "p_001",
+        patient_id: userID || "default_patient",
       });
 
       setMessages((prev) => [

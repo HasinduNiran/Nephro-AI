@@ -131,6 +131,7 @@ def health_check():
 @app.post("/api/chat/text")
 async def text_chat(request: ChatRequest):
     patient_id = request.patient_id
+    print(f"📨 Server received request for Patient ID: '{patient_id}'")
     
     # Retrieve THIS patient's history (default to empty list if new)
     user_history = SESSIONS.get(patient_id, [])

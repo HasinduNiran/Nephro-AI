@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 const HomeScreen = ({ navigation, route }) => {
   const userName = route.params?.userName || "User";
+  const userID = route.params?.userID; // Capture the passed userID
 
   const getInitials = (name) => {
     if (!name) return "U";
@@ -53,7 +54,8 @@ const HomeScreen = ({ navigation, route }) => {
       subtitle: "Chat & Support",
       icon: "chatbubbles",
       color: "#9013FE", // Purple
-      onPress: () => navigation.navigate("Chatbot"),
+      // Pass the User ID to the Chatbot Screen
+      onPress: () => navigation.navigate("Chatbot", { userID, userName }),
     },
   ];
 
