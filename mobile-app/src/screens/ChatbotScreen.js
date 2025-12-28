@@ -38,6 +38,30 @@ import * as Speech from 'expo-speech';
 // NEW (USB Tunneling)
 const BACKEND_URL = "http://10.143.248.166:8001";
 
+// Custom base64 decode for React Native (atob polyfill)
+const base64Decode = (str) => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+  let output = '';
+
+  str = String(str).replace(/=+$/, '');
+
+  if (str.length % 4 === 1) {
+    throw new Error("'atob' failed: The string to be decoded is not correctly encoded.");
+  }
+
+  for (
+    let bc = 0, bs, buffer, idx = 0;
+    (buffer = str.charAt(idx++));
+    ~buffer && ((bs = bc % 4 ? bs * 64 + buffer : buffer), bc++ % 4)
+      ? (output += String.fromCharCode(255 & (bs >> ((-2 * bc) & 6))))
+      : 0
+  ) {
+    buffer = chars.indexOf(buffer);
+  }
+
+  return decodeURIComponent(escape(output));
+};
+
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const COLORS = {
@@ -335,14 +359,17 @@ const ChatbotScreen = ({ route, navigation }) => {
       let sourcesText = "";
 
       try {
-        if (b64ResponseText)
-          responseText = decodeURIComponent(
-            escape(window.atob(b64ResponseText))
-          );
-        if (b64Sources)
-          sourcesText = decodeURIComponent(escape(window.atob(b64Sources)));
+        if (b64ResponseText) {
+          responseText = base64Decode(b64ResponseText);
+        }
+        if (b64Sources) {
+          sourcesText = base64Decode(b64Sources);
+        }
       } catch (e) {
         console.log("Error decoding headers", e);
+        // Fallback: try to use the base64 string directly
+        if (b64ResponseText) responseText = b64ResponseText;
+        if (b64Sources) sourcesText = b64Sources;
       }
 
       // 👇 [UPDATED] Ignore server audio file. Speak text directly on phone.
