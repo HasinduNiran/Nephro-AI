@@ -83,31 +83,29 @@ class RAGEngine:
         return 'en'
 
     def process_query(self, query: str, patient_id: str = "default_patient", chat_history: List[Dict[str, str]] = []) -> Dict[str, Any]:
-        """
-        Process a user query through the full RAG pipeline
-        """
+        print("\n" + "="*50)
+        print(f"🚀 PROCESSING QUERY: '{query}'")
+        print("="*50)
+
         # 1. CHECK CACHE
         cache_key = self.get_cache_key(query, patient_id)
         if cache_key in self.cache:
-            print(f"⚡ CACHE HIT: Serving instant response for '{query}'")
+            print(f"⚡ CACHE HIT")
             return self.cache[cache_key]
 
-        # 2. DETERMINE OUTPUT LANGUAGE (Robust Check)
+        # 2. DETERMINE OUTPUT LANGUAGE
         target_lang = self._detect_output_language(query)
-        print(f"🌍 Detected Output Language: {'SINHALA' if target_lang == 'si' else 'ENGLISH'}")
+        print(f"🌍 LANGUAGE DETECTED: {'SINHALA' if target_lang == 'si' else 'ENGLISH'}")
 
-        # 3. BRIDGE LAYER
+        # 3. BRIDGE LAYER (Translation)
         english_query = query
-        
-        # Only translate if we detected Sinhala (Unicode) or Singlish
         if target_lang == 'si':
-            print(f"🔄 Bridge: Translating '{query}'...")
+            print(f"🔄 BRIDGE: Translating Input...")
             english_query = self.llm.translate_to_english(query, chat_history) 
-            print(f"✅ Bridge Output: {english_query}")
+            print(f"   ↳ Result: '{english_query}'")
 
-        # 4. Retrieve Patient Context & Knowledge
-        patient_context = self.patient_data.get_patient_context_string(patient_id)
-        
+        # 4. RAG RETRIEVAL
+        print(f"📡 RAG: Searching Knowledge Base...")
         t_retrieval_start = time.time()
         search_results = self.vector_db.query_with_nlu(english_query)
         t_retrieval_end = time.time()
@@ -121,44 +119,44 @@ class RAGEngine:
                 if item.get('metadata'):
                     source_metadata.append(item['metadata'])
         
-        # 5. Generate Response with LLM (Always in English first)
-        print("🧠 Generating response with LLM...")
+        print(f"   ↳ Found {len(context_documents)} documents ({t_retrieval_end - t_retrieval_start:.2f}s)")
+        if len(context_documents) > 0:
+            print(f"   ↳ Top Source: {source_metadata[0].get('fileName', 'Unknown')}")
+
+        # 5. GENERATE RESPONSE (Brain Layer)
+        print("🧠 BRAIN: Generating Medical Response...")
         t_llm_start = time.time()
         
         llm_response = self.llm.generate_response(
-            query=english_query, # Use the English version here!
+            query=english_query, 
             context_documents=context_documents,
-            patient_context=patient_context,
+            patient_context=self.patient_data.get_patient_context_string(patient_id),
             history=chat_history 
         )
         t_llm_end = time.time()
+        print(f"   ↳ Generated ({t_llm_end - t_llm_start:.2f}s): {llm_response[:50]}...")
 
-        # 6. STYLE LAYER (The Final Decision)
+        # 6. STYLE LAYER (Translation Back)
         final_response = llm_response
         
         if target_lang == 'si':
-            print(f"⚠️ Style: Translating response to Sinhala...")
+            print(f"🎨 STYLE: Translating Output to Sinhala...")
             final_response = self.llm.translate_to_sinhala_fallback(llm_response)
-            print(f"✅ Style Output: {final_response}")
+            # LOG THE RESULT TO CATCH GIBBERISH
+            print(f"   ↳ Final Sinhala: {final_response[:100]}...") 
         else:
-            print("ℹ️ Query was English. Skipping Style Layer.")
+            print("ℹ️ STYLE: Skipped (English Mode)")
         
         response_payload = {
             "response": final_response,
             "source_documents": context_documents[:3],
             "source_metadata": source_metadata[:3],
             "nlu_analysis": search_results.get("nlu_analysis", {}),
-            "timing": {
-                "retrieval": t_retrieval_end - t_retrieval_start,
-                "llm_generation": t_llm_end - t_llm_start
-            }
+            "target_lang": target_lang # <--- PASS THIS TO SERVER.PY FOR TTS
         }
         
-        # 7. SAVE TO CACHE
-        if "Error" not in llm_response and "trouble connecting" not in llm_response:
-            self.cache[cache_key] = response_payload
-        else:
-            print(f"⚠️ Network/LLM error detected. Not caching.")
+        self.cache[cache_key] = response_payload
+        print("="*50 + "\n")
         
         return response_payload
 

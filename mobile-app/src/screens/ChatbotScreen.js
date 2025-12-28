@@ -29,6 +29,9 @@ import axios from "axios";
 import * as Haptics from "expo-haptics";
 import Markdown from "react-native-markdown-display";
 
+// 👇 [NEW] Import Speech Library
+import * as Speech from 'expo-speech';
+
 // OLD (Wi-Fi IP)
 // const BACKEND_URL = "http://10.143.248.166:8000";
 
@@ -110,6 +113,27 @@ const ChatbotScreen = ({ route, navigation }) => {
     link: { color: COLORS.primary },
   };
 
+  // 👇 [NEW] The Magic TTS Function
+  const speakResponse = (text) => {
+    // 1. Stop any current speech so they don't overlap
+    Speech.stop();
+
+    if (!text) return;
+
+    // 2. Detect if the text is Sinhala (Checks for Sinhala Unicode characters)
+    const isSinhala = /[\u0D80-\u0DFF]/.test(text);
+
+    // 3. Configure options based on language
+    const options = {
+      language: isSinhala ? 'si-LK' : 'en-US', // Use the Google Voice code
+      pitch: 1.0,
+      rate: isSinhala ? 0.9 : 1.0, // Slow down Sinhala slightly for clarity
+    };
+
+    console.log(`🗣️ Speaking in ${isSinhala ? "SINHALA" : "ENGLISH"}...`);
+    Speech.speak(text, options);
+  };
+
   // Pulse animation for recording
   useEffect(() => {
     if (isRecording) {
@@ -132,61 +156,10 @@ const ChatbotScreen = ({ route, navigation }) => {
     }
   }, [isRecording]);
 
-  // Typing dots animation
-  useEffect(() => {
-    if (isLoading) {
-      const animateDots = () => {
-        Animated.loop(
-          Animated.stagger(150, [
-            Animated.sequence([
-              Animated.timing(dotAnim1, {
-                toValue: -8,
-                duration: 300,
-                useNativeDriver: true,
-              }),
-              Animated.timing(dotAnim1, {
-                toValue: 0,
-                duration: 300,
-                useNativeDriver: true,
-              }),
-            ]),
-            Animated.sequence([
-              Animated.timing(dotAnim2, {
-                toValue: -8,
-                duration: 300,
-                useNativeDriver: true,
-              }),
-              Animated.timing(dotAnim2, {
-                toValue: 0,
-                duration: 300,
-                useNativeDriver: true,
-              }),
-            ]),
-            Animated.sequence([
-              Animated.timing(dotAnim3, {
-                toValue: -8,
-                duration: 300,
-                useNativeDriver: true,
-              }),
-              Animated.timing(dotAnim3, {
-                toValue: 0,
-                duration: 300,
-                useNativeDriver: true,
-              }),
-            ]),
-          ])
-        ).start();
-      };
-      animateDots();
-    }
-  }, [isLoading]);
-
   // Dynamic Thinking Text Animation
   useEffect(() => {
     let interval;
     if (isLoading) {
-      // 1. Define the Reality Steps (Icon + Text)
-      
       // 🎙️ Sequence for Voice Input
       const audioSteps = [
         { text: "Listening to audio...", icon: "ear-hearing" },    // Ear Icon
@@ -276,6 +249,9 @@ const ChatbotScreen = ({ route, navigation }) => {
         await sound.unloadAsync();
         setSound(null);
       }
+      
+      // Stop any current speaking when recording starts
+      Speech.stop();
 
       console.log("Starting recording..");
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -311,7 +287,7 @@ const ChatbotScreen = ({ route, navigation }) => {
     await sendAudioToBackend(uri);
   };
 
-  // 4. API Logic: Upload Audio
+  // 4. API Logic: Upload Audio (UPDATED for Client-Side TTS)
   const sendAudioToBackend = async (uri) => {
     setIsLoading(true);
     setLoadingType('audio'); // Set type for animation
@@ -342,29 +318,23 @@ const ChatbotScreen = ({ route, navigation }) => {
     try {
       console.log("Uploading audio to:", `${BACKEND_URL}/chat/audio`);
       
-      // ✅ FIX: Use 'fetch' instead of 'axios' for reliable file uploads
       const response = await fetch(`${BACKEND_URL}/chat/audio`, {
         method: 'POST',
         body: formData, 
-        // Note: NO headers object. Fetch will automatically set Content-Type: multipart/form-data; boundary=...
       });
 
       if (!response.ok) {
         throw new Error(`Server Error: ${response.status}`);
       }
 
-      // Read headers
+      // Read headers for the text response
       const b64ResponseText = response.headers.get("x-response-b64");
       const b64Sources = response.headers.get("x-sources-b64");
       
-      // Get binary data
-      const arrayBuffer = await response.arrayBuffer();
-
       let responseText = "Audio Response";
       let sourcesText = "";
 
       try {
-        // Native Base64 Decode (Standard JS)
         if (b64ResponseText)
           responseText = decodeURIComponent(
             escape(window.atob(b64ResponseText))
@@ -375,27 +345,8 @@ const ChatbotScreen = ({ route, navigation }) => {
         console.log("Error decoding headers", e);
       }
 
-      const fileUri = FileSystem.documentDirectory + "response.mp3";
-
-      // 2. Convert Binary to Base64 (Using our safe helper)
-      const base64Data = arrayBufferToBase64(arrayBuffer);
-
-      // 3. Write to disk
-      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-
-      // 4. Verification
-      const fileInfo = await FileSystem.getInfoAsync(fileUri);
-      console.log("💾 Saved Audio File:", fileInfo);
-
-      if (fileInfo.size < 100) {
-        console.error("⚠️ Warning: Audio file is too small. Likely corrupted.");
-        Alert.alert("Audio Error", "Received empty audio from server.");
-        return;
-      }
-
-      playResponseAudio(fileUri);
+      // 👇 [UPDATED] Ignore server audio file. Speak text directly on phone.
+      speakResponse(responseText);
 
       setMessages((prev) => [
         ...prev,
@@ -404,7 +355,7 @@ const ChatbotScreen = ({ route, navigation }) => {
           text: responseText,
           sender: "bot",
           sources: sourcesText,
-          audioUri: fileUri,
+          // audioUri removed - we use native TTS
           timestamp: new Date().toLocaleTimeString("en-US", {
             hour: "2-digit",
             minute: "2-digit",
@@ -418,7 +369,6 @@ const ChatbotScreen = ({ route, navigation }) => {
         "Could not connect to chatbot server. Please check your connection."
       );
 
-      // Add error message to chat
       setMessages((prev) => [
         ...prev,
         {
@@ -438,22 +388,15 @@ const ChatbotScreen = ({ route, navigation }) => {
     }
   };
 
-  const playResponseAudio = async (uri) => {
-    try {
-      const { sound: newSound } = await Audio.Sound.createAsync({ uri });
-      setSound(newSound);
-      await newSound.playAsync();
-    } catch (error) {
-      console.log("Playback error", error);
-    }
-  };
-
-  // Text Chat Implementation
+  // Text Chat Implementation (UPDATED for Client-Side TTS)
   const sendTextMessage = async (textToSend) => {
     const text = textToSend?.text || textToSend || message;
     if (!text.trim()) return;
 
     if (!textToSend) setMessage(""); // Clear input if typed
+    
+    // Stop any previous speech
+    Speech.stop();
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     setMessages((prev) => [
@@ -477,12 +420,17 @@ const ChatbotScreen = ({ route, navigation }) => {
         text: text,
         patient_id: userID || "default_patient",
       });
+      
+      const botReply = res.data.response;
+
+      // 👇 [UPDATED] Speak text immediately!
+      speakResponse(botReply);
 
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
-          text: res.data.response,
+          text: botReply,
           sender: "bot",
           sources:
             res.data.sources && res.data.sources.length > 0
@@ -555,21 +503,21 @@ const ChatbotScreen = ({ route, navigation }) => {
             ) : (
               <View>
                 <Markdown style={markdownStyles}>{item.text}</Markdown>
-                {/* Audio Replay Button */}
-                {item.audioUri && (
-                  <TouchableOpacity
-                    style={styles.audioButton}
-                    onPress={() => playResponseAudio(item.audioUri)}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons
-                      name="play-circle"
-                      size={28}
-                      color={COLORS.primary}
-                    />
-                    <Text style={styles.audioText}>🔊 Play Response</Text>
-                  </TouchableOpacity>
-                )}
+                
+                {/* 👇 [UPDATED] Universal "Read Aloud" Button for ALL bot messages */}
+                <TouchableOpacity
+                  style={styles.audioButton}
+                  onPress={() => speakResponse(item.text)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name="volume-high"
+                    size={24}
+                    color={COLORS.primary}
+                  />
+                  <Text style={styles.audioText}>Read Aloud</Text>
+                </TouchableOpacity>
+
               </View>
             )}
 
@@ -692,18 +640,14 @@ const ChatbotScreen = ({ route, navigation }) => {
                   styles.typingBubble,
                 ]}
               >
-                  {/* Replaced old typing indicator with Dynamic Status */}
-                  {/* Replaced old typing indicator with Dynamic Status */}
+                  {/* Dynamic Loading Status */}
                   <View style={styles.loadingContainer}>
-                    {/* 🌟 DYNAMIC ICON: Changes based on the current step */}
                     <MaterialCommunityIcons 
                       name={loadingStep.icon} 
                       size={34} 
                       color={COLORS.primary} 
-                      style={{ marginBottom: 0 }} // Zero because flex-row handles layout in container style
+                      style={{ marginBottom: 0 }} 
                     />
-                    
-                    {/* 🌟 DYNAMIC TEXT */}
                     <Text style={styles.loadingText}>{loadingStep.text}</Text>
                   </View>
               </View>
@@ -840,6 +784,8 @@ const ChatbotScreen = ({ route, navigation }) => {
     </SafeAreaView>
   );
 };
+
+// ... (Styles remain unchanged, paste your previous styles here) ...
 
 const styles = StyleSheet.create({
   container: {
@@ -1356,7 +1302,7 @@ const styles = StyleSheet.create({
 
 export default ChatbotScreen;
 
-// Helper: Convert ArrayBuffer to Base64
+// Helper: Convert ArrayBuffer to Base64 (Can keep just in case, or remove if unused)
 const arrayBufferToBase64 = (buffer) => {
   let binary = "";
   const bytes = new Uint8Array(buffer);

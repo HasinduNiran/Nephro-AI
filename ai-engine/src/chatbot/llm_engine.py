@@ -212,24 +212,20 @@ class LLMEngine:
             return text
 
     def translate_to_sinhala_fallback(self, text: str) -> str:
-        """[STYLE LAYER] Translates English to NATURAL SPOKEN Sinhala (Katha Wahara)."""
-        print(f"⚠️ Style: Translating response to Spoken Sinhala...")
+        """[STYLE LAYER] Translates English to NATURAL SPOKEN Sinhala (Unicode)."""
+        print(f"⚠️ Style: Translating response to Sinhala Script...")
         
-        # 1. DEFINE THE OUTPUT DICTIONARY (English -> Sinhala)
         dictionary = """
         CRITICAL MEDICAL DICTIONARY:
-        - Stomach -> Bada (බඩ)
         - Kidney -> Wakkugadu (වකුගඩු)
         - Pain -> Ridenawa (රිදෙනවා) or Kakkuma (කැක්කුම)
         - Urine -> Muthra (මුත්‍රා)
         - Blood -> Le (ලේ)
         - Fever -> Una (උණ)
-        - Vomiting -> Wamane (වමනය)
         - Diabetes -> Diyawadiyawa (දියවැඩියාව)
         - Swelling -> Idimuma (ඉදිමුම)
         - Doctor -> Dosthara (දොස්තර)
         - Medicine -> Beheth (බෙහෙත්)
-        - Water -> Wathura (වතුර)
         """
 
         headers = {
@@ -238,27 +234,17 @@ class LLMEngine:
             "Content-Type": "application/json"
         }
         
-        # 2. THE "SPOKEN SINHALA" PROMPT
+        # 🚨 THE FIX: Explicitly demanding Sinhala Script (Unicode)
         system_prompt = (
-            "You are a kind Sri Lankan doctor speaking to a patient. "
-            "Translate the advice into **CASUAL, SPOKEN SINHALA (Katha Wahara)**.\n\n"
-            
-            f"{dictionary}\n\n"
-            
-            "⛔ STRICT GRAMMAR RULES (DO NOT IGNORE):\n"
-            "1. **NEVER use 'Oba' (ඔබ).** ALWAYS use 'Oya' (ඔයා).\n"
-            "2. **NEVER use 'Yuthuya' (යුතුය) or 'Kala hekiya' (කළ හැකිය).** Use 'Karanna' (කරන්න) or 'Puluwan' (පුළුවන්).\n"
-            "3. **End sentences naturally.** instead of 'Peheth ganeema awashyaya', say 'Beheth ganna ona'.\n"
-            "4. **Keep English numbers** (e.g., '120/80', '5mg').\n"
-            "5. **Keep drug names in English** (e.g., 'Panadol', 'Losartan').\n"
-            "6. **Tone:** Warm, empathetic, and simple. Don't sound like a textbook.\n\n"
-
-            "EXAMPLES:\n"
-            "❌ Formal: Obata wigasata rohalata yama sudusuya.\n"
-            "✅ Spoken: Oya ikmanata hospital ekata yanna ona.\n\n"
-            
-            "❌ Formal: Wakkugadu rogaya sadaha beheth gatha yuthuya.\n"
-            "✅ Spoken: Wakkugadu amaruwata beheth ganna wenawa."
+            "You are a Sri Lankan doctor. Translate the medical advice into **SPOKEN SINHALA (Katha Wahara)**.\n"
+            f"{dictionary}\n"
+            "⛔ CRITICAL RULES:\n"
+            "1. **OUTPUT MUST BE IN SINHALA SCRIPT (Unicode) ONLY.** (e.g., 'ඔයාට බෙහෙත් ගන්න වෙනවා')\n"
+            "2. **DO NOT** use Singlish/English letters (e.g., NO 'Oya beheth ganna').\n"
+            "3. Keep numbers in English (e.g., 120/80).\n"
+            "4. Keep Drug Names in English (e.g., Panadol).\n"
+            "5. Do NOT repeat sentences. Be direct and simple.\n"
+            "6. Use 'Oya' (ඔයා) instead of 'Oba' (ඔබ)."
         )
         
         payload = {
@@ -267,14 +253,14 @@ class LLMEngine:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": text}
             ],
-            "temperature": 0.4 # Increased slightly to allow for more natural flow
+            "temperature": 0.3 # Low temperature prevents hallucination loops
         }
         
         try:
             response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
             if response.status_code == 200:
                 translation = response.json()['choices'][0]['message']['content'].strip()
-                print(f"✅ Style Output: {translation}")
+                print(f"✅ Style Output: {translation[:50]}...") # Log first 50 chars
                 return translation
         except Exception as e:
             print(f"❌ Style Layer Error: {e}")

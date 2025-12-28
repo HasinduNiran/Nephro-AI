@@ -72,32 +72,34 @@ def cleanup_file(path: str):
         print(f"⚠️ Cleanup warning: {e}")
 
 async def generate_tts_file(text: str) -> Path:
-    """
-    Pure EdgeTTS Generator (No External GPU required)
-    """
-    # 1. Detect Language
+    # 1. Detect Language (Explicit Log)
+    # Check for Sinhala Unicode range
     is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in text)
     
+    print(f"🔊 TTS REQUEST: Length={len(text)} chars | Detected={'SINHALA' if is_sinhala else 'ENGLISH'}")
+
     # 2. Check Cache
     file_hash = hashlib.md5(f"{text}_Edge".encode()).hexdigest()
     output_path = Path("tts_cache") / f"{file_hash}.mp3"
     
     if output_path.exists():
-        print(f"⚡ Serving Cached TTS: {file_hash[:8]}...")
+        print(f"   ↳ ⚡ Serving Cached Audio")
         return output_path
 
-    # 3. Select Voice
-    # si-LK-ThiliniNeural is the best available free Sinhala voice
-    voice = "si-LK-ThiliniNeural" if is_sinhala else "en-US-AriaNeural"
-    print(f"🔊 Generating EdgeTTS ({voice})...")
+    # 3. Select Voice (Debug Log)
+    if is_sinhala:
+        voice = "si-LK-ThiliniNeural"
+    else:
+        voice = "en-US-AriaNeural"
+        
+    print(f"   ↳ Generating new audio using voice: [{voice}]")
     
     try:
         communicate = edge_tts.Communicate(text, voice)
         await communicate.save(str(output_path))
-        print(f"✅ TTS Success: {output_path}")
+        print(f"   ✅ TTS Generation Successful")
     except Exception as e:
-        print(f"❌ TTS Critical Error: {e}")
-        # Create silent file to prevent crash
+        print(f"   ❌ TTS FAILED: {e}")
         with open(output_path, 'wb') as f: f.write(b'')
             
     return output_path
