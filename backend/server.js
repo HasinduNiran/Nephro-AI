@@ -8,6 +8,7 @@ const fs = require("fs");
 const KidneyScan = require("./models/KidneyScan");
 const authRoutes = require("./routes/auth");
 const predictRoutes = require("./routes/predict");
+const kidneyusRoutes = require("./routes/kidneyus");
 
 const app = express();
 
@@ -62,6 +63,7 @@ mongoose
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/predict", predictRoutes);
+app.use("/api/kidneyus", kidneyusRoutes);
 
 // Ultrasound upload endpoint
 app.post("/api/upload-ultrasound", upload.single("ultrasound"), (req, res) => {
