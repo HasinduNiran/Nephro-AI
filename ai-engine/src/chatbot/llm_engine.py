@@ -211,51 +211,54 @@ class LLMEngine:
             print(f"❌ Bridge Error: {e}")
             return text
 
-    def translate_to_sinhala_fallback(self, text: str) -> str:
-        """[STYLE LAYER] Translates English to NATURAL SPOKEN Sinhala (Code-Mixed)."""
-        print(f"⚠️ Style: Translating response to Spoken Sinhala (Code-Mixed)...")
-        
-        # We explicitly map complex concepts to simple spoken words
-        dictionary = """
-        VOCABULARY RULES:
-        - Pain -> Ridenawa (රිදෙනවා) or Kakkuma (කැක්කුම)
-        - Urine -> Muthra (මුත්‍රා)
-        - Swelling -> Idimuma (ඉදිමුම)
-        - Fatigue -> Mahansiya (මහන්සිය)
-        - Vomiting -> Wamane (වමනය)
-        - Doctor -> Dosthara (දොස්තර)
-        - Medicine -> Beheth (බෙහෙත්)
-        - Kidney -> Wakkugadu (වකුගඩු)
+    def enforce_spoken_sinhala(self, text: str) -> str:
         """
+        [SAFETY NET] Deterministically replaces formal words with spoken Sinhala (Code-Mixed).
+        This runs AFTER the LLM to catch any mistakes.
+        """
+        replacements = {
+            "රුධිර පීඩනය": "Pressure eka",  # Rudira Peedanaya -> Pressure eka
+            "පීඩනය": "Pressure eka",       # Peedanaya -> Pressure eka
+            "දියවැඩියාව": "Sugar",         # Diyawadiyawa -> Sugar
+            "රුධිර සීනි": "Sugar",         # Rudira Seeni -> Sugar
+            "වෛද්‍යවරයා": "Dosthara",      # Waidyawaraya -> Dosthara
+            "වෛද්‍ය": "Dosthara",          # Waidya -> Dosthara
+            "අවදානම": "Risk eka",          # Awadanama -> Risk eka
+            "පරීක්ෂණය": "Test eka",        # Parikshanaya -> Test eka
+            "වාර්තාව": "Report eka",       # Warthawa -> Report eka
+            "සායනය": "Clinic eka",         # Sayanaya -> Clinic eka
+            "අවාසනාවන්තයි": "කණගාටුයි",    # Awasanawanthai -> Kanagatui
+            "පැතිකඩ": "විස්තර",             # Pathikada -> Wisthara
+            "සක්‍රීය": "සැලකිලිමත්",        # Sakriya -> Selakilimath
+            "ඖෂධ": "බෙහෙත්",               # Oushada -> Beheth
+            "ආරක්ෂාව": "පරිස්සම් වෙන්න",   # Arakshawa -> Parissam wenna
+            "#": "",                       # Remove Headers
+            "*": ""                        # Remove Bolding
+        }
+        
+        for formal, spoken in replacements.items():
+            text = text.replace(formal, spoken)
+            
+        return text
 
+    def translate_to_sinhala_fallback(self, text: str) -> str:
+        """[STYLE LAYER] Concept-Mapping + Safety Net."""
+        print(f"⚠️ Style: Mapping concepts to Spoken Sinhala...")
+        
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "HTTP-Referer": "https://github.com/Nephro-AI",
             "Content-Type": "application/json"
         }
         
-        # 🚨 UPDATED PROMPT: Banning Headers (#) to fix UI size & Audio noise
+        # Keep your strong prompt here (The one I gave you in the previous step)
+        # It is still the first line of defense.
         system_prompt = (
-            "You are a Sri Lankan doctor speaking to a patient. Translate the advice into **CASUAL, SPOKEN SINHALA (Katha Wahara)**.\n"
-            f"{dictionary}\n\n"
-            
-            "⛔ RULE 1: ENGLISH MEDICAL TERMS (CODE-MIXING)\n"
-            "   - **DO NOT TRANSLATE**: Pressure, Sugar, Creatinine, eGFR, Cholesterol, Clinic, Report, Test.\n"
-            "   - Add Sinhala suffixes: 'Pressure eka', 'Sugar wala'.\n\n"
-
-            "⛔ RULE 2: FORMATTING FOR APP UI (CRITICAL)\n"
-            "   - **NEVER use Hashtags (#)** for headers. (Fixes 'Hash Hash' audio error).\n"
-            "   - **Use Bolding (**text**)** for topics. (e.g., **1. Monitoring:**).\n"
-            "   - Keep sentences short.\n\n"
-
-            "⛔ RULE 3: FORBIDDEN WORDS\n"
-            "   - ❌ NO 'Oba' -> ✅ Use 'Oya'\n"
-            "   - ❌ NO 'Awasanawanthai' -> ✅ Use 'Kanagatui'\n"
-            "   - ❌ NO 'Pathikada' -> ✅ Use 'Wisthara'\n\n"
-
-            "💡 FINAL OUTPUT FORMAT:\n"
-            "1. UNICODE SINHALA ONLY (except English medical terms).\n"
-            "2. Use commas (,) for breathing pauses.\n"
+            "You are a Sri Lankan friend. Translate medical advice into **SPOKEN SINHALA (Katha Wahara)**.\n"
+            "Use English words for: Pressure, Sugar, Clinic, Report, Test.\n"
+            "Use 'Dosthara' for Doctor, 'Beheth' for Medicine.\n"
+            "Never use formal words like 'Oba', 'Yuthuya', 'Peedanaya'.\n"
+            "Output UNICODE SINHALA only."
         )
         
         payload = {
@@ -264,17 +267,19 @@ class LLMEngine:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": text}
             ],
-            "temperature": 0.3 # Low temperature for consistency
+            "temperature": 0.1
         }
         
         try:
             response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
             if response.status_code == 200:
-                translation = response.json()['choices'][0]['message']['content'].strip()
-                # Clean up any Markdown that slips through
-                translation = translation.replace("**", "").replace("*", "")
-                print(f"✅ Style Output: {translation[:50]}...") 
-                return translation
+                raw_translation = response.json()['choices'][0]['message']['content'].strip()
+                
+                # 🛡️ RUN THE SAFETY NET
+                final_translation = self.enforce_spoken_sinhala(raw_translation)
+                
+                print(f"✅ Style Output: {final_translation[:50]}...") 
+                return final_translation
         except Exception as e:
             print(f"❌ Style Layer Error: {e}")
             pass
