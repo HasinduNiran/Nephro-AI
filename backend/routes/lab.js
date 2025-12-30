@@ -26,14 +26,23 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 20 * 1024 * 1024 }, // 20MB limit for reports
   fileFilter: (req, file, cb) => {
+    console.log("Multer fileFilter - File details:");
+    console.log("  Original name:", file.originalname);
+    console.log("  Mimetype:", file.mimetype);
+    console.log("  Fieldname:", file.fieldname);
+
     const allowedTypes = /jpeg|jpg|png|pdf/;
     const extname = allowedTypes.test(
       path.extname(file.originalname).toLowerCase()
     );
-    const mimetype = /image|pdf/.test(file.mimetype);
-    if ((mimetype && extname) || file.mimetype === "application/pdf") {
+    const mimetype = file.mimetype.startsWith("image/") || file.mimetype === "application/pdf";
+    
+    // Accept if EITHER mimetype OR extension is valid (important for web uploads)
+    if (mimetype || extname) {
+      console.log("  ✓ File accepted");
       return cb(null, true);
     } else {
+      console.log("  ✗ File rejected");
       cb(new Error("Only image files (JPG, PNG) and PDF files are allowed"));
     }
   },

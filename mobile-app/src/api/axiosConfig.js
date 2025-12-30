@@ -1,8 +1,7 @@
 import axios from "axios";
 
-// 1. CHANGE Port to 8000
-// 2. REMOVE "/api" from the end (unless you really need it)
-const BACKEND_URL = "http://172.20.10.2:8081"; 
+// Backend API URL - Change IP to your computer's IP and port to 5000
+const BACKEND_URL = "http://192.168.8.128:5000/api"; 
 
 console.log("API Base URL:", BACKEND_URL);
 

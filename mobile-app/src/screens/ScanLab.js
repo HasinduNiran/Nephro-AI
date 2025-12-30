@@ -10,76 +10,60 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-const HomeScreen = ({ navigation, route }) => {
+const ScanLabScreen = ({ navigation, route }) => {
   const userName = route.params?.userName || "User";
-  const userID = route.params?.userID; // Capture the passed userID
-  const userEmail = route.params?.userEmail || ""; // Capture email if available
-
-  const getInitials = (name) => {
-    if (!name) return "U";
-    const names = name.trim().split(" ");
-    if (names.length >= 2) {
-      return `${names[0][0]}${names[1][0]}`.toUpperCase();
-    }
-    return name[0].toUpperCase();
-  };
-
+  const userEmail = route.params?.userEmail || "";
+  
   const features = [
     {
       id: 1,
-      title: "Risk Prediction",
-      subtitle: "Analyze early signs",
-      icon: "pulse",
+      title: "Scan Analysis",
+      subtitle: "Kidney ultrasound",
+      icon: "scan",
       color: "#4A90E2", // Blue
-      onPress: () => navigation.navigate("RiskPrediction"),
+      onPress: () => navigation.navigate("ScanAnalysis", { userName, userEmail }),
     },
     {
       id: 2,
-      title: "Future Projection",
-      subtitle: "Stage progression",
-      icon: "trending-up",
-      color: "#50E3C2", // Teal
-      onPress: () => navigation.navigate("ScanLab", { userName, userEmail }),
+      title: "Lab Analysis",
+      subtitle: "Blood test results",
+      icon: "flask",
+      color: "#F5A623", // Orange
+      onPress: () => navigation.navigate("LabAnalysis"),
     },
     {
       id: 3,
-      title: "Dietary Plan",
-      subtitle: "Personalized meals",
-      icon: "nutrition",
-      color: "#F5A623", // Orange
-      onPress: () => navigation.navigate("DietaryPlan"),
-    },
-    {
-      id: 4,
-      title: "AI Assistant",
-      subtitle: "Chat & Support",
-      icon: "chatbubbles",
-      color: "#9013FE", // Purple
-      // Pass the User ID to the Chatbot Screen
-      onPress: () => navigation.navigate("Chatbot", { userID, userName }),
+      title: "Future CKD Stage",
+      subtitle: "Stage progression",
+      icon: "trending-up",
+      color: "#50E3C2", // Teal
+      onPress: () => navigation.navigate("FutureCKDStage"),
     },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F5F7FA" />
+      
+      {/* Back Button */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.navigate("Home")}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color="#1C1C1E" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Scan & Lab Analysis</Text>
+        <View style={styles.placeholder} />
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header Section */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Welcome back,</Text>
-            <Text style={styles.userName}>{userName}</Text>
-          </View>
-          <View style={styles.profileImageContainer}>
-            <Text style={styles.profileInitials}>{getInitials(userName)}</Text>
-          </View>
-        </View>
-
         {/* Dashboard Title */}
-        <Text style={styles.sectionTitle}>Your Health Dashboard</Text>
+        <Text style={styles.sectionTitle}>Choose Analysis Type</Text>
 
         {/* Tiles Grid */}
         <View style={styles.grid}>
@@ -96,7 +80,6 @@ const HomeScreen = ({ navigation, route }) => {
                   { backgroundColor: feature.color + "20" },
                 ]}
               >
-                {/* '20' adds transparency to hex color */}
                 <Ionicons name={feature.icon} size={28} color={feature.color} />
               </View>
               <Text style={styles.cardTitle}>{feature.title}</Text>
@@ -114,44 +97,38 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F5F7FA",
   },
-  contentContainer: {
-    padding: 24,
-  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 32,
-    marginTop: 10,
+    paddingHorizontal: 24,
+    paddingTop: 10,
+    paddingBottom: 16,
   },
-  greeting: {
-    fontSize: 16,
-    color: "#8E8E93",
-    fontWeight: "500",
-  },
-  userName: {
-    fontSize: 26,
-    fontWeight: "700",
-    color: "#1C1C1E",
-    marginTop: 4,
-  },
-  profileImageContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#4A90E2",
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#4A90E2",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
   },
-  profileInitials: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#FFF",
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1C1C1E",
+  },
+  placeholder: {
+    width: 40,
+  },
+  contentContainer: {
+    padding: 24,
+    paddingTop: 8,
   },
   sectionTitle: {
     fontSize: 18,
@@ -198,4 +175,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen;
+export default ScanLabScreen;

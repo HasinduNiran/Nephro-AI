@@ -217,21 +217,33 @@ exports.getLatestLabTest = async (req, res) => {
 };
 // Upload lab report image and extract data via OCR
 exports.uploadLabReport = async (req, res) => {
+  let filePath = null;
+  
   try {
+    console.log("\n=== LAB REPORT UPLOAD STARTED ===");
+    console.log("Request body:", req.body);
+    console.log("File info:", req.file ? { filename: req.file.filename, path: req.file.path, size: req.file.size } : "No file");
+
     // Check if file was uploaded
     if (!req.file) {
+      console.error("No file uploaded in request");
       return res.status(400).json({ 
         success: false,
         message: "No file uploaded. Please provide a lab report image (PDF/JPG/PNG)" 
       });
     }
 
+    filePath = req.file.path;
     const { name, age, gender } = req.body;
 
     // Validate required fields
     if (!name) {
-      // Clean up uploaded file
-      fs.unlinkSync(req.file.path);
+      console.error("Patient name is required");
+      try {
+        fs.unlinkSync(filePath);
+      } catch (e) {
+        console.error("Error deleting file:", e);
+      }
       return res.status(400).json({ 
         success: false,
         message: "Patient name is required" 
@@ -241,24 +253,35 @@ exports.uploadLabReport = async (req, res) => {
     console.log(`Processing lab report for patient: ${name}`);
     console.log(`File uploaded: ${req.file.filename}`);
 
-    // Process the image with OCR
-    const ocrResult = await processLabReport(req.file.path, {
+    // Try to process the image with OCR
+    console.log("Starting OCR processing...");
+    const ocrResult = await processLabReport(filePath, {
       age: parseInt(age) || null,
       gender: gender || "M",
     });
 
+    console.log("OCR processing complete:", ocrResult);
     const { labValues } = ocrResult;
 
     // If eGFR not found but we have creatinine and age, calculate it
     if (!labValues.eGFR && labValues.creatinine && age) {
       console.log('eGFR not found in OCR, calculating from creatinine...');
-      labValues.eGFR = labValues.eGFR; // Will be calculated by processLabReport
+      labValues.eGFR = calculateEGFRFromCreatinine(
+        labValues.creatinine,
+        parseInt(age),
+        gender || "M"
+      );
       labValues.confidence.eGFR = "calculated";
     }
 
     // Validate that we have at least eGFR (extracted or calculated) or creatinine with age
     if (!labValues.eGFR && !(labValues.creatinine && age)) {
-      fs.unlinkSync(req.file.path);
+      console.error("No eGFR or creatinine found");
+      try {
+        fs.unlinkSync(filePath);
+      } catch (e) {
+        console.error("Error deleting file:", e);
+      }
       return res.status(400).json({
         success: false,
         message: "Could not extract eGFR from the lab report. Please provide age if creatinine is available, or ensure the image is clear and readable.",
@@ -268,9 +291,12 @@ exports.uploadLabReport = async (req, res) => {
     }
 
     // Determine CKD stage
+    console.log(`Determining CKD stage for eGFR: ${labValues.eGFR}`);
     const ckdInfo = determineCKDStage(labValues.eGFR);
+    console.log("CKD Info:", ckdInfo);
 
     // Create lab test record in MongoDB
+    console.log("Creating MongoDB record...");
     const labTest = await LabTest.create({
       name,
       eGFR: labValues.eGFR,
@@ -282,7 +308,7 @@ exports.uploadLabReport = async (req, res) => {
       stageDescription: ckdInfo.description,
       eGFRRange: ckdInfo.eGFRRange,
       imageFilename: req.file.filename,
-      imagePath: req.file.path,
+      imagePath: filePath,
       extractionConfidence: labValues.confidence,
       ocrRawText: ocrResult.extractedText,
       age: labValues.age || (age ? parseInt(age) : null),
@@ -290,43 +316,53 @@ exports.uploadLabReport = async (req, res) => {
       testMethod: "ocr",
     });
 
+    console.log(`Lab test saved to MongoDB with ID: ${labTest._id}`);
     console.log(`Lab test saved for ${name} with eGFR: ${labValues.eGFR}, Stage: ${ckdInfo.stage}`);
+
+    console.log("=== LAB REPORT UPLOAD COMPLETED SUCCESSFULLY ===\n");
 
     res.status(201).json({
       success: true,
       message: "Lab report processed successfully",
-      data: {
-        labTest: labTest,
-        extractionDetails: {
-          eGFR: {
-            value: labValues.eGFR,
-            confidence: labValues.confidence.eGFR,
-          },
-          creatinine: {
-            value: labValues.creatinine,
-            confidence: labValues.confidence.creatinine,
-            status: labValues.creatinineStatus,
-          },
-          bun: {
-            value: labValues.bun,
-            confidence: labValues.confidence.bun,
-          },
-          albumin: {
-            value: labValues.albumin,
-            confidence: labValues.confidence.albumin,
-          },
+      labTest: labTest,
+      extractionDetails: {
+        eGFR: {
+          value: labValues.eGFR,
+          confidence: labValues.confidence.eGFR,
         },
-        ckdStageInfo: ckdInfo,
+        creatinine: {
+          value: labValues.creatinine,
+          confidence: labValues.confidence.creatinine,
+          status: labValues.creatinineStatus,
+        },
+        bun: {
+          value: labValues.bun,
+          confidence: labValues.confidence.bun,
+        },
+        albumin: {
+          value: labValues.albumin,
+          confidence: labValues.confidence.albumin,
+        },
       },
+      ckdStageInfo: ckdInfo,
     });
   } catch (error) {
-    console.error("Error processing lab report:", error);
+    console.error("\n=== ERROR IN LAB REPORT UPLOAD ===");
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+    console.error("=== END ERROR ===\n");
 
     // Clean up uploaded file if it exists
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
+    if (filePath && fs.existsSync(filePath)) {
+      try {
+        fs.unlinkSync(filePath);
+        console.log("Cleaned up uploaded file after error");
+      } catch (cleanupError) {
+        console.error("Error cleaning up file:", cleanupError);
+      }
     }
 
+    // Return detailed error
     res.status(500).json({
       success: false,
       message: "Error processing lab report",

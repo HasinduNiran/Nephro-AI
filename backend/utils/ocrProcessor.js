@@ -9,6 +9,45 @@ const REF_RANGES = {
   female: { min: 0.6, max: 1.1 }
 };
 
+// Initialize Tesseract worker once
+let tesseractWorker = null;
+
+async function initializeTesseract() {
+  if (!tesseractWorker) {
+    try {
+      console.log("Initializing Tesseract worker...");
+      tesseractWorker = await Tesseract.createWorker({
+        logger: m => {
+          if (m.status === "initializing languages" || m.status === "recognizing text") {
+            console.log(`Tesseract: ${m.status} (${(m.progress * 100).toFixed(2)}%)`);
+          }
+        }
+      });
+      await tesseractWorker.loadLanguage('eng');
+      await tesseractWorker.initialize('eng');
+      console.log("Tesseract worker initialized successfully");
+    } catch (error) {
+      console.error("Error initializing Tesseract:", error);
+      tesseractWorker = null;
+      throw error;
+    }
+  }
+  return tesseractWorker;
+}
+
+// Clean up Tesseract worker
+async function terminateTesseract() {
+  if (tesseractWorker) {
+    try {
+      await tesseractWorker.terminate();
+      tesseractWorker = null;
+      console.log("Tesseract worker terminated");
+    } catch (error) {
+      console.error("Error terminating Tesseract:", error);
+    }
+  }
+}
+
 /**
  * Validate lab result against reference ranges
  * @param {number} value - Lab value
@@ -32,12 +71,22 @@ function validateResult(value, gender) {
  * @returns {Promise<string>} - Extracted text
  */
 async function extractTextFromImage(imagePath) {
+  let tempOptimizedPath = null;
   try {
+    console.log(`Starting OCR for file: ${imagePath}`);
+    
+    // Check if file exists
+    if (!fs.existsSync(imagePath)) {
+      throw new Error(`File not found: ${imagePath}`);
+    }
+
     // Optimize image for better OCR accuracy
-    const tempOptimizedPath = imagePath.replace(
+    tempOptimizedPath = imagePath.replace(
       /(\.[^.]*)?$/,
       "_optimized.png"
     );
+
+    console.log(`Optimizing image to: ${tempOptimizedPath}`);
 
     // Enhance image using Sharp (increase contrast, denoise)
     // Critical preprocessing for decimal point detection
@@ -49,29 +98,41 @@ async function extractTextFromImage(imagePath) {
       .png()
       .toFile(tempOptimizedPath);
 
-    // Perform OCR
-    const result = await Tesseract.recognize(
-      tempOptimizedPath,
-      "eng",
-      {
-        logger: (m) => {
-          if (m.status === "recognizing text") {
-            console.log(`OCR Progress: ${(m.progress * 100).toFixed(2)}%`);
-          }
-        },
-      }
-    );
+    console.log(`Image optimization complete`);
+    console.log(`Starting Tesseract OCR...`);
 
-    const extractedText = result.data.text;
+    // Initialize Tesseract worker
+    const worker = await initializeTesseract();
+
+    // Perform OCR with faster settings
+    const { data: { text } } = await worker.recognize(tempOptimizedPath, {
+      tessedit_pageseg_mode: "6", // Assume uniform block of text
+      tessedit_char_whitelist: "0123456789.ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz:=/- ",
+    });
+    
+    console.log(`OCR completed. Extracted text length: ${text.length}`);
+    console.log(`Extracted text preview: ${text.substring(0, 200)}`);
 
     // Clean up temporary file
-    if (fs.existsSync(tempOptimizedPath)) {
+    if (tempOptimizedPath && fs.existsSync(tempOptimizedPath)) {
       fs.unlinkSync(tempOptimizedPath);
+      console.log(`Cleaned up temporary file`);
     }
 
-    return extractedText;
+    return text;
   } catch (error) {
     console.error("OCR Error:", error);
+    console.error("Error details:", error.stack);
+    
+    // Clean up temporary file on error
+    if (tempOptimizedPath && fs.existsSync(tempOptimizedPath)) {
+      try {
+        fs.unlinkSync(tempOptimizedPath);
+      } catch (e) {
+        console.error("Error deleting temp file:", e);
+      }
+    }
+    
     throw new Error(`OCR processing failed: ${error.message}`);
   }
 }
@@ -336,4 +397,6 @@ module.exports = {
   calculateEGFRFromCreatinine,
   processLabReport,
   validateResult,
+  initializeTesseract,
+  terminateTesseract,
 };

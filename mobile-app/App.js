@@ -16,6 +16,11 @@ import DietaryPlanScreen from './src/screens/DietaryPlanScreen';
 import NutrientWalletScreen from './src/screens/NutrientWalletScreen';
 import RiskHistoryScreen from "./src/screens/RiskHistoryScreen";
 import ChatbotScreen from "./src/screens/ChatbotScreen";
+import ScanLabScreen from "./src/screens/ScanLab";
+import ScanAnalysisScreen from "./src/screens/ScanAnalysisScreen";
+import ScanResultScreen from "./src/screens/ScanResultScreen";
+// import LabAnalysisScreen from "./src/screens/LabAnalysisScreen";
+// import FutureCKDStageScreen from "./src/screens/FutureCKDStageScreen";
 
 const Stack = createStackNavigator();
 
@@ -47,6 +52,11 @@ const App = () => {
           }}
         />
         <Stack.Screen name="Chatbot" component={ChatbotScreen} />
+        <Stack.Screen name="ScanLab" component={ScanLabScreen} />
+        <Stack.Screen name="ScanAnalysis" component={ScanAnalysisScreen} />
+        <Stack.Screen name="ScanResult" component={ScanResultScreen} />
+        {/* <Stack.Screen name="LabAnalysis" component={LabAnalysisScreen} />
+        <Stack.Screen name="FutureCKDStage" component={FutureCKDStageScreen} /> */}
       </Stack.Navigator>
     </NavigationContainer>
     </WalletProvider>
