@@ -263,19 +263,25 @@ exports.uploadLabReport = async (req, res) => {
     console.log("OCR processing complete:", ocrResult);
     const { labValues } = ocrResult;
 
+    // Use OCR-extracted age/gender if not provided in request body
+    const extractedAge = labValues.age || (age ? parseInt(age) : null);
+    const extractedGender = labValues.gender || gender || "M";
+
+    console.log(`Using age: ${extractedAge}, gender: ${extractedGender}`);
+
     // If eGFR not found but we have creatinine and age, calculate it
-    if (!labValues.eGFR && labValues.creatinine && age) {
+    if (!labValues.eGFR && labValues.creatinine && extractedAge) {
       console.log('eGFR not found in OCR, calculating from creatinine...');
       labValues.eGFR = calculateEGFRFromCreatinine(
         labValues.creatinine,
-        parseInt(age),
-        gender || "M"
+        extractedAge,
+        extractedGender
       );
       labValues.confidence.eGFR = "calculated";
     }
 
     // Validate that we have at least eGFR (extracted or calculated) or creatinine with age
-    if (!labValues.eGFR && !(labValues.creatinine && age)) {
+    if (!labValues.eGFR && !(labValues.creatinine && extractedAge)) {
       console.error("No eGFR or creatinine found");
       try {
         fs.unlinkSync(filePath);
@@ -304,6 +310,8 @@ exports.uploadLabReport = async (req, res) => {
       creatinineStatus: labValues.creatinineStatus || null,
       bun: labValues.bun,
       albumin: labValues.albumin,
+      age: extractedAge,
+      gender: extractedGender,
       ckdStage: ckdInfo.stage,
       stageDescription: ckdInfo.description,
       eGFRRange: ckdInfo.eGFRRange,

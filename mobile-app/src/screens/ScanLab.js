@@ -29,7 +29,7 @@ const ScanLabScreen = ({ navigation, route }) => {
       subtitle: "Blood test results",
       icon: "flask",
       color: "#F5A623", // Orange
-      onPress: () => navigation.navigate("LabAnalysis"),
+      onPress: () => navigation.navigate("LabAnalysis", { userName, userEmail }),
     },
     {
       id: 3,

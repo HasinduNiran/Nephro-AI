@@ -19,7 +19,10 @@ import ChatbotScreen from "./src/screens/ChatbotScreen";
 import ScanLabScreen from "./src/screens/ScanLab";
 import ScanAnalysisScreen from "./src/screens/ScanAnalysisScreen";
 import ScanResultScreen from "./src/screens/ScanResultScreen";
-// import LabAnalysisScreen from "./src/screens/LabAnalysisScreen";
+import LabAnalysisScreen from "./src/screens/LabAnalysisScreen";
+import ManualLabEntryScreen from "./src/screens/ManualLabEntryScreen";
+import LabImageUploadScreen from "./src/screens/LabImageUploadScreen";
+import LabResultScreen from "./src/screens/LabResultScreen";
 // import FutureCKDStageScreen from "./src/screens/FutureCKDStageScreen";
 
 const Stack = createStackNavigator();
@@ -55,8 +58,11 @@ const App = () => {
         <Stack.Screen name="ScanLab" component={ScanLabScreen} />
         <Stack.Screen name="ScanAnalysis" component={ScanAnalysisScreen} />
         <Stack.Screen name="ScanResult" component={ScanResultScreen} />
-        {/* <Stack.Screen name="LabAnalysis" component={LabAnalysisScreen} />
-        <Stack.Screen name="FutureCKDStage" component={FutureCKDStageScreen} /> */}
+        <Stack.Screen name="LabAnalysis" component={LabAnalysisScreen} />
+        <Stack.Screen name="ManualLabEntry" component={ManualLabEntryScreen} />
+        <Stack.Screen name="LabImageUpload" component={LabImageUploadScreen} />
+        <Stack.Screen name="LabResult" component={LabResultScreen} />
+        {/* <Stack.Screen name="FutureCKDStage" component={FutureCKDStageScreen} /> */}
       </Stack.Navigator>
     </NavigationContainer>
     </WalletProvider>
