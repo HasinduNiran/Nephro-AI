@@ -8,6 +8,7 @@ import SignupScreen from "./src/screens/SignupScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 import RiskPredictionScreen from "./src/screens/RiskPredictionScreen";
 import RiskHistoryScreen from "./src/screens/RiskHistoryScreen";
+import ChatbotScreen from "./src/screens/ChatbotScreen";
 
 const Stack = createStackNavigator();
 
@@ -29,6 +30,7 @@ const App = () => {
             headerTintColor: "#1C1C1E",
           }}
         />
+        <Stack.Screen name="Chatbot" component={ChatbotScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
