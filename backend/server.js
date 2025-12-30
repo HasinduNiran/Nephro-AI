@@ -11,6 +11,7 @@ const predictRoutes = require("./routes/predict");
 const kidneyusRoutes = require("./routes/kidneyus");
 const labRoutes = require("./routes/lab");
 const riskHistoryRoutes = require("./routes/riskHistory");
+const stageProgressionRoutes = require("./routes/stageProgression");
 
 const app = express();
 
@@ -67,6 +68,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/predict", predictRoutes);
 app.use("/api/kidneyus", kidneyusRoutes);
 app.use("/api/lab", labRoutes);
+app.use("/api/stage-progression", stageProgressionRoutes);
 
 // Ultrasound upload endpoint
 app.post("/api/upload-ultrasound", upload.single("ultrasound"), (req, res) => {
