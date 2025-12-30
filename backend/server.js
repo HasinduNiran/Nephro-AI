@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const authRoutes = require("./routes/auth");
 const predictRoutes = require("./routes/predict");
+const riskHistoryRoutes = require("./routes/riskHistory");
 
 const app = express();
 
@@ -23,6 +24,7 @@ mongoose
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/predict", predictRoutes);
+app.use("/api/risk-history", riskHistoryRoutes);
 
 // Base route
 app.get("/", (req, res) => {
