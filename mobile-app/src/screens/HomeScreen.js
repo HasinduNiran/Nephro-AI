@@ -46,7 +46,7 @@ const HomeScreen = ({ navigation, route }) => {
       subtitle: "Personalized meals",
       icon: "nutrition",
       color: "#F5A623", // Orange
-      onPress: () => console.warn("Meal Plan Pressed"),
+      onPress: () => navigation.navigate("DietaryPlan"),
     },
     {
       id: 4,

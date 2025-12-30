@@ -65,6 +65,11 @@ mongoose
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/predict", predictRoutes);
+// NEW: Import the Meal Plate Routes
+const foodRoutes = require("./routes/foodRoutes");
+// NEW: Register the Meal Plate endpoint
+// This means your app will call: http://[IP]:5000/api/mealPlate/detect
+app.use("/api/mealPlate", foodRoutes);
 app.use("/api/kidneyus", kidneyusRoutes);
 app.use("/api/lab", labRoutes);
 
