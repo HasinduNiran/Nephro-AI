@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  View, Text, Image, ScrollView, TextInput, Alert, StyleSheet, TouchableOpacity, ActivityIndicator, Modal, FlatList 
+  View, Text, Image, ScrollView, TextInput, Alert, StyleSheet, TouchableOpacity, ActivityIndicator, Modal, FlatList, Platform 
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
@@ -122,16 +122,28 @@ const MealAnalysisScreen = ({ route, navigation }) => {
     setItems([]); 
     setHasScanned(false); 
 
-    const formData = new FormData();
-    formData.append('image', {
-      uri: uri,
-      name: 'meal.jpg',
-      type: 'image/jpeg',
-    });
-
     try {
+      const formData = new FormData();
+
+      // Handle Web vs Mobile platform differences
+      if (Platform.OS === 'web') {
+        // For Web: Fetch the image and convert to Blob
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        formData.append('image', blob, 'meal.jpg');
+      } else {
+        // For Mobile: Use the standard React Native approach
+        formData.append('image', {
+          uri: uri,
+          name: 'meal.jpg',
+          type: 'image/jpeg',
+        });
+      }
+
       const response = await axios.post('/mealPlate/detect', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        }
       });
 
       const detectedData = response.data.detected || [];

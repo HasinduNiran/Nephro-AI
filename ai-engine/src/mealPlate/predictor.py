@@ -7,9 +7,15 @@ import io
 # CONFIGURATION
 # ---------------------------------------------------------
 # We use 'r' before the string to handle Windows backslashes correctly
-MODEL_PATH = r"E:\University\4th Year\research\Nephro-AI\ai-engine\src\mealPlate\best_model_yolo11m.pt"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "best_model_yolo11m.pt")
 
 print(f"Loading YOLO model from: {MODEL_PATH}")
+if not os.path.exists(MODEL_PATH):
+    print(f"CRITICAL: File NOT FOUND at {MODEL_PATH}")
+    print(f"Directory listing for {BASE_DIR}: {os.listdir(BASE_DIR)}")
+else:
+    print("File exists. Attempting load...")
 
 # ---------------------------------------------------------
 # LOAD MODEL

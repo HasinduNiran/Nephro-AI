@@ -30,6 +30,10 @@ exports.predictRisk = (req, res) => {
     "api_predict.py"
   );
 
+  // Debug paths
+  console.log("Python Script Path:", scriptPath);
+  console.log("Input Data:", JSON.stringify(inputData));
+
   // Spawn python process
   const pythonProcess = spawn("python", [
     scriptPath,
@@ -45,6 +49,7 @@ exports.predictRisk = (req, res) => {
 
   pythonProcess.stderr.on("data", (data) => {
     errorString += data.toString();
+    console.error("Python Stderr:", data.toString()); // Log stderr directly
   });
 
   pythonProcess.on("close", (code) => {
@@ -53,7 +58,7 @@ exports.predictRisk = (req, res) => {
       console.error(`Stderr: ${errorString}`);
       return res
         .status(500)
-        .json({ message: "Error calculating risk", error: errorString });
+        .json({ message: "Error calculating risk", error: errorString, path: scriptPath });
     }
 
     try {

@@ -35,8 +35,8 @@ import * as Speech from 'expo-speech';
 // OLD (Wi-Fi IP)
 // const BACKEND_URL = "http://192.168.43.166:8000";
 
-// NEW (USB Tunneling)
-const BACKEND_URL = "http://192.168.43.166:8001";
+// NEW (USB Tunneling / Local Network)
+const BACKEND_URL = "http://172.28.2.215:8001";
 
 // Custom base64 decode for React Native (atob polyfill)
 const base64Decode = (str) => {
