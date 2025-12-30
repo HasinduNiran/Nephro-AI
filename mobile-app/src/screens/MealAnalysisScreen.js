@@ -47,7 +47,8 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [hasScanned, setHasScanned] = useState(false);
-  const [showAnalysisModal, setShowAnalysisModal] = useState(false); 
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [imageSource, setImageSource] = useState(null); // 'camera' or 'gallery' 
 
   useEffect(() => {
     const loadUserId = async () => {
@@ -70,13 +71,23 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   }, []);
 
   const handleCameraPress = () => {
+    setImageSource('camera');
     setShowGuidelines(true);
   };
 
-  const confirmAndOpenCamera = () => {
+  const handleGalleryPress = () => {
+    setImageSource('gallery');
+    setShowGuidelines(true);
+  };
+
+  const confirmAndProceed = () => {
     setShowGuidelines(false);
     setTimeout(() => {
+      if (imageSource === 'camera') {
         pickImageCamera();
+      } else if (imageSource === 'gallery') {
+        pickImageGallery();
+      }
     }, 300);
   };
 
@@ -443,7 +454,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
               {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>📸 Camera</Text>}
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.scanBtn, styles.galleryBtn]} onPress={pickImageGallery} disabled={loading}>
+            <TouchableOpacity style={[styles.scanBtn, styles.galleryBtn]} onPress={handleGalleryPress} disabled={loading}>
               <Text style={styles.btnText}>🖼️ Gallery</Text>
             </TouchableOpacity>
         </View>
@@ -664,9 +675,9 @@ const MealAnalysisScreen = ({ route, navigation }) => {
 
             <TouchableOpacity 
               style={styles.iUnderstandBtn} 
-              onPress={confirmAndOpenCamera}
+              onPress={confirmAndProceed}
             >
-              <Text style={styles.btnText}>I Understand, Open Camera</Text>
+              <Text style={styles.btnText}>I Understand, Continue</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setShowGuidelines(false)}>
