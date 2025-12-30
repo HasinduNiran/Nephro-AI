@@ -1,0 +1,17 @@
+{
+  "total_pages": 24,
+  "raw_text_length": 26438,
+  "cleaned_text_length": 26987,
+  "source_file": "mineral_and_bone_disorder.pdf",
+  "extraction_date": "2025-11-18T15:17:35.978387",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "kidney function"
+  ],
+  "total_chunks": 8,
+  "avg_chunk_size": 588.875,
+  "processing_date": "2025-11-18T15:17:36.119713"
+}

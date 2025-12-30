@@ -1,0 +1,17 @@
+{
+  "total_documents": 3,
+  "source_file": "renal-failure-symptoms-understanding-the-warning-signs_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\renal-failure-symptoms-understanding-the-warning-signs_chunks.json",
+  "preparation_date": "2025-11-21T14:30:30.844149",
+  "avg_word_count": 450.6666666666667,
+  "content_types": {
+    "dietary": 3
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 1
+  }
+}

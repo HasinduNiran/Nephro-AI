@@ -1,0 +1,19 @@
+{
+  "total_documents": 7,
+  "source_file": "KDIGO-CKD-Guideline-Manila_Kasiske_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\KDIGO-CKD-Guideline-Manila_Kasiske_chunks.json",
+  "preparation_date": "2025-11-21T14:30:30.745887",
+  "avg_word_count": 569.8571428571429,
+  "content_types": {
+    "recommendation": 5,
+    "evidence": 1,
+    "treatment": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 7,
+    "GFR": 7,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 1
+  }
+}

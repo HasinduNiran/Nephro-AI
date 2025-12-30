@@ -1,0 +1,99 @@
+# Core Dependencies for Nephro-AI Vector Database System
+
+# Vector Database & Embeddings
+chromadb>=0.4.18
+requests>=2.31.0
+
+# NLU (Natural Language Understanding)
+spacy>=3.7.2
+
+# Natural Language Processing
+nltk>=3.8.1
+spacy>=3.7.2
+langdetect>=1.0.9
+
+# Text Processing
+beautifulsoup4>=4.12.2
+lxml>=4.9.3
+
+# Progress Bars & Utilities
+tqdm>=4.66.1
+
+# Data Handling
+numpy>=1.24.3
+pandas>=2.0.3
+
+# Optional but Recommended
+# openai>=1.3.0  # For GPT integration
+# anthropic>=0.7.0  # For Claude integration
+# fastapi>=0.104.1  # For REST API
+# Core Dependencies for Nephro-AI Vector Database System
+
+# Vector Database & Embeddings
+chromadb>=0.4.18
+requests>=2.31.0
+
+# NLU (Natural Language Understanding)
+spacy>=3.7.2
+
+# Natural Language Processing
+nltk>=3.8.1
+spacy>=3.7.2
+langdetect>=1.0.9
+
+# Text Processing
+beautifulsoup4>=4.12.2
+lxml>=4.9.3
+
+# Progress Bars & Utilities
+tqdm>=4.66.1
+
+# Data Handling
+numpy>=1.24.3
+pandas>=2.0.3
+
+# Optional but Recommended
+# openai>=1.3.0  # For GPT integration
+# anthropic>=0.7.0  # For Claude integration
+# fastapi>=0.104.1  # For REST API
+# uvicorn>=0.24.0  # For serving FastAPI
+# streamlit>=1.28.0  # For web interface
+# gradio>=4.4.0  # Alternative web interface
+
+# Development Tools (Optional)
+# pytest>=7.4.3  # For testing
+# black>=23.11.0  # Code formatting
+# flake8>=6.1.0  # Linting
+
+# Google GenAI
+google-genai
+
+# Speech to Text
+faster-whisper>=1.0.0
+
+# Audio Processing & VAD
+torch
+torchaudio
+sounddevice
+numpy
+
+# Medical NLU
+scispacy>=0.5.4
+negspacy>=1.0.4
+# Note: en_ner_bc5cdr_md is installed via direct URL, not PyPI
+
+# Semantic Search & Hybrid NLU
+sentence-transformers>=2.2.2
+
+# TTS (Text-to-Speech)
+edge-tts>=6.1.9
+# Environment Variables
+python-dotenv>=1.0.0
+
+# API Server
+fastapi
+uvicorn
+python-multipart
+aiofiles
+pydub
+gradio_client

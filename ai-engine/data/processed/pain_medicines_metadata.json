@@ -1,0 +1,16 @@
+{
+  "total_pages": 12,
+  "raw_text_length": 11047,
+  "cleaned_text_length": 11471,
+  "source_file": "pain_medicines.pdf",
+  "extraction_date": "2025-11-18T15:17:45.170408",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "kidney function"
+  ],
+  "total_chunks": 4,
+  "avg_chunk_size": 499.0,
+  "processing_date": "2025-11-18T15:17:45.284749"
+}

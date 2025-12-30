@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Nephro-AI",
+    "slug": "nephro-ai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "enabled": false
+    },
+    "icon": "./images/Nephro-logo.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./images/splash screen nephro-AI.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nephroai.mobile"
+    },
+    "android": {
+      "package": "com.nephroai.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./images/Nephro-logo.png",
+        "backgroundColor": "#ffffff"
+      },
+      "usesCleartextTraffic": true
+    },
+    "web": {
+      "favicon": "./images/Nephro-logo.png"
+    }
+  }
+}

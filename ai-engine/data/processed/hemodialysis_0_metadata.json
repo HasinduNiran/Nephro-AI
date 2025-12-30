@@ -1,0 +1,17 @@
+{
+  "total_pages": 28,
+  "raw_text_length": 24143,
+  "cleaned_text_length": 24778,
+  "source_file": "hemodialysis_0.pdf",
+  "extraction_date": "2025-11-18T15:16:03.457279",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "kidney function"
+  ],
+  "total_chunks": 8,
+  "avg_chunk_size": 549.125,
+  "processing_date": "2025-11-18T15:16:03.557362"
+}

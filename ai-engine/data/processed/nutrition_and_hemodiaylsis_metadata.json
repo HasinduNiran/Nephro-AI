@@ -1,0 +1,17 @@
+{
+  "total_pages": 24,
+  "raw_text_length": 17372,
+  "cleaned_text_length": 17795,
+  "source_file": "nutrition_and_hemodiaylsis.pdf",
+  "extraction_date": "2025-11-18T15:17:40.329264",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "kidney function"
+  ],
+  "total_chunks": 5,
+  "avg_chunk_size": 587.2,
+  "processing_date": "2025-11-18T15:17:40.462092"
+}

@@ -1,0 +1,16 @@
+{
+  "total_pages": 24,
+  "raw_text_length": 20182,
+  "cleaned_text_length": 20820,
+  "source_file": "11-10-0209_2203_patbro_diabckd1-4p5.pdf",
+  "extraction_date": "2025-11-18T15:15:40.753543",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "kidney function"
+  ],
+  "total_chunks": 7,
+  "avg_chunk_size": 523.4285714285714,
+  "processing_date": "2025-11-18T15:15:40.857225"
+}

@@ -1,0 +1,18 @@
+{
+  "total_documents": 4,
+  "source_file": "vaccines_and_dialysis_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\vaccines_and_dialysis_chunks.json",
+  "preparation_date": "2025-11-19T02:22:21.250936",
+  "avg_word_count": 593.25,
+  "content_types": {
+    "recommendation": 3,
+    "treatment": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 1,
+    "GFR": 1,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 4
+  }
+}

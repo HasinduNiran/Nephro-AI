@@ -1,0 +1,18 @@
+{
+  "total_pages": 15,
+  "raw_text_length": 26499,
+  "cleaned_text_length": 27393,
+  "source_file": "Guidelines on Supportive Care, Symptom Control and End of Life Care for Renal Patients with Chronic Kidney Disease (CKD).pdf",
+  "extraction_date": "2025-11-21T14:30:05.932982",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2014",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "renal"
+  ],
+  "total_chunks": 8,
+  "avg_chunk_size": 554.75,
+  "processing_date": "2025-11-21T14:30:06.044560"
+}

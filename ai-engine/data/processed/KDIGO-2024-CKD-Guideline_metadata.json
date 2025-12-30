@@ -1,0 +1,22 @@
+{
+  "total_pages": 199,
+  "raw_text_length": 936183,
+  "cleaned_text_length": 1017223,
+  "source_file": "KDIGO-2024-CKD-Guideline.pdf",
+  "extraction_date": "2025-11-21T14:07:06.681083",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2024",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "GFR",
+    "nephrology",
+    "proteinuria",
+    "albuminuria",
+    "eGFR"
+  ],
+  "total_chunks": 199,
+  "avg_chunk_size": 586.572864321608,
+  "processing_date": "2025-11-21T14:07:10.528577"
+}
