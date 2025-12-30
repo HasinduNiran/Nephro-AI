@@ -115,7 +115,10 @@ const COLORS = {
 
 const ChatbotScreen = ({ route, navigation }) => {
   const { userID, userName } = route.params || {}; // Validate params exist
-  console.log("Chatbot Initialized for:", { userID, userName }); // Debug log
+  // Debug log - Run only once on mount
+  useEffect(() => {
+    console.log("Chatbot Initialized for:", { userID, userName });
+  }, []);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([
     {

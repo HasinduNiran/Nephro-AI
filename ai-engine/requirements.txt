@@ -49,7 +49,7 @@ lxml>=4.9.3
 tqdm>=4.66.1
 
 # Data Handling
-numpy>=1.24.3
+numpy>=1.24.3,<2.0.0
 pandas>=2.0.3
 
 # Optional but Recommended
