@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  View, Text, Image, ScrollView, TextInput, Alert, StyleSheet, TouchableOpacity, ActivityIndicator, Modal, FlatList, Platform 
+  View, Text, Image, ScrollView, TextInput, Alert, StyleSheet, TouchableOpacity, ActivityIndicator, Modal, FlatList, Platform, KeyboardAvoidingView 
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
@@ -46,7 +46,8 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [hasScanned, setHasScanned] = useState(false); 
+  const [hasScanned, setHasScanned] = useState(false);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false); 
 
   useEffect(() => {
     const loadUserId = async () => {
@@ -272,6 +273,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
     const safetyCheck = checkSafety(totalNutrients);
     let warnings = [];
     let isSafe = true;
+    let hasWarnings = false;
 
     const checkNutrient = (name, current, meal, limit) => {
       const total = current + meal;
@@ -280,6 +282,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         isSafe = false;
         warnings.push(`🚫 ${name}: ${total.toFixed(0)}/${limit}mg (${percentage.toFixed(0)}%) - EXCEEDED!`);
       } else if (percentage > 80) {
+        hasWarnings = true;
         warnings.push(`⚠️ ${name}: ${total.toFixed(0)}/${limit}mg (${percentage.toFixed(0)}%) - Getting high`);
       }
     };
@@ -314,8 +317,16 @@ const MealAnalysisScreen = ({ route, navigation }) => {
 
       Alert.alert("Success ✅", "Meal confirmed and saved!", [{ text: "OK", onPress: () => navigation.goBack() }]);
     } else {
+      let status = 'safe';
+      if (!isSafe) {
+        status = 'unsafe';
+      } else if (hasWarnings) {
+        status = 'warning';
+      }
+      
       setAnalysisResult({
-        isSafe: safetyCheck.safe && isSafe,
+        isSafe: isSafe,
+        status: status,
         warnings: warnings.length > 0 ? warnings : safetyCheck.warnings,
         breakdown: breakdown.map(b => ({
           food: b.food,
@@ -323,14 +334,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         })),
         totalNutrients
       });
-
-      if (!isSafe) {
-        Alert.alert("🚫 UNSAFE MEAL", "This meal exceeds your daily limits!\n\n" + warnings.join("\n"));
-      } else if (warnings.length > 0) {
-        Alert.alert("⚠️ Caution", "You are nearing your daily limits.\n\n" + warnings.join("\n"));
-      } else {
-        Alert.alert("✅ Safe", "This meal fits your daily limits.");
-      }
+      setShowAnalysisModal(true);
     }
   };
 
@@ -357,6 +361,20 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   };
 
   const addManualFood = (foodName) => {
+    // Check if food already exists in the list
+    const existingFood = items.find(item => item.food === foodName);
+    
+    if (existingFood) {
+      Alert.alert(
+        "Food Already Added", 
+        `${foodName} is already in your meal. You can adjust the amount instead.`,
+        [{ text: "OK" }]
+      );
+      setSearchModalVisible(false);
+      setSearchText('');
+      return;
+    }
+    
     const foodData = foodNutrientDB[foodName];
     if (foodData) {
       const units = Object.keys(foodData.units).filter(u => u && u !== 'undefined');
@@ -377,10 +395,30 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   );
 
   return (
-    <View style={{flex: 1, backgroundColor: '#fff'}}> 
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.header}>Meal Plate Analyzer</Text>
-
+    <KeyboardAvoidingView 
+      style={{flex: 1, backgroundColor: '#fff'}}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      enabled
+    > 
+      <View style={styles.headerContainer}>
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#051C60" />
+        </TouchableOpacity>
+        <Text style={styles.header}>Meal Analysis</Text>
+        <View style={styles.headerSpacer} />
+      </View>
+      
+      <ScrollView 
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={true}
+        nestedScrollEnabled={true}
+        automaticallyAdjustKeyboardInsets={true}
+      >
         {imageUri ? (
           <View style={styles.imageContainer}>
             <Image source={{ uri: imageUri }} style={styles.image} />
@@ -498,37 +536,71 @@ const MealAnalysisScreen = ({ route, navigation }) => {
               </TouchableOpacity>
           </View>
         )}
-
-        {analysisResult && (
-          <View style={[styles.resultBox, analysisResult.isSafe ? styles.safe : styles.unsafe]}>
-              <Text style={styles.resultTitle}>
-                  {analysisResult.isSafe ? "Meal is Safe ✅" : "Caution ⚠️"}
-              </Text>
-              
-              <View style={{backgroundColor: '#f8f9fa', padding: 10, borderRadius: 8, marginVertical: 10}}>
-                  <Text style={{fontWeight: 'bold', fontSize: 14, marginBottom: 5}}>Total Meal Nutrients:</Text>
-                  <Text style={styles.detailText}>• Sodium: {analysisResult.totalNutrients.sodium.toFixed(0)} mg</Text>
-                  <Text style={styles.detailText}>• Potassium: {analysisResult.totalNutrients.potassium.toFixed(0)} mg</Text>
-                  <Text style={styles.detailText}>• Phosphorus: {analysisResult.totalNutrients.phosphorus.toFixed(0)} mg</Text>
-                  <Text style={styles.detailText}>• Protein: {analysisResult.totalNutrients.protein.toFixed(1)} g</Text>
-              </View>
-
-              {analysisResult.warnings?.length > 0 && (
-                  <View style={{marginTop: 10}}>
-                      <Text style={{fontWeight: 'bold', color: '#721c24'}}>Warnings:</Text>
-                      {analysisResult.warnings.map((w, i) => (
-                          <Text key={i} style={{color: '#721c24', fontSize: 13}}>• {w}</Text>
-                      ))}
-                  </View>
-              )}
-
-              <View style={styles.divider} />
-              <TouchableOpacity style={styles.eatBtn} onPress={() => handleAnalyze(true)}>
-                  <Text style={styles.btnText}>Confirm & Eat</Text>
-              </TouchableOpacity>
-          </View>
-        )}
       </ScrollView>
+
+      {/* --- ANALYSIS RESULT MODAL --- */}
+      <Modal
+        visible={showAnalysisModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowAnalysisModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[
+            styles.analysisModalBox,
+            analysisResult?.status === 'safe' ? styles.safeModal : 
+            analysisResult?.status === 'warning' ? styles.warningModal : 
+            styles.unsafeModal
+          ]}>
+            <Text style={[
+              styles.analysisModalTitle,
+              analysisResult?.status === 'safe' ? styles.safeTitle : 
+              analysisResult?.status === 'warning' ? styles.warningTitle : 
+              styles.unsafeTitle
+            ]}>
+              {analysisResult?.status === 'safe' ? "✅ Meal is Safe" : 
+               analysisResult?.status === 'warning' ? "⚠️ Warning" : 
+               "🚫 Unsafe Meal"}
+            </Text>
+            
+            <View style={styles.nutrientSummary}>
+              <Text style={styles.nutrientSummaryTitle}>Total Meal Nutrients:</Text>
+              <Text style={styles.nutrientDetail}>• Sodium: {analysisResult?.totalNutrients.sodium.toFixed(0)} mg</Text>
+              <Text style={styles.nutrientDetail}>• Potassium: {analysisResult?.totalNutrients.potassium.toFixed(0)} mg</Text>
+              <Text style={styles.nutrientDetail}>• Phosphorus: {analysisResult?.totalNutrients.phosphorus.toFixed(0)} mg</Text>
+              <Text style={styles.nutrientDetail}>• Protein: {analysisResult?.totalNutrients.protein.toFixed(1)} g</Text>
+            </View>
+
+            {analysisResult?.warnings?.length > 0 && (
+              <View style={styles.warningsBox}>
+                <Text style={styles.warningsTitle}>Warnings:</Text>
+                {analysisResult.warnings.map((w, i) => (
+                  <Text key={i} style={styles.warningText}>• {w}</Text>
+                ))}
+              </View>
+            )}
+
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity 
+                style={styles.modalCancelBtn} 
+                onPress={() => setShowAnalysisModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.modalConfirmBtn} 
+                onPress={() => {
+                  setShowAnalysisModal(false);
+                  handleAnalyze(true);
+                }}
+              >
+                <Text style={styles.btnText}>Confirm & Eat</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* --- PROTOCOL MODAL (UPDATED) --- */}
       <Modal
@@ -638,13 +710,38 @@ const MealAnalysisScreen = ({ route, navigation }) => {
             />
         </View>
       </Modal>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 50, backgroundColor: '#fff', flexGrow: 1 },
-  header: { fontSize: 24, fontWeight: 'bold', marginBottom: 15, color: '#051C60' },
+  container: { padding: 20, paddingTop: 10, paddingBottom: 30, backgroundColor: '#fff', flexGrow: 1 },
+  headerContainer: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between',
+    paddingTop: 50, 
+    paddingBottom: 15, 
+    paddingHorizontal: 15,
+    backgroundColor: '#fff', 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#e8e8e8' 
+  },
+  backButton: {
+    padding: 5,
+    width: 40,
+  },
+  header: { 
+    fontSize: 22, 
+    fontWeight: '700', 
+    color: '#051C60', 
+    textAlign: 'center', 
+    letterSpacing: 0.5,
+    flex: 1,
+  },
+  headerSpacer: {
+    width: 40,
+  },
   subHeader: { fontSize: 18, fontWeight: '600', marginBottom: 10, marginTop: 10 },
   imageContainer: { position: 'relative', width: '100%', marginBottom: 15 },
   image: { width: '100%', height: 200, borderRadius: 12 },
@@ -774,7 +871,112 @@ const styles = StyleSheet.create({
   searchInput: { borderWidth: 1, borderColor: '#ccc', borderRadius: 10, padding: 12, fontSize: 16, backgroundColor: '#f9f9f9', marginBottom: 15 },
   searchItem: { flexDirection: 'row', justifyContent: 'space-between', padding: 15, borderBottomWidth: 1, borderBottomColor: '#eee', alignItems: 'center' },
   searchItemText: { fontSize: 18, textTransform: 'capitalize', color: '#333' },
-  emptyText: { textAlign: 'center', marginTop: 20, color: '#666', fontSize: 16 }
+  emptyText: { textAlign: 'center', marginTop: 20, color: '#666', fontSize: 16 },
+
+  // Analysis Result Modal
+  analysisModalBox: {
+    width: '85%',
+    maxHeight: '70%',
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    elevation: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  safeModal: {
+    borderWidth: 3,
+    borderColor: '#28a745',
+    backgroundColor: '#f0fff4',
+  },
+  warningModal: {
+    borderWidth: 3,
+    borderColor: '#ffc107',
+    backgroundColor: '#fffbf0',
+  },
+  unsafeModal: {
+    borderWidth: 3,
+    borderColor: '#dc3545',
+    backgroundColor: '#fff5f5',
+  },
+  analysisModalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  safeTitle: {
+    color: '#28a745',
+  },
+  warningTitle: {
+    color: '#ffc107',
+  },
+  unsafeTitle: {
+    color: '#dc3545',
+  },
+  nutrientSummary: {
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  nutrientSummaryTitle: {
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginBottom: 8,
+    color: '#333',
+  },
+  nutrientDetail: {
+    fontSize: 14,
+    marginBottom: 5,
+    color: '#495057',
+  },
+  warningsBox: {
+    backgroundColor: '#fff3cd',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#ffc107',
+  },
+  warningsTitle: {
+    fontWeight: 'bold',
+    fontSize: 15,
+    color: '#856404',
+    marginBottom: 6,
+  },
+  warningText: {
+    color: '#856404',
+    fontSize: 13,
+    marginBottom: 3,
+  },
+  modalButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+    gap: 10,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    backgroundColor: '#6c757d',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    color: 'white',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  modalConfirmBtn: {
+    flex: 1,
+    backgroundColor: '#28a745',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
 });
 
 export default MealAnalysisScreen;
