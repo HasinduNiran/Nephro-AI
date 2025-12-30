@@ -31,20 +31,52 @@ class PatientDataManager:
                 },
                 "dietary_restrictions": ["Moderate Sodium", "Monitor Potassium"],
                 "last_updated": datetime.now().strftime("%Y-%m-%d") # Mock timestamp
+            },
+            "lasal": {
+                "id": "P002",
+                "name": "Lasal",
+                "email": "l@gmail.com",
+                "age": 24,
+                "gender": "Male",
+                "district": "Anuradhapura",
+                "diagnosis": "High Risk (CKD Suspect)",
+                "stage": "Observation",
+                "egfr": 95, # Inferred Normal for Age 24
+                "comorbidities": ["Uncontrolled Hypertension", "Diabetes Mellitus"],
+                "medications": ["Metformin", "Losartan"],
+                "recent_labs": {
+                    "creatinine": 0.9, # Normal
+                    "potassium": 4.2,
+                    "sodium": 140,
+                    "calcium": 9.5,
+                    "phosphorus": 3.5,
+                    "albumin": 4.5
+                },
+                "dietary_restrictions": ["Low Sugar", "Low Salt"],
+                "last_updated": datetime.now().strftime("%Y-%m-%d")
             }
         }
     
     def get_patient_record(self, patient_id: str = "default_patient") -> Dict:
         """
-        Retrieve patient record by ID
-        
-        Args:
-            patient_id: Unique patient identifier
-            
-        Returns:
-            Dictionary containing patient data or empty dict if not found
+        Retrieve patient record by ID (Case-Insensitive & robust).
         """
-        return self.mock_db.get(patient_id, {})
+        pid = patient_id.lower().strip()
+        
+        # 1. Direct Key Match (e.g., "lasal")
+        if pid in self.mock_db:
+            return self.mock_db[pid]
+            
+        # 2. Check for Alias/Value Match (e.g., if ID matches Name or Email)
+        for key, record in self.mock_db.items():
+            # Check if patient_id matches the record's name or email (case-insensitive)
+            if (record.get("name", "").lower() == pid) or \
+               (record.get("email", "").lower() == pid):
+                return record
+                
+        # 3. Fallback
+        print(f"⚠️ Patient ID '{patient_id}' not found. Using default.")
+        return self.mock_db.get("default_patient", {})
 
     def get_last_update_timestamp(self, patient_id: str = "default_patient") -> str:
         """

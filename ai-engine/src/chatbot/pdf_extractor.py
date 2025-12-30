@@ -13,7 +13,8 @@ import logging
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import project configuration
-import config
+# Import project configuration
+from chatbot import config
 
 # Third-party libraries for PDF processing and NLP
 import PyPDF2          

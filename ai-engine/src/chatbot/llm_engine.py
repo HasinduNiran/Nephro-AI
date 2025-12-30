@@ -1,6 +1,7 @@
 """
 LLM Engine for Nephro-AI
 Handles communication with OpenRouter/OpenAI API to generate responses.
+Implements the 'Sandwich Architecture' for Low-Resource Languages.
 """
 
 import sys
@@ -12,7 +13,7 @@ from typing import List, Dict, Any
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import config
+from chatbot import config
 from chatbot.sinhala_nlu import SinhalaNLUEngine
 
 class LLMEngine:
@@ -20,260 +21,360 @@ class LLMEngine:
         """Initialize LLM Engine with config"""
         self.api_key = config.OPENROUTER_API_KEY
         self.api_url = "https://openrouter.ai/api/v1/chat/completions"
-        self.model = "openai/gpt-4.1" # Bridge & Brain Model
         
-        # Initialize Sinhala NLU (Style Layer)
+        # RESEARCH NOTE: 'flash' models are critical for the <2s latency requirement
+        self.model = "openai/gpt-4o-mini" 
+        # If you want to test the heavy model, use: "openai/gpt-4o" 
+        
+        # Initialize Sinhala NLU
         self.sinhala_nlu = SinhalaNLUEngine()
         
         if not self.api_key:
             print("⚠️ Warning: OPENROUTER_API_KEY not found in config.")
             
-        # Cache for common Sinhala terms to reduce latency
-        self.translation_cache = {
-            "වකුගඩු රෝගය": "Kidney Disease",
-            "දියවැඩියාව": "Diabetes",
-            "අධික රුධිර පීඩනය": "High Blood Pressure",
-            "ක්‍රියැටිනින්": "Creatinine",
-            "ඩයලිසිස්": "Dialysis",
-            "ප්‍රතිකාර": "Treatment",
-            "රෝග ලක්ෂණ": "Symptoms",
-            "ආහාර පාලනය": "Diet Control"
-        }
+        # Cache Setup
+        self.cache_path = config.DATA_DIR / "translation_cache.json"
+        self.translation_cache = self._load_translations()
+        
+        # Default terms
+        if not self.translation_cache:
+            self.translation_cache = {
+                "වකුගඩු රෝගය": "Kidney Disease",
+                "ක්‍රියැටිනින්": "Creatinine",
+                "mage": "my",
+                "kanna": "eat"
+            }
+            self._save_translations()
 
-    def translate_to_english(self, text: str) -> str:
-        """
-        Bridge Layer: Translate Sinhala text to English.
-        """
-        # Simple check if text contains Sinhala characters (Unicode range)
-        is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in text)
-        
-        if not is_sinhala:
-            return text
+    def _load_translations(self) -> Dict[str, str]:
+        if self.cache_path.exists():
+            try:
+                with open(self.cache_path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception: pass
+        return {}
 
-        # Check Cache first
-        for key, value in self.translation_cache.items():
-            if key in text:
-                print(f"⚡ Cache Hit: '{key}' -> '{value}'")
-                # Simple replacement for now, but ideally we want full sentence translation if it's complex
-                # For single terms/short phrases this works well
-                text = text.replace(key, value)
-                
-        # If text is mostly English now (after replacement), return it
-        # This is a heuristic: if < 20% chars are Sinhala, assume it's translated enough
-        sinhala_chars = sum(1 for char in text if '\u0D80' <= char <= '\u0DFF')
-        if sinhala_chars < len(text) * 0.2:
-             return text
-
-        print(f"🔄 Bridge: Translating '{text}' to English...")
-        
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "HTTP-Referer": "https://github.com/Nephro-AI",
-            "X-Title": "Nephro-AI",
-            "Content-Type": "application/json"
-        }
-        
-        payload = {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": "You are a professional translator. Translate the following Sinhala text to English. Output ONLY the translation."},
-                {"role": "user", "content": text}
-            ],
-            "temperature": 0.3,
-            "max_tokens": 200
-        }
-        
+    def _save_translations(self):
         try:
-            response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
-            if response.status_code == 200:
-                translation = response.json()['choices'][0]['message']['content'].strip()
-                print(f"✅ Bridge Output: {translation}")
+            with open(self.cache_path, "w", encoding="utf-8") as f:
+                json.dump(self.translation_cache, f, ensure_ascii=False, indent=2)
+        except Exception: pass
+
+    def _is_sinhala_or_singlish(self, text: str) -> bool:
+        """
+        Detects if text is Sinhala (Unicode) OR Singlish.
+        UPDATED: Uses substring matching to handle concatenated STT outputs.
+        """
+        # 1. Unicode Check (Standard Sinhala)
+        if any('\u0D80' <= char <= '\u0DFF' for char in text):
+            return True
+            
+        # 2. Singlish Keyword Check (Expanded for Medical/CKD Context)
+        singlish_keywords = [
+            # --- Pronouns & Question Words ---
+            "mage", "mata", "mam", "mama", "api", "ape", "oyage", "oya",
+            "mokakda", "monawada", "kohomada", "kawadada", "koheda", "ai", 
+            "kawuda", "neda", "ane", "puluwan", "puluwanda", "ba", "bane",
+            
+            # --- Body Parts (Anatomy) ---
+            "wakkugadu", "wakugadu", "kidney", # Kidney
+            "kakul", "kakula", "kakuldke", "dath", "atha", "ath", # Legs/Hands
+            "oluwa", "his", "hisa", # Head
+            "bada", "papuwa", "pappuwa", # Stomach/Chest
+            "muthra", "mutra", "chu", "choo", # Urine (Critical for CKD)
+            " le ", "lee", "blood", # Blood (Padded ' le ' to avoid matching 'apple')
+            "angili", "angilla", # Fingers
+            "hama", "skin", # Skin
+            
+            # --- Symptoms & Feelings ---
+            "ridenawa", "redena", "kakkumai", "kakkuma", # Pain
+            "idimila", "edimila", "idimuma", "idimenne", "dimenne", # Swelling (Edema)
+            "mahansiyi", "mahansi", "weda", # Tiredness/Fatigue
+            "karakillai", "karakilla", # Dizziness
+            "wamaney", "wamane", "okkara", # Vomiting/Nausea
+            "kessai", "kessa", # Cough
+            "una", "heat", "rasnei", # Fever/Heat
+            "dawillai", "davilla", # Burning sensation
+            "amaru", "amarui", # Difficult/Painful
+            "bayayi", "baya", # Scared
+            "nidimathai", "ninda", # Sleepy
+            
+            # --- Food & Diet (Critical for CKD) ---
+            "kanna", "kana", "kema", "kaama", "kam", # Eat/Food
+            "bonna", "bila", "beela", # Drink
+            "wathura", "watura", "water", # Water
+            "lunu", "salt", # Salt
+            "seeni", "sugar", # Sugar
+            "thel", "tel", # Oil
+            "bath", "bat", "rice", # Rice
+            "parippu", "dhal", # Lentils
+            "elawalu", "elavalu", # Vegetables
+            "palathuru", "palaturu", "fruit", # Fruits
+            "mas", "malu", "biththara", "bittara", # Meat/Fish/Eggs
+            "kiri", "tea", # Milk/Tea
+            "koththamalli", "thambili", # Herbal/King Coconut
+            # Specific Fruits/Veg common in queries:
+            "kesel", "kehel", "banana",
+            "amba", "aba", "mango",
+            "papol", "papaya",
+            "del", "kos", "jackfruit",
+            
+            # --- Medical Actions & Terms ---
+            "beheth", "behet", "pethi", "peti", # Medicine/Pills
+            "injection", "vidda", 
+            "check", "pariksha", "test", "report", # Tests
+            "doctar", "dosthara", "nurse", # Staff
+            "nawaththanna", "nawathanna", # Stop
+            "ganna", "gaththa", # Take/Took
+            "adui", "wadi", "godak", "tika", # Low/High/Lot/Little
+            "pressure", "presha", "bp", # Blood Pressure
+            "sugar", "sini", "diabetic", # Diabetes
+            "clinic", "hospital", "issaraha", # Locations
+            "pramanaya", "kochchara", "koccara", # Quantity
+            "nedde", "nadda", # Negative questions
+            "etokota", "ethakota" # Then/So
+        ]
+        
+        text_lower = text.lower()
+        
+        # FIX: Check if keyword is INSIDE the text, not just an exact split
+        for keyword in singlish_keywords:
+            if keyword in text_lower:
+                return True
                 
-                # Dynamic Caching: Store result for next time
-                self.translation_cache[text] = translation
-                
-                return translation
-            else:
-                print(f"❌ Bridge Error: {response.text}")
-                return text # Fallback
+        return False
+
+    def translate_to_english(self, text: str, chat_history: List[Dict] = []) -> str:
+        """
+        Translates Sinhala to English with CONTEXT AWARENESS.
+        """
+        # 1. Get Context (What did the Doctor ask last?)
+        context_str = "No previous context."
+        if chat_history:
+            # Get the last message from the Assistant (Doctor)
+            last_doctor_msg = next((msg['content'] for msg in reversed(chat_history) if msg['role'] == 'assistant'), None)
+            if last_doctor_msg:
+                context_str = f"Doctor previously asked: '{last_doctor_msg}'"
+
+        # 2. UPDATED DICTIONARY
+        dictionary = """
+        MANDATORY DICTIONARY:
+        # --- Multi-Word Medical Terms (High Priority) ---
+        - Wakugadu amaru / Wakkugadu amaru -> Kidney disease / Kidney trouble
+        - Bada amaru /Bade amaru/ bada ridenawa -> Stomach ache
+        - Papuwe amaru -> Chest pain / Heart trouble
+        
+        # --- Severity / Adjectives ---
+        - Podi / Poddak / Tikak / chuttak/ chuti/ chooti -> Mild / Slight / A little bit
+        - Godak /loku -> Severe / Very
+        
+        # --- Symptoms ---
+        - Kakkumai / Kakkuma -> Pain
+        - Ridenawa -> Pain / Hurts
+        - Amaru -> Difficulty / Trouble / Disease (Depends on context)
+        - Idimenne / Idimuma -> Swelling
+        - Hathiya -> Difficulty breathing
+        
+        # --- Context ---
+        - Thiyanwada / Thiyenawada -> Do I have? / Is there?
+        - Mata -> I / To me
+        """
+
+        system_instruction = (
+            "You are a medical translator. \n"
+            f"CONTEXT: {context_str}\n" 
+            f"{dictionary}\n"
+            "RULES:\n"
+            "1. **COMPOUND WORDS FIRST**: Check for 2-word phrases like 'Wakugadu amaru' BEFORE translating individual words.\n"
+            "2. 'Wakugadu amaru' implies 'Kidney Disease', NOT just 'Kidney pain'.\n"
+            "3. Output ONLY the English translation."
+        )
+
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "HTTP-Referer": "https://github.com/Nephro-AI",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "model": "openai/gpt-4o-mini",
+                "messages": [
+                    {"role": "system", "content": system_instruction},
+                    {"role": "user", "content": text}
+                ],
+                "temperature": 0.0
+            }
+            response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=10)
+            return response.json()['choices'][0]['message']['content'].strip()
+            
         except Exception as e:
-            print(f"❌ Bridge Exception: {e}")
+            print(f"❌ Bridge Error: {e}")
             return text
+
+    def enforce_spoken_sinhala(self, text: str) -> str:
+        """
+        [SAFETY NET] Deterministically replaces formal words with spoken Sinhala (Code-Mixed).
+        This runs AFTER the LLM to catch any mistakes.
+        """
+        replacements = {
+            "රුධිර පීඩනය": "Pressure eka",  # Rudira Peedanaya -> Pressure eka
+            "පීඩනය": "Pressure eka",       # Peedanaya -> Pressure eka
+            "දියවැඩියාව": "Sugar",         # Diyawadiyawa -> Sugar
+            "රුධිර සීනි": "Sugar",         # Rudira Seeni -> Sugar
+            "වෛද්‍යවරයා": "Dosthara",      # Waidyawaraya -> Dosthara
+            "වෛද්‍ය": "Dosthara",          # Waidya -> Dosthara
+            "අවදානම": "Risk eka",          # Awadanama -> Risk eka
+            "පරීක්ෂණය": "Test eka",        # Parikshanaya -> Test eka
+            "වාර්තාව": "Report eka",       # Warthawa -> Report eka
+            "සායනය": "Clinic eka",         # Sayanaya -> Clinic eka
+            "අවාසනාවන්තයි": "කණගාටුයි",    # Awasanawanthai -> Kanagatui
+            "පැතිකඩ": "විස්තර",             # Pathikada -> Wisthara
+            "සක්‍රීය": "සැලකිලිමත්",        # Sakriya -> Selakilimath
+            "ඖෂධ": "බෙහෙත්",               # Oushada -> Beheth
+            "ආරක්ෂාව": "පරිස්සම් වෙන්න",   # Arakshawa -> Parissam wenna
+            "#": "",                       # Remove Headers
+            "*": ""                        # Remove Bolding
+        }
+        
+        for formal, spoken in replacements.items():
+            text = text.replace(formal, spoken)
+            
+        return text
 
     def translate_to_sinhala_fallback(self, text: str) -> str:
-        """
-        Fallback Style Layer: Translate English text to Sinhala using OpenAI.
-        Used when SinLLaMA is not available.
-        """
-        print(f"⚠️ Style: SinLLaMA not loaded. Using OpenAI fallback...")
+        """[STYLE LAYER] Concept-Mapping + Safety Net."""
+        print(f"⚠️ Style: Mapping concepts to Spoken Sinhala...")
         
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "HTTP-Referer": "https://github.com/Nephro-AI",
-            "X-Title": "Nephro-AI",
             "Content-Type": "application/json"
         }
         
+        # Keep your strong prompt here (The one I gave you in the previous step)
+        # It is still the first line of defense.
+        system_prompt = (
+            "You are a Sri Lankan friend. Translate medical advice into **SPOKEN SINHALA (Katha Wahara)**.\n"
+            "Use English words for: Pressure, Sugar, Clinic, Report, Test.\n"
+            "Use 'Dosthara' for Doctor, 'Beheth' for Medicine.\n"
+            "Never use formal words like 'Oba', 'Yuthuya', 'Peedanaya'.\n"
+            "Output UNICODE SINHALA only."
+        )
+        
         payload = {
-            "model": self.model,
+            "model": "openai/gpt-4o-mini", 
             "messages": [
-                {"role": "system", "content": "You are a professional translator. Translate the following English medical advice into natural, empathetic Sinhala. Output ONLY the translation."},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": text}
             ],
-            "temperature": 0.5,
-            "max_tokens": 500
+            "temperature": 0.1
         }
         
         try:
             response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
             if response.status_code == 200:
-                translation = response.json()['choices'][0]['message']['content'].strip()
-                return translation
-            else:
-                print(f"❌ Style Fallback Error: {response.text}")
-                return text # Ultimate fallback
+                raw_translation = response.json()['choices'][0]['message']['content'].strip()
+                
+                # 🛡️ RUN THE SAFETY NET
+                final_translation = self.enforce_spoken_sinhala(raw_translation)
+                
+                print(f"✅ Style Output: {final_translation[:50]}...") 
+                return final_translation
         except Exception as e:
-            print(f"❌ Style Fallback Exception: {e}")
-            return text
+            print(f"❌ Style Layer Error: {e}")
+            pass
+            
+        return text 
+
+    def _generate_system_prompt(self, patient_context: str) -> str:
+        return f"""
+        You are 'Nephro-AI', a wise and efficient medical assistant.
+        PATIENT CONTEXT: {patient_context}
+
+        YOUR GOAL: Triage -> Investigate (Briefly) -> Advise.
+
+        BEHAVIOR PROTOCOL:
+        1. 👋 **GREETINGS & RE-GREETINGS**:
+           - If the user says "Hi", "Hello", or "How are you", reply warmly.
+           - Even if history exists, greet them again if they say "Hi".
+
+        2. 🚨 **RED FLAG CHECK**: 
+           - Chest pain, difficulty breathing, severe bleeding -> STOP -> Hospital Advice.
+
+        3. 🛑 **THE "2-QUESTION" RULE**:
+           - Do not ask more than 2 clarifying questions in a row.
+           - If history exists, provide advice now.
+
+        4. 🔍 **INVESTIGATE**: 
+           - Ask specific questions for vague symptoms.
+
+        5. 💡 **PROVIDE SOLUTION**:
+           - Diagnosis hypothesis + Home remedy + Safety Net.
+        
+        6. ✅ **ACKNOWLEDGEMENTS & CLOSURES** (NEW RULE):
+           - If the user says "Ok", "Okay", "Thanks", "Thank you", or "Fine":
+           - **DO NOT** restart the conversation.
+           - **DO NOT** say "Hello" or introduce yourself.
+           - REPLY POLITELY: "You're welcome! Take care of your health." or "Glad I could help. Stay safe."
+
+        7. **TONE**: Empathetic, professional, decisive.
+        """
+
 
     def generate_response(
         self, 
         query: str, 
         context_documents: List[str], 
-        patient_context: str
+        patient_context: str,
+        history: List[Dict[str, str]] = []
     ) -> str:
         """
-        Generate a response using the Sandwich Method:
-        1. Bridge: Sinhala -> English
-        2. Brain: RAG (English) - NEVER CACHED for safety
-        3. Style: English -> Sinhala
+        Pure Brain Layer: Generates response based on provided English Query & Context.
+        (Translation is handled externally by RAGEngine)
         """
-        # SAFETY CRITICAL: Do NOT cache this function's output.
-        # Patient data (e.g., Potassium levels) changes over time.
-        # Caching the final response could lead to dangerous, outdated advice.
+        print("\n[2] 🧠 BRAIN LAYER (Generating Response...)")
         
-        print("\n" + "="*50)
-        print("🚀 STARTING PIPELINE")
-        print("="*50)
-        
-        # --- 1. BRIDGE LAYER (Sinhala -> English) ---
-        print("\n[1] 🌉 BRIDGE LAYER")
-        english_query = self.translate_to_english(query)
-        
-        # --- 2. BRAIN LAYER (English Logic + RAG) ---
-        print("\n[2] 🧠 BRAIN LAYER")
-        
-        # Construct the System Prompt
-        system_prompt = (
-            "You are Nephro-AI, a specialized medical assistant for Chronic Kidney Disease (CKD) patients. "
-            "Your goal is to provide accurate, empathetic, and personalized information based on the provided context.\n\n"
-            "GUIDELINES:\n"
-            "1. USE CONTEXT: Base your answer PRIMARILY on the provided 'Medical Knowledge Context'. "
-            "If the answer is not in the context, say you don't know, but offer general advice if safe.\n"
-            "2. PERSONALIZE: Use the 'Patient Profile' to tailor your advice (e.g., if potassium is high, warn about bananas).\n"
-            "3. TONE: Empathetic, professional, clear, and encouraging.\n"
-            "4. FORMAT: Use bullet points for lists. Keep paragraphs short.\n"
-            "5. NO SUMMARY/DISCLAIMER: Do NOT include a 'Summary' section or a 'Disclaimer' section at the end. Just provide the answer directly.\n"
-            "6. LANGUAGE: If the 'Original Language' is Sinhala, you MUST reply in Sinhala directly. Do not output English."
-        )
-
-        # Construct the User Prompt with Context
+        # 1. Base System Prompt
+        system_prompt = self._generate_system_prompt(patient_context)
         knowledge_context = "\n\n".join(context_documents[:3])
         
-        # Determine original language for the prompt
-        is_sinhala_query = any('\u0D80' <= char <= '\u0DFF' for char in query)
-        original_language = "Sinhala" if is_sinhala_query else "English"
+        # 2. Construct Message List
+        messages = [{"role": "system", "content": system_prompt}]
         
-        user_prompt = (
-            f"--- PATIENT PROFILE ---\n{patient_context}\n\n"
-            f"--- MEDICAL KNOWLEDGE CONTEXT ---\n{knowledge_context}\n\n"
-            f"--- USER QUESTION ---\n{english_query}\n"
-            f"Original Language: {original_language}"
-        )
+        # 3. Inject History (Limit to last 4 turns)
+        if history:
+            valid_history = history[-4:] 
+            for msg in valid_history:
+                role = "user" if msg['role'] == "user" else "assistant"
+                messages.append({"role": role, "content": msg['content']})
 
-        # Call API for Brain Layer
+        # 4. Add Current User Question with RAG Context
+        user_message_content = f"KNOWLEDGE BASE:\n{knowledge_context}\n\nCURRENT PATIENT QUERY:\n{query}"
+        messages.append({"role": "user", "content": user_message_content})
+
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "HTTP-Referer": "https://github.com/Nephro-AI",
-            "X-Title": "Nephro-AI",
             "Content-Type": "application/json"
         }
         
         payload = {
             "model": self.model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            "temperature": 0.7,
-            "max_tokens": 500
+            "messages": messages, 
+            "temperature": 0.7
         }
 
-        english_response = ""
         try:
-            response = requests.post(
-                self.api_url, 
-                headers=headers, 
-                data=json.dumps(payload),
-                timeout=30
-            )
-            
+            response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
             if response.status_code == 200:
-                result = response.json()
-                english_response = result['choices'][0]['message']['content'].strip()
+                english_response = response.json()['choices'][0]['message']['content'].strip()
                 print(f"✅ Brain Output: {english_response}")
-            else:
-                return f"Error generating response: {response.status_code} - {response.text}"
-                
-        except Exception as e:
-            return f"Error communicating with LLM: {str(e)}"
-
-        # --- 3. STYLE LAYER (English -> Sinhala) ---
-        # Optimization: If original query was Sinhala, the Brain Layer should have already replied in Sinhala.
-        # We only need the Style Layer if the Brain Layer failed to produce Sinhala (fallback check) or if we want to enforce NLU style.
-        
-        print("\n[3] 🎨 STYLE LAYER")
-        
-        if is_sinhala_query:
-            # Check if response is already Sinhala
-            is_response_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in english_response)
-            
-            if is_response_sinhala:
-                print("✅ Brain Layer replied in Sinhala. Skipping explicit Style Layer translation.")
                 return english_response
             else:
-                print("⚠️ Brain Layer replied in English. Activating Style Layer fallback...")
-                if self.sinhala_nlu.model:
-                    print("✨ Using SinLLaMA for styling...")
-                    sinhala_response = self.sinhala_nlu.generate_sinhala_response(english_response)
-                    print(f"✅ Style Output: {sinhala_response}")
-                    return sinhala_response
-                else:
-                    print("⚠️ SinLLaMA not available. Falling back to OpenAI...")
-                    sinhala_response = self.translate_to_sinhala_fallback(english_response)
-                    print(f"✅ Style Output (Fallback): {sinhala_response}")
-                    return sinhala_response
-        else:
-            print("ℹ️ Query was English. Skipping Style Layer.")
-            return english_response
+                return f"Error: {response.status_code}"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
 if __name__ == "__main__":
-    # Test
     llm = LLMEngine()
-    
-    # Test Case 1: English
-    print("\n--- TEST 1: English ---")
-    print(llm.generate_response(
-        "Can I eat bananas?", 
-        ["Bananas are high in potassium.", "High potassium is dangerous for Stage 3+ CKD."], 
-        "Patient Profile: Stage 3 CKD, High Potassium (5.2)"
-    ))
-    
-    # Test Case 2: Sinhala (Mocking the input)
-    print("\n--- TEST 2: Sinhala ---")
-    # "මට කෙසල් කන්න පුළුවන්ද?" (Can I eat bananas?)
-    print(llm.generate_response(
-        "මට කෙසල් කන්න පුළුවන්ද?", 
-        ["Bananas are high in potassium.", "High potassium is dangerous for Stage 3+ CKD."], 
-        "Patient Profile: Stage 3 CKD, High Potassium (5.2)"
-    ))
+    print(llm.generate_response("mage kakul idimila wage", [], "No Context"))

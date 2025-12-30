@@ -7,6 +7,8 @@ import LoginScreen from "./src/screens/LoginScreen";
 import SignupScreen from "./src/screens/SignupScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 import RiskPredictionScreen from "./src/screens/RiskPredictionScreen";
+import RiskHistoryScreen from "./src/screens/RiskHistoryScreen";
+import ChatbotScreen from "./src/screens/ChatbotScreen";
 
 const Stack = createStackNavigator();
 
@@ -18,10 +20,22 @@ const App = () => {
         <Stack.Screen name="Signup" component={SignupScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="RiskPrediction" component={RiskPredictionScreen} />
+        <Stack.Screen 
+          name="RiskHistory" 
+          component={RiskHistoryScreen}
+          options={{
+            headerShown: true,
+            title: "Risk History",
+            headerStyle: { backgroundColor: "#F5F7FA" },
+            headerTintColor: "#1C1C1E",
+          }}
+        />
+        <Stack.Screen name="Chatbot" component={ChatbotScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 };
+
 
 const styles = StyleSheet.create({
   root: {

@@ -14,7 +14,8 @@ from tqdm import tqdm
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import project configuration
-import config
+# Import project configuration from chatbot package
+from chatbot import config
 
 # Import OpenAI embeddings (via OpenRouter)
 from chatbot.openai_embeddings import OpenAIEmbeddings

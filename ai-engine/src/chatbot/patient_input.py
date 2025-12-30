@@ -1,29 +1,30 @@
 """
 Patient Input Handler for Nephro-AI
 Handles both Voice (STT) and Text input methods.
-Uses OpenAI Whisper for local speech-to-text conversion.
+Uses Groq Cloud API for ultra-fast speech-to-text.
 """
 
 import os
 import sys
 import time
-import threading
 import queue
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
+import threading
+import tempfile
 from pathlib import Path
-from typing import Optional, Tuple
-from faster_whisper import WhisperModel
+from typing import Optional
+from groq import Groq
 import torch
 
 # Add parent directory to path to import config
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
-    from config import MEDICAL_ENTITIES, expand_abbreviations
+    from chatbot.config import MEDICAL_ENTITIES, expand_abbreviations
 except ImportError:
-    # Fallback if config cannot be imported (e.g. running from wrong dir)
+    # Fallback if config cannot be imported
     print("⚠️ Warning: Could not import MEDICAL_ENTITIES from config. Using default list.")
     MEDICAL_ENTITIES = ["CKD", "Creatinine", "eGFR", "Dialysis", "Diabetes", "Blood Pressure"]
     def expand_abbreviations(text): return text
@@ -33,42 +34,47 @@ import shutil
 # Check for FFmpeg
 if not shutil.which("ffmpeg"):
     print("⚠️ Warning: FFmpeg not found in PATH. Audio processing may fail.")
-    print("   Please install FFmpeg and add it to your PATH.")
-    # You could optionally add a fallback check for common locations here if desired, 
-    # but relying on PATH is best practice.
-else:
-    print("✅ FFmpeg found.")
+
+# 🔑 CONFIGURATION
+from dotenv import load_dotenv
+load_dotenv()
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 class PatientInputHandler:
-    def __init__(self, model_size: str = "medium"):
+    def __init__(self, model_size: str = "ignored"):
         """
         Initialize Patient Input Handler
-        
         Args:
-            model_size: Whisper model size (tiny, base, small, medium, large)
+            model_size: Ignored (Groq Cloud always uses large-v3)
         """
-        self.model_size = model_size
+        print("☁️ Initializing Groq Cloud STT Engine...")
+        
+        try:
+            self.client = Groq(api_key=GROQ_API_KEY)
+            print("✅ Groq STT Ready (Model: whisper-large-v3)")
+        except Exception as e:
+            print(f"❌ Critical Error: Groq Client failed to start. {e}")
+            self.client = None
+
         self.recording = False
         self.audio_queue = queue.Queue()
-        
-        print(f"⏳ Loading Faster-Whisper ({model_size})...")
-        # 'int8' is the magic setting for 4x speed on CPU
-        # If you have an NVIDIA GPU, change device="cpu" to device="cuda"
-        self.whisper_model = WhisperModel(model_size, device="cpu", compute_type="int8")
-        print("✅ Model Loaded")
 
-        # 1. Load the Silero VAD model (Downloads once, then caches)
-        # We use the 'jit' version for speed (Just-In-Time compilation)
-        print("⏳ Loading VAD Model...")
-        self.vad_model, utils = torch.hub.load(
-            repo_or_dir='snakers4/silero-vad',
-            model='silero_vad',
-            force_reload=False,
-            trust_repo=True
-        )
-        (self.get_speech_timestamps, _, self.read_audio, _, _) = utils
-        print("✅ VAD Ready")
-            
+        # 1. Load Silero VAD for Smart Recording (Stop on Silence)
+        # We keep this LOCALLY to detect when the user stops speaking.
+        print("⏳ Loading VAD Model (for recording logic)...")
+        try:
+            self.vad_model, utils = torch.hub.load(
+                repo_or_dir='snakers4/silero-vad',
+                model='silero_vad',
+                force_reload=False,
+                trust_repo=True
+            )
+            (self.get_speech_timestamps, _, self.read_audio, _, _) = utils
+            print("✅ VAD Ready")
+        except Exception as e:
+            print(f"⚠️ VAD Load Failed: {e}. Recording might not auto-stop correctly.")
+            self.vad_model = None
+
     def record_audio(self, sample_rate=16000):
         """
         Smart Recording Loop:
@@ -76,6 +82,10 @@ class PatientInputHandler:
         2. Starts saving ONLY when 'Human Voice' is detected.
         3. Stops automatically after 2.0 seconds of silence.
         """
+        if not self.vad_model:
+            print("❌ VAD not loaded. Cannot record smartly.")
+            return None
+
         print("\n🎤 Listening... (Start speaking)")
         
         buffer = []
@@ -83,7 +93,6 @@ class PatientInputHandler:
         silence_start_time = None
         
         # Silero expects chunks of 512 samples (for 16k Hz)
-        # 512 samples @ 16kHz = ~32ms
         chunk_size = 512 
         
         try:
@@ -97,7 +106,6 @@ class PatientInputHandler:
                     audio_tensor = torch.from_numpy(audio_chunk)
 
                     # Get confidence (0.0 to 1.0)
-                    # This is the "Neural" check - is this human speech?
                     speech_prob = self.vad_model(audio_tensor, sample_rate).item()
                     
                     # Logic: Is this speech?
@@ -126,57 +134,99 @@ class PatientInputHandler:
             # Save Buffer to File
             full_audio = np.concatenate(buffer)
             
-            # Save to temp file
-            temp_dir = Path("temp_audio")
-            temp_dir.mkdir(exist_ok=True)
-            timestamp = int(time.time())
-            filename = temp_dir / f"recording_{timestamp}.wav"
+            # Use tempfile for safer handling (and OS auto-cleanup eventually if we miss it)
+            # delete=False is required on Windows if we want to close and then re-open by name
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_file:
+                filename = temp_file.name
+                sf.write(filename, full_audio, sample_rate)
             
-            sf.write(str(filename), full_audio, sample_rate)
-            return str(filename)
+            return filename
 
         except Exception as e:
             print(f"❌ Recording failed: {e}")
             return None
 
     def transcribe_audio(self, audio_path: str, language: str = None) -> str:
+        """
+        Sends audio to Groq Cloud and returns text.
+        Includes a 'Prompt' to guide Whisper towards Medical/Diet context.
+        """
+        if not self.client:
+            print("❌ Error: Groq client not initialized.")
+            return ""
+        
         if not os.path.exists(audio_path):
             return ""
 
         print(f"🔄 Transcribing ({language if language else 'auto'})...")
-        
+
+        # RESEARCH FIX 1: THE "GOLDEN" CONTEXT PROMPT
+        # We mix English and Singlish to tell Whisper exactly what to expect.
+        context_prompt = (
+            "Medical conversation in Sri Lanka. "
+            "Topics: Kidney Disease (CKD), Diet, Symptoms. "
+            "Keywords: Mata, Mage, Kanna, Bonna, Puluwanda, Ridenawa, "
+            "Wakkugadu (Kidney), Le (Blood), Beheth (Medicine), "
+            "Kesel (Banana), Amba (Mango), Aba, Kochchara, Pramanayak."
+        )
+
         try:
-            # 1. Construct the Prompt (The most important part for Research)
-            # This teaches the model that "Sinhala" here involves English terms.
-            base_prompt = "This is a medical discussion about CKD. Common terms: Creatinine, eGFR, Potassium, Dialysis, Urea."
+            # 1. Open and Send File with RETRY LOGIC
+            text = ""
+            for attempt in range(2):
+                try:
+                    with open(audio_path, "rb") as file:
+                        transcription = self.client.audio.transcriptions.create(
+                            file=(audio_path, file.read()),
+                            model="whisper-large-v3", 
+                            response_format="text", 
+                            prompt=context_prompt, 
+                            # RESEARCH FIX 2: FORCE TEMPERATURE TO 0
+                            # This stops the model from being "creative" and hallucinating Korean/Greek.
+                            temperature=0.0, 
+                            # Keep 'si' if you want Sinhala Script output.
+                            # If you want Singlish output (English letters), remove this line!
+                            language="si" if language == 'si' else None, 
+                        )
+                    text = transcription.strip()
+                    break 
+                except Exception as e:
+                    if attempt == 0:
+                        print(f"⚠️ Attempt {attempt+1} failed. Retrying...")
+                        time.sleep(1) 
+                    else:
+                        raise e 
             
-            if language == 'si':
-                # Force Singlish behavior
-                initial_prompt = base_prompt + " Sinhala sentences often contain English medical terms."
-            else:
-                initial_prompt = base_prompt
+            # RESEARCH FIX 3: AGGRESSIVE GARBAGE FILTER
+            # Filter out common Whisper hallucinations
+            ghosts = [
+                "you", "thank you", "thanks", "start speaking", 
+                "subtitle", "music", "watching", "amara.org", "mbc",
+                "felip", "goddess", "naruhodou"
+            ]
+            
+            text_lower = text.lower()
+            
+            # Check for specific garbage characters that indicate hallucination
+            if (not text) or (len(text) < 2) or \
+               (text_lower.strip(" .!?") in ghosts) or \
+               any(x in text_lower for x in ["맞", "τέ", "ل", "그랑"]): # Detect foreign scripts
+               
+                print(f"🚫 Ignored Hallucination/Silence: '{text}'")
+                try: os.remove(audio_path)
+                except: pass
+                return ""
 
-            # 2. Run Inference
-            # faster-whisper returns a 'generator' (segments) which streams text as it processes
-            segments, info = self.whisper_model.transcribe(
-                audio_path,
-                language=language,
-                initial_prompt=initial_prompt,
-                beam_size=5, # Higher beam = better accuracy for slightly less speed
-                vad_filter=True, # Built-in Silero VAD to skip silence!
-                vad_parameters=dict(min_silence_duration_ms=500)
-            )
-
-            # 3. Combine Segments
-            text_result = " ".join([segment.text for segment in segments]).strip()
+            print(f"📝 STT Output: '{text}'")
             
-            print(f"🗣️ Detected Language: {info.language} (Confidence: {info.language_probability:.2f})")
-            print(f"🗣️ Text: \"{text_result}\"")
-            
-            return text_result
+            try:
+                os.remove(audio_path)
+            except: pass
+                
+            return text
 
         except Exception as e:
-            print(f"❌ Transcription failed: {e}")
+            print(f"❌ Groq API Error: {e}")
             return ""
             
     def play_audio(self, audio_path: str):
@@ -191,14 +241,6 @@ class PatientInputHandler:
     def get_input(self, mode: str = "text", debug_audio: bool = False, language: str = None) -> str:
         """
         Get input from patient
-        
-        Args:
-            mode: 'text' or 'voice'
-            debug_audio: If True, plays back recorded audio
-            language: Language code for transcription (e.g., 'si')
-            
-        Returns:
-            Patient query string
         """
         if mode == "voice":
             audio_path = self.record_audio()

@@ -13,7 +13,8 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import project configuration and embeddings
-import config
+# Import project configuration and embeddings
+from chatbot import config
 from chatbot.openai_embeddings import OpenAIEmbeddings
 
 
