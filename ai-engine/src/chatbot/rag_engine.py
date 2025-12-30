@@ -33,53 +33,34 @@ class RAGEngine:
 
     def _detect_output_language(self, text: str) -> str:
         """
-        Determines the Response Language:
-        - 'si' if input has Sinhala chars OR Singlish keywords.
-        - 'en' if input has English keywords.
+        Determines the Response Language based on Input.
+        Strict Mirroring Strategy.
         """
-        text_lower = f" {text.lower()} " # Pad text for safer matching
-
-        # 1. CHECK FOR SINHALA UNICODE (Absolute Truth)
+        text_lower = text.lower()
+        
+        # 1. Check for Sinhala Characters (Unicode)
         if any('\u0D80' <= char <= '\u0DFF' for char in text):
             return 'si'
 
-        # 2. CHECK FOR ENGLISH KEYWORDS
-        # Added 'make', 'do', 'can' to cover more ground
-        english_roots = [
-            ' i ', ' my ', ' you ', ' the ', ' is ', ' are ', ' am ', 
-            ' pain', ' hurt', ' ache', ' sick', ' doctor', ' hospital',
-            ' kidney', ' stomach', ' head', ' leg', ' chest', ' breath',
-            ' vomit', ' nausea', ' dizzy', ' fever', ' swell',
-            ' what', ' where', ' when', ' how ', ' who', ' why',
-            ' hi ', ' hello', ' hey', ' morning', ' evening', ' help',
-            ' make ', ' do ', ' can ', ' to ', ' for '
-        ]
-        
-        # 3. CHECK FOR SINGLISH KEYWORDS (FIXED: Padded short words)
+        # 2. Check for Singlish Roots (Phonetic Sinhala)
         singlish_roots = [
             'mata', 'mage', 'oyage', 'ape', 'apata',
             'ridenawa', 'kakkuma', 'amaru', 'idimenawa', 'idimuma',
             'bada', 'oluwa', 'papuwa', 'kakula', 'atha',
-            'mokakda', 'koheda', 'kawadada', 'kohomada',
+            'mokakda', 'koheda', 'kawadada', 'kohomada', 'ai',
             'podi', 'loku', 'godak', 'hari', 'tikak',
-            'beheth', 'kanna', 'bonna', 'yanne', 'epaa',
-            # ⚠️ DANGEROUS SHORT WORDS (Now Padded with spaces)
-            ' ai ', ' ne ', ' na ', ' ow ', ' le ', ' ane '
+            'beheth', 'le', 'kanna', 'bonna', 'yanne',
+            'nadda', 'nedda', 'ne', 'na', 'ow', 'epa',
+            'kohomada', 'wakkugadu'
         ]
 
-        # Count matches
-        english_score = sum(1 for root in english_roots if root in text_lower)
         singlish_score = sum(1 for root in singlish_roots if root in text_lower)
-
-        print(f"🔍 Lang Detect: English Score={english_score}, Singlish Score={singlish_score}")
-
-        # LOGIC:
-        if english_score > 0 and english_score >= singlish_score:
-            return 'en'
         
+        # 3. Decision Logic
         if singlish_score > 0:
-            return 'si'
-            
+            return 'si' # Input was Singlish -> Output Sinhala
+        
+        # Default to English if no Sinhala traits found
         return 'en'
 
     def process_query(self, query: str, patient_id: str = "default_patient", chat_history: List[Dict[str, str]] = []) -> Dict[str, Any]:
@@ -150,7 +131,7 @@ class RAGEngine:
             print(f"🎨 STYLE: Translating Output to Sinhala...")
             final_response = self.llm.translate_to_sinhala_fallback(llm_response)
             # LOG THE RESULT TO CATCH GIBBERISH
-            print(f"   ↳ Final Sinhala: {final_response[:100]}...") 
+            print(f"   ↳ Final Sinhala: {final_response}") 
         else:
             print("ℹ️ STYLE: Skipped (English Mode)")
         

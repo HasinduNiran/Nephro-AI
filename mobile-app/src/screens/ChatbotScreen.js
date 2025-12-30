@@ -31,12 +31,10 @@ import Markdown from "react-native-markdown-display";
 
 // 👇 [NEW] Import Speech Library
 import * as Speech from 'expo-speech';
+import { CHATBOT_URL } from "../api/axiosConfig";
 
-// OLD (Wi-Fi IP)
-// const BACKEND_URL = "http://192.168.43.166:8000";
-
-// NEW (USB Tunneling / Local Network)
-const BACKEND_URL = "http://172.28.2.215:8001";
+// Use centralized URL from axiosConfig
+const BACKEND_URL = CHATBOT_URL;
 
 // Custom base64 decode for React Native (atob polyfill)
 const base64Decode = (str) => {
@@ -462,8 +460,9 @@ const ChatbotScreen = ({ route, navigation }) => {
 
     if (!textToSend) setMessage(""); // Clear input if typed
     
-    // Stop any previous speech
-    Speech.stop();
+    // 🛑 REMOVE or COMMENT OUT this line (Don't speak when user is typing)
+    // Speech.stop(); 
+    
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     setMessages((prev) => [
@@ -490,8 +489,8 @@ const ChatbotScreen = ({ route, navigation }) => {
       
       const botReply = res.data.response;
 
-      // 👇 [UPDATED] Speak text immediately!
-      speakResponse(botReply);
+      // 🛑 COMMENT OUT THIS LINE (This stops Auto-Play for Text)
+      // speakResponse(botReply); 
 
       setMessages((prev) => [
         ...prev,

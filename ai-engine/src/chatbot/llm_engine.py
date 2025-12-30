@@ -213,27 +213,41 @@ class LLMEngine:
 
     def enforce_spoken_sinhala(self, text: str) -> str:
         """
-        [SAFETY NET] Deterministically replaces formal words with spoken Sinhala (Code-Mixed).
-        This runs AFTER the LLM to catch any mistakes.
+        [SAFETY NET] Fixes vocabulary and script mixing issues.
         """
         replacements = {
-            "රුධිර පීඩනය": "Pressure eka",  # Rudira Peedanaya -> Pressure eka
-            "පීඩනය": "Pressure eka",       # Peedanaya -> Pressure eka
-            "දියවැඩියාව": "Sugar",         # Diyawadiyawa -> Sugar
-            "රුධිර සීනි": "Sugar",         # Rudira Seeni -> Sugar
-            "වෛද්‍යවරයා": "Dosthara",      # Waidyawaraya -> Dosthara
-            "වෛද්‍ය": "Dosthara",          # Waidya -> Dosthara
-            "අවදානම": "Risk eka",          # Awadanama -> Risk eka
-            "පරීක්ෂණය": "Test eka",        # Parikshanaya -> Test eka
-            "වාර්තාව": "Report eka",       # Warthawa -> Report eka
-            "සායනය": "Clinic eka",         # Sayanaya -> Clinic eka
-            "අවාසනාවන්තයි": "කණගාටුයි",    # Awasanawanthai -> Kanagatui
-            "පැතිකඩ": "විස්තර",             # Pathikada -> Wisthara
-            "සක්‍රීය": "සැලකිලිමත්",        # Sakriya -> Selakilimath
-            "ඖෂධ": "බෙහෙත්",               # Oushada -> Beheth
-            "ආරක්ෂාව": "පරිස්සම් වෙන්න",   # Arakshawa -> Parissam wenna
-            "#": "",                       # Remove Headers
-            "*": ""                        # Remove Bolding
+            # 1. Fix "Current Profile" (Pathikada -> Warthamana Thathwaya)
+            "පැතිකඩ": "වර්තමාන තත්ත්වය",
+            "වත්මන් පැතිකඩ": "වර්තමාන තත්ත්වය",
+
+            # 2. Fix CKD (English Phonetic -> Sinhala Text)
+            "Dheerga Kaleena Wakkugadu Rogaya": "දීර්ඝකාලීන වකුගඩු රෝගය",
+            "කාන්තා වසංගත රෝගයක්": "දීර්ඝකාලීන වකුගඩු රෝගයක්",
+            "Chronic Kidney Disease": "දීර්ඝකාලීන වකුගඩු රෝගය",
+
+            # 3. Fix "Uncontrolled" (Asamath -> Palanaya Nokala)
+            "අසමත්": "පාලනය නොකළ",
+            "Uncontrolled": "පාලනය නොකළ",
+
+            # 4. Pressure & Sugar (English Text -> Sinhala Text)
+            "Pressure eka": "ප්‍රෙෂර් එක", 
+            "Pressure": "ප්‍රෙෂර්",
+            "Sugar": "සීනි", # Spoken style often uses "Seeni" or "Diabetic" -> "Diyawadiyawa"
+            "glucose": "සීනි",
+
+            # 5. Doctor (Sinhala -> English Text)
+            "dosthara": "Doctor",
+            "දොස්තර": "Doctor",
+            "සෞඛ්‍ය සේවා සපයන්නා": "Doctor",
+            "Healthcare Provider": "Doctor",
+
+            # 6. Greetings & Cleanup
+            "Hello": "ආයුබෝවන්",
+            "Risk eka": "අවදානම",
+            "risk": "අවදානම",
+            "අවාසනාවන්තයි": "කණගාටුයි",
+            "#": "",
+            "*": ""
         }
         
         for formal, spoken in replacements.items():
@@ -254,11 +268,27 @@ class LLMEngine:
         # Keep your strong prompt here (The one I gave you in the previous step)
         # It is still the first line of defense.
         system_prompt = (
-            "You are a Sri Lankan friend. Translate medical advice into **SPOKEN SINHALA (Katha Wahara)**.\n"
-            "Use English words for: Pressure, Sugar, Clinic, Report, Test.\n"
-            "Use 'Dosthara' for Doctor, 'Beheth' for Medicine.\n"
-            "Never use formal words like 'Oba', 'Yuthuya', 'Peedanaya'.\n"
-            "Output UNICODE SINHALA only."
+            "You are a Sri Lankan doctor. Translate the advice into **SPOKEN SINHALA**.\n\n"
+            
+            "⛔ RULE 1: WHAT TO KEEP IN ENGLISH (Strictly)\n"
+            "   - **Role:** 'Doctor' (Do not translate to Dosthara).\n"
+            "   - **Units:** 'mL/min', 'mg/dL', 'mmol/L', 'eGFR'.\n"
+            "   - **Medicines:** 'Metformin', 'Losartan', etc.\n\n"
+
+            "⛔ RULE 2: WHAT TO TRANSLATE TO SINHALA TEXT\n"
+            "   - **Pressure:** Use 'ප්‍රෙෂර්' (Pressure) or 'රුධිර පීඩනය'.\n"
+            "   - **Sugar/Diabetes:** Use 'සීනි' (Seeni) or 'දියවැඩියාව'.\n"
+            "   - **CKD:** Use 'දීර්ඝකාලීන වකුගඩු රෝගය'.\n"
+            "   - **Profile:** Use 'වර්තමාන තත්ත්වය' (Current Situation).\n"
+            "   - **Uncontrolled:** Use 'පාලනය නොකළ' (Palanaya nokala).\n\n"
+
+            "💡 EXAMPLE OUTPUT:\n"
+            "   - Input: 'Hello, your blood pressure is uncontrolled.'\n"
+            "   - Output: 'ආයුබෝවන්, ඔයාගේ පාලනය නොකළ ප්‍රෙෂර් එකක් තියෙනවා.'\n\n"
+            
+            "⛔ FINAL OUTPUT FORMAT:\n"
+            "1. UNICODE SINHALA SCRIPT only (except 'Doctor' and Units).\n"
+            "2. Use 'Oya' (ඔයා) instead of 'Oba'."
         )
         
         payload = {
