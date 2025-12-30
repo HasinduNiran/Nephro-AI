@@ -10,6 +10,7 @@ const authRoutes = require("./routes/auth");
 const predictRoutes = require("./routes/predict");
 const kidneyusRoutes = require("./routes/kidneyus");
 const labRoutes = require("./routes/lab");
+const riskHistoryRoutes = require("./routes/riskHistory");
 
 const app = express();
 
@@ -158,6 +159,7 @@ app.post("/api/upload-ultrasound", upload.single("ultrasound"), (req, res) => {
     }
   });
 });
+app.use("/api/risk-history", riskHistoryRoutes);
 
 // Base route
 app.get("/", (req, res) => {

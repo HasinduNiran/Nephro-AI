@@ -18,7 +18,7 @@ from negspacy.negation import Negex
 
 # Add project root to path for config import
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from config import MEDICAL_ENTITIES, CKD_ABBREVIATIONS, CKD_REVERSE_ABBREVIATIONS
+from chatbot.config import MEDICAL_ENTITIES, CKD_ABBREVIATIONS, CKD_REVERSE_ABBREVIATIONS
 
 
 class CKDNLUEngine:

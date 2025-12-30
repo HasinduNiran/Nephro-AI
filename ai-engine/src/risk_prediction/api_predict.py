@@ -25,9 +25,25 @@ def predict(data):
         return {"error": "Model file not found"}
 
     # Prepare dataframe
-    # Features: spo2, heart_rate, bp_systolic, age, diabetes, hypertension
+    # Features: age, bp_systolic, diabetes, hypertension
     try:
-        features = pd.DataFrame([data], columns=["spo2", "heart_rate", "bp_systolic", "age", "diabetes", "hypertension"])
+        features = pd.DataFrame([data], columns=["age", "bp_systolic", "diabetes", "hypertension"])
+        
+        # Feature Engineering (Must match training)
+        features['age_bp'] = features['age'] * features['bp_systolic']
+        features['diab_hyper'] = features['diabetes'] * features['hypertension']
+        
+        # Binning
+        features['bp_category'] = pd.cut(features['bp_systolic'], bins=[0, 120, 130, 140, 300], labels=[0, 1, 2, 3])
+        features['age_group'] = pd.cut(features['age'], bins=[0, 30, 60, 120], labels=[0, 1, 2])
+        
+        # Convert bins to codes
+        features['bp_category'] = features['bp_category'].astype('int8') # labels are already 0,1,2,3 but cut returns category type
+        features['age_group'] = features['age_group'].astype('int8')
+
+        # Ensure column order matches training
+        features = features[["age", "bp_systolic", "diabetes", "hypertension", "age_bp", "diab_hyper", "bp_category", "age_group"]]
+
         prediction = model.predict(features)[0]
         
         # If the target was encoded, we might want to decode it. 

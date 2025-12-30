@@ -1,11 +1,32 @@
 {
-  "__COMMENT__": "Mappings: Sinhala/Singlish Term -> Standard English Concept",
-  
+  "__METADATA__": "Nephro-AI Bilingual Dictionary (Sinhala/Singlish -> English)",
+
+  "// --- ORGANS & BODY ---": "",
   "kidney": "Kidney",
   "wakugadu": "Kidney",
-  "wakugadul": "Kidney",
+  "wakugaduwa": "Kidney",
   "වකුගඩු": "Kidney",
   
+  "liver": "Liver",
+  "akmawa": "Liver",
+  "අක්මාව": "Liver",
+
+  "heart": "Heart",
+  "hadawatha": "Heart",
+  "hada": "Heart",
+  "හදවත": "Heart",
+
+  "blood": "Blood",
+  "le": "Blood",
+  "ලේ": "Blood",
+
+  "urine": "Urine",
+  "muthra": "Urine",
+  "mutra": "Urine",
+  "choo": "Urine",
+  "මුත්‍රා": "Urine",
+
+  "// --- LAB VALUES & CHEMICALS ---": "",
   "creatinine": "Creatinine",
   "cretinine": "Creatinine",
   "creatinin": "Creatinine",
@@ -26,43 +47,47 @@
   "soodiyam": "Sodium",
   "ලුණු": "Sodium",
   "සෝඩියම්": "Sodium",
+
+  "protein": "Protein",
+  "protin": "Protein",
+  "sudada": "Protein",
+  "ප්‍රෝටීන්": "Protein",
   
+  "sugar": "Glucose",
+  "seeni": "Glucose",
+  "සීනි": "Glucose",
+
+  "// --- CONDITIONS & TREATMENTS ---": "",
   "diabetes": "Diabetes",
-  "sugar": "Diabetes",
-  "seeni": "Diabetes",
   "diyawadiyawa": "Diabetes",
   "දියවැඩියාව": "Diabetes",
-  "සීනි": "Diabetes",
   
   "pressure": "Hypertension",
   "bp": "Hypertension",
-  "blood pressure": "Hypertension",
+  "high blood pressure": "Hypertension",
   "pidanaya": "Hypertension",
   "le pidanaya": "Hypertension",
   "පීඩනය": "Hypertension",
-  "ලේ පීඩනය": "Hypertension",
   
   "dialysis": "Dialysis",
   "blood wash": "Dialysis",
   "le sudda kirima": "Dialysis",
   "ඩයලිසිස්": "Dialysis",
   "රුධිර කාන්දු පෙරීම": "Dialysis",
-  
-  "urine": "Urine",
-  "muthra": "Urine",
-  "mutra": "Urine",
-  "මුත්‍රා": "Urine",
-  
+
+  "edema": "Edema",
   "swelling": "Edema",
   "idimila": "Edema",
   "idimuma": "Edema",
   "kakula idimila": "Edema",
   "ඉදිමීම": "Edema",
-  
+
+  "// --- SYMPTOMS ---": "",
   "pain": "Pain",
   "kakkuma": "Pain",
   "ridenawa": "Pain",
   "wedanawa": "Pain",
+  "nanawa": "Pain",
   "කැක්කුම": "Pain",
   "රිදෙනවා": "Pain",
   "වේදනාව": "Pain",
@@ -82,7 +107,8 @@
   "pana na": "Fatigue",
   "mahansiya": "Fatigue",
   "මහන්සියි": "Fatigue",
-  
+
+  "// --- FOODS & DIET ---": "",
   "rice": "Rice",
   "bath": "Rice",
   "sudu bath": "Rice",
@@ -97,19 +123,20 @@
   "banana": "Banana",
   "kesel": "Banana",
   "anamalu": "Banana",
-  "kolekutt": "Banana",
+  "kolekuttu": "Banana",
+  "ambun": "Banana",
   "කෙසල්": "Banana",
   
   "coconut": "Coconut",
   "pol": "Coconut",
   "thambili": "Coconut",
-  "pol wathura": "Coconut Water",
+  "king coconut": "Coconut",
   "පොල්": "Coconut",
   "තැඹිලි": "Coconut",
   
   "dhal": "Lentils",
   "parippu": "Lentils",
-  " පරිප්පු": "Lentils",
+  "පරිප්පු": "Lentils",
   
   "fish": "Fish",
   "malu": "Fish",
@@ -118,6 +145,7 @@
   
   "chicken": "Chicken",
   "kukul mas": "Chicken",
+  "kukulo": "Chicken",
   "කුකුල් මස්": "Chicken",
   
   "water": "Water",
@@ -125,5 +153,39 @@
   "watura": "Water",
   "diya": "Water",
   "වතුර": "Water",
-  "දියර": "Water"
+
+  "// --- STATUS & ACTIONS (IMPORTANT FOR NLU) ---": "",
+  "high": "High",
+  "wadi": "High",
+  "wadi wela": "High",
+  "wediy": "High",
+  "වැඩියි": "High",
+  "ඉහළ": "High",
+
+  "low": "Low",
+  "adu": "Low",
+  "adu wela": "Low",
+  "aduy": "Low",
+  "අඩුවෙන්": "Low",
+  "පහළ": "Low",
+
+  "good": "Good",
+  "hoda": "Good",
+  "hodayi": "Good",
+  "හොඳයි": "Good",
+
+  "bad": "Bad",
+  "naraka": "Bad",
+  "narakai": "Bad",
+  "නරකයි": "Bad",
+
+  "eat": "Eat",
+  "kanna": "Eat",
+  "kama": "Eat",
+  "කන්න": "Eat",
+
+  "drink": "Drink",
+  "bonna": "Drink",
+  "bima": "Drink",
+  "බොන්න": "Drink"
 }
