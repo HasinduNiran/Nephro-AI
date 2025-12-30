@@ -14,6 +14,8 @@ import MealAnalysisScreen from './src/screens/MealAnalysisScreen';
 import DietaryManagerScreen from './src/screens/DietaryManagerScreen';
 import DietaryPlanScreen from './src/screens/DietaryPlanScreen';
 import NutrientWalletScreen from './src/screens/NutrientWalletScreen';
+import RiskHistoryScreen from "./src/screens/RiskHistoryScreen";
+import ChatbotScreen from "./src/screens/ChatbotScreen";
 
 const Stack = createStackNavigator();
 
@@ -34,11 +36,23 @@ const App = () => {
         <Stack.Screen name="NutrientWallet" component={NutrientWalletScreen} />
         {/* New Meal Analysis Screen */}
         <Stack.Screen name="MealAnalysis" component={MealAnalysisScreen} />
+        <Stack.Screen 
+          name="RiskHistory" 
+          component={RiskHistoryScreen}
+          options={{
+            headerShown: true,
+            title: "Risk History",
+            headerStyle: { backgroundColor: "#F5F7FA" },
+            headerTintColor: "#1C1C1E",
+          }}
+        />
+        <Stack.Screen name="Chatbot" component={ChatbotScreen} />
       </Stack.Navigator>
     </NavigationContainer>
     </WalletProvider>
   );
 };
+
 
 const styles = StyleSheet.create({
   root: {

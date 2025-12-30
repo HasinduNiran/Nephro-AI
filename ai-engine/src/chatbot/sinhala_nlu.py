@@ -14,7 +14,7 @@ from sentence_transformers import SentenceTransformer, util
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from config import MEDICAL_ENTITIES
+from chatbot.config import MEDICAL_ENTITIES
 
 class SinhalaNLUEngine:
     def __init__(self):
@@ -59,7 +59,12 @@ class SinhalaNLUEngine:
             
         # 2. Load Sinhala Medical Dictionary
         try:
-            dict_path = Path(__file__).parent.parent / "data" / "sinhala_med_dict.json"
+            # Go up 3 levels to reach 'ai-engine' root, then 'data'
+            dict_path = Path(__file__).parent.parent.parent / "data" / "sinhala_med_dict.json"
+            if not dict_path.exists():
+                # Fallback check for src/data if root data missing (legacy support)
+                dict_path = Path(__file__).parent.parent / "data" / "sinhala_med_dict.json"
+                
             with open(dict_path, "r", encoding="utf-8") as f:
                 self.sinhala_med_dict = json.load(f)
             print(f"   Loaded {len(self.sinhala_med_dict)} terms from dictionary.")
