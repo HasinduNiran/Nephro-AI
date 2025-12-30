@@ -1,14 +1,13 @@
 import axios from "axios";
 
-// For physical device, use your computer's IP address
-// For Android Emulator, it will use 10.0.2.2
-// For iOS Simulator, it will use localhost
-const BASE_URL = "http://172.28.2.215:5000/api";
+// 1. CHANGE Port to 8000
+// 2. REMOVE "/api" from the end (unless you really need it)
+const BACKEND_URL = "http://172.20.10.2:8081"; 
 
-console.log("API Base URL:", BASE_URL);
+console.log("API Base URL:", BACKEND_URL);
 
 const instance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: BACKEND_URL,
   timeout: 120000, 
   headers: {
     'Content-Type': 'application/json',
