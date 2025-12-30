@@ -19,9 +19,14 @@ const foodNutrientDB = {
   "dahl curry": { protein: 6, sodium: 250, potassium: 300, phosphorus: 180, units: { "tbsp": 15, "serving_spoon": 60 } },
   "fish curry": { protein: 20, sodium: 350, potassium: 350, phosphorus: 200, units: { "small_piece": 50, "large_piece": 100 } },
   "fried rice": { protein: 4, sodium: 400, potassium: 100, phosphorus: 90, units: { "serving_spoon": 60, "tea_cup": 150 } },
-  "mallum": { protein: 3, sodium: 20, potassium: 400, phosphorus: 50, units: { "tbsp": 15 } },
+  "mallum - gotukola": { protein: 2, sodium: 15, potassium: 380, phosphorus: 45, units: { "tbsp": 15, "serving_spoon": 60 } },
+  "mallum - mukunuwenna": { protein: 3.5, sodium: 25, potassium: 420, phosphorus: 55, units: { "tbsp": 15, "serving_spoon": 60 } },
+  "mallum - murunga": { protein: 4, sodium: 18, potassium: 450, phosphorus: 60, units: { "tbsp": 15, "serving_spoon": 60 } },
+  "mallum - kathurumurunga": { protein: 3.8, sodium: 20, potassium: 410, phosphorus: 52, units: { "tbsp": 15, "serving_spoon": 60 } },
+  "mallum - asamodagam": { protein: 2.5, sodium: 22, potassium: 390, phosphorus: 48, units: { "tbsp": 15, "serving_spoon": 60 } },
   "pineapple": { protein: 0.5, sodium: 1, potassium: 109, phosphorus: 8, units: { "piece_cube": 20, "slice": 80 } },
-  "Pol sambol": { protein: 3, sodium: 400, potassium: 300, phosphorus: 100, units: { "tbsp": 15 } },
+  "Pol sambol - tempered": { protein: 3, sodium: 450, potassium: 320, phosphorus: 105, units: { "tbsp": 15 } },
+  "Pol sambol - lime added": { protein: 3, sodium: 380, potassium: 310, phosphorus: 98, units: { "tbsp": 15 } },
   "red rice": { protein: 2.5, sodium: 1, potassium: 85, phosphorus: 78, units: { "serving_spoon": 60, "tea_cup": 150 } },
   "roti": { protein: 8, sodium: 320, potassium: 120, phosphorus: 100, units: { "small": 40, "large": 80 } },
   "tempered sprats": { protein: 35, sodium: 900, potassium: 400, phosphorus: 350, units: { "tbsp": 15 } },
@@ -115,6 +120,30 @@ const MealAnalysisScreen = ({ route, navigation }) => {
     }
   };
 
+  // --- HELPER: Get food variants ---
+  const getFoodVariants = (foodName) => {
+    const normalized = foodName.toLowerCase();
+    
+    if (normalized.includes('mallum')) {
+      return [
+        'mallum - gotukola',
+        'mallum - mukunuwenna',
+        'mallum - murunga',
+        'mallum - kathurumurunga',
+        'mallum - asamodagam'
+      ];
+    }
+    
+    if (normalized.includes('sambol') || normalized.includes('pol sambol')) {
+      return [
+        'Pol sambol - tempered',
+        'Pol sambol - lime added'
+      ];
+    }
+    
+    return null;
+  };
+
   // --- DETECT ---
   const detectFoods = async (uri) => {
     setLoading(true);
@@ -137,9 +166,17 @@ const MealAnalysisScreen = ({ route, navigation }) => {
       const detectedData = response.data.detected || [];
 
       const initialItems = detectedData.map((item) => {
+        let foodName = item.food;
+        const variants = getFoodVariants(foodName);
+        
+        // If this food has variants, use the first one as default
+        if (variants && variants.length > 0) {
+          foodName = variants[0];
+        }
+        
         let units = item.availableUnits || [];
         if (!units || units.length === 0 || (units.length === 1 && units[0] === 'grams')) {
-          const localFood = foodNutrientDB[item.food];
+          const localFood = foodNutrientDB[foodName];
           if (localFood && localFood.units) {
             units = Object.keys(localFood.units);
           } else {
@@ -148,10 +185,12 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         }
         
         return {
-          food: item.food,
+          food: foodName,
           amount: "1",
           unit: units[0],
-          availableUnits: units
+          availableUnits: units,
+          hasVariants: variants !== null,
+          variants: variants || []
         };
       });
 
@@ -352,29 +391,72 @@ const MealAnalysisScreen = ({ route, navigation }) => {
               <Text style={styles.subHeader}>Verify Portions:</Text>
               
               {items.map((item, index) => (
-                  <View key={index} style={styles.row}>
-                      <Text style={styles.foodLabel}>{item.food}</Text>
-                      <TextInput
-                          style={styles.input}
-                          keyboardType="numeric"
-                          value={item.amount}
-                          onChangeText={(text) => updateRow(index, 'amount', text)}
-                          placeholder="Qty"
-                      />
-                      <View style={styles.pickerContainer}>
-                          <Picker
-                              selectedValue={item.unit}
-                              style={styles.picker}
-                              onValueChange={(val) => updateRow(index, 'unit', val)}
-                          >
-                              {(item.availableUnits || ['grams']).map((u, idx) => (
-                                  <Picker.Item key={`${u}-${idx}`} label={u.replace(/_/g, ' ')} value={u} />
-                              ))}
-                          </Picker>
+                  <View key={index} style={styles.itemCard}>
+                      <View style={styles.foodRow}>
+                          {item.hasVariants && item.variants.length > 0 ? (
+                              <View style={styles.foodNameSection}>
+                                  <Text style={styles.categoryLabel}>
+                                      {item.food.includes('mallum') ? ' Mallum' : ' Pol Sambol'}
+                                  </Text>
+                                  <View style={styles.variantPickerWrapper}>
+                                      <Picker
+                                          selectedValue={item.food}
+                                          style={styles.variantPicker}
+                                          onValueChange={(val) => {
+                                              const updated = [...items];
+                                              updated[index].food = val;
+                                              const localFood = foodNutrientDB[val];
+                                              if (localFood && localFood.units) {
+                                                  const newUnits = Object.keys(localFood.units);
+                                                  updated[index].availableUnits = newUnits;
+                                                  updated[index].unit = newUnits[0];
+                                              }
+                                              setItems(updated);
+                                          }}
+                                      >
+                                          {item.variants.map((variant, vIdx) => (
+                                              <Picker.Item 
+                                                  key={`${variant}-${vIdx}`} 
+                                                  label={variant.replace(/mallum - |Pol sambol - /i, '').toUpperCase()} 
+                                                  value={variant} 
+                                              />
+                                          ))}
+                                      </Picker>
+                                  </View>
+                              </View>
+                          ) : (
+                              <Text style={styles.foodLabelStatic}>{item.food}</Text>
+                          )}
+                          <TouchableOpacity onPress={() => removeItem(index)} style={styles.deleteIcon}>
+                              <Ionicons name="close-circle" size={24} color="#dc3545" />
+                          </TouchableOpacity>
                       </View>
-                      <TouchableOpacity onPress={() => removeItem(index)} style={styles.trashBtn}>
-                          <Ionicons name="trash-outline" size={24} color="#dc3545" />
-                      </TouchableOpacity>
+                      <View style={styles.portionRow}>
+                          <View style={styles.portionControl}>
+                              <Text style={styles.portionLabel}>Amount</Text>
+                              <TextInput
+                                  style={styles.amountInput}
+                                  keyboardType="numeric"
+                                  value={item.amount}
+                                  onChangeText={(text) => updateRow(index, 'amount', text)}
+                                  placeholder="1"
+                              />
+                          </View>
+                          <View style={styles.portionControl}>
+                              <Text style={styles.portionLabel}>Unit</Text>
+                              <View style={styles.unitPickerWrapper}>
+                                  <Picker
+                                      selectedValue={item.unit}
+                                      style={styles.unitPicker}
+                                      onValueChange={(val) => updateRow(index, 'unit', val)}
+                                  >
+                                      {(item.availableUnits || ['grams']).map((u, idx) => (
+                                          <Picker.Item key={`${u}-${idx}`} label={u.replace(/_/g, ' ')} value={u} />
+                                      ))}
+                                  </Picker>
+                              </View>
+                          </View>
+                      </View>
                   </View>
               ))}
 
@@ -542,6 +624,20 @@ const styles = StyleSheet.create({
   addFoodBtn: { backgroundColor: '#E7F9EE', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 5, marginBottom: 15, borderWidth: 1, borderColor: '#28a745' },
   addFoodText: { color: '#28a745', fontSize: 16, fontWeight: '600' },
   listContainer: { marginTop: 10 },
+  itemCard: { backgroundColor: '#fff', borderRadius: 12, padding: 15, marginBottom: 12, borderWidth: 1, borderColor: '#e0e0e0', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
+  foodRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  foodNameSection: { flex: 1, marginRight: 10 },
+  categoryLabel: { fontSize: 13, fontWeight: '700', color: '#495057', marginBottom: 4, letterSpacing: 0.5 },
+  variantPickerWrapper: { borderWidth: 1, borderColor: '#007BFF', borderRadius: 8, backgroundColor: '#f0f8ff', height: 55 },
+  variantPicker: { height: 55, width: '100%', color: '#007BFF', fontSize: 15 },
+  foodLabelStatic: { flex: 1, fontSize: 16, fontWeight: '600', color: '#212529', textTransform: 'capitalize' },
+  deleteIcon: { padding: 5 },
+  portionRow: { flexDirection: 'row', gap: 12 },
+  portionControl: { flex: 1 },
+  portionLabel: { fontSize: 12, fontWeight: '600', color: '#6c757d', marginBottom: 6 },
+  amountInput: { borderWidth: 1, borderColor: '#ced4da', borderRadius: 8, padding: 12, fontSize: 16, textAlign: 'center', backgroundColor: '#fff', fontWeight: '600', height: 55 },
+  unitPickerWrapper: { borderWidth: 1, borderColor: '#ced4da', borderRadius: 8, backgroundColor: '#fff', height: 55 },
+  unitPicker: { height: 55, width: '100%', fontSize: 15, fontWeight: '500' },
   row: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, borderWidth: 1, borderColor: '#eee', padding: 5, borderRadius: 8 },
   foodLabel: { flex: 1.5, fontSize: 16, fontWeight: '500', paddingLeft: 5, textTransform: 'capitalize' }, 
   input: { flex: 0.8, borderWidth: 1, borderColor: '#ccc', borderRadius: 5, padding: 8, textAlign: 'center', marginRight: 5, backgroundColor: '#f9f9f9' },
