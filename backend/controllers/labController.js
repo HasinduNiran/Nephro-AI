@@ -1,4 +1,7 @@
 const LabTest = require("../models/LabTest");
+const fs = require("fs");
+const path = require("path");
+const { processLabReport, calculateEGFRFromCreatinine, validateResult } = require("../utils/ocrProcessor");
 
 // Determine CKD stage based on eGFR value
 function determineCKDStage(eGFR) {
@@ -47,41 +50,69 @@ function determineCKDStage(eGFR) {
 // Add lab test results and get CKD stage
 exports.addLabTest = async (req, res) => {
   try {
-    const { name, eGFR, creatinine, bun, albumin } = req.body;
+    const { name, eGFR, creatinine, bun, albumin, age, gender } = req.body;
 
     // Validate required fields
     if (!name) {
       return res.status(400).json({ message: "Name is required" });
     }
 
-    if (eGFR === undefined || eGFR === null) {
-      return res.status(400).json({ message: "eGFR is required" });
+    let calculatedEGFR = eGFR;
+
+    // If eGFR not provided, try to calculate from creatinine
+    if ((eGFR === undefined || eGFR === null) && creatinine && age) {
+      console.log(`Calculating eGFR from creatinine: ${creatinine}, age: ${age}, gender: ${gender || 'M'}`);
+      calculatedEGFR = calculateEGFRFromCreatinine(
+        parseFloat(creatinine),
+        parseInt(age),
+        gender || "M"
+      );
+      console.log(`Calculated eGFR: ${calculatedEGFR}`);
     }
 
-    if (eGFR < 0) {
+    // Validate eGFR is available
+    if (calculatedEGFR === undefined || calculatedEGFR === null) {
+      return res.status(400).json({ 
+        message: "eGFR is required, or provide creatinine with age to calculate it" 
+      });
+    }
+
+    if (calculatedEGFR < 0) {
       return res.status(400).json({ message: "eGFR must be a positive number" });
     }
 
     // Determine CKD stage
-    const ckdInfo = determineCKDStage(eGFR);
+    const ckdInfo = determineCKDStage(calculatedEGFR);
+
+    // Validate creatinine status if available
+    let creatinineStatus = null;
+    if (creatinine && gender) {
+      creatinineStatus = validateResult(parseFloat(creatinine), gender);
+    }
 
     // Create lab test record
     const labTest = await LabTest.create({
       name,
-      eGFR,
+      eGFR: calculatedEGFR,
       creatinine: creatinine || null,
+      creatinineStatus: creatinineStatus,
       bun: bun || null,
       albumin: albumin || null,
+      age: age ? parseInt(age) : null,
+      gender: gender || null,
       ckdStage: ckdInfo.stage,
       stageDescription: ckdInfo.description,
       eGFRRange: ckdInfo.eGFRRange,
-      kidneyFunctionPercent: ckdInfo.kidneyFunctionPercent,
+      testMethod: "manual",
+      extractionConfidence: eGFR ? {} : { eGFR: "calculated" },
     });
 
     res.status(201).json({
       success: true,
       message: "Lab test results saved successfully",
       data: labTest,
+      calculated: !eGFR && creatinine && age,
+      creatinineStatus: creatinineStatus,
     });
   } catch (error) {
     console.error("Error adding lab test:", error);
@@ -180,6 +211,125 @@ exports.getLatestLabTest = async (req, res) => {
     console.error("Error fetching latest lab test:", error);
     res.status(500).json({
       message: "Error fetching latest lab test",
+      error: error.message,
+    });
+  }
+};
+// Upload lab report image and extract data via OCR
+exports.uploadLabReport = async (req, res) => {
+  try {
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false,
+        message: "No file uploaded. Please provide a lab report image (PDF/JPG/PNG)" 
+      });
+    }
+
+    const { name, age, gender } = req.body;
+
+    // Validate required fields
+    if (!name) {
+      // Clean up uploaded file
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ 
+        success: false,
+        message: "Patient name is required" 
+      });
+    }
+
+    console.log(`Processing lab report for patient: ${name}`);
+    console.log(`File uploaded: ${req.file.filename}`);
+
+    // Process the image with OCR
+    const ocrResult = await processLabReport(req.file.path, {
+      age: parseInt(age) || null,
+      gender: gender || "M",
+    });
+
+    const { labValues } = ocrResult;
+
+    // If eGFR not found but we have creatinine and age, calculate it
+    if (!labValues.eGFR && labValues.creatinine && age) {
+      console.log('eGFR not found in OCR, calculating from creatinine...');
+      labValues.eGFR = labValues.eGFR; // Will be calculated by processLabReport
+      labValues.confidence.eGFR = "calculated";
+    }
+
+    // Validate that we have at least eGFR (extracted or calculated) or creatinine with age
+    if (!labValues.eGFR && !(labValues.creatinine && age)) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({
+        success: false,
+        message: "Could not extract eGFR from the lab report. Please provide age if creatinine is available, or ensure the image is clear and readable.",
+        extractedText: ocrResult.extractedText,
+        extractedValues: labValues,
+      });
+    }
+
+    // Determine CKD stage
+    const ckdInfo = determineCKDStage(labValues.eGFR);
+
+    // Create lab test record in MongoDB
+    const labTest = await LabTest.create({
+      name,
+      eGFR: labValues.eGFR,
+      creatinine: labValues.creatinine,
+      creatinineStatus: labValues.creatinineStatus || null,
+      bun: labValues.bun,
+      albumin: labValues.albumin,
+      ckdStage: ckdInfo.stage,
+      stageDescription: ckdInfo.description,
+      eGFRRange: ckdInfo.eGFRRange,
+      imageFilename: req.file.filename,
+      imagePath: req.file.path,
+      extractionConfidence: labValues.confidence,
+      ocrRawText: ocrResult.extractedText,
+      age: labValues.age || (age ? parseInt(age) : null),
+      gender: labValues.gender || gender || null,
+      testMethod: "ocr",
+    });
+
+    console.log(`Lab test saved for ${name} with eGFR: ${labValues.eGFR}, Stage: ${ckdInfo.stage}`);
+
+    res.status(201).json({
+      success: true,
+      message: "Lab report processed successfully",
+      data: {
+        labTest: labTest,
+        extractionDetails: {
+          eGFR: {
+            value: labValues.eGFR,
+            confidence: labValues.confidence.eGFR,
+          },
+          creatinine: {
+            value: labValues.creatinine,
+            confidence: labValues.confidence.creatinine,
+            status: labValues.creatinineStatus,
+          },
+          bun: {
+            value: labValues.bun,
+            confidence: labValues.confidence.bun,
+          },
+          albumin: {
+            value: labValues.albumin,
+            confidence: labValues.confidence.albumin,
+          },
+        },
+        ckdStageInfo: ckdInfo,
+      },
+    });
+  } catch (error) {
+    console.error("Error processing lab report:", error);
+
+    // Clean up uploaded file if it exists
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Error processing lab report",
       error: error.message,
     });
   }
