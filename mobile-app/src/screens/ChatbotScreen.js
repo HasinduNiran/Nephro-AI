@@ -22,9 +22,9 @@ import {
   MaterialCommunityIcons,
   FontAwesome5,
 } from "@expo/vector-icons";
-import LottieView from 'lottie-react-native';
+
 import { Audio } from "expo-av";
-import * as FileSystem from "expo-file-system/legacy";
+import * as FileSystem from "expo-file-system";
 import axios from "axios";
 import * as Haptics from "expo-haptics";
 import Markdown from "react-native-markdown-display";
@@ -33,10 +33,10 @@ import Markdown from "react-native-markdown-display";
 import * as Speech from 'expo-speech';
 
 // OLD (Wi-Fi IP)
-// const BACKEND_URL = "http://10.143.248.166:8000";
+// const BACKEND_URL = "http://192.168.43.166:8000";
 
 // NEW (USB Tunneling)
-const BACKEND_URL = "http://10.143.248.166:8001";
+const BACKEND_URL = "http://192.168.43.166:8001";
 
 // Custom base64 decode for React Native (atob polyfill)
 const base64Decode = (str) => {
