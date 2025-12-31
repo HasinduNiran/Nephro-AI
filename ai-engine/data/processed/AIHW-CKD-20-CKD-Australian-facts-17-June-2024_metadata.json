@@ -1,0 +1,19 @@
+{
+  "total_pages": 122,
+  "raw_text_length": 238812,
+  "cleaned_text_length": 248727,
+  "source_file": "AIHW-CKD-20-CKD-Australian-facts-17-June-2024.pdf",
+  "extraction_date": "2025-12-31T14:50:29.530697",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2024",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "dialysis",
+    "kidney function"
+  ],
+  "total_chunks": 64,
+  "avg_chunk_size": 579.859375,
+  "processing_date": "2025-12-31T14:50:30.310595"
+}

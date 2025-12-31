@@ -1,0 +1,26 @@
+[
+  {
+    "chunk_id": 0,
+    "text": "Oxford Textbook of Clinical Nephrology Building on the success and international reputation of the publication as an important resource for the practising clinician in the field, this 4th edition provides practical, scholarly, and evidence-based coverage of the full spectrum of clinical nephrology, written by a global faculty of experts. This new edition has been significantly expanded and reapportioned to reflect developments and new approaches to topics, and includes treatment algorithms to aid and enhance patient care where possible. The fourth edition offers increased focus on the medical aspects of transplantation, HIV-associated renal disease, and infection and renal disease, alongside entirely new sections on genetic topics and clinical and physiological aspects of fluid/electrolyte and tubular disorders. The emphasis throughout is on marrying advances in scientific research with clinical management. Key features: Couples a practical clinical approach with a learned account of disease pathogenesis and backgroundIncludes contributions from nearly 500 widely respected specialists covering all facets of nephrologyProvides clear presentation of relevant science in appropriate depth alongside important extras such as historical notesIncludes unique sections on rarer clinical problems such as renal manifestations of systemic disease and renal disease in the tropicsHighly illustrated textbook, featuring 1300 full-colour diagrams and photographs Publication Year 2015 Edition 4th Ed. Author/Editor Turner, Neil; Goldsmith, David; Winearls, Christopher; Lamiere, Norbert; Himmelfarb, Jonathan; Remuzzi, Giuseppe Publisher Oxford University Press (OUP) ISBN 978-0-199-59254-8 Platform OvidMD, Ovid Product Type Book Speciality Nephrology Language English Pages 3040 Illustrations 0",
+    "word_count": 238,
+    "char_count": 1802,
+    "sentence_count": 6,
+    "metadata": {
+      "source_file": "ilide.info-oxford-textbook-of-clinical-nephrology-pr_59a85021be4f8a6566ac28789f79b7e3.pdf",
+      "extraction_date": "2025-12-31T14:45:58.281805",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "renal",
+        "nephrology"
+      ],
+      "chunk_index": 0,
+      "total_chunks": 1,
+      "position": "1/1",
+      "content_type": "evidence",
+      "content_type_confidence": 2,
+      "medical_entities": [],
+      "entity_count": 0
+    }
+  }
+]

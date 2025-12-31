@@ -1,0 +1,15 @@
+{
+  "total_pages": 13,
+  "raw_text_length": 76576,
+  "cleaned_text_length": 77840,
+  "source_file": "s312.pdf",
+  "extraction_date": "2025-12-31T14:19:36.731476",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "renal"
+  ],
+  "total_chunks": 16,
+  "avg_chunk_size": 558.1875,
+  "processing_date": "2025-12-31T14:19:36.986858"
+}

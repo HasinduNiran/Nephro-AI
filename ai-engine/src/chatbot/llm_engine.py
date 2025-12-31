@@ -256,39 +256,50 @@ class LLMEngine:
         return text
 
     def translate_to_sinhala_fallback(self, text: str) -> str:
-        """[STYLE LAYER] Concept-Mapping + Safety Net."""
-        print(f"⚠️ Style: Mapping concepts to Spoken Sinhala...")
-        
+        """
+        [STYLE LAYER] Translates medical advice to Spoken Sinhala
+        Respecting specific constraints: Doctor (English), Pressure/Sugar (Colloquial).
+        """
+        print(f"⚠️ Style: Translating response to Spoken Sinhala (Code-Mixed)...")
+
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "HTTP-Referer": "https://github.com/Nephro-AI",
             "Content-Type": "application/json"
         }
         
-        # Keep your strong prompt here (The one I gave you in the previous step)
-        # It is still the first line of defense.
+        # 🚨 YOUR ENHANCED PROMPT
         system_prompt = (
-            "You are a Sri Lankan doctor. Translate the advice into **SPOKEN SINHALA**.\n\n"
+            "You are a Sri Lankan doctor speaking to a patient. Translate the advice into **CASUAL, SPOKEN SINHALA (Katha Wahara)**.\n\n"
             
             "⛔ RULE 1: WHAT TO KEEP IN ENGLISH (Strictly)\n"
-            "   - **Role:** 'Doctor' (Do not translate to Dosthara).\n"
-            "   - **Units:** 'mL/min', 'mg/dL', 'mmol/L', 'eGFR'.\n"
-            "   - **Medicines:** 'Metformin', 'Losartan', etc.\n\n"
+            "   - **Role:** 'Doctor' (Do NOT translate to Dosthara. Use 'Doctor').\n"
+            "   - **Units:** 'mL/min', 'mg/dL', 'mmol/L', 'eGFR', '%'.\n"
+            "   - **Medicines:** 'Metformin', 'Losartan', 'Enalapril', etc.\n"
+            "   - **Medical Terms:** 'Creatinine', 'Potassium', 'Sodium', 'Cholesterol'.\n\n"
 
-            "⛔ RULE 2: WHAT TO TRANSLATE TO SINHALA TEXT\n"
-            "   - **Pressure:** Use 'ප්‍රෙෂර්' (Pressure) or 'රුධිර පීඩනය'.\n"
-            "   - **Sugar/Diabetes:** Use 'සීනි' (Seeni) or 'දියවැඩියාව'.\n"
-            "   - **CKD:** Use 'දීර්ඝකාලීන වකුගඩු රෝගය'.\n"
-            "   - **Profile:** Use 'වර්තමාන තත්ත්වය' (Current Situation).\n"
-            "   - **Uncontrolled:** Use 'පාලනය නොකළ' (Palanaya nokala).\n\n"
+            "⛔ RULE 2: SPECIFIC TRANSLATIONS (Colloquial Mapping)\n"
+            "   - **Blood Pressure:** Use 'Pressure එක' (Keep 'Pressure' in English).\n"
+            "   - **Diabetes/Sugar:** Use 'Sugar' or 'දියවැඩියාව'.\n"
+            "   - **CKD:** Use 'දීර්ඝකාලීන වකුගඩු රෝගය' (Chronic Kidney Disease).\n"
+            "   - **Current Condition:** Use 'දැනට තත්ත්වය' (Danata thaththwaya).\n"
+            "   - **Uncontrolled:** Use 'පාලනය වෙලා නෑ' (Not controlled - Spoken style) instead of 'පාලනය නොකළ' (Written style).\n\n"
 
-            "💡 EXAMPLE OUTPUT:\n"
+            "⛔ RULE 3: GRAMMAR & TONE (Spoken Style)\n"
+            "   - ❌ NO 'Oba' (ඔබ) -> ✅ Use 'Oya' (ඔයා).\n"
+            "   - ❌ NO 'Yuthuya' (යුතුය) -> ✅ Use 'ඕන' (Ona) or 'කරන්න' (Karanna).\n"
+            "   - ❌ NO 'Sayanaya' (සායනය) -> ✅ Use 'Clinic එක'.\n"
+            "   - Keep sentences short and warm.\n\n"
+
+            "💡 EXAMPLES:\n"
             "   - Input: 'Hello, your blood pressure is uncontrolled.'\n"
-            "   - Output: 'ආයුබෝවන්, ඔයාගේ පාලනය නොකළ ප්‍රෙෂර් එකක් තියෙනවා.'\n\n"
-            
+            "   - Output: 'ආයුබෝවන්, ඔයාගේ **Pressure එක** පාලනය වෙලා නෑ.'\n"
+            "   - Input: 'Doctor said to take Metformin.'\n"
+            "   - Output: '**Doctor** කිව්වා **Metformin** බොන්න කියලා.'\n\n"
+
             "⛔ FINAL OUTPUT FORMAT:\n"
-            "1. UNICODE SINHALA SCRIPT only (except 'Doctor' and Units).\n"
-            "2. Use 'Oya' (ඔයා) instead of 'Oba'."
+            "1. Use UNICODE SINHALA SCRIPT mixed with English terms.\n"
+            "2. Do NOT use Markdown (#, *) in the output."
         )
         
         payload = {
@@ -297,19 +308,22 @@ class LLMEngine:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": text}
             ],
-            "temperature": 0.1
+            "temperature": 0.1 # Low temp = Follows your dictionary rules strictly
         }
         
         try:
             response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
             if response.status_code == 200:
-                raw_translation = response.json()['choices'][0]['message']['content'].strip()
+                translation = response.json()['choices'][0]['message']['content'].strip()
                 
-                # 🛡️ RUN THE SAFETY NET
-                final_translation = self.enforce_spoken_sinhala(raw_translation)
+                # 🛡️ SAFETY NET: Force your specific preferences even if AI forgets
+                # This ensures "Doctor" is always "Doctor", not "Dosthara"
+                translation = translation.replace("දොස්තර", "Doctor")
+                translation = translation.replace("රුධිර පීඩනය", "Pressure එක")
+                translation = translation.replace("සායනය", "Clinic එක")
                 
-                print(f"✅ Style Output: {final_translation[:50]}...") 
-                return final_translation
+                print(f"✅ Style Output: {translation[:50]}...") 
+                return translation
         except Exception as e:
             print(f"❌ Style Layer Error: {e}")
             pass

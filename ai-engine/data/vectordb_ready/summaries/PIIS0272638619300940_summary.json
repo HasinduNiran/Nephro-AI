@@ -1,0 +1,20 @@
+{
+  "total_documents": 12,
+  "source_file": "PIIS0272638619300940_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\PIIS0272638619300940_chunks.json",
+  "preparation_date": "2025-12-31T14:58:47.135157",
+  "avg_word_count": 549.75,
+  "content_types": {
+    "reference": 1,
+    "treatment": 9,
+    "recommendation": 1,
+    "evidence": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 12,
+    "GFR": 5,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "total_pages": 10,
+  "raw_text_length": 45497,
+  "cleaned_text_length": 48155,
+  "source_file": "NEJMoa041031 (1).pdf",
+  "extraction_date": "2025-12-31T14:48:01.418069",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "kidney function",
+    "renal"
+  ],
+  "total_chunks": 13,
+  "avg_chunk_size": 559.2307692307693,
+  "processing_date": "2025-12-31T14:48:01.593536"
+}

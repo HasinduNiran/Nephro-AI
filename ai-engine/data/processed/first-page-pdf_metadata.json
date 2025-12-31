@@ -1,0 +1,13 @@
+{
+  "total_pages": 1,
+  "raw_text_length": 4073,
+  "cleaned_text_length": 4052,
+  "source_file": "first-page-pdf.pdf",
+  "extraction_date": "2025-12-31T14:20:14.496112",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [],
+  "total_chunks": 2,
+  "avg_chunk_size": 332.5,
+  "processing_date": "2025-12-31T14:20:14.519476"
+}

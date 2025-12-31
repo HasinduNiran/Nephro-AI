@@ -1,0 +1,18 @@
+{
+  "total_documents": 9,
+  "source_file": "s312_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\s312_chunks.json",
+  "preparation_date": "2025-12-31T14:58:51.081889",
+  "avg_word_count": 529.6666666666666,
+  "content_types": {
+    "monitoring": 2,
+    "evidence": 7
+  },
+  "medical_entity_coverage": {
+    "CKD": 1,
+    "GFR": 1,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

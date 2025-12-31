@@ -1,9 +1,9 @@
 {
   "total_pages": 19,
   "raw_text_length": 41165,
-  "cleaned_text_length": 44655,
+  "cleaned_text_length": 44679,
   "source_file": "Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021.pdf",
-  "extraction_date": "2025-11-18T15:15:55.161705",
+  "extraction_date": "2025-12-31T14:22:53.472612",
   "document_type": "medical_guideline",
   "language": "en",
   "year": "2000",
@@ -15,5 +15,5 @@
   ],
   "total_chunks": 11,
   "avg_chunk_size": 519.4545454545455,
-  "processing_date": "2025-11-18T15:15:55.304598"
+  "processing_date": "2025-12-31T14:22:53.750958"
 }

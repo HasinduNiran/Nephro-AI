@@ -1,0 +1,19 @@
+{
+  "total_documents": 11,
+  "source_file": "A_commentary_from_the_European_Renal_Best_Practice_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\A_commentary_from_the_European_Renal_Best_Practice_chunks.json",
+  "preparation_date": "2025-12-31T14:58:44.774259",
+  "avg_word_count": 584.0,
+  "content_types": {
+    "evidence": 2,
+    "recommendation": 5,
+    "monitoring": 4
+  },
+  "medical_entity_coverage": {
+    "CKD": 11,
+    "GFR": 10,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

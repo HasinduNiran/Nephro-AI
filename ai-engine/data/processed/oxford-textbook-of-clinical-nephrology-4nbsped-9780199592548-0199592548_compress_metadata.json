@@ -1,0 +1,16 @@
+{
+  "total_pages": 3012,
+  "raw_text_length": 16586690,
+  "cleaned_text_length": 16991731,
+  "source_file": "oxford-textbook-of-clinical-nephrology-4nbsped-9780199592548-0199592548_compress.pdf",
+  "extraction_date": "2025-12-31T14:39:34.750982",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "renal",
+    "nephrology"
+  ],
+  "total_chunks": 4399,
+  "avg_chunk_size": 588.74016822005,
+  "processing_date": "2025-12-31T14:40:35.229641"
+}

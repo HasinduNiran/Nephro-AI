@@ -1,0 +1,20 @@
+{
+  "total_documents": 8,
+  "source_file": "Renal Diseases_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\Renal Diseases_chunks.json",
+  "preparation_date": "2025-12-31T14:58:47.369471",
+  "avg_word_count": 581.875,
+  "content_types": {
+    "recommendation": 2,
+    "definition": 2,
+    "evidence": 3,
+    "treatment": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 5,
+    "GFR": 2,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 2
+  }
+}

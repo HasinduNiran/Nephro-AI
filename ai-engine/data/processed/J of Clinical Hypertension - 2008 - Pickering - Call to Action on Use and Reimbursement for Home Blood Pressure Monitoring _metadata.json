@@ -1,0 +1,13 @@
+{
+  "total_pages": 10,
+  "raw_text_length": 50181,
+  "cleaned_text_length": 50808,
+  "source_file": "J of Clinical Hypertension - 2008 - Pickering - Call to Action on Use and Reimbursement for Home Blood Pressure Monitoring .pdf",
+  "extraction_date": "2025-12-31T14:20:11.300625",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [],
+  "total_chunks": 14,
+  "avg_chunk_size": 569.4285714285714,
+  "processing_date": "2025-12-31T14:20:11.498696"
+}

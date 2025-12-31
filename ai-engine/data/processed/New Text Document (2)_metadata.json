@@ -1,0 +1,20 @@
+{
+  "total_pages": 1,
+  "raw_text_length": 98051,
+  "cleaned_text_length": 106133,
+  "source_file": "New Text Document (2).txt",
+  "extraction_date": "2025-12-31T14:52:08.103561",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2023",
+  "keywords": [
+    "chronic kidney disease",
+    "kidney function",
+    "renal",
+    "nephrology",
+    "proteinuria"
+  ],
+  "total_chunks": 27,
+  "avg_chunk_size": 577.8888888888889,
+  "processing_date": "2025-12-31T14:52:08.540676"
+}

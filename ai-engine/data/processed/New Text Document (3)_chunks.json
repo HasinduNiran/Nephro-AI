@@ -1,0 +1,192 @@
+[
+  {
+    "chunk_id": 0,
+    "text": "Management of patients with chronic kidney disease Frequency of monitoring Blood Hypertension (hypertension) management Renin-angiotensin system (renal artery stenosis) inhibitors Sodium-glucose co-transporter-2 (SGLT2) inhibitors Non-steroidal mineralocorticoid antagonists (Finerenone) Cardiovascular risk reduction Deteriorating renal function Referral to specialists Coding of chronic kidney disease in primary care All patients with chronic kidney disease should be coded in their primary care electronic health records. This should preferably use the complete chronic kidney disease classification system, which is regularly updated to reflect the most recent estimated glomerular filtration rate and urine albumin-to-creatinine ratio result (see diagnosis of chronic kidney disease) (see chronic kidney disease staging). Improved coding of patients with chronic kidney disease should support pathways that ensure regular review and monitoring of patients on the chronic kidney disease register and may also enhance safe prescribing through automated decision support alerts. A new diagnosis of chronic kidney disease should always be discussed with the patient (and/or their carers), taking into account the severity of the condition, likely cause and associated risk. Ideally, this discussion should be supported by High quality patient information resources, tailored to patient needs. Frequency of monitoring The recommended minimum frequency of monitoring for patients with or at risk of chronic kidney disease is set out in the most recent NICE guidance as below (Table). This may be tailored to individual patients depending on some of the following factors: The underlying cause of chronic kidney disease The rate of decline in estimated glomerular filtration rate or increase in albumin-creatinine ratio (but be aware that chronic kidney disease progression is often non-linear) Other risk factors, including Heart failure, Diabetes and hypertension Changes to treatment (such as RAASi, NSAIDs and diuretics) Intercurrent illness (for example acute Kidney injury) Whether they have chosen conservative management of chronic kidney disease. Table: Minimum number of monitoring checks (eGFRcreatinine) per year for adults, children and young people with or at risk of chronic Kidney disease albumin-creatinine ratio category A1: normal to mildly increased (less than 3 magnesium/mmol) albumin-creatinine ratio category A2: moderately increased (3 to 30 magnesium/mmol) albumin-creatinine ratio category A3: severely increased (over 30 magnesium/mmol) glomerular filtration rate category G1: normal and High (90 milliliters per minute/1. 73m² or over) 0 to 1 1 1 or more glomerular filtration rate category G2: mild reduction related to normal range for a young adult (60 to 89 milliliters per minute/1. 73m²) 0 to 1 1 1 or more glomerular filtration rate category G3a: mild to moderate reduction (45 to 59 milliliters per minute/1. 73m²) 1 1 2 glomerular filtration rate category G3b: moderate to severe reduction (30 to 44 milliliters per minute/1. 73m²) 1 to 2 2 2 or more glomerular filtration rate category G4: severe reduction (15 to 29 milliliters per minute/1. 73m²) 2 2 3 glomerular filtration rate category G5: Kidney failure (under 15 milliliters per minute/1. 73m²) 4 4 or more 4 or more A chronic kidney disease review should include assessment of: Trends in estimated glomerular filtration rate decline (see deteriorating renal function) Level of proteinuria (see proteinuria) Kidney failure risk equation (see KFRE) Blood Hypertension (see blood pressure management) Optimisation of glycaemic control for patients with diabetic Kidney disease Suitability for renal artery stenosis inhibitors (see renal artery stenosis inhibitors) Suitability for SGLT-2 inhibitor (see SGLT-2 inhibitor) Suitability for Finerenone (see Non-steroidal mineralocortoid antagonists) Cardiovascular risk assessment and prescription of lipid lowering therapy (see cardiovascular risk reduction) Patient Education Blood Hypertension (Hypertension) Management Multiple trials have shown the benefits of Blood Hypertension control in patients with renal disease.",
+    "word_count": 585,
+    "char_count": 4163,
+    "sentence_count": 14,
+    "metadata": {
+      "source_file": "New Text Document (3).txt",
+      "extraction_date": "2025-12-31T14:52:07.100711",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "GFR",
+        "renal",
+        "proteinuria",
+        "eGFR"
+      ],
+      "chunk_index": 0,
+      "total_chunks": 5,
+      "position": "1/5",
+      "content_type": "treatment",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "acute kidney injury",
+        "glomerular filtration rate",
+        "renal function",
+        "kidney failure",
+        "proteinuria",
+        "creatinine",
+        "sodium",
+        "magnesium",
+        "diuretics"
+      ],
+      "entity_count": 10
+    }
+  },
+  {
+    "chunk_id": 1,
+    "text": "These benefits include slowing the progression of chronic kidney disease and reducing cardiovascular outcomes and mortality. Patients with diabetic Kidney disease or significant proteinuria (albumin-creatinine ratio30 magnesium/mmol) particularly benefit from pharmacological blockade of the renin-angiotensin system with ACE (angiotensin converting enzyme) inhibitors or ARBs (angiotensin receptor blockers) to control their Blood Hypertension (see the renal artery stenosis inhibitor section). Targets These apply to all stages of chronic kidney disease. albumin-creatinine ratio70 magnesium/mmol or protein-creatinine ratio100 magnesium/mmol: Target Blood Hypertension 140/90 albumin-creatinine ratio70 magnesium/mmol or protein-creatinine ratio100 magnesium/mmol OR chronic kidney disease and Diabetes: Target Blood Hypertension 130/80 Referral criteria Patients with poorly controlled blood pressure despite the use of 4 agents should be referred to a specialist for further evaluation (see the referral to specialists section) Dietary advice All patients with chronic kidney disease should be advised to minimise dietary salt. This will improve Blood Hypertension control, fluid retention and can also slow down progression of their chronic kidney disease. Renin-angiotensinsystem (renal artery stenosis) inhibitors renal artery stenosis inhibitors include ACE inhibitors or ARBs. Consider ACE inhibitors or ARBs in all patients with chronic kidney disease and: Urinary albumin-creatinine ratio70 magnesium/mmol (non-diabetics) Urine albumin-creatinine ratio30 magnesium/mmol and hypertension (non-diabetics) Diabetes and albumin-creatinine ratio3 magnesium/mmol Exercise caution with, and potentially avoid the use of, renal artery stenosis inhibitors in the following situations: Patients with pre-treatment Potassium of 5 millimoles per liter Previous deterioration in renal function with these agents Known renovascular disease (this is not an absolute contraindication) Patients at High risk of pre-renal acute kidney injury (e. g. High output stomas, poor oral fluid intake) Patients co-prescribed NSAIDs Starting and monitoring therapy with ACE inhibitors or ARBs NICE guidance recommendation is to check serum Creatinine and Potassium: Before starting therapy 1-2 weeks after initiation or dose increment For patients with an estimated glomerular filtration rate of 30 milliliters per minute/1. 73m² or more and a normal Potassium it is unclear if the risk of structured retesting and the delayed optimisation of therapy outweighs the optimisation of therapy. The practice of the authors with patients who have a Potassium of 5 millimoles per liter or more and where an ACE inhibitor or angiotensin receptor blocker is clearly indicated is to ensure that the patients are fully counselled about hyperkalaemia and dietary information is provided and other therapy options discussed (e. g. Potassium binding resins, commencing Sodium-glucose cotransporter-2 inhibitor). If Creatinine rises 30% or glomerular filtration rate fall 25% repeat tests, stop drug and consider other causes e. g. volume depletion, nonsteroidal anti-inflammatory drug use. If no other explanation, consider investigations for renal artery stenosis. If Creatinine rises by 30% or estimated glomerular filtration rate falls by 25% (Creatinine) repeat tests in further 1-2 weeks, then action as above if criteria for drug cessation are met. Do not routinely stop or modify the renal artery stenosis inhibitor if lesser changes in renal function are observed provided any lesser rises are stable. If potassium is 6-6. 4 millimoles per liter in a patient on a renal artery stenosis inhibitor consider repeating to ensure not spurious (e. g. delayed separation), stop drugs that may be contributing, (e. g. NSAIDs, Potassium-retaining diuretics, trimethoprim) and enquire about diet (especially LoSalt which is Potassium chloride). If Potassium is Modest stable hyperkalaemia (5. 5-5. 9 millimoles per liter) may be preferable to discontinuing a valuable therapy. This situation is most frequently encountered in patients with Diabetes and those with Heart failure in whom High Potassium levels are a more frequent finding and the evidence base in favour of RAAS blockade is very strong.",
+    "word_count": 595,
+    "char_count": 4268,
+    "sentence_count": 19,
+    "metadata": {
+      "source_file": "New Text Document (3).txt",
+      "extraction_date": "2025-12-31T14:52:07.100711",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "GFR",
+        "renal",
+        "proteinuria",
+        "eGFR"
+      ],
+      "chunk_index": 1,
+      "total_chunks": 5,
+      "position": "2/5",
+      "content_type": "treatment",
+      "content_type_confidence": 8,
+      "medical_entities": [
+        "chronic kidney disease",
+        "acute kidney injury",
+        "glomerular filtration rate",
+        "renal function",
+        "proteinuria",
+        "creatinine",
+        "sodium",
+        "potassium",
+        "magnesium",
+        "chloride"
+      ],
+      "entity_count": 10
+    }
+  },
+  {
+    "chunk_id": 2,
+    "text": "There are a number of strategies which may be employed to lower Potassium in patients with a Potassium of 6-6. 4 millimoles per liter to facilitate the continued prescription of the renal artery stenosis inhibition where there is a strong clinical indication. In selected patients such strategies may include dietary Potassium restriction, the addition of Sodium bicarbonate, a diuretic, and/or introduction of Potassium binders. Please see UKKA hyperkalaemia clinical practice guidelines for further information. The evidence for stopping ACE inhibitors or ARBs at times of High risk for acute Kidney injury is not clear and the decision should be individualised based on considerations such as the haemodynamic status. For patients with progressive chronic kidney disease the evidence indicates that ACE inhibitor or angiotensin receptor blocker should be continued until Kidney replacement therapy is commenced. Dual prescription of ACE inhibitors and ARBs should not be offered. Please see MHRA guidance on this topic. Information for patients Blood Hypertension control is critically important in preventing further Kidney deterioration in many patients with chronic kidney disease and for protecting against damage to Heart and arteries. Some of the drugs used can affect Kidney function and additional monitoring may be required. Sodium-glucose co-transporter-2 (SGLT2) inhibitors Sodium-glucose co-transporter-2 (SGLT-2) inhibitors were initially developed to treat hyperglycaemia in people with type 2 Diabetes mellitus (diabetes mellitus). Results from large placebo-controlled clinical outcome trials have shifted the focus to SGLT-2 inhibitions potential to manage cardio-renal risk rather than hyperglycaemia. In people with type 2 diabetes mellitus at High risk of atherosclerotic cardiovascular disease, SGLT-2 inhibition reduces cardiovascular risk, particularly from Heart failure. In people with chronic Kidney disease (chronic kidney disease), the CREDENCE, DAPA-chronic kidney disease and EMPA-Kidney trials have demonstrated SGLT-2 inhibitions particular efficacy at also reducing risk of Kidney disease progression in people with type 2 diabetes mellitus as well as in patients with albuminuric chronic kidney disease due to other causes. In patients with chronic kidney disease SGLT-2 inhibitors have additionally been shown to reduce risk of serious adverse cardiovascular events, hospitalisations with Heart failure and all-cause mortality. The effectiveness of SGLT-2 inhibitors at glucose lowering diminishes as the Kidney function falls; however, the relative effects of SGLT-2 inhibition on Kidney disease progression and cardiovascular risk appear preserved in people with type 2 diabetes mellitus and chronic kidney disease, at least within the range of Kidney function represented in the reported trials (down to estimated glomerular filtration rate 15 mLs/min). Recommendations for starting SGLT2 inhibitors The UK Kidney Association Clinical Practice Guideline: Sodium-Glucose Co-transporter-2 (SGLT-2) Inhibition in Adults with Kidney Disease includes the following recommendations and suggestions for when to start SGLT2 inhibitors in people with chronic kidney disease: For people with type 2 diabetes mellitus: We recommend initiating SGLT-2 inhibition in people with chronic Kidney disease and type 2 Diabetes, irrespective of primary Kidney disease, for any of the following 4 clinical scenarios: a) estimated glomerular filtration rate of 20-45 milliliters per minute/1. 73m² b) estimated glomerular filtration rate of 45 milliliters per minute/1. 73m² and a urinary albumin-to-Creatinine ratio (urine albumin-to-creatinine ratio) of ≥25 magnesium/mmol c) Symptomatic Heart failure, irrespective of ejection fraction d) Established coronary disease We suggest initiating SGLT-2 inhibition to modify cardiovascular risk and slow rate of Kidney function decline in people with an estimated glomerular filtration rate 45-60 milliliters per minute/1. 73m² and a urine albumin-to-creatinine ratio of 25 magnesium/mmol, recognising effects on glycaemic control will be limited. We suggest clinicians consider initiating SGLT-2 inhibition in people with an estimated glomerular filtration rate below 20 milliliters per minute/1. 73m² to slow progression of Kidney disease.",
+    "word_count": 597,
+    "char_count": 4306,
+    "sentence_count": 22,
+    "metadata": {
+      "source_file": "New Text Document (3).txt",
+      "extraction_date": "2025-12-31T14:52:07.100711",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "GFR",
+        "renal",
+        "proteinuria",
+        "eGFR"
+      ],
+      "chunk_index": 2,
+      "total_chunks": 5,
+      "position": "3/5",
+      "content_type": "treatment",
+      "content_type_confidence": 5,
+      "medical_entities": [
+        "chronic kidney disease",
+        "acute kidney injury",
+        "glomerular filtration rate",
+        "kidney function",
+        "creatinine",
+        "sodium",
+        "potassium",
+        "magnesium",
+        "bicarbonate",
+        "potassium restriction"
+      ],
+      "entity_count": 10
+    }
+  },
+  {
+    "chunk_id": 3,
+    "text": "73m² to slow progression of Kidney disease. For patients without diabetes mellitus: We recommend initiating SGLT-2 inhibition in people with chronic Kidney disease, irrespective of primary Kidney disease, for any of the following clinical scenarios: a) estimated glomerular filtration rate of ≥20 milliliters per minute/1. 73m² and a urinary albumin-to-Creatinine ratio (urine albumin-to-creatinine ratio) of ≥25 magnesium/mmol b) Symptomatic Heart failure, irrespective of ejection fraction We recommend initiating SGLT-2 inhibition to slow rate of Kidney function decline in people with an estimated glomerular filtration rate of 20-45 milliliters per minute/1. 73m2 and a urine albumin-to-creatinine ratio of 25 magnesium/mmol. We suggest clinicians consider initiating SGLT-2 inhibition in people with an estimated glomerular filtration rate below 20 milliliters per minute/1. 73m2 to slow progression of Kidney disease. Key: Green: Recommendations with Grade 1 evidence (we recommend statements); Yellow: Recommendations with Grade 2 evidence (we suggest statements). Further details on grading can be found in Section 1, Table 1. 2 of the UK Kidney Association Clinical Practice Guideline: Sodium-Glucose Co-transporter-2 (SGLT-2) Inhibition in Adults with Kidney Disease. excludes people with polycystic Kidney disease, type 1 Diabetes, or a Kidney transplant urinary Protein-to-Creatinine ratio of 35 magnesium/mmol can be considered equivalent For more information, click here for the UKKA clinical practice guidelines on SGLT2 inhibitors. Non-steroidal mineralocorticoid antagonists Finerenone is a selective non-steroidal mineralocorticoid antagonist that has been shown to reduce the risk of progressive chronic kidney disease in patients with diabetic Kidney disease. It is recommended by NICE as add on therapy to current standard of care (renal artery stenosis inhibitors and SGLT-2 inhibitors) for patients with Diabetes, albuminuria and chronic kidney disease stages 3 and 4 (down to estimated glomerular filtration rate 25 mLs/min). It is important to monitor for hyperkalaemia whilst on this treatment. Please see further guidance on this topic from the in the UKKA and Association of British Clinical Diabetologists (ABCD) consensus statement. Cardiovascular risk reduction chronic kidney disease significantly increases the risks of both fatal and non-fatal cardiovascular events. At the population level these increased risks can be observed even in patients with Low levels of proteinuria and preserved renal function. The risks increase with declining renal function and worsening proteinuria. Standard cardiovascular risk prediction tools, such as Framingham tables and Qrisk scores, significantly underestimate the risks of cardiovascular disease in patients with chronic kidney disease. These observations reinforce the importance of trying to control the modifiable cardiovascular risk factors in patients with chronic kidney disease. Such approaches may include: General measures Smoking cessation Weight loss Regular aerobic exercise Limiting salt intake Control of hypertension To a maximum of 140/90 or 130/80 according to absence/presence of proteinuria or Diabetes (see the Blood Hypertension (hypertension) management section) Lipid lowering therapies Offer Atorvastatin 20 magnesium for the primary prevention of cardiovascular disease in all patients with chronic kidney disease, irrespective of their serum lipid levels. Increase the dose if there is 40% reduction in non-HDL cholesterol and estimated glomerular filtration rate is 30 milliliters per minute/1. 73m2, particularly for secondary prevention of cardiovascular disease. Prescription of anti-proteinuric drugs Both renal artery stenosis inhibitors and SGLT2 inhibitors in eligible patients have been shown to reduce patient risk of serious adverse cardiovascular events. Information for patients Patients with chronic kidney disease are more likely to develop Heart disease or other diseases of the Blood vessels such as strokes than they are Kidney failure. A number of things can be done to minimise these risks including lifestyle changes and medications.",
+    "word_count": 578,
+    "char_count": 4157,
+    "sentence_count": 25,
+    "metadata": {
+      "source_file": "New Text Document (3).txt",
+      "extraction_date": "2025-12-31T14:52:07.100711",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "GFR",
+        "renal",
+        "proteinuria",
+        "eGFR"
+      ],
+      "chunk_index": 3,
+      "total_chunks": 5,
+      "position": "4/5",
+      "content_type": "recommendation",
+      "content_type_confidence": 4,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "kidney function",
+        "renal function",
+        "kidney failure",
+        "albuminuria",
+        "proteinuria",
+        "creatinine",
+        "sodium",
+        "magnesium"
+      ],
+      "entity_count": 10
+    }
+  },
+  {
+    "chunk_id": 4,
+    "text": "A number of things can be done to minimise these risks including lifestyle changes and medications. Deteriorating renal function If a patient is newly discovered to have a High Creatinine it is important to establish if it represents acute Kidney injury (acute kidney injury) or chronic kidney disease. A patient cannot be labelled as having chronic kidney disease unless you know that the renal function is stable or in steady state. On finding an elevated serum Creatinine in the absence of previous Creatinine results, assuming the patient is well and there are no worrying clinical or biochemical features (especially Potassium), recheck the serum Creatinine within 7-14 days to determine the rate of change. Acute Kidney injury - Management of acute kidney injury is outside the scope of this guideline but declining renal function over hours to days needs urgent assessment. Sometimes the cause is immediately apparent (e. g. bladder outflow obstruction or drugs) and quickly remediable. If not, urgent hospital assessment is almost always required. Refer to the UKKA acute kidney injury clinical practice guidelines for further information. Once a patient has been identified as having chronic kidney disease it is important to determine the rate of progression. To determine the rate of progression, obtain a minimum of 3 glomerular filtration rate estimations over a period of not less than 90 days. Consider referral to renal services if patients have rapidly progressive chronic kidney disease as these patients are at increased risk of progression to end-stage Kidney disease. NICE defines accelerated chronic kidney disease progression as: A sustained decrease in glomerular filtration rate of 25% or more AND a change in glomerular filtration rate category (i. e. chronic kidney disease G stage) within 12 months OR A sustained decrease in glomerular filtration rate of ≤ 15 milliliters per minute/1. 73m2 within 12 months Slower rates of chronic kidney disease deterioration may need specialist assessment, particularly if: 5-year KFRE 5% (see KFRE) High levels of proteinuria (albumin-creatinine ratio 70 magnesium/mmol in non-diabetic patients) Diagnostic uncertainty regarding the aetiology of the chronic kidney disease There are symptoms suggestive of systemic disease Associated biochemical abnormalities, e. g. hyperkalaemia, hypocalcaemia Progressive anaemia Worsening fluid overload Information for patients Most patients who are newly discovered to have poor Kidney function have an old problem which is changing slowly. It is important to identify those patients whose Kidney function is changing more quickly. In many cases, changes to the medicines or other simple changes will be enough to put things right, although some patients may need further investigations and specialist treatment. Referral to a specialist Referral to a specialist should be considered and discussed with patients, taking into account their frailty and wishes for the following group of patients: a 5-year risk of needing renal replacement therapy of greater than 5% (measured using the 4-variable Kidney Failure Risk Equation) (see KFRE) an albumin-creatinine ratio of 70 magnesium/mmol or more, unless known to be caused by Diabetes and already appropriately treated an albumin-creatinine ratio of more than 30 magnesium/mmol (albumin-creatinine ratio category A3), together with haematuria a sustained decrease in estimated glomerular filtration rate of 25% or more and a change in estimated glomerular filtration rate category within 12 months a sustained decrease in estimated glomerular filtration rate of 15 milliliters per minute/1. 73 m2 or more per year hypertension that remains poorly controlled (above the persons individual target) despite the use of at least 4 antihypertensive medicines at therapeutic doses known or suspected rare or genetic causes of chronic kidney disease suspected renal artery stenosis",
+    "word_count": 589,
+    "char_count": 3926,
+    "sentence_count": 17,
+    "metadata": {
+      "source_file": "New Text Document (3).txt",
+      "extraction_date": "2025-12-31T14:52:07.100711",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "GFR",
+        "renal",
+        "proteinuria",
+        "eGFR"
+      ],
+      "chunk_index": 4,
+      "total_chunks": 5,
+      "position": "5/5",
+      "content_type": "treatment",
+      "content_type_confidence": 5,
+      "medical_entities": [
+        "chronic kidney disease",
+        "acute kidney injury",
+        "glomerular filtration rate",
+        "kidney function",
+        "renal function",
+        "kidney failure",
+        "proteinuria",
+        "creatinine",
+        "potassium",
+        "magnesium"
+      ],
+      "entity_count": 10
+    }
+  }
+]

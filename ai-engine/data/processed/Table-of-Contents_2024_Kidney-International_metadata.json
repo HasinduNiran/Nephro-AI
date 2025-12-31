@@ -1,0 +1,16 @@
+{
+  "total_pages": 1,
+  "raw_text_length": 342,
+  "cleaned_text_length": 467,
+  "source_file": "Table-of-Contents_2024_Kidney-International.pdf",
+  "extraction_date": "2025-12-31T14:55:30.175234",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2024",
+  "keywords": [
+    "chronic kidney disease"
+  ],
+  "total_chunks": 1,
+  "avg_chunk_size": 63.0,
+  "processing_date": "2025-12-31T14:55:30.183315"
+}

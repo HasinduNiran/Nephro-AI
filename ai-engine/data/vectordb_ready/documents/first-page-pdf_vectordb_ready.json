@@ -1,0 +1,44 @@
+{
+  "documents": [
+    "Salt and hypertension Lewis potassium. Dahl, 2 M. D. I am pleased to address your group, beof hypertension, including the malignant cause it is heavily oriented toward diseases of phase. In so concluding, I have often felt that infancy and childhood. It has long been my we became heirs to the antipathies originally belief that the most prevalent cardiovascular directed at Allen and later at Kempner. We diseases, atherosclerosis and hypertension, decided, nonetheless, to try to detect the dieare generated early in life rather than some 4 tary factor that made this diet effective. For or 5 decades later when they are commonly those of you who are unfamiliar with the diet, diagnosed. I will consider myself successful let me define it as a Low Sodium, or a High if I engage your permanent interest in this Potassium, or a High carbohydrate, or a Low concept relative to hypertension, which I Protein, or a Low fat, or a High fluid diet. In have been studying exclusively for more than its pristine form it is made up mostly of Rice 2 decades. I will remain unperturbed, howand fruit including juices, but certainly with ever, if you do not accept all the details. no added salt. During the 1st decade, our work was foIn a series of careful metabolic studies cused on the role of Sodium in the etiology carried out over 4 years at the Rockefeller and pathogenesis of clinical and experimental Institute with Drs. Dole and Cotzias, we hypertension. In the. 2nd decade, the imporshowed that the Blood Hypertension lowering eftance of the genetic substratum was recogfect was due primarily to its Low Sodium connized and studied experimentally. In this 3rd tent (4-6). Parallel studies at the nearby decade, we are trying to define the genetic Goldwater Memorial Hospital in New York factors responsible for hypertension and to City by Watkin et al. (7) and Hatch et al. (8) quantify individual genetic vulnerability to resulted in similar conclusions. this disease. In this review of our work, I will As a direct outcome of these studies, I let you judge its overall relevance. began to wonder about the following: if a Our work began in 1948 and was based on Low salt intake causes a lowering of Blood Kempners indubitable results with the RiceHypertension, does a High salt intake cause infruit diet in the treatment of hypertension (1, creased Blood Hypertension? Both the groups 2). For reasons that are difficult to fathom, mentioned had found that the addition of there appeared a great deal of antipathy to NaC1 to the Rice-fruit diet prevented its Kempners reports as well as irrational distherapeutic effect, whereas additions of NaC1 belief in the effectiveness of the diet. In a after the induction of therapy caused remajor review of the subject early in 1949, it emergence of hypertension. This was not was stated that suggestion had not been quite the answer to the question that I was ruled out and that Restriction of salt intake asking and which I thought to be original at has not been conclusively shown to be inthe time. Later, however, it was learned that dependently capable of lowering the Blood several others had had similar thoughts much Hypertension in hypertensive patients (3). earlier, namely Ambard and Beaujard in We judged Kempners work only on the 1 Supported primarily by the United States basis of his quantitative evidence.",
+    "We were Atomic Energy Commission; partial support realso aware of several physicians, incapaciceived from the Public Health Service Grant He tated by progressive hypertensive cardiovas13408-01 and a grant-in-aid from the American cular disease who, after being on the regimen Heart Association (AHA 70-772) supported by the Dutchess County (New York) Heart Association. for some months, were back practicing mediSenior Scientist, Medical Department, Brookcine. We found it believable that the Ricehaven 2 National Laboratory, Upton, New York fruit diet was often useful in the treatment 11973. The American Journal ofClinical Nutrition 25: FEBRUARY 1972, pp. 231-244. Printed in liSA. 231"
+  ],
+  "metadatas": [
+    {
+      "source": "first-page-pdf.pdf",
+      "chunk_id": 0,
+      "content_type": "dietary",
+      "content_type_confidence": 6,
+      "word_count": 566,
+      "entity_count": 3,
+      "has_ckd": false,
+      "has_gfr": false,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": false,
+      "medical_entities": "sodium,potassium,diet",
+      "year": "2025",
+      "organization": "Unknown"
+    },
+    {
+      "source": "first-page-pdf.pdf",
+      "chunk_id": 1,
+      "content_type": "dietary",
+      "content_type_confidence": 2,
+      "word_count": 99,
+      "entity_count": 2,
+      "has_ckd": false,
+      "has_gfr": false,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": false,
+      "medical_entities": "nutrition,diet",
+      "year": "2025",
+      "organization": "Unknown"
+    }
+  ],
+  "ids": [
+    "first_page_pdf_0",
+    "first_page_pdf_1"
+  ]
+}

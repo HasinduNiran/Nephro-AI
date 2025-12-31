@@ -1,0 +1,15 @@
+{
+  "total_pages": 47,
+  "raw_text_length": 265741,
+  "cleaned_text_length": 273837,
+  "source_file": "chobanian-et-al-2003-seventh-report-of-the-joint-national-committee-on-prevention-detection-evaluation-and-treatment-of.pdf",
+  "extraction_date": "2025-12-31T14:43:03.700427",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease"
+  ],
+  "total_chunks": 50,
+  "avg_chunk_size": 587.26,
+  "processing_date": "2025-12-31T14:43:04.654333"
+}

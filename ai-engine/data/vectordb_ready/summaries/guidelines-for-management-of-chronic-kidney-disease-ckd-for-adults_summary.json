@@ -1,0 +1,21 @@
+{
+  "total_documents": 7,
+  "source_file": "guidelines-for-management-of-chronic-kidney-disease-ckd-for-adults_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\guidelines-for-management-of-chronic-kidney-disease-ckd-for-adults_chunks.json",
+  "preparation_date": "2025-12-31T14:58:48.859728",
+  "avg_word_count": 554.2857142857143,
+  "content_types": {
+    "monitoring": 1,
+    "recommendation": 2,
+    "treatment": 2,
+    "dietary": 1,
+    "reference": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 7,
+    "GFR": 6,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 1
+  }
+}

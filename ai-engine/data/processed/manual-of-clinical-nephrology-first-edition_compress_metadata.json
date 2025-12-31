@@ -1,0 +1,17 @@
+{
+  "total_pages": 116,
+  "raw_text_length": 121167,
+  "cleaned_text_length": 125233,
+  "source_file": "manual-of-clinical-nephrology-first-edition_compress.pdf",
+  "extraction_date": "2025-12-31T14:23:50.330223",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2020",
+  "keywords": [
+    "renal",
+    "nephrology"
+  ],
+  "total_chunks": 33,
+  "avg_chunk_size": 580.3030303030303,
+  "processing_date": "2025-12-31T14:23:50.752940"
+}

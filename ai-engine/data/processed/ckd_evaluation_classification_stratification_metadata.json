@@ -1,0 +1,16 @@
+{
+  "total_pages": 356,
+  "raw_text_length": 683398,
+  "cleaned_text_length": 693806,
+  "source_file": "ckd_evaluation_classification_stratification.pdf",
+  "extraction_date": "2025-12-31T14:23:22.851757",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "renal"
+  ],
+  "total_chunks": 77,
+  "avg_chunk_size": 584.7922077922078,
+  "processing_date": "2025-12-31T14:23:24.813346"
+}

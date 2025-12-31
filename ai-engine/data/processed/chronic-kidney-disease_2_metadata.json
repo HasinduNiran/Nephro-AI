@@ -1,0 +1,19 @@
+{
+  "total_pages": 6,
+  "raw_text_length": 23872,
+  "cleaned_text_length": 27993,
+  "source_file": "chronic-kidney-disease_2.pdf",
+  "extraction_date": "2025-12-31T14:22:46.948519",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2024",
+  "keywords": [
+    "chronic kidney disease",
+    "kidney function",
+    "proteinuria",
+    "albuminuria"
+  ],
+  "total_chunks": 7,
+  "avg_chunk_size": 566.2857142857143,
+  "processing_date": "2025-12-31T14:22:47.049212"
+}

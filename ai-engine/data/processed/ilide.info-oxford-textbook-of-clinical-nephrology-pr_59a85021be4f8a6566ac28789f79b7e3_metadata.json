@@ -1,0 +1,16 @@
+{
+  "total_pages": 1,
+  "raw_text_length": 1799,
+  "cleaned_text_length": 1802,
+  "source_file": "ilide.info-oxford-textbook-of-clinical-nephrology-pr_59a85021be4f8a6566ac28789f79b7e3.pdf",
+  "extraction_date": "2025-12-31T14:45:58.281805",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "renal",
+    "nephrology"
+  ],
+  "total_chunks": 1,
+  "avg_chunk_size": 238.0,
+  "processing_date": "2025-12-31T14:45:58.295981"
+}

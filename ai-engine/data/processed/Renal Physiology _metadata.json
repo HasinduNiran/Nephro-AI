@@ -1,0 +1,19 @@
+{
+  "total_pages": 43,
+  "raw_text_length": 13952,
+  "cleaned_text_length": 14332,
+  "source_file": "Renal Physiology .pdf",
+  "extraction_date": "2025-12-31T14:22:29.672095",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "kidney function",
+    "renal",
+    "proteinuria"
+  ],
+  "total_chunks": 4,
+  "avg_chunk_size": 552.5,
+  "processing_date": "2025-12-31T14:22:29.724425"
+}

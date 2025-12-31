@@ -1,0 +1,22 @@
+{
+  "total_documents": 14,
+  "source_file": "mancia-verdecchia-2015-clinical-value-of-ambulatory-blood-pressure_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\mancia-verdecchia-2015-clinical-value-of-ambulatory-blood-pressure_chunks.json",
+  "preparation_date": "2025-12-31T14:58:49.299395",
+  "avg_word_count": 575.7857142857143,
+  "content_types": {
+    "evidence": 9,
+    "definition": 1,
+    "reference": 1,
+    "recommendation": 1,
+    "dietary": 1,
+    "monitoring": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

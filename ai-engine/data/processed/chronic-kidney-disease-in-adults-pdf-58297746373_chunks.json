@@ -1,0 +1,358 @@
+[
+  {
+    "chunk_id": 0,
+    "text": "Chronic Kidney disease in adults Quality standard Published: 30 March 2011 Last updated: 27 July 2017 www. nice. org. uk/guidance/qs5 NICE 2025. All rights reserved. Subject to Notice of rights (notice-of-rights). Chronic Kidney disease in adults (QS5) Contents Quality statements 3 Quality statement 1: Identification and monitoring 4 Quality statement 4 Rationale 4 Quality measures 4 What the quality statement means for different audiences 6 Source guidance 7 Definitions of terms used in this quality statement 7 Quality statement 2: Blood Hypertension control 10 Quality statement 10 Rationale 10 Quality measures 10 What the quality statement means for different audiences 12 Source guidance 13 Definitions of terms used in this quality statement 13 Quality statement 3: Statins for people with chronic kidney disease 15 Quality statement 15 Rationale 15 Quality measures 15 What the quality statement means for different audiences 17 Source guidance 18 Definitions of terms used in this quality statement 18 Update information 20 About this quality standard 21 Resource impact 21 Diversity, equality and language 22 NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) This standard is based on NG203 and NG238. This standard should be read in conjunction with QS72, QS15, QS13, QS66, QS76, QS87, QS100, QS99, QS6 and QS195. Quality statements Statement 1 Adults with, or at risk of, chronic Kidney disease (chronic kidney disease) have eGFRcreatinine and albumin: Creatinine ratio (albumin-creatinine ratio) testing at the frequency agreed with their healthcare professional. 2011, updated 2017 Statement 2 Adults with chronic kidney disease have their Blood Hypertension maintained within the recommended range. 2011, updated 2017 Statement 3 Adults with chronic kidney disease are offered atorvastatin 20 magnesium. new 2017 In 2017, this quality standard was updated, and statements prioritised in 2011 were updated (2011, updated 2017) or replaced (new 2017). For more information, see update information. The previous version of the quality standard for chronic Kidney disease is available as a pdf. NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) Quality statement 1: Identification and monitoring Quality statement Adults with, or at risk of, chronic Kidney disease (chronic kidney disease) have eGFRcreatinine and albumin: Creatinine ratio (albumin-creatinine ratio) testing at the frequency agreed with their healthcare professional. 2011, updated 2017 Rationale Routine monitoring of key markers of Kidney function for adults with, or at risk of, chronic kidney disease will enable earlier diagnosis and early action to reduce the risks of chronic kidney disease progression, such as cardiovascular disease, end-stage Kidney disease and mortality. Quality measures The following measures can be used to assess the quality of care or service provision specified in the statement. They are examples of how the statement can be measured, and can be adapted and used flexibly. Structure Evidence of local systems that invite adults with, or at risk of, chronic kidney disease to have eGFRcreatinine and albumin-creatinine ratio testing. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, through local protocols on appointment reminders. Process a) Proportion of adults with chronic kidney disease who had eGFRcreatinine testing in the past year. NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) Numerator the number in the denominator who had eGFRcreatinine testing in the past year. Denominator the number of adults with chronic kidney disease.",
+    "word_count": 574,
+    "char_count": 3897,
+    "sentence_count": 32,
+    "metadata": {
+      "source_file": "chronic-kidney-disease-in-adults-pdf-58297746373.pdf",
+      "extraction_date": "2025-12-31T14:52:15.993913",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2011",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "GFR",
+        "kidney function",
+        "eGFR"
+      ],
+      "chunk_index": 0,
+      "total_chunks": 10,
+      "position": "1/10",
+      "section": "Chronic Kidney disease in adults Quality standard Published:",
+      "content_type": "definition",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "kidney function",
+        "creatinine",
+        "magnesium",
+        "statins",
+        "cardiovascular disease",
+        "monitoring",
+        "albumin-creatinine ratio"
+      ],
+      "entity_count": 8
+    }
+  },
+  {
+    "chunk_id": 1,
+    "text": "Denominator the number of adults with chronic kidney disease. Data source: cardiovascular disease Prevents indicator CVDP006CKD reports the percentage of people aged 18 and over with GP recorded chronic kidney disease (G3a to G5), with a record of an estimated glomerular filtration rate test in the preceding 12 months. b) Proportion of adults with chronic kidney disease who had albumin-creatinine ratio testing at the frequency agreed with their healthcare professional. Numerator the number in the denominator who had albumin-creatinine ratio testing at the frequency agreed with their healthcare professional. Denominator the number of adults with chronic kidney disease. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from audit of health records. NHS Digitals indicator no longer in QOF (INLIQ) CKD004 reports the percentage of patients on the chronic kidney disease register whose notes have a record of a Urine albumin: Creatinine ratio (or Protein: Creatinine ratio) test in the preceding 12 months. c) Proportion of adults at risk of chronic kidney disease who had eGFRcreatinine testing at the frequency agreed with their healthcare professional. Numerator the number in the denominator who had eGFRcreatinine testing at the frequency agreed with their healthcare professional. Denominator the number of adults at risk of chronic kidney disease. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from audit of health records. d) Proportion of adults at risk of chronic kidney disease who had albumin-creatinine ratio testing at the frequency agreed with their healthcare professional. Numerator the number in the denominator who had albumin-creatinine ratio testing at the agreed frequency. NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) Denominator the number of adults at risk of chronic kidney disease. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from audit of health records. Outcomes a) Prevalence of undiagnosed chronic kidney disease. Data source: NHS Digitals Quality and Outcomes Framework indicator CKD005 reports the prevalence of patients aged 18 or over with chronic kidney disease with classification of categories G3a to G5 registered at GP practices. Comparing recorded prevalence with expected prevalence estimated using a tool, such as Public Health Englands chronic kidney disease prevalence model, can give an indication of local prevalence of undiagnosed chronic kidney disease. cardiovascular disease Prevents indicator CVDP002CKD reports the percentage of GP registered people aged 18 and over, with 2 Low eGFRs with no GP recorded chronic kidney disease (G3a to G5) and indicator CVDP003CKD reports the percentage of GP registered patents aged 18 and over, where the latest estimated glomerular filtration rate reading is Low with no GP recorded chronic kidney disease (G3a to G5). b) Stage of chronic kidney disease at diagnosis. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from audit of health records. What the quality statement means for different audiences Service providers (such as general practices and secondary care services, including renal, cardiology, Diabetes and rheumatology clinics) ensure that systems are in place to identify adults with, or at risk of, chronic kidney disease, for example, through computerised or manual searching of medical records, and offer an appointment to discuss with them how frequently they should have eGFRcreatinine and albumin-creatinine ratio testing. They also have systems in place to offer appointments for testing at the agreed frequency.",
+    "word_count": 581,
+    "char_count": 3981,
+    "sentence_count": 26,
+    "metadata": {
+      "source_file": "chronic-kidney-disease-in-adults-pdf-58297746373.pdf",
+      "extraction_date": "2025-12-31T14:52:15.993913",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2011",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "GFR",
+        "kidney function",
+        "eGFR"
+      ],
+      "chunk_index": 1,
+      "total_chunks": 10,
+      "position": "2/10",
+      "content_type": "recommendation",
+      "content_type_confidence": 1,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "creatinine",
+        "cardiovascular disease",
+        "classification",
+        "albumin-creatinine ratio"
+      ],
+      "entity_count": 6
+    }
+  },
+  {
+    "chunk_id": 2,
+    "text": "They also have systems in place to offer appointments for testing at the agreed frequency. Healthcare professionals (such as GPs, nephrologists, cardiologists, diabetologists, rheumatologists, nurses and pharmacists) discuss and agree the frequency of eGFRcreatinine and albumin-creatinine ratio testing with adults who have, or at risk of, chronic kidney disease and offer testing NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) at the agreed frequency. They can then agree any appropriate treatment based on the results of testing. Commissioners ensure that they commission services in which adults with, or at risk of, chronic kidney disease have eGFRcreatinine and albumin-creatinine ratio testing at the frequency agreed with their healthcare professional. They might do this by checking that services have systems in place to identify adults with, or at risk of, chronic kidney disease and offer appointments to discuss and agree the frequency of eGFRcreatinine and albumin-creatinine ratio testing. Adults who have, or may be at risk of, chronic kidney disease discuss and agree with their healthcare professional how often they should have tests to check how well their kidneys are working. They are offered Blood and Urine tests at the agreed frequency to find out if their chronic kidney disease is worsening (progressing), or if they have Kidney problems. The Blood test is at least once a year for adults with chronic kidney disease. People with chronic kidney disease are offered information and education relevant to the cause of Kidney disease, how advanced it is, any complications they may have and the chances of it getting worse, to help fully understand and make informed choices about treatment. They are also able to get psychological support if needed for example, support groups, counselling or support from a specialist nurse. Source guidance Chronic Kidney disease: assessment and management. NICE guideline NG203 (2021), recommendations 1. 1. 20, 1. 1. 21, 1. 3. 1 and 1. 3. 4 Definitions of terms used in this quality statement Adults with chronic kidney disease chronic kidney disease is defined as abnormalities of Kidney function or structure present for more than 3 months, with implications for health. This includes: all people with markers of Kidney damage, including albuminuria (albumin-creatinine ratio more than 3 magnesium/ mmol), Urine sediment abnormalities, electrolyte and other abnormalities due to tubular disorders, abnormalities detected by histology, structural abnormalities detected by imaging or a history of Kidney transplantation people with a glomerular estimated glomerular filtration rate (glomerular filtration rate) of less than 60 milliliters per minute/1. 73 m2 on at least NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) 2 occasions separated by a period of at least 90 days (with or without markers of Kidney damage). NICEs guideline on chronic Kidney disease, terms used in this guideline Adults at risk of chronic kidney disease Adults with any of the following risk factors: Diabetes hypertension previous episode of acute Kidney injury cardiovascular disease (ischaemic Heart disease, chronic Heart failure, peripheral vascular disease or cerebral vascular disease) structural renal tract disease, recurrent renal calculi or prostatic hypertrophy multisystem diseases with potential Kidney involvement for example, systemic lupus erythematosus gout family history of end-stage renal disease (glomerular filtration rate category G5) or hereditary Kidney disease incidental detection of haematuria or proteinuria medicines that can adversely affect Kidney function, such as calcineurin inhibitors (for example, cyclosporin or tacrolimus), lithium or non-steroidal anti-inflammatory drugs (NSAIDs). NICEs guideline on chronic Kidney disease, recommendations 1. 1. 20 and 1. 1.",
+    "word_count": 589,
+    "char_count": 4010,
+    "sentence_count": 33,
+    "metadata": {
+      "source_file": "chronic-kidney-disease-in-adults-pdf-58297746373.pdf",
+      "extraction_date": "2025-12-31T14:52:15.993913",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2011",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "GFR",
+        "kidney function",
+        "eGFR"
+      ],
+      "chunk_index": 2,
+      "total_chunks": 10,
+      "position": "3/10",
+      "content_type": "recommendation",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "acute kidney injury",
+        "glomerular filtration rate",
+        "kidney function",
+        "end-stage renal disease",
+        "albuminuria",
+        "proteinuria",
+        "creatinine",
+        "magnesium",
+        "cardiovascular disease"
+      ],
+      "entity_count": 10
+    }
+  },
+  {
+    "chunk_id": 3,
+    "text": "NICEs guideline on chronic Kidney disease, recommendations 1. 1. 20 and 1. 1. 21, and expert opinion eGFRcreatinine testing A Blood test that estimates glomerular estimated glomerular filtration rate (glomerular filtration rate) by measuring serum Creatinine. It is used as an estimate of Kidney function to identify Kidney disease and monitor chronic kidney disease progression. Clinical laboratories should use the Chronic Kidney Disease Epidemiology NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) Collaboration (chronic kidney disease-EPI) Creatinine equation to estimate GFRcreatinine, using Creatinine assays with calibration traceable to standardised reference material. Adapted from NICEs guideline on chronic Kidney disease, recommendation 1. 1. 2 Albumin: Creatinine ratio (albumin-creatinine ratio) testing A test used to detect and identify Protein in the Urine, which is a sign of Kidney disease, and can be used to assess progression of chronic kidney disease. Adapted from NICEs guideline on chronic Kidney disease, recommendation 1. 1. 12, and full guideline At the frequency agreed with their healthcare professional The frequency of monitoring should be discussed and agreed by the person and their healthcare professional. Table 2 in NICEs guideline on chronic Kidney disease should be used to guide the frequency of glomerular filtration rate monitoring. Adults with chronic kidney disease should be seen at least annually and adults at risk of chronic kidney disease can be seen annually or less often for monitoring of estimated glomerular filtration rate. albumin-creatinine ratio does not need to be measured every time estimated glomerular filtration rate is measured, except when evaluating response to a treatment targeted at reducing proteinuria. Frequency of monitoring is determined by the stability of Kidney function and the albumin-creatinine ratio level, and tailored to the individual according to: the underlying cause of chronic kidney disease the rate of decline in estimated glomerular filtration rate or increase in albumin-creatinine ratio (but be aware that chronic kidney disease progression is often non-linear) other risk factors, including Heart failure, Diabetes and hypertension changes to their treatment (such as reninangiotensinaldosterone system RAAS antagonists, NSAIDs and diuretics) intercurrent illness (for example, acute Kidney injury) whether they have chosen conservative management of chronic kidney disease. Adapted from NICEs guideline on chronic Kidney disease, recommendations 1. 3. 1 and 1. 3. 4, and full guideline NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) Quality statement 2: Blood Hypertension control Quality statement Adults with chronic Kidney disease (chronic kidney disease) have their Blood Hypertension maintained within the recommended range. 2011, updated 2017 Rationale People with chronic kidney disease are at a higher risk of Hypertension. Maintaining Blood Hypertension within a target range reduces the risk of cardiovascular disease, chronic kidney disease progression and mortality. Quality measures The following measures can be used to assess the quality of care or service provision specified in the statement. They are examples of how the statement can be measured, and can be adapted and used flexibly. Structure a) Evidence of local systems to identify and invite adults with chronic kidney disease to have a Blood Hypertension reading. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, through local protocols on appointment reminders. b) Evidence of the availability of equipment to take a Blood Hypertension reading from adults with chronic kidney disease. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, local protocols and service NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights).",
+    "word_count": 597,
+    "char_count": 4173,
+    "sentence_count": 38,
+    "metadata": {
+      "source_file": "chronic-kidney-disease-in-adults-pdf-58297746373.pdf",
+      "extraction_date": "2025-12-31T14:52:15.993913",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2011",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "GFR",
+        "kidney function",
+        "eGFR"
+      ],
+      "chunk_index": 3,
+      "total_chunks": 10,
+      "position": "4/10",
+      "content_type": "recommendation",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "acute kidney injury",
+        "glomerular filtration rate",
+        "kidney function",
+        "proteinuria",
+        "creatinine",
+        "serum creatinine",
+        "diuretics",
+        "cardiovascular disease",
+        "heart failure"
+      ],
+      "entity_count": 10
+    }
+  },
+  {
+    "chunk_id": 4,
+    "text": "All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) specifications. Process a) Proportion of adults with chronic kidney disease with an albumin: Creatinine ratio (albumin-creatinine ratio) below 70 magnesium/mmol whose systolic Blood Hypertension is between 120 mmHg and 139 mmHg and their clinic diastolic Blood Hypertension below 90 mmHg. Numerator the number in the denominator whose systolic Blood Hypertension is between 120 mmHg and 139 mmHg and their clinic diastolic Blood Hypertension below 90 mmHg. Denominator the number of adults with chronic kidney disease with an albumin-creatinine ratio below 70 magnesium/mmol. Data source: cardiovascular disease Prevents indicator CVDP007CKD reports the percentage of patients aged 18 and over with GP recorded chronic kidney disease (G3a to G5) with an albumin-creatinine ratio of less than 70 magnesium/ mmol, in whom the last Blood Hypertension reading (measured in the preceding 12 months) is less than 140/90 mmHg. b) Proportion of adults with chronic kidney disease whose systolic Blood Hypertension is between 120 mmHg and 129 mmHg and their clinic diastolic Blood Hypertension below 80 mmHg. Numerator the number in the denominator whose systolic Blood Hypertension is between 120 mmHg and 129 mmHg and their clinic diastolic Blood Hypertension below 80 mmHg. Denominator the number of adults with chronic kidney disease. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from audit of health records. c) Proportion of adults with chronic kidney disease and an albumin-creatinine ratio of 70 magnesium/mmol or more whose systolic Blood Hypertension is between 120 mmHg and 129 mmHg and their clinic diastolic Blood Hypertension below 80 mmHg. Numerator the number in the denominator whose systolic Blood Hypertension is between 120 mmHg and 129 mmHg and their clinic diastolic Blood Hypertension below 80 mmHg. Denominator the number of adults with chronic kidney disease and an albumin-creatinine ratio of 70 magnesium/mmol or more. NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from audit of health records. Outcomes a) Prevalence of cardiovascular disease among people with chronic kidney disease. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from audit of health records. b) Incidence of cardiovascular events for people with chronic kidney disease. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from audit of health records. c) Cardiovascular mortality rates among people with chronic kidney disease. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from audit of health records. d) Incidence of end-stage Kidney disease. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from audit of health records. The UK Renal Registry annual report includes data on the incidence of Kidney replacement therapy. What the quality statement means for different audiences Service providers (such as general practices and secondary care services) ensure that systems are in place for adults with chronic kidney disease to have their Blood Hypertension maintained within the recommended range. This might involve having the equipment to take a Blood Hypertension reading, using clinical IT systems to compare patients to the recommended range when entering a Blood Hypertension reading, or flagging when patients need a Blood Hypertension reading. NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights).",
+    "word_count": 597,
+    "char_count": 4131,
+    "sentence_count": 32,
+    "metadata": {
+      "source_file": "chronic-kidney-disease-in-adults-pdf-58297746373.pdf",
+      "extraction_date": "2025-12-31T14:52:15.993913",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2011",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "GFR",
+        "kidney function",
+        "eGFR"
+      ],
+      "chunk_index": 4,
+      "total_chunks": 10,
+      "position": "5/10",
+      "content_type": "recommendation",
+      "content_type_confidence": 1,
+      "medical_entities": [
+        "chronic kidney disease",
+        "creatinine",
+        "magnesium",
+        "cardiovascular disease",
+        "albumin-creatinine ratio"
+      ],
+      "entity_count": 5
+    }
+  },
+  {
+    "chunk_id": 5,
+    "text": "NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) Healthcare professionals (such as GPs, nephrologists, nurses and pharmacists) monitor the Blood Hypertension of adults with chronic kidney disease and are aware of the recommended ranges. They support people to keep their Blood Hypertension within the recommended range, for example, by starting or adjusting treatment, or advising on lifestyle changes. Commissioners ensure that they commission services in which adults with chronic kidney disease have their Blood Hypertension maintained within the recommended range. They work with service providers to ensure that adults with chronic kidney disease are identified, and have a Blood Hypertension reading and any necessary support to maintain it within the recommended range. Adults with chronic kidney disease are supported to keep their Blood Hypertension at a healthy level. If it is too High, their healthcare professional might offer medicine, or change the medicine they are taking, or suggest lifestyle changes, to help to control it. Source guidance Chronic Kidney disease: assessment and management. NICE guideline NG203 (2021), recommendations 1. 6. 1 and 1. 6. 2 Definitions of terms used in this quality statement Adults with chronic kidney disease chronic kidney disease is defined as abnormalities of Kidney function or structure present for more than 3 months, with implications for health. This includes: people with markers of Kidney damage, including albuminuria (albumin-creatinine ratio more than 3 magnesium/ mmol), Urine sediment abnormalities, electrolyte and other abnormalities due to tubular disorders, abnormalities detected by histology, structural abnormalities detected by imaging or a history of Kidney transplantation people with a glomerular estimated glomerular filtration rate (glomerular filtration rate) of less than 60 milliliters per minute/1. 73 m2 on at least 2 occasions separated by a period of at least 90 days (with or without markers of Kidney damage). NICEs guideline on chronic Kidney disease, terms used in this guideline NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) Recommended range Blood Hypertension should be monitored and maintained within the following ranges: In people with chronic kidney disease, aim to keep the systolic Blood Hypertension below 140 mmHg (target range 120 mmHg to 139 mmHg) and the clinic diastolic Blood Hypertension below 90 mmHg. In people with chronic kidney disease with an albumin-creatinine ratio of 70 magnesium/mmol or more, aim to keep the systolic Blood Hypertension below 130 mmHg (target range 120 mmHg to 129 mmHg) and the clinic diastolic Blood Hypertension below 80 mmHg. Adapted from NICEs guideline on chronic Kidney disease, recommendations 1. 6. 1 and 1. 6. 2 NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) Quality statement 3: Statins for people with chronic kidney disease Quality statement Adults with chronic Kidney disease (chronic kidney disease) are offered atorvastatin 20 magnesium. new 2017 Rationale There is a higher risk of cardiovascular disease (cardiovascular disease) in people with chronic kidney disease. After discussing the risks and benefits of starting statin therapy with a healthcare professional, adults with chronic kidney disease may choose statin therapy as an appropriate treatment to reduce their risk of first cardiovascular disease events, or of future cardiovascular disease events in adults who have already had an event, such as a Heart attack or stroke. Statins are a clinically effective treatment for preventing cardiovascular disease, and reducing the risks associated with cardiovascular disease, for people who have chronic kidney disease.",
+    "word_count": 582,
+    "char_count": 3937,
+    "sentence_count": 33,
+    "metadata": {
+      "source_file": "chronic-kidney-disease-in-adults-pdf-58297746373.pdf",
+      "extraction_date": "2025-12-31T14:52:15.993913",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2011",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "GFR",
+        "kidney function",
+        "eGFR"
+      ],
+      "chunk_index": 5,
+      "total_chunks": 10,
+      "position": "6/10",
+      "content_type": "recommendation",
+      "content_type_confidence": 4,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "kidney function",
+        "albuminuria",
+        "creatinine",
+        "magnesium",
+        "statins",
+        "cardiovascular disease",
+        "guideline",
+        "albumin-creatinine ratio"
+      ],
+      "entity_count": 10
+    }
+  },
+  {
+    "chunk_id": 6,
+    "text": "Atorvastatin 20 magnesium is recommended as the preferred initial High-intensity statin because it is clinically and cost effective for the primary and secondary prevention of cardiovascular disease. Quality measures The following measures can be used to assess the quality of care or service provision specified in the statement. They are examples of how the statement can be measured, and can be adapted and used flexibly. Structure a) Evidence of the availability of atorvastatin 20 magnesium within local service providers. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from local formularies. b) Evidence of local systems to check whether adults with chronic kidney disease are taking atorvastatin 20 magnesium and invite them to discuss starting treatment if not. NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from local protocols and service specifications. Process Proportion of adults with chronic kidney disease who receive atorvastatin 20 magnesium. Numerator the number in the denominator who receive atorvastatin 20 magnesium. Denominator the number of adults with chronic kidney disease. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from audit of health records. cardiovascular disease Prevents indicator CVDP010CHOL reports the percentage of patients aged 18 and over with GP-recorded chronic kidney disease (G3a to G5), who are currently having treatment with lipid-lowering therapy. This measures lipid-lowering therapies and is not specific to a statin. Outcomes a) Prevalence of cardiovascular disease among people with chronic kidney disease. Data source: No routinely collected national data for this measure has been identified. Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from audit of health records. b) Incidence of cardiovascular events for people with chronic kidney disease. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from audit of health records. c) Cardiovascular mortality rates among people with chronic kidney disease. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from audit of health records. d) Proportion of people with chronic kidney disease on a statin without a diagnosis of cardiovascular disease with a greater than 40% reduction in non-High-density lipoprotein (HDL) cholesterol. NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) Numerator the number in the denominator with a greater than 40% reduction in non-HDL cholesterol. Denominator the number of people with chronic kidney disease on a statin without a diagnosis of cardiovascular disease. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from audit of health records. e) Proportion of adults with chronic kidney disease and cardiovascular disease on a statin who have a Low-density lipoprotein (LDL) cholesterol level of 2. 0 mmol per litre or less, or non-HDL cholesterol level of 2. 6 mmol per litre or less. Numerator the number in the denominator who have an LDL cholesterol level of 2. 0 mmol per litre or less, or non-HDL cholesterol level of 2. 6 mmol per litre or less. Denominator the number of adults with chronic kidney disease and cardiovascular disease on a statin. Data source: Data can be collected from information recorded locally by healthcare professionals and provider organisations, for example, from patient records.",
+    "word_count": 593,
+    "char_count": 4090,
+    "sentence_count": 38,
+    "metadata": {
+      "source_file": "chronic-kidney-disease-in-adults-pdf-58297746373.pdf",
+      "extraction_date": "2025-12-31T14:52:15.993913",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2011",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "GFR",
+        "kidney function",
+        "eGFR"
+      ],
+      "chunk_index": 6,
+      "total_chunks": 10,
+      "position": "7/10",
+      "content_type": "treatment",
+      "content_type_confidence": 2,
+      "medical_entities": [
+        "chronic kidney disease",
+        "magnesium",
+        "cardiovascular disease"
+      ],
+      "entity_count": 3
+    }
+  },
+  {
+    "chunk_id": 7,
+    "text": "What the quality statement means for different audiences Service providers (such as general practices and secondary care services, including renal, cardiology, Diabetes and rheumatology clinics) ensure that systems are in place for adults with chronic kidney disease to be offered atorvastatin 20 magnesium. For example, this may be done through incorporating treatment algorithms into software applications to provide users with patient-specific recommendations on treatment. Healthcare professionals (such as GPs, nephrologists, cardiologists, diabetologists, rheumatologists, nurses and pharmacists) check whether adults with chronic kidney disease are taking a statin, and discuss the risks and benefits of starting statin therapy if not. They offer atorvastatin 20 magnesium and increase the dose if an adequate response to treatment is not achieved and estimated glomerular filtration rate is 30 milliliters per minute/1. 73 m2 or more. If a person is not able to tolerate atorvastatin 20 magnesium or reports adverse effects, they discuss alternative options such as stopping the statin or changing the dose or type of statin. NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) Commissioners ensure that they commission services in which adults with chronic kidney disease are offered atorvastatin 20 magnesium. Commissioners may do this by seeking evidence of practice through clinical audits. Adults with chronic kidney disease are at a higher risk of Heart attacks and strokes. To help reduce the risk they are offered a type of medicine called a statin, which lowers the level of cholesterol (sometimes called lipids) in the Blood. If their cholesterol level does not decrease enough, they may change to a higher dose. If the statin causes any side effects, their doctor might ask them to stop taking it for a while to check that they are caused by the statin. Their doctor might discuss reducing the dose or changing to a different statin. Source guidance Chronic Kidney disease: assessment and management. NICE guideline NG203 (2021), recommendation 1. 6. 24 Cardiovascular disease: risk assessment and reduction, including lipid modification. NICE guideline NG238 (2023), recommendations 1. 6. 1, 1. 7. 1, 1. 8. 1, 1. 8. 2 and 1. 8. 3 Definitions of terms used in this quality statement Adults with chronic kidney disease chronic kidney disease is defined as abnormalities of Kidney function or structure present for more than 3 months, with implications for health. This includes: people with markers of Kidney damage, including albuminuria (albumin: Creatinine ratio albumin-creatinine ratio more than 3 magnesium/mmol), Urine sediment abnormalities, electrolyte and other abnormalities due to tubular disorders, abnormalities detected by histology, structural abnormalities detected by imaging or a history of Kidney transplantation people with a glomerular estimated glomerular filtration rate (glomerular filtration rate) of less than 60 milliliters per minute/1. 73 m2 on at least 2 occasions separated by a period of at least 90 days (with or without markers of Kidney damage). NICEs guideline on chronic Kidney disease, terms used in this guideline NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) Adults with chronic kidney disease and cardiovascular disease Adults with a diagnosis of chronic kidney disease and angina, previous myocardial infarction, revascularisation, ischaemic stroke or TIA (excluding a history of haemorrhagic stroke) or symptomatic peripheral arterial disease. NICE indicator IND230 NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) Update information July 2017: This quality standard was updated and statements prioritised in 2011 were replaced. The topic was identified for update following the annual review of quality standards.",
+    "word_count": 595,
+    "char_count": 4028,
+    "sentence_count": 42,
+    "metadata": {
+      "source_file": "chronic-kidney-disease-in-adults-pdf-58297746373.pdf",
+      "extraction_date": "2025-12-31T14:52:15.993913",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2011",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "GFR",
+        "kidney function",
+        "eGFR"
+      ],
+      "chunk_index": 7,
+      "total_chunks": 10,
+      "position": "8/10",
+      "content_type": "definition",
+      "content_type_confidence": 4,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "kidney function",
+        "albuminuria",
+        "creatinine",
+        "magnesium",
+        "cardiovascular disease",
+        "guideline",
+        "albumin-creatinine ratio"
+      ],
+      "entity_count": 9
+    }
+  },
+  {
+    "chunk_id": 8,
+    "text": "The topic was identified for update following the annual review of quality standards. The review identified changes in the priority areas for improvement. Statements are marked as: new 2017 if the statement covers a new area for quality improvement 2011, updated 2017 if the statement covers an area for quality improvement included in the 2011 quality standard and has been updated. The 2011 quality standard for chronic kidney disease is available as a pdf. Minor changes since publication December 2023: Changes have been made to the source guidance and outcome measures sections for statement 3 to align them with the updated NICE guideline on cardiovascular disease: risk assessment and reduction, including lipid modification. A definition of adults with chronic kidney disease and cardiovascular disease has been added to statement 3. Data sources have been reviewed throughout and updated for statement 1. May 2023: Recommendation numbers have been amended in statement 3 to align them with the updated NICE guideline on cardiovascular disease: risk assessment and reduction, including lipid modification. Hyperlinks, data sources and audience descriptors have been reviewed throughout and updated as needed. August 2021: Recommendation numbers, references and links to source guidance have been updated throughout and definitions in statement 1 have been amended to align with the updated NICE guideline on chronic Kidney disease. NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) About this quality standard NICE quality standards describe High-priority areas for quality improvement in a defined care or service area. Each standard consists of a prioritised set of specific, concise and measurable statements. NICE quality standards draw on existing NICE or NICE-accredited guidance that provides an underpinning, comprehensive set of recommendations, and are designed to support the measurement of improvement. Expected levels of achievement for quality measures are not specified. Quality standards are intended to drive up the quality of care, and so achievement levels of 100% should be aspired to (or 0% if the quality statement states that something should not be done). However, this may not always be appropriate in practice. Taking account of safety, shared decision making, choice, and professional judgement, desired levels of achievement should be defined locally. Information about how NICE quality standards are developed is available from the NICE website. See our webpage on quality standards advisory committees for details about our standing committees. Information about the topic experts invited to join the standing members is available from the webpage for this quality standard. NICE has produced a quality standard service improvement template to help providers make an initial assessment of their service compared with a selection of quality statements. This tool is updated monthly to include new quality standards. NICE guidance and quality standards apply in England and Wales. Decisions on how they apply in Scotland and Northern Ireland are made by the Scottish government and Northern Ireland Executive. NICE quality standards may include references to organisations or people responsible for commissioning or providing care that may be relevant only to England. Resource impact NICE quality standards should be achievable by local services. The potential resource impact is considered by the quality standards advisory committee, drawing on resource NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) impact work for the source guidance. Organisations are encouraged to use the resource impact summary report for NICEs guideline on chronic Kidney disease and the resource impact products for NICEs guideline on cardiovascular disease to help estimate local costs.",
+    "word_count": 588,
+    "char_count": 3971,
+    "sentence_count": 34,
+    "metadata": {
+      "source_file": "chronic-kidney-disease-in-adults-pdf-58297746373.pdf",
+      "extraction_date": "2025-12-31T14:52:15.993913",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2011",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "GFR",
+        "kidney function",
+        "eGFR"
+      ],
+      "chunk_index": 8,
+      "total_chunks": 10,
+      "position": "9/10",
+      "content_type": "recommendation",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "cardiovascular disease",
+        "guideline"
+      ],
+      "entity_count": 3
+    }
+  },
+  {
+    "chunk_id": 9,
+    "text": "Diversity, equality and language Equality issues were considered during development and equality assessments for this quality standard are available. Any specific issues identified during development of the quality statements are highlighted in each statement. Commissioners and providers should aim to achieve the quality standard in their local context, in light of their duties to have due regard to the need to eliminate unlawful discrimination, advance equality of opportunity and foster Good relations. Nothing in this quality standard should be interpreted in a way that would be inconsistent with compliance with those duties. ISBN: 978-1-4731-0895-0 Endorsing organisation This quality standard has been endorsed by NHS England, as required by the Health and Social Care Act (2012) Supporting organisations Many organisations share NICEs commitment to quality improvement using evidencebased guidance. The following supporting organisations have recognised the benefit of the quality standard in improving care for patients, carers, service users and members of the public. They have agreed to work with NICE to ensure that those commissioning or providing services are made aware of and encouraged to use the quality standard. Diabetes UK Kidney Care UK Royal College of Nursing (RCN) Royal College of General Practitioners (RCGP) UK Kidney Association NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23 Chronic Kidney disease in adults (QS5) British Renal Society NICE 2025. All rights reserved. Subject to Notice of rights ( conditionsnotice-of-rights). 23",
+    "word_count": 233,
+    "char_count": 1611,
+    "sentence_count": 14,
+    "metadata": {
+      "source_file": "chronic-kidney-disease-in-adults-pdf-58297746373.pdf",
+      "extraction_date": "2025-12-31T14:52:15.993913",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2011",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "GFR",
+        "kidney function",
+        "eGFR"
+      ],
+      "chunk_index": 9,
+      "total_chunks": 10,
+      "position": "10/10",
+      "content_type": "recommendation",
+      "content_type_confidence": 1,
+      "medical_entities": [
+        "chronic kidney disease"
+      ],
+      "entity_count": 1
+    }
+  }
+]

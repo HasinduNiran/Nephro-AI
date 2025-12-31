@@ -1,8 +1,8 @@
 {
   "total_documents": 10,
   "source_file": "bjca.2009.4.2.39357_chunks.json",
-  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\bjca.2009.4.2.39357_chunks.json",
-  "preparation_date": "2025-11-21T14:30:30.791258",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\bjca.2009.4.2.39357_chunks.json",
+  "preparation_date": "2025-12-31T14:58:47.774553",
   "avg_word_count": 540.9,
   "content_types": {
     "reference": 1,

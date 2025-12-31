@@ -1,0 +1,21 @@
+{
+  "total_documents": 69,
+  "source_file": "1-s2.0-S0085253820312709-main_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\1-s2.0-S0085253820312709-main_chunks.json",
+  "preparation_date": "2025-12-31T14:58:43.364806",
+  "avg_word_count": 581.5072463768116,
+  "content_types": {
+    "evidence": 40,
+    "treatment": 11,
+    "dietary": 6,
+    "recommendation": 10,
+    "reference": 2
+  },
+  "medical_entity_coverage": {
+    "CKD": 62,
+    "GFR": 24,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 16
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "total_pages": 103,
+  "raw_text_length": 620352,
+  "cleaned_text_length": 644030,
+  "source_file": "whelton-et-al-2017-2017-acc-aha-aapa-abc-acpm-ags-apha-ash-aspc-nma-pcna-guideline-for-the-prevention-detection.pdf",
+  "extraction_date": "2025-12-31T14:51:41.505167",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2017",
+  "keywords": [],
+  "total_chunks": 166,
+  "avg_chunk_size": 586.6746987951807,
+  "processing_date": "2025-12-31T14:51:44.567297"
+}

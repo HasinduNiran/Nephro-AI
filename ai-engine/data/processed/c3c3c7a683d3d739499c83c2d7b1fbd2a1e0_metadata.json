@@ -1,0 +1,19 @@
+{
+  "total_pages": 10,
+  "raw_text_length": 47543,
+  "cleaned_text_length": 49771,
+  "source_file": "c3c3c7a683d3d739499c83c2d7b1fbd2a1e0.pdf",
+  "extraction_date": "2025-12-31T14:48:10.990845",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2024",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "dialysis",
+    "nephrology"
+  ],
+  "total_chunks": 9,
+  "avg_chunk_size": 559.3333333333334,
+  "processing_date": "2025-12-31T14:48:11.162346"
+}
