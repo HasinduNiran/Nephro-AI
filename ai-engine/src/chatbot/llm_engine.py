@@ -46,6 +46,19 @@ class LLMEngine:
             }
             self._save_translations()
 
+        # Hybrid Search: Load Medical Dictionary
+        self.med_dict = {}
+        try:
+            dict_path = config.DATA_DIR / "sinhala_med_dict.json"
+            if dict_path.exists():
+                with open(dict_path, "r", encoding="utf-8") as f:
+                    raw_dict = json.load(f)
+                    # Filter out metadata/comments
+                    self.med_dict = {k.lower(): v for k, v in raw_dict.items() if not k.startswith("//") and not k.startswith("__")}
+                print(f"✅ Loaded {len(self.med_dict)} Sinhala/Singlish terms from dictionary.")
+        except Exception as e:
+            print(f"⚠️ Warning: Could not load Sinhala Dictionary: {e}")
+
     def _load_translations(self) -> Dict[str, str]:
         if self.cache_path.exists():
             try:
@@ -144,72 +157,100 @@ class LLMEngine:
                 
         return False
 
+    def _get_dictionary_hints(self, text: str) -> str:
+        """
+        [SEMANTIC SEARCH] Scans text for known dictionary terms.
+        Returns a string of hints: "Aligetapera means Avocado"
+        """
+        hints = []
+        text_lower = text.lower()
+        
+        for term, meaning in self.med_dict.items():
+            # Simple substring match (can be improved with regex word boundaries)
+            if term in text_lower:
+                hints.append(f"'{term}' = '{meaning}'")
+        
+        # Limit to top 5 relevant hints to avoid clutter
+        if not hints:
+            return ""
+            
+        return ", ".join(hints[:8])
+
     def translate_to_english(self, text: str, chat_history: List[Dict] = []) -> str:
         """
-        Translates Sinhala to English with CONTEXT AWARENESS.
+        [BRIDGE LAYER] Translates Singlish/Sinhala to English for the RAG Engine.
+        Now includes DIET & FOOD examples to prevent hallucinations.
         """
+        print(f"\n🔄 BRIDGE: Translating Input '{text}'...")
+
         # 1. Get Context (What did the Doctor ask last?)
         context_str = "No previous context."
         if chat_history:
-            # Get the last message from the Assistant (Doctor)
             last_doctor_msg = next((msg['content'] for msg in reversed(chat_history) if msg['role'] == 'assistant'), None)
             if last_doctor_msg:
                 context_str = f"Doctor previously asked: '{last_doctor_msg}'"
 
-        # 2. UPDATED DICTIONARY
-        dictionary = """
-        MANDATORY DICTIONARY:
-        # --- Multi-Word Medical Terms (High Priority) ---
-        - Wakugadu amaru / Wakkugadu amaru -> Kidney disease / Kidney trouble
-        - Bada amaru /Bade amaru/ bada ridenawa -> Stomach ache
-        - Papuwe amaru -> Chest pain / Heart trouble
-        
-        # --- Severity / Adjectives ---
-        - Podi / Poddak / Tikak / chuttak/ chuti/ chooti -> Mild / Slight / A little bit
-        - Godak /loku -> Severe / Very
-        
-        # --- Symptoms ---
-        - Kakkumai / Kakkuma -> Pain
-        - Ridenawa -> Pain / Hurts
-        - Amaru -> Difficulty / Trouble / Disease (Depends on context)
-        - Idimenne / Idimuma -> Swelling
-        - Hathiya -> Difficulty breathing
-        
-        # --- Context ---
-        - Thiyanwada / Thiyenawada -> Do I have? / Is there?
-        - Mata -> I / To me
-        """
+        # 2. Get Dictionary Hints (Hybrid Search)
+        dict_hints = self._get_dictionary_hints(text)
+        if dict_hints:
+            print(f"   ✅ [MedDict Hit]: Found terms -> {{ {dict_hints} }}")
+            system_hint_str = f"⚠️ **STRICT DICTIONARY RULES** (from sinhala_med_dict.json): {dict_hints}"
+        else:
+            print(f"   ℹ️ [MedDict Miss]: No specific medical terms found in dictionary.")
+            system_hint_str = ""
 
-        system_instruction = (
-            "You are a medical translator. \n"
-            f"CONTEXT: {context_str}\n" 
-            f"{dictionary}\n"
-            "RULES:\n"
-            "1. **COMPOUND WORDS FIRST**: Check for 2-word phrases like 'Wakugadu amaru' BEFORE translating individual words.\n"
-            "2. 'Wakugadu amaru' implies 'Kidney Disease', NOT just 'Kidney pain'.\n"
-            "3. Output ONLY the English translation."
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "https://github.com/Nephro-AI",
+            "Content-Type": "application/json"
+        }
+
+        # 🚨 THE FIX: Specific Context + Food Examples + Dictionary Injection
+        system_prompt = (
+            "You are a medical translator for a Nephrology Chatbot. "
+            "Translate the user's Singlish or Sinhala input into clear English medical queries.\n"
+            f"{system_hint_str}\n\n"
+            
+            "🎯 FOCUS AREAS:\n"
+            "1. **Food Items:** Aligetapera (Avocado), Kesel (Banana), Kos (Jackfruit), Pol (Coconut).\n"
+            "2. **Symptoms:** Ridenawa (Pain), Kakkuma (Ache), Kalantha (Dizziness).\n"
+            "3. **Context:** If the user asks 'Can I eat...', it is a DIET query, not a symptom query.\n\n"
+
+            "💡 FEW-SHOT EXAMPLES:\n"
+            "   - Input: 'Mata aligetapera kilo ekak kanna puluwanda den?'\n"
+            "   - Output: 'Can I eat a kilo of avocado right now?'\n\n"
+            
+            "   - Input: 'Mage bada ridenawa'\n"
+            "   - Output: 'I have stomach pain.'\n\n"
+            
+            "   - Input: 'Kos kanna hondada?'\n"
+            "   - Output: 'Is it okay to eat Jackfruit?'\n\n"
+
+            "Now translate the following input:"
         )
 
+        payload = {
+            "model": "openai/gpt-4o-mini",
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"CONTEXT: {context_str}\n\nUSER INPUT: {text}"}
+            ],
+            "temperature": 0.1  # Keep it strictly logical
+        }
+
         try:
-            headers = {
-                "Authorization": f"Bearer {self.api_key}",
-                "HTTP-Referer": "https://github.com/Nephro-AI",
-                "Content-Type": "application/json"
-            }
-            payload = {
-                "model": "openai/gpt-4o-mini",
-                "messages": [
-                    {"role": "system", "content": system_instruction},
-                    {"role": "user", "content": text}
-                ],
-                "temperature": 0.0
-            }
             response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=10)
-            return response.json()['choices'][0]['message']['content'].strip()
-            
+            if response.status_code == 200:
+                translation = response.json()['choices'][0]['message']['content'].strip()
+                # Remove any quotes or extra explanations
+                translation = translation.replace('"', '').replace("'", "")
+                print(f"   ↳ Result: '{translation}'")
+                return translation
         except Exception as e:
-            print(f"❌ Bridge Error: {e}")
-            return text
+            print(f"❌ Translation Error: {e}")
+            pass
+            
+        return text
 
     def enforce_spoken_sinhala(self, text: str) -> str:
         """
@@ -257,10 +298,10 @@ class LLMEngine:
 
     def translate_to_sinhala_fallback(self, text: str) -> str:
         """
-        [STYLE LAYER] Translates medical advice to Spoken Sinhala
-        Respecting specific constraints: Doctor (English), Pressure/Sugar (Colloquial).
+        [STYLE LAYER] Translates medical advice to Natural Spoken Sinhala (Katha Wahara).
+        Uses 'Restructuring' instead of literal translation to sound like a local doctor.
         """
-        print(f"⚠️ Style: Translating response to Spoken Sinhala (Code-Mixed)...")
+        print(f"⚠️ Style: Transforming to Natural Spoken Sinhala...")
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -268,47 +309,37 @@ class LLMEngine:
             "Content-Type": "application/json"
         }
         
-        # 🚨 YOUR ENHANCED PROMPT
+        # 🚨 THE "GOLDEN" PROMPT
         system_prompt = (
-            "You are a Sri Lankan doctor speaking to a patient. Translate the advice into **CASUAL, SPOKEN SINHALA (Katha Wahara)**.\n\n"
+            "You are a compassionate Sri Lankan doctor talking to a patient. "
+            "Do NOT just translate the English text. **RESTRUCTURE** it into natural, flowing 'Katha Wahara' (Spoken Sinhala).\n\n"
             
-            "⛔ RULE 1: WHAT TO KEEP IN ENGLISH (Strictly)\n"
-            "   - **Role:** 'Doctor' (Do NOT translate to Dosthara. Use 'Doctor').\n"
-            "   - **Units:** 'mL/min', 'mg/dL', 'mmol/L', 'eGFR', '%'.\n"
-            "   - **Medicines:** 'Metformin', 'Losartan', 'Enalapril', etc.\n"
-            "   - **Medical Terms:** 'Creatinine', 'Potassium', 'Sodium', 'Cholesterol'.\n\n"
+            "🔥 CRITICAL STYLE RULES (How to sound like a local):\n"
+            "1. **Use Connectors:** Start sentences with 'දැනට' (Currently), 'හැබැයි' (But/However), 'ඒ කියන්නේ' (That means), 'ඒ නිසා' (Therefore).\n"
+            "2. **Use Code-Mixing:** Keep 'Pressure', 'Sugar', 'Risk', 'Clinic', 'Doctor', 'eGFR' in English.\n"
+            "3. **Tone:** Be warm but firm. Use endings like '...කරගන්නම වෙනවා' (Must do) or '...උදව් වෙයි' (Will help).\n"
+            "4. **Grammar:** Never use book grammar (No 'Obage', 'Yuthuya'). Use 'Oyage', 'Ona'.\n\n"
 
-            "⛔ RULE 2: SPECIFIC TRANSLATIONS (Colloquial Mapping)\n"
-            "   - **Blood Pressure:** Use 'Pressure එක' (Keep 'Pressure' in English).\n"
-            "   - **Diabetes/Sugar:** Use 'Sugar' or 'දියවැඩියාව'.\n"
-            "   - **CKD:** Use 'දීර්ඝකාලීන වකුගඩු රෝගය' (Chronic Kidney Disease).\n"
-            "   - **Current Condition:** Use 'දැනට තත්ත්වය' (Danata thaththwaya).\n"
-            "   - **Uncontrolled:** Use 'පාලනය වෙලා නෑ' (Not controlled - Spoken style) instead of 'පාලනය නොකළ' (Written style).\n\n"
+            "💡 GOLDEN EXAMPLE (Follow this flow exactly):\n"
+            "--------------------------------------------------\n"
+            "📥 English Input:\n"
+            "   'Your kidney function is healthy with an eGFR of 95. However, you are at risk due to uncontrolled hypertension and diabetes. You must manage these to protect your kidneys. Talk to your doctor.'\n\n"
+            "📤 Sinhala Output (Target):\n"
+            "   'දැනට ඔයාගේ වකුගඩු වල ක්‍රියාකාරිත්වය හොඳ මට්ටමක තියෙනවා. **eGFR** අගය 95 mL/minක් වෙලා තියෙනවා කියන්නේ ඒක සාමාන්‍ය ගාණක්.\n"
+            "   හැබැයි, ඔයාගේ **Pressure** එක සහ **Sugar** පාලනය වෙලා නැති නිසා, ඉස්සරහට වකුගඩු නරක් වෙන්න ලොකු **Risk** එකක් තියෙනවා. ඒ නිසා වකුගඩු පරිස්සම් කරගන්න නම් මේ ලෙඩ දෙක පාලනය කරගන්නම වෙනවා.\n"
+            "   ඒ වගේම **Doctor** එක්ක කතා කරලා **Pressure** එකයි **Sugar** එකයි අඩු කරගන්න විදිය ගැන උපදෙස් ගන්න.'"
+            "--------------------------------------------------\n\n"
 
-            "⛔ RULE 3: GRAMMAR & TONE (Spoken Style)\n"
-            "   - ❌ NO 'Oba' (ඔබ) -> ✅ Use 'Oya' (ඔයා).\n"
-            "   - ❌ NO 'Yuthuya' (යුතුය) -> ✅ Use 'ඕන' (Ona) or 'කරන්න' (Karanna).\n"
-            "   - ❌ NO 'Sayanaya' (සායනය) -> ✅ Use 'Clinic එක'.\n"
-            "   - Keep sentences short and warm.\n\n"
-
-            "💡 EXAMPLES:\n"
-            "   - Input: 'Hello, your blood pressure is uncontrolled.'\n"
-            "   - Output: 'ආයුබෝවන්, ඔයාගේ **Pressure එක** පාලනය වෙලා නෑ.'\n"
-            "   - Input: 'Doctor said to take Metformin.'\n"
-            "   - Output: '**Doctor** කිව්වා **Metformin** බොන්න කියලා.'\n\n"
-
-            "⛔ FINAL OUTPUT FORMAT:\n"
-            "1. Use UNICODE SINHALA SCRIPT mixed with English terms.\n"
-            "2. Do NOT use Markdown (#, *) in the output."
+            "Now, rewrite the following input using this exact natural style:"
         )
         
         payload = {
-            "model": "openai/gpt-4o-mini", 
+            "model": "openai/gpt-4o-mini",  # Flash model is fine if prompt is good
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": text}
             ],
-            "temperature": 0.1 # Low temp = Follows your dictionary rules strictly
+            "temperature": 0.3 # Low temp to stick to the example pattern
         }
         
         try:
@@ -316,13 +347,14 @@ class LLMEngine:
             if response.status_code == 200:
                 translation = response.json()['choices'][0]['message']['content'].strip()
                 
-                # 🛡️ SAFETY NET: Force your specific preferences even if AI forgets
-                # This ensures "Doctor" is always "Doctor", not "Dosthara"
+                # 🛡️ SAFETY NET: Deterministic Fixes (Your Python Rules)
                 translation = translation.replace("දොස්තර", "Doctor")
                 translation = translation.replace("රුධිර පීඩනය", "Pressure එක")
                 translation = translation.replace("සායනය", "Clinic එක")
+                translation = translation.replace("දියවැඩියාව", "Sugar")
+                translation = translation.replace("අවදානම", "Risk එක")
                 
-                print(f"✅ Style Output: {translation[:50]}...") 
+                print(f"✅ Natural Output: {translation}") 
                 return translation
         except Exception as e:
             print(f"❌ Style Layer Error: {e}")

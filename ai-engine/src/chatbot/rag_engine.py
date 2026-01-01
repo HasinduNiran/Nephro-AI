@@ -110,6 +110,18 @@ class RAGEngine:
         search_results = self.vector_db.query_with_nlu(english_query)
         t_retrieval_end = time.time()
         
+        # --- NEW LOGS START ---
+        if search_results and 'results' in search_results:
+             count = len(search_results['results'])
+             print(f"   ↳ 📥 DB RETRIEVAL: Found {count} relevant chunks.")
+             for idx, res in enumerate(search_results['results']):
+                 doc_id = res.get('metadata', {}).get('source', 'Unknown')
+                 score = res.get('score', 0)
+                 print(f"      [{idx+1}] {doc_id} (Score: {score:.4f})")
+        else:
+             print(f"   ↳ ⚠️ DB RETRIEVAL: No chunks found.")
+        # --- NEW LOGS END ---
+        
         context_documents = []
         source_metadata = []
         if search_results and 'results' in search_results:
@@ -150,7 +162,7 @@ class RAGEngine:
             print(f"🎨 STYLE: Translating Output to Sinhala...")
             final_response = self.llm.translate_to_sinhala_fallback(llm_response)
             # LOG THE RESULT TO CATCH GIBBERISH
-            print(f"   ↳ Final Sinhala: {final_response[:100]}...") 
+            print(f"   ↳ Final Sinhala: {final_response}") 
         else:
             print("ℹ️ STYLE: Skipped (English Mode)")
         
