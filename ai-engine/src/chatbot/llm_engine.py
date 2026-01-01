@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from chatbot import config
 from chatbot.sinhala_nlu import SinhalaNLUEngine
+from utils.logger import ConsoleLogger as Log
 
 class LLMEngine:
     def __init__(self):
@@ -221,7 +222,7 @@ class LLMEngine:
         short_history = history[-2:]
         history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in short_history])
         
-        print(f"\n🧠 CONTEXTUALIZER: Rewriting '{query}' based on history...")
+        Log.step("🧠", "REWRITER: Contextualizing...", f"History: {len(short_history)} turns")
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -255,14 +256,14 @@ class LLMEngine:
 
             if response.status_code == 200:
                 rewritten = response.json()['choices'][0]['message']['content'].strip()
-                print(f"   ↳ Rewritten: '{rewritten}'")
+                Log.step("  ", "Rewrite Result", f"'{query}' -> '{rewritten}'")
                 return rewritten
             else:
-                 print(f"   ❌ Rewriter API Error: {response.status_code}")
+                 Log.error(f"Rewriter API Error: {response.status_code}")
                  return query
                  
         except Exception as e:
-            print(f"   ❌ Rewriter Exception: {e}")
+            Log.error(f"Rewriter Exception: {e}")
             return query
 
     def translate_to_english(self, text: str, chat_history: List[Dict] = []) -> str:
@@ -270,7 +271,7 @@ class LLMEngine:
         [BRIDGE LAYER] Translates Singlish/Sinhala to English for the RAG Engine.
         Now includes DIET & FOOD examples to prevent hallucinations.
         """
-        print(f"\n🔄 BRIDGE: Translating Input '{text}'...")
+        # Log.step("🔄", "BRIDGE: Translating...", f"'{text}'") # Called by RAGEngine already
 
         # 1. Get Context (What did the Doctor ask last?)
         context_str = "No previous context."
@@ -282,10 +283,10 @@ class LLMEngine:
         # 2. Get Dictionary Hints (Hybrid Search)
         dict_hints = self._get_dictionary_hints(text)
         if dict_hints:
-            print(f"   ✅ [MedDict Hit]: Found terms -> {{ {dict_hints} }}")
+            Log.step("  ", "MedDict Hit", f"{{ {dict_hints} }}")
             system_hint_str = f"⚠️ **STRICT DICTIONARY RULES** (from sinhala_med_dict.json): {dict_hints}"
         else:
-            print(f"   ℹ️ [MedDict Miss]: No specific medical terms found in dictionary.")
+            # Log.step("ℹ️", "MedDict Miss", "No specific medical terms found.")
             system_hint_str = ""
 
         headers = {

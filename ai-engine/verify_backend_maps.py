@@ -3,10 +3,10 @@ import time
 import sys
 
 def test_maps_tag():
-    url = "http://localhost:8000/chat/text"
+    url = "http://localhost:8001/chat/text"
     payload = {
-        "text": "Where is Anuradhapura Teaching Hospital?",
-        "patient_id": "test_mobile_user"
+        "text": "Aligetapera kanna hodada?",
+        "patient_id": "test_script_user"
     }
     
     print(f"🚀 Sending request to {url}...")
