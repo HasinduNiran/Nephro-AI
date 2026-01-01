@@ -104,10 +104,16 @@ class RAGEngine:
             english_query = self.llm.translate_to_english(query, chat_history) 
             print(f"   ↳ Result: '{english_query}'")
 
-        # 4. RAG RETRIEVAL
-        print(f"📡 RAG: Searching Knowledge Base...")
+        # 3.5 [NEW] CONTEXT REWRITER
+        # Rewrite query to be standalone (e.g. "it" -> "kidney disease")
+        search_query = english_query
+        if chat_history:
+            search_query = self.llm.contextualize_query(english_query, chat_history)
+
+        # 4. RAG RETRIEVAL (Use REWRITTEN query)
+        print(f"📡 RAG: Searching Knowledge Base with '{search_query}'...")
         t_retrieval_start = time.time()
-        search_results = self.vector_db.query_with_nlu(english_query)
+        search_results = self.vector_db.query_with_nlu(search_query) # <--- Use Search Query
         t_retrieval_end = time.time()
         
         # --- NEW LOGS START ---

@@ -209,6 +209,62 @@ class LLMEngine:
                     
         return ", ".join(unique_matches)
 
+    def contextualize_query(self, query: str, history: List[Dict]) -> str:
+        """
+        [INDUSTRY STANDARD] Standalone Query Generator.
+        Rewrites the query to include context from history.
+        """
+        if not history:
+            return query
+            
+        # Take last 2 turns only (for speed)
+        short_history = history[-2:]
+        history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in short_history])
+        
+        print(f"\n🧠 CONTEXTUALIZER: Rewriting '{query}' based on history...")
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "https://github.com/Nephro-AI",
+            "Content-Type": "application/json"
+        }
+        
+        prompt = (
+            "Given the chat history and the latest user question, "
+            "rewrite the question to be a standalone sentence that explicitly contains the context.\n"
+            "Do NOT answer the question. Just rewrite it.\n"
+            "If the question is already standalone, return it as is.\n\n"
+            f"Chat History:\n{history_text}\n\n"
+            f"Latest Question: {query}\n\n"
+            "Standalone Question:"
+        )
+
+        try:
+            payload = {
+                "model": "openai/gpt-3.5-turbo", # Fast & Cheap for rewriting
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.3
+            }
+            
+            response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=5
+            )
+
+            if response.status_code == 200:
+                rewritten = response.json()['choices'][0]['message']['content'].strip()
+                print(f"   ↳ Rewritten: '{rewritten}'")
+                return rewritten
+            else:
+                 print(f"   ❌ Rewriter API Error: {response.status_code}")
+                 return query
+                 
+        except Exception as e:
+            print(f"   ❌ Rewriter Exception: {e}")
+            return query
+
     def translate_to_english(self, text: str, chat_history: List[Dict] = []) -> str:
         """
         [BRIDGE LAYER] Translates Singlish/Sinhala to English for the RAG Engine.

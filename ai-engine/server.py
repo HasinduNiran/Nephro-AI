@@ -152,6 +152,18 @@ async def text_chat(request: ChatRequest):
     patient_id = request.patient_id
     print(f"📨 Server received request for Patient ID: '{patient_id}'")
     
+    # --- ZOMBIE CONTEXT FIX ---
+    # Detect session starters and wipe memory
+    GREETINGS = ["hi", "hello", "ayubowan", "start over", "help", "hey", "good morning", "good evening"]
+    
+    # Clean and check
+    clean_input = request.text.lower().strip().replace(".", "").replace("!", "")
+    
+    if clean_input in GREETINGS:
+        print(f"🧹 DETECTED GREETING ('{clean_input}'): Clearing history for {patient_id}")
+        SESSIONS[patient_id] = []
+    # ---------------------------
+
     # Retrieve THIS patient's history (default to empty list if new)
     user_history = SESSIONS.get(patient_id, [])
     
