@@ -159,22 +159,41 @@ class LLMEngine:
 
     def _get_dictionary_hints(self, text: str) -> str:
         """
-        [SEMANTIC SEARCH] Scans text for known dictionary terms.
-        Returns a string of hints: "Aligetapera means Avocado"
+        [SEMANTIC SEARCH] Scans input for dictionary matches, PRIORITIZING PHRASES.
+        Iterates through dictionary keys to find matches in the text.
         """
-        hints = []
-        text_lower = text.lower()
+        matches = []
+        text_lower = text.lower() # Normalize user input
         
-        for term, meaning in self.med_dict.items():
-            # Simple substring match (can be improved with regex word boundaries)
-            if term in text_lower:
-                hints.append(f"'{term}' = '{meaning}'")
-        
-        # Limit to top 5 relevant hints to avoid clutter
-        if not hints:
-            return ""
+        # 🚀 NEW LOGIC: Iterate through Dictionary Keys instead of Usert Tokens
+        # This captures phrases like "hoda nathi" automatically.
+        # sort keys by length (descending) so "kanna hoda nathi" matches before "hoda"
+        sorted_keys = sorted(self.med_dict.keys(), key=len, reverse=True)
+
+        for key in sorted_keys:
+            # Skip metadata keys
+            if key.startswith("//") or key.startswith("__"):
+                continue
             
-        return ", ".join(hints[:8])
+            # Check if the dictionary key exists in the user text
+            if key in text_lower:
+                value = self.med_dict[key]
+                matches.append(f"'{key}' = '{value}'")
+
+        if not matches:
+            return ""
+
+        # Limit to top 8 unique matches
+        unique_matches = []
+        seen = set()
+        for m in matches:
+            if m not in seen:
+                unique_matches.append(m)
+                seen.add(m)
+                if len(unique_matches) >= 8:
+                    break
+                    
+        return ", ".join(unique_matches)
 
     def translate_to_english(self, text: str, chat_history: List[Dict] = []) -> str:
         """
