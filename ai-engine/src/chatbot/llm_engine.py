@@ -300,6 +300,13 @@ class LLMEngine:
             "දොස්තර": "Doctor",
             "සෞඛ්‍ය සේවා සපයන්නා": "Doctor",
             "Healthcare Provider": "Doctor",
+            "Oranges": "දොඩම්",       # Fixes the "Wasp" error
+            "Pomegranate": "දෙළුම්",  # Fixes Phonetic
+            "Mango": "අඹ",           # Fixes Phonetic
+            "Papaya": "ගස්ලබු",       # Natural Sinhala
+            "Dates": "රට ඉඳි",        # Fixes "Dil"
+            "Bananas": "කෙසෙල්",
+            "Pineapple": "අන්නාසි",
 
             # 6. Greetings & Cleanup
             "Hello": "ආයුබෝවන්",
