@@ -7,6 +7,7 @@ Implements the 'Sandwich Architecture' for Low-Resource Languages.
 import sys
 import json
 import requests
+import re
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -58,6 +59,19 @@ class LLMEngine:
                 print(f"✅ Loaded {len(self.med_dict)} Sinhala/Singlish terms from dictionary.")
         except Exception as e:
             print(f"⚠️ Warning: Could not load Sinhala Dictionary: {e}")
+
+        # 🆕 LOAD GENERATION GLOSSARY
+        self.gen_glossary = {}
+        try:
+            glossary_path = config.DATA_DIR / "english_to_sinhala.json"
+            if glossary_path.exists():
+                with open(glossary_path, "r", encoding="utf-8") as f:
+                    raw_data = json.load(f)
+                    # Filter out comments/metadata
+                    self.gen_glossary = {k: v for k, v in raw_data.items() if not k.startswith("//") and not k.startswith("__")}
+                print(f"✅ Loaded {len(self.gen_glossary)} generation rules from glossary.")
+        except Exception as e:
+            print(f"⚠️ Warning: Could not load Generation Glossary: {e}")
 
     def _load_translations(self) -> Dict[str, str]:
         if self.cache_path.exists():
@@ -273,52 +287,36 @@ class LLMEngine:
 
     def enforce_spoken_sinhala(self, text: str) -> str:
         """
-        [SAFETY NET] Fixes vocabulary and script mixing issues.
+        [SAFETY NET] Deterministically replaces words using the loaded JSON glossary.
         """
-        replacements = {
-            # 1. Fix "Current Profile" (Pathikada -> Warthamana Thathwaya)
+        # 1. Load Dynamic Rules from JSON
+        replacements = self.gen_glossary.copy()
+        
+        # 2. Add Hardcoded Structural Rules (things that aren't simple words)
+        # These are safer to keep in code as they affect grammar/formatting
+        replacements.update({
             "පැතිකඩ": "වර්තමාන තත්ත්වය",
             "වත්මන් පැතිකඩ": "වර්තමාන තත්ත්වය",
-
-            # 2. Fix CKD (English Phonetic -> Sinhala Text)
-            "Dheerga Kaleena Wakkugadu Rogaya": "දීර්ඝකාලීන වකුගඩු රෝගය",
-            "කාන්තා වසංගත රෝගයක්": "දීර්ඝකාලීන වකුගඩු රෝගයක්",
-            "Chronic Kidney Disease": "දීර්ඝකාලීන වකුගඩු රෝගය",
-
-            # 3. Fix "Uncontrolled" (Asamath -> Palanaya Nokala)
             "අසමත්": "පාලනය නොකළ",
             "Uncontrolled": "පාලනය නොකළ",
-
-            # 4. Pressure & Sugar (English Text -> Sinhala Text)
-            "Pressure eka": "ප්‍රෙෂර් එක", 
-            "Pressure": "ප්‍රෙෂර්",
-            "Sugar": "සීනි", # Spoken style often uses "Seeni" or "Diabetic" -> "Diyawadiyawa"
-            "glucose": "සීනි",
-
-            # 5. Doctor (Sinhala -> English Text)
-            "dosthara": "Doctor",
-            "දොස්තර": "Doctor",
-            "සෞඛ්‍ය සේවා සපයන්නා": "Doctor",
-            "Healthcare Provider": "Doctor",
-            "Oranges": "දොඩම්",       # Fixes the "Wasp" error
-            "Pomegranate": "දෙළුම්",  # Fixes Phonetic
-            "Mango": "අඹ",           # Fixes Phonetic
-            "Papaya": "ගස්ලබු",       # Natural Sinhala
-            "Dates": "රට ඉඳි",        # Fixes "Dil"
-            "Bananas": "කෙසෙල්",
-            "Pineapple": "අන්නාසි",
-
-            # 6. Greetings & Cleanup
-            "Hello": "ආයුබෝවන්",
-            "Risk eka": "අවදානම",
-            "risk": "අවදානම",
             "අවාසනාවන්තයි": "කණගාටුයි",
             "#": "",
             "*": ""
-        }
+        })
         
-        for formal, spoken in replacements.items():
-            text = text.replace(formal, spoken)
+        # 3. Apply Replacements
+        # Sort by length (longest first) to prevent partial matching errors
+        # e.g. Replace "Blood Pressure" before "Pressure"
+        sorted_keys = sorted(replacements.keys(), key=len, reverse=True)
+        
+        for english_term in sorted_keys:
+            sinhala_term = replacements[english_term]
+            # Case-insensitive replacement for English terms
+            if english_term.isascii():
+                pattern = re.compile(re.escape(english_term), re.IGNORECASE)
+                text = pattern.sub(sinhala_term, text)
+            else:
+                text = text.replace(english_term, sinhala_term)
             
         return text
 
@@ -335,25 +333,31 @@ class LLMEngine:
             "Content-Type": "application/json"
         }
         
-        # 🚨 THE "GOLDEN" PROMPT
+        # 🚨 UPDATED PROMPT: TEACHING THE "PERFECT" STYLE
         system_prompt = (
-            "You are a compassionate Sri Lankan doctor talking to a patient. "
-            "Do NOT just translate the English text. **RESTRUCTURE** it into natural, flowing 'Katha Wahara' (Spoken Sinhala).\n\n"
+            "You are a compassionate Sri Lankan friend giving medical advice. "
+            "Do NOT translate literally. Rewrite the text into **CASUAL SPOKEN SINHALA (Katha Wahara)**.\n\n"
             
-            "🔥 CRITICAL STYLE RULES (How to sound like a local):\n"
-            "1. **Use Connectors:** Start sentences with 'දැනට' (Currently), 'හැබැයි' (But/However), 'ඒ කියන්නේ' (That means), 'ඒ නිසා' (Therefore).\n"
-            "2. **Use Code-Mixing:** Keep 'Pressure', 'Sugar', 'Risk', 'Clinic', 'Doctor', 'eGFR' in English.\n"
-            "3. **Tone:** Be warm but firm. Use endings like '...කරගන්නම වෙනවා' (Must do) or '...උදව් වෙයි' (Will help).\n"
-            "4. **Grammar:** Never use book grammar (No 'Obage', 'Yuthuya'). Use 'Oyage', 'Ona'.\n\n"
+            "🔥 STYLE RULES:\n"
+            "1. **Opener:** Start with 'ඔයාගේ තත්ත්වයත් එක්ක බලද්දී...' (Considering your condition...).\n"
+            "2. **Tone:** Use warm words like 'පුළුවන් නම්' (If possible), 'වගේ දේවල්' (Things like).\n"
+            "3. **Code-Mixing:** Keep English medical terms (Dietitian, Kiwi) in brackets or plain English.\n"
+            "4. **Formatting:** Use Bullet points for lists.\n\n"
 
-            "💡 GOLDEN EXAMPLE (Follow this flow exactly):\n"
+            "💡 GOLDEN EXAMPLE (MIMIC THIS EXACTLY):\n"
             "--------------------------------------------------\n"
             "📥 English Input:\n"
-            "   'Your kidney function is healthy with an eGFR of 95. However, you are at risk due to uncontrolled hypertension and diabetes. You must manage these to protect your kidneys. Talk to your doctor.'\n\n"
+            "   'For your condition, it is best to avoid fruits high in potassium like Bananas, Oranges, Kiwi, and Avocados. Instead, eat apples and berries. Consult your dietitian.'\n\n"
             "📤 Sinhala Output (Target):\n"
-            "   'දැනට ඔයාගේ වකුගඩු වල ක්‍රියාකාරිත්වය හොඳ මට්ටමක තියෙනවා. **eGFR** අගය 95 mL/minක් වෙලා තියෙනවා කියන්නේ ඒක සාමාන්‍ය ගාණක්.\n"
-            "   හැබැයි, ඔයාගේ **Pressure** එක සහ **Sugar** පාලනය වෙලා නැති නිසා, ඉස්සරහට වකුගඩු නරක් වෙන්න ලොකු **Risk** එකක් තියෙනවා. ඒ නිසා වකුගඩු පරිස්සම් කරගන්න නම් මේ ලෙඩ දෙක පාලනය කරගන්නම වෙනවා.\n"
-            "   ඒ වගේම **Doctor** එක්ක කතා කරලා **Pressure** එකයි **Sugar** එකයි අඩු කරගන්න විදිය ගැන උපදෙස් ගන්න.'"
+            "   'ඔයාගේ තත්ත්වයත් එක්ක බලද්දී, පොටෑසියම් වැඩි පලතුරු කන එක අඩු කරන එක තමයි වඩාත්ම හොඳ. මේ තියෙන්නේ ඔයා අඩුවෙන් කන්න ඕන, නැත්නම් පුළුවන් නම් නොකා ඉන්න ඕන පලතුරු ටිකක්:\n\n"
+            "   * කෙසෙල්\n"
+            "   * දොඩම්\n"
+            "   * කිවි (Kiwi)\n"
+            "   * අලිගැටපේර\n"
+            "   * වේලපු පලතුරු (වියළි මිදි/මුද්දරප්පලම් වගේ දේවල්)\n\n"
+            "   ඒ වෙනුවට පොටෑසියම් අඩු පලතුරු ජාති වන ඇපල්, බෙරි වර්ග, මිදි සහ පෙයාර්ස් වගේ දේවල් කන්න පුළුවන්.\n"
+            "   හැබැයි ඔයාටම හරියන කෑම බීම ගැන හරියටම දැනගන්න පෝෂණවේදියෙක් (Dietitian) හමුවෙලා උපදෙස් ගන්න අමතක කරන්න එපා.\n"
+            "   තව මොනවා හරි දැනගන්න ඕන නම් අපෙන් අහන්න!'\n"
             "--------------------------------------------------\n\n"
 
             "Now, rewrite the following input using this exact natural style:"
