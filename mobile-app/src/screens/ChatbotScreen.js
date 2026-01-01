@@ -16,6 +16,7 @@ import {
   Dimensions,
   Image,
   Easing,
+  Linking, // Import Linking
 } from "react-native";
 import {
   Ionicons,
@@ -173,7 +174,8 @@ const ChatbotScreen = ({ route, navigation }) => {
     if (!text) return;
 
     // Clean text before speaking (Remove * and # visually for the speech engine)
-    const cleanText = text.replace(/[*#]/g, '');
+    // Also remove [MAPS: ...] tag
+    const cleanText = text.replace(/[*#]/g, '').replace(/\[MAPS:.*?\]/g, '');
 
     const isSinhala = /[\u0D80-\u0DFF]/.test(text);
 
@@ -568,21 +570,58 @@ const ChatbotScreen = ({ route, navigation }) => {
               <Text style={styles.userText}>{item.text}</Text>
             ) : (
               <View>
-                <Markdown style={markdownStyles}>{item.text}</Markdown>
-                
-                {/* 👇 [UPDATED] Universal "Read Aloud" Button for ALL bot messages */}
-                <TouchableOpacity
-                  style={styles.audioButton}
-                  onPress={() => speakResponse(item.text)}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons
-                    name="volume-high"
-                    size={24}
-                    color={COLORS.primary}
-                  />
-                  <Text style={styles.audioText}>Read Aloud</Text>
-                </TouchableOpacity>
+                {/* Parse for [MAPS:] tag */}
+                {(() => {
+                  const mapTagMatch = item.text.match(/\[MAPS: (.*?)\]/);
+                  const locationQuery = mapTagMatch ? mapTagMatch[1] : null;
+                  const displayText = item.text.replace(/\[MAPS:.*?\]/g, '').trim();
+
+                  return (
+                    <>
+                      <Markdown style={markdownStyles}>{displayText}</Markdown>
+                      
+                      {/* Navigate Button */}
+                      {locationQuery && (
+                         <TouchableOpacity
+                           style={{
+                             marginTop: 10,
+                             backgroundColor: COLORS.accentLight,
+                             paddingVertical: 10,
+                             paddingHorizontal: 12,
+                             borderRadius: 8,
+                             flexDirection: 'row',
+                             alignItems: 'center',
+                             borderWidth: 1,
+                             borderColor: COLORS.accent
+                           }}
+                           onPress={() => {
+                             const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationQuery)}`;
+                             Linking.openURL(url);
+                           }}
+                         >
+                           <Ionicons name="map" size={20} color={COLORS.accent} style={{ marginRight: 8 }} />
+                           <Text style={{ color: COLORS.accent, fontWeight: '600' }}>
+                             Navigate to {locationQuery}
+                           </Text>
+                         </TouchableOpacity>
+                      )}
+
+                      {/* 👇 [UPDATED] Universal "Read Aloud" Button for ALL bot messages */}
+                      <TouchableOpacity
+                        style={styles.audioButton}
+                        onPress={() => speakResponse(item.text)}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons
+                          name="volume-high"
+                          size={24}
+                          color={COLORS.primary}
+                        />
+                        <Text style={styles.audioText}>Read Aloud</Text>
+                      </TouchableOpacity>
+                    </>
+                  );
+                })()}
 
               </View>
             )}

@@ -424,6 +424,12 @@ class LLMEngine:
            - REPLY POLITELY: "You're welcome! Take care of your health." or "Glad I could help. Stay safe."
 
         7. **TONE**: Empathetic, professional, decisive.
+
+        🤖 TOOL USE INSTRUCTIONS:
+        - If you recommend a specific hospital or location based on the context, you MUST append a search tag at the very end of your response.
+        - Format: [MAPS: <Location Name>]
+        - Example: "The nearest facility is Anuradhapura Teaching Hospital. [MAPS: Anuradhapura Teaching Hospital]"
+        - If you don't know the location, advise the user to search online and append: [MAPS: Hospitals near me]
         """
 
 

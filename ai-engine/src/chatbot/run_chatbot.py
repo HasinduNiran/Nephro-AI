@@ -1,6 +1,7 @@
 import sys
 import time
 import re # Added for text cleaning
+import webbrowser
 from pathlib import Path
 
 # Add parent directory to path
@@ -125,6 +126,25 @@ def main():
             # Pass History to RAG Engine (With Patient ID)
             result = chatbot.process_query(query, patient_id="default_patient_cli", chat_history=chat_history)
             response_text = result["response"]
+            
+            # --- 🕵️ AGENTIC LAYER: CHECK FOR TOOLS ---
+            map_tag = "[MAPS:"
+            if map_tag in response_text:
+                # 1. Extract the location
+                start_index = response_text.find(map_tag) + len(map_tag)
+                end_index = response_text.find("]", start_index)
+                if end_index != -1:
+                    location_query = response_text[start_index:end_index].strip()
+                    
+                    # 2. Clean the response (Remove the tag so the user doesn't hear it)
+                    response_text = response_text.replace(f"{map_tag} {location_query}]", "")
+                    response_text = response_text.replace(f"{map_tag}{location_query}]", "")
+                    
+                    # 3. Execute the Tool
+                    print(f"\n🗺️  AGENT ACTION: Opening Google Maps for '{location_query}'...")
+                    maps_url = f"https://www.google.com/maps/search/{location_query.replace(' ', '+')}"
+                    webbrowser.open(maps_url) 
+            # ----------------------------------------
             
             # Update History
             chat_history.append({"role": "user", "content": query})

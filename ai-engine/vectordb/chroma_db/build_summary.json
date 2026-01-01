@@ -1,11 +1,11 @@
 {
-  "build_date": "2025-12-31T15:30:16.580688",
+  "build_date": "2026-01-01T22:04:16.197633",
   "collection_name": "nephro_ai_medical_kb",
-  "document_count": 4112,
+  "document_count": 4114,
   "embedding_model": "openai/text-embedding-3-small",
   "embedding_dimension": 1536,
   "data_source_directory": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\vectordb_ready\\documents",
-  "source_files_count": 147,
+  "source_files_count": 148,
   "database_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\vectordb\\chroma_db",
   "status": "success"
 }
