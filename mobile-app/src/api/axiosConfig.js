@@ -5,10 +5,11 @@ import axios from "axios";
 // For iOS Simulator, it will use localhost
 const BASE_URL = "http://192.168.43.223:5000/api";
 
-console.log("API Base URL:", BASE_URL);
+
+console.log("API Base URL:", BACKEND_URL);
 
 const instance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: BACKEND_URL,
   timeout: 120000, 
   headers: {
     'Content-Type': 'application/json',
