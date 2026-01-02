@@ -16,10 +16,6 @@ const labTestSchema = new mongoose.Schema(
       type: Number,
       min: 0,
     },
-    creatinineStatus: {
-      type: String,
-      enum: ["Normal", "High", "Low", null],
-    },
     bun: {
       type: Number,
       min: 0,
@@ -39,36 +35,6 @@ const labTestSchema = new mongoose.Schema(
     eGFRRange: {
       type: String,
       required: true,
-    },
-    // OCR-related fields
-    imageFilename: {
-      type: String,
-    },
-    imagePath: {
-      type: String,
-    },
-    ocrRawText: {
-      type: String,
-    },
-    extractionConfidence: {
-      eGFR: String,
-      creatinine: String,
-      bun: String,
-      albumin: String,
-    },
-    age: {
-      type: Number,
-      min: 0,
-      max: 150,
-    },
-    gender: {
-      type: String,
-      enum: ["M", "F", null],
-    },
-    testMethod: {
-      type: String,
-      enum: ["manual", "ocr"],
-      default: "manual",
     },
   },
   { timestamps: true }

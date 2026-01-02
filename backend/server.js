@@ -11,7 +11,6 @@ const predictRoutes = require("./routes/predict");
 const kidneyusRoutes = require("./routes/kidneyus");
 const labRoutes = require("./routes/lab");
 const riskHistoryRoutes = require("./routes/riskHistory");
-const stageProgressionRoutes = require("./routes/stageProgression");
 
 const app = express();
 
@@ -36,20 +35,12 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: (req, file, cb) => {
-    console.log("Received file:", {
-      originalname: file.originalname,
-      mimetype: file.mimetype,
-      fieldname: file.fieldname
-    });
-    
     const allowedTypes = /jpeg|jpg|png|bmp/;
     const extname = allowedTypes.test(
       path.extname(file.originalname).toLowerCase()
     );
     const mimetype = allowedTypes.test(file.mimetype);
-    
-    // Allow if either mimetype OR extension is valid (more lenient)
-    if (mimetype || extname) {
+    if (mimetype && extname) {
       return cb(null, true);
     } else {
       cb(new Error("Only image files are allowed"));
@@ -81,7 +72,6 @@ const foodRoutes = require("./routes/foodRoutes");
 app.use("/api/mealPlate", foodRoutes);
 app.use("/api/kidneyus", kidneyusRoutes);
 app.use("/api/lab", labRoutes);
-app.use("/api/stage-progression", stageProgressionRoutes);
 
 // Ultrasound upload endpoint
 app.post("/api/upload-ultrasound", upload.single("ultrasound"), (req, res) => {
