@@ -144,7 +144,7 @@ const LabImageUploadScreen = ({ navigation, route }) => {
       if (responseData.success || responseData.labTest) {
         Alert.alert("Success", "Lab report processed successfully!");
         // Navigate to results page
-        navigation.navigate("LabResult", { result: responseData });
+        navigation.navigate("LabResult", { result: responseData, userName, userEmail });
       } else {
         throw new Error(responseData.message || "Processing failed");
       }

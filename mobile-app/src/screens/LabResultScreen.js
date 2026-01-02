@@ -11,6 +11,8 @@ import { Ionicons } from "@expo/vector-icons";
 
 const LabResultScreen = ({ navigation, route }) => {
   const { result } = route.params || {};
+  const userName = route.params?.userName || "User";
+  const userEmail = route.params?.userEmail || "";
   // Handle different response structures: direct data or nested in labTest/data
   const labData = result?.data || result?.labTest || result;
 
@@ -53,7 +55,7 @@ const LabResultScreen = ({ navigation, route }) => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.navigate("ScanLab")}
+          onPress={() => navigation.navigate("ScanLab", { userName, userEmail })}
           activeOpacity={0.7}
         >
           <Ionicons name="arrow-back" size={24} color="#1C1C1E" />
@@ -67,6 +69,9 @@ const LabResultScreen = ({ navigation, route }) => {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={true}
       >
+        <Text style={styles.patientInfo}>Patient: {userName || userEmail}</Text>
+        {userEmail ? <Text style={styles.patientEmail}>{userEmail}</Text> : null}
+
         {labData && (
           <View style={styles.resultsContainer}>
             {/* Patient Info Card */}
@@ -75,7 +80,12 @@ const LabResultScreen = ({ navigation, route }) => {
               <View style={styles.infoRow}>
                 <Ionicons name="person-outline" size={20} color="#4A90E2" />
                 <Text style={styles.infoLabel}>Name:</Text>
-                <Text style={styles.infoValue}>{labData.name}</Text>
+                <Text style={styles.infoValue}>{labData.name || userName || userEmail}</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Ionicons name="mail-outline" size={20} color="#4A90E2" />
+                <Text style={styles.infoLabel}>Email:</Text>
+                <Text style={styles.infoValue}>{userEmail || "Not provided"}</Text>
               </View>
             </View>
 
@@ -228,6 +238,16 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 24,
     paddingBottom: 50,
+  },
+  patientInfo: {
+    fontSize: 14,
+    color: "#4B5563",
+    marginBottom: 2,
+  },
+  patientEmail: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginBottom: 12,
   },
   resultsContainer: {
     marginTop: 10,

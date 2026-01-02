@@ -23,7 +23,9 @@ import LabAnalysisScreen from "./src/screens/LabAnalysisScreen";
 import ManualLabEntryScreen from "./src/screens/ManualLabEntryScreen";
 import LabImageUploadScreen from "./src/screens/LabImageUploadScreen";
 import LabResultScreen from "./src/screens/LabResultScreen";
-// import FutureCKDStageScreen from "./src/screens/FutureCKDStageScreen";
+import FutureCKDStageScreen from "./src/screens/FutureCKDStageScreen";
+import FutureCKDStageResultScreen from "./src/screens/FutureCKDStageResultScreen";
+import FutureCKDStageHistoryScreen from "./src/screens/FutureCKDStageHistoryScreen";
 
 const Stack = createStackNavigator();
 
@@ -62,7 +64,9 @@ const App = () => {
         <Stack.Screen name="ManualLabEntry" component={ManualLabEntryScreen} />
         <Stack.Screen name="LabImageUpload" component={LabImageUploadScreen} />
         <Stack.Screen name="LabResult" component={LabResultScreen} />
-        {/* <Stack.Screen name="FutureCKDStage" component={FutureCKDStageScreen} /> */}
+        <Stack.Screen name="FutureCKDStage" component={FutureCKDStageScreen} />
+        <Stack.Screen name="FutureCKDStageResult" component={FutureCKDStageResultScreen} />
+        <Stack.Screen name="FutureCKDStageHistory" component={FutureCKDStageHistoryScreen} />
       </Stack.Navigator>
     </NavigationContainer>
     </WalletProvider>

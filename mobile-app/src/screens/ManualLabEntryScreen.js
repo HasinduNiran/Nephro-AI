@@ -71,7 +71,7 @@ const ManualLabEntryScreen = ({ navigation, route }) => {
       if (response.data) {
         Alert.alert("Success", "Lab test results saved successfully!");
         // Pass the actual lab test data (response.data.data)
-        navigation.navigate("LabResult", { result: response.data.data });
+        navigation.navigate("LabResult", { result: response.data.data, userName, userEmail });
       }
     } catch (error) {
       console.error("Error submitting lab data:", error);
@@ -107,6 +107,7 @@ const ManualLabEntryScreen = ({ navigation, route }) => {
         showsVerticalScrollIndicator={true}
       >
         <Text style={styles.sectionTitle}>Patient Information</Text>
+        <Text style={styles.emailText}>Email: {userEmail || "Not provided"}</Text>
 
         {/* Name Input - Full Width (Read-only from login) */}
         <View style={styles.inputGroup}>
@@ -279,6 +280,11 @@ const styles = StyleSheet.create({
     color: "#1C1C1E",
     marginBottom: 12,
     marginTop: 8,
+  },
+  emailText: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginBottom: 8,
   },
   hint: {
     fontSize: 12,

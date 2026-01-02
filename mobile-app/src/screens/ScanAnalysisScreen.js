@@ -143,7 +143,7 @@ const ScanAnalysisScreen = ({ navigation, route }) => {
       if (responseData.success) {
         Alert.alert("Success", "Ultrasound analysis completed successfully!");
         // Navigate to results page
-        navigation.navigate("ScanResult", { result: responseData });
+        navigation.navigate("ScanResult", { result: responseData, userName, userEmail });
       } else {
         throw new Error(responseData.message || "Analysis failed");
       }

@@ -37,7 +37,7 @@ const ScanLabScreen = ({ navigation, route }) => {
       subtitle: "Stage progression",
       icon: "trending-up",
       color: "#50E3C2", // Teal
-      onPress: () => navigation.navigate("FutureCKDStage"),
+      onPress: () => navigation.navigate("FutureCKDStage", { userName, userEmail }),
     },
   ];
 
@@ -49,7 +49,7 @@ const ScanLabScreen = ({ navigation, route }) => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.navigate("Home")}
+          onPress={() => navigation.navigate("Home", { userName, userEmail })}
           activeOpacity={0.7}
         >
           <Ionicons name="arrow-back" size={24} color="#1C1C1E" />
@@ -64,6 +64,10 @@ const ScanLabScreen = ({ navigation, route }) => {
       >
         {/* Dashboard Title */}
         <Text style={styles.sectionTitle}>Choose Analysis Type</Text>
+        <Text style={styles.patientInfo}>Patient: {userName || userEmail}</Text>
+        {userEmail ? (
+          <Text style={styles.patientEmail}>{userEmail}</Text>
+        ) : null}
 
         {/* Tiles Grid */}
         <View style={styles.grid}>
@@ -135,6 +139,16 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#1C1C1E",
     marginBottom: 16,
+  },
+  patientInfo: {
+    fontSize: 14,
+    color: "#4B5563",
+    marginTop: -4,
+  },
+  patientEmail: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginBottom: 12,
   },
   grid: {
     flexDirection: "row",

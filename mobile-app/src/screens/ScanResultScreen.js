@@ -11,6 +11,8 @@ import { Ionicons } from "@expo/vector-icons";
 
 const ScanResultScreen = ({ navigation, route }) => {
   const { result } = route.params || {};
+  const userName = route.params?.userName || "User";
+  const userEmail = route.params?.userEmail || "";
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -42,7 +44,7 @@ const ScanResultScreen = ({ navigation, route }) => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.navigate("ScanLab")}
+          onPress={() => navigation.navigate("ScanLab", { userName, userEmail })}
           activeOpacity={0.7}
         >
           <Ionicons name="arrow-back" size={24} color="#1C1C1E" />
@@ -56,6 +58,9 @@ const ScanResultScreen = ({ navigation, route }) => {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={true}
       >
+        <Text style={styles.patientInfo}>Patient: {userName || userEmail}</Text>
+        {userEmail ? <Text style={styles.patientEmail}>{userEmail}</Text> : null}
+
         {result && result.success && (
           <View style={styles.resultsContainer}>
             {/* Status Card */}
@@ -162,6 +167,16 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 24,
     paddingBottom: 50,
+  },
+  patientInfo: {
+    fontSize: 14,
+    color: "#4B5563",
+    marginBottom: 2,
+  },
+  patientEmail: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginBottom: 12,
   },
   resultsContainer: {
     marginTop: 10,

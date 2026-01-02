@@ -8,7 +8,7 @@ const REF_RANGES = {
   male: { min: 0.7, max: 1.3 },
   female: { min: 0.6, max: 1.1 }
 };
-
+                                
 // Initialize Tesseract worker once
 let tesseractWorker = null;
 

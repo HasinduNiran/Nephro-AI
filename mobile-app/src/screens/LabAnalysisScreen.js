@@ -20,7 +20,7 @@ const LabAnalysisScreen = ({ navigation, route }) => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.navigate("ScanLab")}
+          onPress={() => navigation.navigate("ScanLab", { userName, userEmail })}
           activeOpacity={0.7}
         >
           <Ionicons name="arrow-back" size={24} color="#1C1C1E" />
