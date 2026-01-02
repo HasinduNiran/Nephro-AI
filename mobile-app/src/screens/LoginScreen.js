@@ -19,10 +19,9 @@ const LoginScreen = ({ navigation }) => {
       const userName = response.data?.user?.name || "User";
       // Capture User ID (Assuming server returns user_id or using email as fallback)
       const userID = response.data?.user_id || email;
-      const userEmail = response.data?.user?.email || email;
       
-      console.log("Navigating to Home with:", { userName, userID, userEmail });
-      navigation.navigate("Home", { userName, userID, userEmail, user: response.data?.user });
+      console.log("Navigating to Home with:", { userName, userID });
+      navigation.navigate("Home", { userName, userID });
     } catch (error) {
       console.error("Login Error:", error);
       const errorMessage =

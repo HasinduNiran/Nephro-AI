@@ -13,7 +13,6 @@ import { Ionicons } from "@expo/vector-icons";
 const HomeScreen = ({ navigation, route }) => {
   const userName = route.params?.userName || "User";
   const userID = route.params?.userID; // Capture the passed userID
-  const userEmail = route.params?.userEmail || ""; // Capture email if available
 
   const getInitials = (name) => {
     if (!name) return "U";
@@ -39,7 +38,7 @@ const HomeScreen = ({ navigation, route }) => {
       subtitle: "Stage progression",
       icon: "trending-up",
       color: "#50E3C2", // Teal
-      onPress: () => navigation.navigate("ScanLab", { userName, userEmail }),
+      onPress: () => console.warn("Future Stage Pressed"),
     },
     {
       id: 3,
