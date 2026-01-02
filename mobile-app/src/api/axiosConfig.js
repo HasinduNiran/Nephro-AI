@@ -1,7 +1,10 @@
 import axios from "axios";
 
-// Backend API URL - Change IP to your computer's IP and port to 5000
-const BACKEND_URL = "http://192.168.8.128:5000/api"; 
+// For physical device, use your computer's IP address
+// For Android Emulator, it will use 10.0.2.2
+// For iOS Simulator, it will use localhost
+const BASE_URL = "http://192.168.43.223:5000/api";
+
 
 console.log("API Base URL:", BACKEND_URL);
 
