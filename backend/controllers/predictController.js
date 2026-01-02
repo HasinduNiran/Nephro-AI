@@ -2,22 +2,29 @@ const { spawn } = require("child_process");
 const path = require("path");
 
 exports.predictRisk = (req, res) => {
-  const { spo2, heart_rate, bp_systolic, age, diabetes, hypertension } =
-    req.body;
+  const { bp_systolic, bp_diastolic, age, diabetes, diabetes_level } = req.body;
 
-  if (bp_systolic === undefined || age === undefined) {
-    return res.status(400).json({ message: "Missing vital signs" });
+  if (bp_systolic === undefined || bp_diastolic === undefined || age === undefined) {
+    return res.status(400).json({ message: "Missing required fields: bp_systolic, bp_diastolic, and age" });
   }
 
   // Prepare data for python script
   const inputData = {
-    spo2: parseFloat(spo2),
-    heart_rate: parseFloat(heart_rate),
     bp_systolic: parseFloat(bp_systolic),
+    bp_diastolic: parseFloat(bp_diastolic),
     age: parseFloat(age),
-    diabetes: diabetes ? 1 : 0,
-    hypertension: hypertension ? 1 : 0,
   };
+
+  // Handle diabetes_level
+  if (diabetes_level !== undefined && diabetes_level !== null) {
+    inputData.diabetes_level = parseFloat(diabetes_level);
+  } else if (diabetes !== undefined) {
+    // Convert boolean to estimated blood sugar level
+    // Normal: ~90 mg/dL, Diabetic: ~150 mg/dL
+    inputData.diabetes_level = diabetes ? 150 : 90;
+  } else {
+    inputData.diabetes_level = 90; // Default normal
+  }
 
   // Path to python script. Assuming server.js is in backend/ and api_predict.py is in scripts/
   const scriptPath = path.join(

@@ -1,77 +1,137 @@
 import sys
 import joblib
 import pandas as pd
+import numpy as np
 import json
 import os
 
 def load_artifacts():
-    # Assuming the script is run from the root or backend, we need to find the pkl files
-    # Adjust path as necessary. If running from backend via node, paths might be relative to root if cwd is set correctly
-    # or absolute. Let's assume the pkl files are in the root 'c:\Research\Nephro-AI\'
-    
+    """Load the trained model and label encoder"""
     base_path = os.path.dirname(os.path.abspath(__file__))
     model_path = os.path.join(base_path, '..', '..', 'models', 'ckd_model.pkl')
-    # encoder_path = os.path.join(base_path, 'label_encoder.pkl') # Not strictly needed if we just output the class index or if the model outputs the label directly if it was trained on strings (but notebook says it encoded)
+    encoder_path = os.path.join(base_path, '..', '..', 'models', 'label_encoder.pkl')
     
     try:
         model = joblib.load(model_path)
-        return model
-    except FileNotFoundError:
-        return None
+        label_encoder = joblib.load(encoder_path)
+        return model, label_encoder
+    except FileNotFoundError as e:
+        return None, None
 
 def predict(data):
-    model = load_artifacts()
-    if not model:
-        return {"error": "Model file not found"}
+    """
+    Predict CKD risk based on patient data
+    Expected input: age, bp_systolic, bp_diastolic, diabetes_level
+    Note: diabetes_level should be blood sugar level (mg/dL), not boolean
+    """
+    model, label_encoder = load_artifacts()
+    if not model or not label_encoder:
+        return {"error": "Model files not found"}
 
-    # Prepare dataframe
-    # Features: age, bp_systolic, diabetes, hypertension
     try:
-        features = pd.DataFrame([data], columns=["age", "bp_systolic", "diabetes", "hypertension"])
+        # Extract basic features
+        age = float(data.get('age', 0))
+        bp_systolic = float(data.get('bp_systolic', 0))
+        bp_diastolic = float(data.get('bp_diastolic', 0))
         
-        # Feature Engineering (Must match training)
-        features['age_bp'] = features['age'] * features['bp_systolic']
-        features['diab_hyper'] = features['diabetes'] * features['hypertension']
+        # diabetes_level should be continuous blood sugar value
+        # If boolean diabetes flag is sent, convert to estimated values
+        if 'diabetes_level' in data:
+            diabetes_level = float(data['diabetes_level'])
+        elif 'diabetes' in data:
+            # Convert boolean to estimated blood sugar level
+            # Normal: ~90, Diabetic: ~150
+            diabetes_level = 150.0 if data['diabetes'] else 90.0
+        else:
+            diabetes_level = 90.0  # Default normal
         
-        # Binning
-        features['bp_category'] = pd.cut(features['bp_systolic'], bins=[0, 120, 130, 140, 300], labels=[0, 1, 2, 3])
-        features['age_group'] = pd.cut(features['age'], bins=[0, 30, 60, 120], labels=[0, 1, 2])
+        # Create feature dictionary
+        features_dict = {
+            'age': age,
+            'bp_systolic': bp_systolic,
+            'bp_diastolic': bp_diastolic,
+            'diabetes_level': diabetes_level
+        }
         
-        # Convert bins to codes
-        features['bp_category'] = features['bp_category'].astype('int8') # labels are already 0,1,2,3 but cut returns category type
-        features['age_group'] = features['age_group'].astype('int8')
-
-        # Ensure column order matches training
-        features = features[["age", "bp_systolic", "diabetes", "hypertension", "age_bp", "diab_hyper", "bp_category", "age_group"]]
-
+        # Create interaction features (matching training)
+        features_dict['age_bp_sys'] = age * bp_systolic
+        features_dict['age_bp_dia'] = age * bp_diastolic
+        features_dict['age_sugar'] = age * diabetes_level
+        features_dict['bp_sys_sugar'] = bp_systolic * diabetes_level
+        features_dict['bp_dia_sugar'] = bp_diastolic * diabetes_level
+        features_dict['bp_sys_dia'] = bp_systolic * bp_diastolic
+        
+        # Calculate pulse pressure and MAP
+        features_dict['pulse_pressure'] = bp_systolic - bp_diastolic
+        features_dict['mean_arterial_pressure'] = (bp_systolic + 2 * bp_diastolic) / 3
+        
+        # Create binned features (matching training)
+        # Systolic BP Categories
+        if bp_systolic < 120:
+            bp_sys_category = 0
+        elif bp_systolic < 130:
+            bp_sys_category = 1
+        elif bp_systolic < 140:
+            bp_sys_category = 2
+        else:
+            bp_sys_category = 3
+        
+        # Diastolic BP Categories
+        if bp_diastolic < 80:
+            bp_dia_category = 0
+        elif bp_diastolic < 90:
+            bp_dia_category = 1
+        else:
+            bp_dia_category = 2
+        
+        # Age Groups
+        if age < 30:
+            age_group = 0
+        elif age < 60:
+            age_group = 1
+        else:
+            age_group = 2
+        
+        # Diabetes Level Categories
+        if diabetes_level < 100:
+            diabetes_category = 0
+        elif diabetes_level < 126:
+            diabetes_category = 1
+        else:
+            diabetes_category = 2
+        
+        features_dict['bp_sys_category'] = bp_sys_category
+        features_dict['bp_dia_category'] = bp_dia_category
+        features_dict['age_group'] = age_group
+        features_dict['diabetes_category'] = diabetes_category
+        
+        # Create DataFrame with correct column order (matching training)
+        features = pd.DataFrame([features_dict], columns=[
+            "age", "bp_systolic", "bp_diastolic", "diabetes_level",
+            "age_bp_sys", "age_bp_dia", "age_sugar", "bp_sys_sugar", "bp_dia_sugar", "bp_sys_dia",
+            "pulse_pressure", "mean_arterial_pressure",
+            "bp_sys_category", "bp_dia_category", "age_group", "diabetes_category"
+        ])
+        
+        # Make prediction
         prediction = model.predict(features)[0]
         
-        # If the target was encoded, we might want to decode it. 
-        # Looking at the notebook: categorical_cols = ["diabetes", "hypertension", "risk_category"]
-        # label_enc was used. If we want the string label back, we need the encoder for 'risk_category'.
-        # However, the notebook overwrites 'label_enc' in the loop. 
-        # Ideally, we should have saved a separate encoder for the target or a dictionary.
-        # For now, let's return the prediction value. If it's 0, 1, 2 etc.
+        # Decode prediction using label encoder
+        prediction_label = label_encoder.inverse_transform([prediction])[0]
         
-        # Let's try to load the encoder and see if we can inverse transform if it was the last one fitted on risk_category?
-        # The notebook loop: for col in categorical_cols: df[col] = label_enc.fit_transform(df[col])
-        # The last col is 'risk_category'. So label_enc should be fitted on 'risk_category'.
+        # Calculate risk score (0-100 scale)
+        risk_score_map = {'Low': 33, 'Medium': 66, 'High': 100}
+        risk_score = risk_score_map.get(prediction_label, 50)
         
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        encoder_path = os.path.join(base_path, '..', '..', 'models', 'label_encoder.pkl')
-        try:
-            le = joblib.load(encoder_path)
-            prediction_label = le.inverse_transform([prediction])[0]
-        except:
-            prediction_label = str(prediction)
-
-        return {"risk_level": prediction_label}
+        return {
+            "risk_level": prediction_label,
+            "risk_score": risk_score
+        }
+        
     except Exception as e:
         return {"error": str(e)}
 
 if __name__ == "__main__":
-    # Expecting arguments passed as JSON string or individual args
-    # Let's use sys.argv[1] as a JSON string
     try:
         input_data = json.loads(sys.argv[1])
         result = predict(input_data)
