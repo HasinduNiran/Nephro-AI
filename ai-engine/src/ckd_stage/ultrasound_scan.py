@@ -14,7 +14,10 @@ import tensorflow as tf
 
 
 def load_model():
-    model_path = r"E:\GITHUB P\Research\Nephro-AI\ai-engine\models\unet_full_model.h5"
+    # Use relative path from script location
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    model_path = os.path.join(script_dir, "..", "..", "models", "unet_full_model.h5")
+    model_path = os.path.abspath(model_path)
     
     if not os.path.exists(model_path):
         safe_print("MODEL FILE NOT FOUND:", model_path)
@@ -25,7 +28,7 @@ def load_model():
         with custom_object_scope({'DTypePolicy': tf.keras.mixed_precision.Policy}):
             # Just load the model, don't use save_format
             model = tf.keras.models.load_model(model_path, compile=False)
-        safe_print("MODEL LOADED SUCCESSFULLY")
+        safe_print("MODEL LOADED SUCCESSFULLY from:", model_path)
         return model
     except Exception as e:
         safe_print("MODEL LOAD ERROR:")
