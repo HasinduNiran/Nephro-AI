@@ -7,8 +7,8 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    age: {
-      type: Number,
+    birthday: {
+      type: Date,
       required: true,
     },
     gender: {
@@ -19,14 +19,6 @@ const userSchema = new mongoose.Schema(
     district: {
       type: String,
       required: true,
-    },
-    hasDiabetes: {
-      type: Boolean,
-      default: false,
-    },
-    hasHypertension: {
-      type: Boolean,
-      default: false,
     },
     email: {
       type: String,
