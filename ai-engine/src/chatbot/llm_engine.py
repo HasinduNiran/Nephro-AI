@@ -1,19 +1,16 @@
 """
 LLM Engine for Nephro-AI
-Handles communication with Google Gemini API to generate responses.
+Handles communication with OpenRouter API to generate responses.
 Implements the 'Sandwich Architecture' for Low-Resource Languages.
 """
 
 import sys
 import json
+import requests
 import re
 import os
 from pathlib import Path
 from typing import List, Dict, Any
-
-# Google GenAI SDK
-from google import genai
-from google.genai import types
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -24,21 +21,20 @@ from utils.logger import ConsoleLogger as Log
 
 class LLMEngine:
     def __init__(self):
-        """Initialize LLM Engine with Google Gemini"""
-        # Set Google API Key
-        self.google_api_key = os.getenv("GOOGLE_API_KEY", "AIzaSyDz_cOenuITABuIUwVnZSVkRwwCmysUQOM")
+        """Initialize LLM Engine with OpenRouter API"""
+        self.api_key = config.OPENROUTER_API_KEY
+        self.api_url = "https://openrouter.ai/api/v1/chat/completions"
         
-        # Initialize Google GenAI Client
-        self.client = genai.Client(api_key=self.google_api_key)
-        
-        # RESEARCH NOTE: 'flash' models are critical for the <2s latency requirement
-        self.model = "gemini-2.5-flash"
-        # Alternative: "gemini-2.0-flash" for faster responses
+        # RESEARCH NOTE: Using Gemini 2.5 Flash through OpenRouter
+        self.model = "google/gemini-2.5-flash"
         
         # Initialize Sinhala NLU
         self.sinhala_nlu = SinhalaNLUEngine()
         
-        print(f"✅ Initialized Google Gemini: {self.model}")
+        if not self.api_key:
+            print("⚠️ Warning: OPENROUTER_API_KEY not found in config.")
+        else:
+            print(f"✅ Initialized OpenRouter with model: {self.model}")
             
         # Cache Setup
         self.cache_path = config.DATA_DIR / "translation_cache.json"
@@ -230,29 +226,56 @@ class LLMEngine:
         
         Log.step("🧠", "REWRITER: Contextualizing...", f"History: {len(short_history)} turns")
 
+        # 🚨 FIX: STRICTER PROMPT to stop "As Nephro-AI" hallucinations
         prompt = (
-            "Given the chat history and the latest user question, "
-            "rewrite the question to be a standalone sentence that explicitly contains the context.\n"
-            "Do NOT answer the question. Just rewrite it.\n"
-            "If the question is already standalone, return it as is.\n\n"
+            "You are a query rewriting engine. Your job is to combine the Chat History and the Latest Question "
+            "into a single, standalone question that is clear and specific.\n\n"
+            
+            "RULES:\n"
+            "1. Output ONLY the rewritten question. Do NOT add introductions like 'Here is the question' or 'As Nephro-AI'.\n"
+            "2. If the question is already clear, output it exactly as is.\n"
+            "3. Do NOT answer the question.\n"
+            "4. Do NOT introduce yourself.\n\n"
+            
             f"Chat History:\n{history_text}\n\n"
             f"Latest Question: {query}\n\n"
             "Standalone Question:"
         )
 
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "https://github.com/Nephro-AI",
+            "Content-Type": "application/json"
+        }
+
         try:
-            response = self.client.models.generate_content(
-                model=self.model,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    temperature=0.3,
-                    max_output_tokens=256
-                )
-            )
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.1,  # Reduce temp to stop creativity
+                "max_tokens": 256
+            }
             
-            rewritten = response.text.strip()
-            Log.step("  ", "Rewrite Result", f"'{query}' -> '{rewritten}'")
-            return rewritten
+            response = requests.post(self.api_url, headers=headers, json=payload, timeout=10)
+            
+            if response.status_code == 200:
+                rewritten = response.json()['choices'][0]['message']['content'].strip()
+                
+                # 🛡️ Safety Check: If it generated a long monologue, revert to original
+                if len(rewritten) > len(query) * 4:
+                    Log.warning(f"Rewriter Hallucination detected. Reverting to original.")
+                    return query
+                
+                # 🛡️ Safety Check: If it starts with "As Nephro-AI" or similar, revert
+                if rewritten.lower().startswith(("as nephro", "i am", "hello", "hi ")):
+                    Log.warning(f"Rewriter introduced itself. Reverting to original.")
+                    return query
+                    
+                Log.step("  ", "Rewrite Result", f"'{query}' -> '{rewritten}'")
+                return rewritten
+            else:
+                Log.error(f"Rewriter API Error: {response.status_code}")
+                return query
                  
         except Exception as e:
             Log.error(f"Rewriter Exception: {e}")
@@ -306,21 +329,31 @@ class LLMEngine:
             f"Now translate the following input:\nUSER INPUT: {text}"
         )
 
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "https://github.com/Nephro-AI",
+            "Content-Type": "application/json"
+        }
+
         try:
-            response = self.client.models.generate_content(
-                model=self.model,
-                contents=system_prompt,
-                config=types.GenerateContentConfig(
-                    temperature=0.1,  # Keep it strictly logical
-                    max_output_tokens=256
-                )
-            )
+            payload = {
+                "model": self.model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": text}
+                ],
+                "temperature": 0.1,  # Keep it strictly logical
+                "max_tokens": 256
+            }
             
-            translation = response.text.strip()
-            # Remove any quotes or extra explanations
-            translation = translation.replace('"', '').replace("'", "")
-            print(f"   ↳ Result: '{translation}'")
-            return translation
+            response = requests.post(self.api_url, headers=headers, json=payload, timeout=15)
+            
+            if response.status_code == 200:
+                translation = response.json()['choices'][0]['message']['content'].strip()
+                # Remove any quotes or extra explanations
+                translation = translation.replace('"', '').replace("'", "")
+                print(f"   ↳ Result: '{translation}'")
+                return translation
         except Exception as e:
             print(f"❌ Translation Error: {e}")
             pass
@@ -429,32 +462,42 @@ class LLMEngine:
             "Now, rewrite the following input using this exact natural style:\n\n"
             f"{text}"
         )
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "https://github.com/Nephro-AI",
+            "Content-Type": "application/json"
+        }
         
         try:
-            response = self.client.models.generate_content(
-                model=self.model,
-                contents=system_prompt,
-                config=types.GenerateContentConfig(
-                    temperature=0.2,  # Even lower to force adherence to hints
-                    max_output_tokens=1024
-                )
-            )
+            payload = {
+                "model": self.model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": text}
+                ],
+                "temperature": 0.2,  # Even lower to force adherence to hints
+                "max_tokens": 2048
+            }
             
-            translation = response.text.strip()
+            response = requests.post(self.api_url, headers=headers, json=payload, timeout=30)
             
-            # 🛡️ SAFETY NET: Deterministic Fixes (Your Python Rules)
-            translation = translation.replace("දොස්තර", "Doctor")
-            translation = translation.replace("රුධිර පීඩනය", "Pressure එක")
-            translation = translation.replace("සායනය", "Clinic එක")
-            translation = translation.replace("දියවැඩියාව", "Sugar")
-            translation = translation.replace("අවදානම", "Risk එක")
-            
-            # 🚨 THE FIX: Apply the full glossary from english_to_sinhala.json
-            # This catches LLM mistakes like "මැදුරු රෝගය" (Mosquito Disease) for Diabetes
-            translation = self.enforce_spoken_sinhala(translation)
-            
-            print(f"✅ Natural Output: {translation}") 
-            return translation
+            if response.status_code == 200:
+                translation = response.json()['choices'][0]['message']['content'].strip()
+                
+                # 🛡️ SAFETY NET: Deterministic Fixes (Your Python Rules)
+                translation = translation.replace("දොස්තර", "Doctor")
+                translation = translation.replace("රුධිර පීඩනය", "Pressure එක")
+                translation = translation.replace("සායනය", "Clinic එක")
+                translation = translation.replace("දියවැඩියාව", "Sugar")
+                translation = translation.replace("අවදානම", "Risk එක")
+                
+                # 🚨 THE FIX: Apply the full glossary from english_to_sinhala.json
+                # This catches LLM mistakes like "මැදුරු රෝගය" (Mosquito Disease) for Diabetes
+                translation = self.enforce_spoken_sinhala(translation)
+                
+                print(f"✅ Natural Output: {translation}") 
+                return translation
         except Exception as e:
             print(f"❌ Style Layer Error: {e}")
             pass
@@ -516,43 +559,50 @@ class LLMEngine:
         print("\n[2] 🧠 BRAIN LAYER (Generating Response...)")
         
         # 1. Base System Prompt
-        system_instruction = self._generate_system_prompt(patient_context)
+        system_prompt = self._generate_system_prompt(patient_context)
         knowledge_context = "\n\n".join(context_documents[:3])
         
-        # 2. Build conversation history for Gemini
-        contents = []
+        # 2. Construct Message List
+        messages = [{"role": "system", "content": system_prompt}]
         
         # 3. Inject History (Limit to last 4 turns)
         if history:
             valid_history = history[-4:] 
             for msg in valid_history:
-                role = "user" if msg['role'] == "user" else "model"
-                contents.append(types.Content(
-                    role=role,
-                    parts=[types.Part.from_text(text=msg['content'])]
-                ))
+                role = "user" if msg['role'] == "user" else "assistant"
+                messages.append({"role": role, "content": msg['content']})
 
         # 4. Add Current User Question with RAG Context
         user_message_content = f"KNOWLEDGE BASE:\n{knowledge_context}\n\nCURRENT PATIENT QUERY:\n{query}"
-        contents.append(types.Content(
-            role="user",
-            parts=[types.Part.from_text(text=user_message_content)]
-        ))
+        messages.append({"role": "user", "content": user_message_content})
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "https://github.com/Nephro-AI",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": self.model,
+            "messages": messages, 
+            "temperature": 0.7,
+            # 🚨 FIX: INCREASE MAX TOKENS to prevent "Here's..." cutoff
+            "max_tokens": 2048
+        }
 
         try:
-            response = self.client.models.generate_content(
-                model=self.model,
-                contents=contents,
-                config=types.GenerateContentConfig(
-                    system_instruction=system_instruction,
-                    temperature=0.7,
-                    max_output_tokens=1024
-                )
-            )
-            
-            english_response = response.text.strip()
-            print(f"✅ Brain Output: {english_response}")
-            return english_response
+            response = requests.post(self.api_url, headers=headers, json=payload, timeout=30)
+            if response.status_code == 200:
+                english_response = response.json()['choices'][0]['message']['content'].strip()
+                
+                # 🛡️ Safety Check: If response is incomplete (ends mid-sentence), log warning
+                if english_response and english_response[-1] not in '.!?")\'\u0d9a\u0d85\u0d8b':
+                    print(f"⚠️ Warning: Response may be truncated: ...{english_response[-50:]}")
+                
+                print(f"✅ Brain Output: {english_response}")
+                return english_response
+            else:
+                return f"Error: {response.status_code}"
         except Exception as e:
             return f"Error: {str(e)}"
 
