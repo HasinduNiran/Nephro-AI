@@ -2,10 +2,21 @@ const { spawn } = require("child_process");
 const path = require("path");
 
 exports.predictRisk = (req, res) => {
-  const { bp_systolic, bp_diastolic, age, diabetes, diabetes_level } = req.body;
+  const { bp_systolic, bp_diastolic, age, gender, diabetes, diabetes_level } =
+    req.body;
 
-  if (bp_systolic === undefined || bp_diastolic === undefined || age === undefined) {
-    return res.status(400).json({ message: "Missing required fields: bp_systolic, bp_diastolic, and age" });
+  if (
+    bp_systolic === undefined ||
+    bp_diastolic === undefined ||
+    age === undefined ||
+    gender === undefined
+  ) {
+    return res
+      .status(400)
+      .json({
+        message:
+          "Missing required fields: bp_systolic, bp_diastolic, age, and gender",
+      });
   }
 
   // Prepare data for python script
@@ -13,6 +24,7 @@ exports.predictRisk = (req, res) => {
     bp_systolic: parseFloat(bp_systolic),
     bp_diastolic: parseFloat(bp_diastolic),
     age: parseFloat(age),
+    gender: gender, // 'Male' or 'Female'
   };
 
   // Handle diabetes_level
@@ -65,7 +77,11 @@ exports.predictRisk = (req, res) => {
       console.error(`Stderr: ${errorString}`);
       return res
         .status(500)
-        .json({ message: "Error calculating risk", error: errorString, path: scriptPath });
+        .json({
+          message: "Error calculating risk",
+          error: errorString,
+          path: scriptPath,
+        });
     }
 
     try {

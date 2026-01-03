@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomInput from "../components/CustomInput";
 import CustomButton from "../components/CustomButton";
 import axios from "../api/axiosConfig";
@@ -19,6 +20,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
   const [bpSystolic, setBpSystolic] = useState("");
   const [bpDiastolic, setBpDiastolic] = useState("");
   const [age, setAge] = useState("");
+  const [gender, setGender] = useState("Male"); // Male or Female
   const [diabetesLevel, setDiabetesLevel] = useState(""); // Blood sugar level (mg/dL)
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -26,9 +28,50 @@ const RiskPredictionScreen = ({ navigation, route }) => {
   const [riskScore, setRiskScore] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
 
+  // Fetch user data on component mount
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const userDataString = await AsyncStorage.getItem("userData");
+        if (userDataString) {
+          const userData = JSON.parse(userDataString);
+
+          // Set gender from user data
+          if (userData.gender) {
+            setGender(userData.gender);
+          }
+
+          // Calculate age from birthday
+          if (userData.birthday) {
+            const birthDate = new Date(userData.birthday);
+            const today = new Date();
+            let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+
+            if (
+              monthDiff < 0 ||
+              (monthDiff === 0 && today.getDate() < birthDate.getDate())
+            ) {
+              calculatedAge--;
+            }
+
+            setAge(calculatedAge.toString());
+          }
+        }
+      } catch (error) {
+        console.error("Error loading user data:", error);
+      }
+    };
+
+    loadUserData();
+  }, []);
+
   const onPredictPressed = async () => {
     if (!bpSystolic || !bpDiastolic || !age) {
-      Alert.alert("Error", "Please fill in Blood Pressure (Systolic and Diastolic) and Age");
+      Alert.alert(
+        "Error",
+        "Please fill in Blood Pressure (Systolic and Diastolic) and Age"
+      );
       return;
     }
 
@@ -42,8 +85,9 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         bp_systolic: bpSystolic,
         bp_diastolic: bpDiastolic,
         age,
+        gender,
       };
-      
+
       // If diabetes level is provided, use it
       if (diabetesLevel) {
         requestData.diabetes_level = diabetesLevel;
@@ -53,7 +97,9 @@ const RiskPredictionScreen = ({ navigation, route }) => {
 
       setRiskLevel(response.data.risk_level);
       // Use risk_score from backend
-      const score = response.data.risk_score || calculateRiskScore(response.data.risk_level);
+      const score =
+        response.data.risk_score ||
+        calculateRiskScore(response.data.risk_level);
       setRiskScore(score);
     } catch (error) {
       console.error("Prediction Error:", error);
@@ -80,7 +126,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
 
     setSaving(true);
 
-      try {
+    try {
       const response = await axios.post("/risk-history/save", {
         userId,
         riskLevel,
@@ -89,16 +135,17 @@ const RiskPredictionScreen = ({ navigation, route }) => {
           bpSystolic: parseFloat(bpSystolic),
           bpDiastolic: parseFloat(bpDiastolic),
           age: parseFloat(age),
+          gender,
           diabetesLevel: diabetesLevel ? parseFloat(diabetesLevel) : null,
         },
       });
 
       setIsSaved(true);
-      
-      const message = response.data.isUpdate 
+
+      const message = response.data.isUpdate
         ? "Your risk record for this month has been updated!"
         : "Your risk record has been saved for this month!";
-      
+
       Alert.alert("Success", message, [
         { text: "OK" },
         {
@@ -130,6 +177,17 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       <Text style={styles.title}>Early Risk Prediction</Text>
       <Text style={styles.subtitle}>Enter your vital signs below</Text>
 
+      <View style={styles.readOnlyContainer}>
+        <View style={styles.readOnlyField}>
+          <Text style={styles.readOnlyLabel}>Gender:</Text>
+          <Text style={styles.readOnlyValue}>{gender || "Not set"}</Text>
+        </View>
+        <View style={styles.readOnlyField}>
+          <Text style={styles.readOnlyLabel}>Age:</Text>
+          <Text style={styles.readOnlyValue}>{age || "Not set"} years</Text>
+        </View>
+      </View>
+
       <CustomInput
         placeholder="Systolic BP (mmHg) *Required"
         value={bpSystolic}
@@ -140,12 +198,6 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         placeholder="Diastolic BP (mmHg) *Required"
         value={bpDiastolic}
         setValue={setBpDiastolic}
-        keyboardType="numeric"
-      />
-      <CustomInput
-        placeholder="Age *Required"
-        value={age}
-        setValue={setAge}
         keyboardType="numeric"
       />
       <CustomInput
@@ -168,14 +220,18 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       {riskLevel && (
         <View style={styles.resultContainer}>
           <Text style={styles.resultLabel}>Predicted Risk Level:</Text>
-          <Text style={[styles.resultValue, { color: getRiskColor(riskLevel) }]}>
+          <Text
+            style={[styles.resultValue, { color: getRiskColor(riskLevel) }]}
+          >
             {riskLevel}
           </Text>
-          
+
           {riskScore !== null && (
             <View style={styles.scoreContainer}>
               <Text style={styles.scoreLabel}>Risk Score:</Text>
-              <Text style={[styles.scoreValue, { color: getRiskColor(riskLevel) }]}>
+              <Text
+                style={[styles.scoreValue, { color: getRiskColor(riskLevel) }]}
+              >
                 {riskScore.toFixed(0)}
               </Text>
             </View>
@@ -196,7 +252,9 @@ const RiskPredictionScreen = ({ navigation, route }) => {
             ) : (
               <>
                 <Text style={styles.saveButtonText}>
-                  {isSaved ? "✓ Saved for This Month" : "💾 Save Monthly Record"}
+                  {isSaved
+                    ? "✓ Saved for This Month"
+                    : "💾 Save Monthly Record"}
                 </Text>
               </>
             )}
@@ -215,18 +273,23 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         style={styles.historyButton}
         onPress={() => navigation.navigate("RiskHistory", { userId })}
       >
-        <Text style={styles.historyButtonText}>📊 View Risk History & Trend</Text>
+        <Text style={styles.historyButtonText}>
+          📊 View Risk History & Trend
+        </Text>
       </TouchableOpacity>
 
       {/* Info Card */}
       <View style={styles.infoCard}>
         <Text style={styles.infoTitle}>💡 About the Prediction</Text>
         <Text style={styles.infoText}>
-          This prediction uses an AI model trained with Stacking Classifier (XGBoost + Random Forest).
-          {'\n\n'}Required: Systolic BP, Diastolic BP, and Age
-          {'\n'}Optional: Blood Sugar Level
-          {'\n\n'}Both blood pressure values are important for accurate kidney health assessment.
-          {'\n\n'}Save your prediction each month to track your kidney health trend over time.
+          This prediction uses an AI model trained with Stacking Classifier
+          (XGBoost + Random Forest).
+          {"\n\n"}Required: Systolic BP, Diastolic BP, and Age
+          {"\n"}Optional: Blood Sugar Level
+          {"\n\n"}Both blood pressure values are important for accurate kidney
+          health assessment.
+          {"\n\n"}Save your prediction each month to track your kidney health
+          trend over time.
         </Text>
       </View>
     </ScrollView>
@@ -251,6 +314,67 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#8E8E93",
     marginBottom: 30,
+  },
+  readOnlyContainer: {
+    width: "100%",
+    backgroundColor: "#F0F0F0",
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+  },
+  readOnlyField: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  readOnlyLabel: {
+    fontSize: 16,
+    color: "#666",
+    fontWeight: "600",
+  },
+  readOnlyValue: {
+    fontSize: 16,
+    color: "#333",
+    fontWeight: "500",
+  },
+  genderContainer: {
+    width: "100%",
+    marginBottom: 15,
+  },
+  genderLabel: {
+    fontSize: 16,
+    color: "#333",
+    marginBottom: 10,
+    fontWeight: "500",
+  },
+  genderButtons: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  genderButton: {
+    flex: 1,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "#E5E5E5",
+    backgroundColor: "#FFF",
+    alignItems: "center",
+  },
+  genderButtonActive: {
+    borderColor: "#4A90E2",
+    backgroundColor: "#EBF4FF",
+  },
+  genderButtonText: {
+    fontSize: 16,
+    color: "#666",
+    fontWeight: "600",
+  },
+  genderButtonTextActive: {
+    color: "#4A90E2",
   },
   resultContainer: {
     marginTop: 30,
@@ -359,4 +483,3 @@ const styles = StyleSheet.create({
 });
 
 export default RiskPredictionScreen;
-

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, Alert, ScrollView } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomInput from "../components/CustomInput";
 import CustomButton from "../components/CustomButton";
 import axios from "../api/axiosConfig";
@@ -15,11 +16,17 @@ const LoginScreen = ({ navigation }) => {
     }
     try {
       const response = await axios.post("/auth/login", { email, password });
-      Alert.alert("Success", "Logged in successfully");
+
       const userName = response.data?.user?.name || "User";
-      // Capture User ID (Assuming server returns user_id or using email as fallback)
-      const userID = response.data?.user_id || email;
-      
+      const userID = response.data?.user?.id || email;
+      const userData = response.data?.user || {};
+
+      // Store complete user data in AsyncStorage
+      await AsyncStorage.setItem("userData", JSON.stringify(userData));
+      await AsyncStorage.setItem("userID", userID);
+      await AsyncStorage.setItem("userName", userName);
+
+      Alert.alert("Success", "Logged in successfully");
       console.log("Navigating to Home with:", { userName, userID });
       navigation.navigate("Home", { userName, userID });
     } catch (error) {
