@@ -357,6 +357,9 @@ class LLMEngine:
             "අසමත්": "පාලනය නොකළ",
             "Uncontrolled": "පාලනය නොකළ",
             "අවාසනාවන්තයි": "කණගාටුයි",
+            "දොස්තර": "Doctor",
+            "සායනය": "Clinic එක",
+            "මැදුරු රෝගය": "Diabetes",
             "#": "",
             "*": ""
         })
@@ -380,9 +383,31 @@ class LLMEngine:
     def translate_to_sinhala_fallback(self, text: str) -> str:
         """
         [STYLE LAYER] Translates medical advice to Natural Spoken Sinhala (Katha Wahara).
-        Uses 'Restructuring' instead of literal translation to sound like a local doctor.
+        NOW INJECTS GLOSSARY HINTS to prevent hallucinations (e.g. Stomach -> Back).
         """
         print(f"⚠️ Style: Transforming to Natural Spoken Sinhala...")
+
+        # 1. GENERATE HINTS FROM YOUR GLOSSARY
+        # Scan the English text for keys in your english_to_sinhala.json
+        hints = []
+        text_lower = text.lower()
+        # Sort keys by length so "Stomach Pain" matches before "Pain"
+        sorted_keys = sorted(self.gen_glossary.keys(), key=len, reverse=True)
+        
+        for key in sorted_keys:
+            # Skip metadata
+            if key.startswith("//") or key.startswith("__"):
+                continue
+            if key.lower() in text_lower:
+                val = self.gen_glossary[key]
+                if val:  # Only add if there's a non-empty translation
+                    hints.append(f"'{key}' -> '{val}'")
+                # Stop if we have too many hints to avoid token overflow
+                if len(hints) > 15:
+                    break
+        
+        hint_str = ", ".join(hints) if hints else "(No specific terms detected)"
+        print(f"   💡 Style Hints: {{ {hint_str} }}")
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -390,16 +415,21 @@ class LLMEngine:
             "Content-Type": "application/json"
         }
         
-        # 🚨 UPDATED PROMPT: TEACHING THE "PERFECT" STYLE
+        # 2. UPDATED PROMPT WITH HINTS
         system_prompt = (
-            "You are a compassionate Sri Lankan friend giving medical advice. "
-            "Do NOT translate literally. Rewrite the text into **CASUAL SPOKEN SINHALA (Katha Wahara)**.\n\n"
+            "You are a compassionate Sri Lankan medical assistant. "
+            "Rewrite the input into **CASUAL SPOKEN SINHALA (Katha Wahara)**.\n\n"
+            
+            "🔥 CRITICAL VOCABULARY RULES (YOU MUST USE THESE EXACT TERMS):\n"
+            f"   {hint_str}\n\n"
             
             "🔥 STYLE RULES:\n"
             "1. **Opener:** Start with 'ඔයාගේ තත්ත්වයත් එක්ක බලද්දී...' (Considering your condition...).\n"
-            "2. **Tone:** Use warm words like 'පුළුවන් නම්' (If possible), 'වගේ දේවල්' (Things like).\n"
-            "3. **Code-Mixing:** Keep English medical terms (Dietitian, Kiwi) in brackets or plain English.\n"
-            "4. **Formatting:** Use Bullet points for lists.\n\n"
+            "2. **Empathy:** Translate 'I'm sorry to hear' as 'ඒක අහන්න ලැබීමත් කණගාටුයි'.\n"
+            "3. **Anatomy:** Do NOT use 'පිටුපස' (Back) for 'Stomach'. Use 'බඩේ' for stomach.\n"
+            "4. **Tone:** Use warm words like 'පුළුවන් නම්' (If possible), 'වගේ දේවල්' (Things like).\n"
+            "5. **Code-Mixing:** Keep English medical terms (Dietitian, Kiwi) in brackets or plain English.\n"
+            "6. **Formatting:** Use Bullet points for lists.\n\n"
 
             "💡 GOLDEN EXAMPLE (MIMIC THIS EXACTLY):\n"
             "--------------------------------------------------\n"
@@ -426,7 +456,7 @@ class LLMEngine:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": text}
             ],
-            "temperature": 0.3 # Low temp to stick to the example pattern
+            "temperature": 0.2  # Even lower to force adherence to hints
         }
         
         try:
