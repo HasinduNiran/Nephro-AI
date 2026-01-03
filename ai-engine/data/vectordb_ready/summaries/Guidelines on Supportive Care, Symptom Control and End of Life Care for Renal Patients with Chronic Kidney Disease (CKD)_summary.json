@@ -1,8 +1,8 @@
 {
   "total_documents": 7,
   "source_file": "Guidelines on Supportive Care, Symptom Control and End of Life Care for Renal Patients with Chronic Kidney Disease (CKD)_chunks.json",
-  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\Guidelines on Supportive Care, Symptom Control and End of Life Care for Renal Patients with Chronic Kidney Disease (CKD)_chunks.json",
-  "preparation_date": "2025-11-21T14:30:30.712111",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\Guidelines on Supportive Care, Symptom Control and End of Life Care for Renal Patients with Chronic Kidney Disease (CKD)_chunks.json",
+  "preparation_date": "2025-12-31T14:58:45.314514",
   "avg_word_count": 551.5714285714286,
   "content_types": {
     "treatment": 4,

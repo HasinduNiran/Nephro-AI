@@ -1,0 +1,18 @@
+{
+  "total_pages": 109,
+  "raw_text_length": 543077,
+  "cleaned_text_length": 570009,
+  "source_file": "PIIS0272638620307265.pdf",
+  "extraction_date": "2025-12-31T14:49:07.685415",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2020",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "dialysis"
+  ],
+  "total_chunks": 128,
+  "avg_chunk_size": 585.7421875,
+  "processing_date": "2025-12-31T14:49:09.655878"
+}

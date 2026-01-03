@@ -163,11 +163,12 @@ class PatientInputHandler:
         # RESEARCH FIX 1: THE "GOLDEN" CONTEXT PROMPT
         # We mix English and Singlish to tell Whisper exactly what to expect.
         context_prompt = (
-            "Medical conversation in Sri Lanka. "
-            "Topics: Kidney Disease (CKD), Diet, Symptoms. "
-            "Keywords: Mata, Mage, Kanna, Bonna, Puluwanda, Ridenawa, "
-            "Wakkugadu (Kidney), Le (Blood), Beheth (Medicine), "
-            "Kesel (Banana), Amba (Mango), Aba, Kochchara, Pramanayak."
+            "Medical consultation in Sri Lanka. "
+            "User speaks in Singlish (Sinhala phonetics) and English. "
+            "Keywords: Wakugadu (Kidney), Rogawala (Diseases), Roga Lakshana (Symptoms), "
+            "Mata (Me), Ridenawa (Pain), Beheth (Medicine), Doctor, "
+            "Kanna (Eat), Bonna (Drink), Puluwanda (Can), "
+            "Kesel, Amba, DiyaWediya (Diabetes), Pressure."
         )
 
         try:

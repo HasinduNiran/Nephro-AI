@@ -1,0 +1,15 @@
+{
+  "total_pages": 12,
+  "raw_text_length": 73850,
+  "cleaned_text_length": 77278,
+  "source_file": "mancia-verdecchia-2015-clinical-value-of-ambulatory-blood-pressure.pdf",
+  "extraction_date": "2025-12-31T14:19:29.213083",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "renal"
+  ],
+  "total_chunks": 20,
+  "avg_chunk_size": 579.6,
+  "processing_date": "2025-12-31T14:19:29.466256"
+}

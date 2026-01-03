@@ -1,0 +1,22 @@
+{
+  "total_documents": 99,
+  "source_file": "whelton-et-al-2017-2017-acc-aha-aapa-abc-acpm-ags-apha-ash-aspc-nma-pcna-guideline-for-the-prevention-detection_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\whelton-et-al-2017-2017-acc-aha-aapa-abc-acpm-ags-apha-ash-aspc-nma-pcna-guideline-for-the-prevention-detection_chunks.json",
+  "preparation_date": "2025-12-31T14:58:51.544441",
+  "avg_word_count": 582.959595959596,
+  "content_types": {
+    "dietary": 11,
+    "treatment": 51,
+    "monitoring": 3,
+    "recommendation": 15,
+    "evidence": 12,
+    "reference": 7
+  },
+  "medical_entity_coverage": {
+    "CKD": 27,
+    "GFR": 12,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 1
+  }
+}

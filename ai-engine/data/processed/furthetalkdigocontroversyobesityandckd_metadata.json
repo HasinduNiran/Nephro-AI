@@ -1,0 +1,19 @@
+{
+  "total_pages": 67,
+  "raw_text_length": 116696,
+  "cleaned_text_length": 124922,
+  "source_file": "furthetalkdigocontroversyobesityandckd.pdf",
+  "extraction_date": "2025-12-31T14:50:08.887835",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2025",
+  "keywords": [
+    "chronic kidney disease",
+    "renal",
+    "nephrology",
+    "KDIGO"
+  ],
+  "total_chunks": 35,
+  "avg_chunk_size": 554.9428571428572,
+  "processing_date": "2025-12-31T14:50:09.315013"
+}

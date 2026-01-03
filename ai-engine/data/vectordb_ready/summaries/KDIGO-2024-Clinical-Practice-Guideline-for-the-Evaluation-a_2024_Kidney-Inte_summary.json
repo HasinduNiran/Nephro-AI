@@ -1,0 +1,23 @@
+{
+  "total_documents": 167,
+  "source_file": "KDIGO-2024-Clinical-Practice-Guideline-for-the-Evaluation-a_2024_Kidney-Inte_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\KDIGO-2024-Clinical-Practice-Guideline-for-the-Evaluation-a_2024_Kidney-Inte_chunks.json",
+  "preparation_date": "2025-12-31T14:58:45.883921",
+  "avg_word_count": 585.9760479041917,
+  "content_types": {
+    "reference": 16,
+    "evidence": 64,
+    "dietary": 28,
+    "recommendation": 31,
+    "monitoring": 8,
+    "treatment": 19,
+    "definition": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 154,
+    "GFR": 125,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 40
+  }
+}

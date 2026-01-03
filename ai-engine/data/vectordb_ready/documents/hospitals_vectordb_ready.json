@@ -1,0 +1,45 @@
+{
+  "documents": [
+    "METADATA: content_type: recommendation, medical_entities: Anuradhapura, Hospital, Dialysis, North Central Anuradhapura Teaching Hospital: This is Tea primary center for Kidney care in Tea North Central Province. It has a specialized Nephrology Unit offering Hemodialysis, CRRT, and continuous ambulatory peritoneal dialysis services. Location: Hospital Road, Anuradhapura. Emergency Contact: 025-2222261. METADATA: content_type: recommendation, medical_entities: Polonnaruwa, Hospital, CKDu, Screening Polonnaruwa General Hospital: Provides specialized renal care for CKDu patients in Tea North Central region. It offers early screening clinics, Hemodialysis, and Peritoneal Dialysis services. Location: Hospital Junction, Polonnaruwa. Open 24 hours for emergencies. METADATA: content_type: recommendation, medical_entities: Colombo, NHSL, Kidney, Transplant, Western National Hospital of Sri Lanka (NHSL) Colombo: Tea largest tertiary care hospital in Tea country offering comprehensive Kidney care. Services include 24/7 Emergency Dialysis, Kidney transplantation, and specialized renal clinics. Location: Regent Street, Colombo 10. Contact: 011-2691111. METADATA: content_type: recommendation, medical_entities: Kandy, Hospital, Transplant, Central Kandy National Hospital (Teaching): Tea main referral center for Tea Central Province. Has a large Nephrology Department and a dedicated Transplant Unit. Offers Hemodialysis and continuous ambulatory peritoneal dialysis training. Location: William Gopallawa Mawatha, Kandy. Contact: 081-2222261. METADATA: content_type: recommendation, medical_entities: Karapitiya, Galle, Hospital, Southern, Transplant Karapitiya Teaching Hospital (Galle): Tea premier referral center for Tea Southern Province. It features a specialized Renal Unit performing Kidney transplants and providing regular Dialysis services. Location: Hirimbura Cross Road, Karapitiya, Galle. Contact: 091-2232176. METADATA: content_type: recommendation, medical_entities: Jaffna, Hospital, Northern, Dialysis Jaffna Teaching Hospital: Tea central hub for Kidney care in Tea Northern Province. Tea Nephrology Unit provides Hemodialysis and manages chronic Kidney disease complications. Location: Hospital Road, Jaffna. Contact: 021-2222261. METADATA: content_type: recommendation, medical_entities: Kurunegala, Hospital, North Western, Dialysis Kurunegala Teaching Hospital: Serves Tea North Western Province (Wayamba). It has a fully equipped Dialysis Unit and conducts regular Nephrology clinics for chronic kidney disease management. Location: Colombo Road, Kurunegala. Contact: 037-2222261. METADATA: content_type: recommendation, medical_entities: Badulla, Hospital, Uva, Dialysis Badulla Provincial General Hospital: Tea main center for Tea Uva Province. Tea Renal Unit offers Hemodialysis and specialized care for CKDu patients in Tea region. Location: Hospital Road, Badulla. Contact: 055-2222261. METADATA: content_type: recommendation, medical_entities: Batticaloa, Hospital, Eastern, Dialysis Batticaloa Teaching Hospital: A key facility for Tea Eastern Province. Tea hospital provides Hemodialysis services and renal clinics for managing Kidney failure. Location: Hospital Road, Batticaloa. Contact: 065-2222261. METADATA: content_type: recommendation, medical_entities: Ratnapura, Hospital, Sabaragamuwa, Dialysis Ratnapura Teaching Hospital: Serves Tea Sabaragamuwa Province. Tea Nephrology Unit provides essential Dialysis services and management for acute and chronic Kidney injuries. Location: Hospital Road, Ratnapura. Contact: 045-2222261. METADATA: content_type: recommendation, medical_entities: Sri Jayewardenepura, Hospital, Transplant, Western Sri Jayewardenepura General Hospital: A semi-government hospital known for its Kidney Transplant Unit. It offers High-quality Dialysis and post-transplant care. Location: Thalapathpitiya, Nugegoda. Contact: 011-2778610. METADATA: content_type: recommendation, medical_entities: CNTH, Ragama, Hospital, Transplant, Western Colombo North Teaching Hospital (Ragama): Home to a specialized Center for Liver and Kidney diseases. Offers Kidney transplantation, Dialysis, and advanced renal investigations. Location: Ragama Road, Ragama. Contact: 011-2959261.",
+    "It offers High-quality Dialysis and post-transplant care. Location: Thalapathpitiya, Nugegoda. Contact: 011-2778610. METADATA: content_type: recommendation, medical_entities: CNTH, Ragama, Hospital, Transplant, Western Colombo North Teaching Hospital (Ragama): Home to a specialized Center for Liver and Kidney diseases. Offers Kidney transplantation, Dialysis, and advanced renal investigations. Location: Ragama Road, Ragama. Contact: 011-2959261. METADATA: content_type: recommendation, medical_entities: Kalubowila, CSTH, Hospital, Western Colombo South Teaching Hospital (Kalubowila): Provides Nephrology outpatient clinics and acute Dialysis services for patients in Tea Colombo South region. Location: Hospital Road, Kalubowila, Dehiwala. Contact: 011-2763065. METADATA: content_type: recommendation, medical_entities: Negombo, Hospital, Western, Dialysis Negombo District General Hospital: Offers a dedicated Dialysis Unit and regular clinics for chronic kidney disease patients in Tea Gampaha district. Location: Hospital Road, Negombo. METADATA: content_type: recommendation, medical_entities: Vavuniya, Hospital, Northern, CKDu Vavuniya District General Hospital: A critical center for Tea Vanni region, specifically focusing on CKDu screening and management. Equipped with a Dialysis Unit. Location: Hospital Road, Vavuniya. METADATA: content_type: recommendation, medical_entities: Hambantota, Hospital, Southern, Dialysis Hambantota District General Hospital: Newly developed facility offering modern Dialysis services and renal care for Tea deep South. Location: Gonnoruwa Road, Hambantota. METADATA: content_type: recommendation, medical_entities: Trincomalee, Hospital, Eastern, Dialysis Trincomalee District General Hospital: Provides Nephrology services and Hemodialysis for patients in Tea Trincomalee district. Location: Hospital Road, Trincomalee. METADATA: content_type: recommendation, medical_entities: Matara, Hospital, Southern, Dialysis Matara District General Hospital: Serves Tea Matara district with a functioning Nephrology Unit and Dialysis facilities. Location: Hospital Road, Matara. METADATA: content_type: recommendation, medical_entities: Ampara, Hospital, Eastern, CKDu Ampara District General Hospital: Important for Tea Eastern Province agricultural belt, focusing on CKDu management and providing Dialysis support. Location: Hospital Road, Ampara. METADATA: content_type: recommendation, medical_entities: Monaragala, Hospital, Uva, CKDu Monaragala District General Hospital: Serves Tea remote areas of Uva Province with a focus on CKDu screening and basic renal care / Dialysis. Location: Hospital Road, Monaragala."
+  ],
+  "metadatas": [
+    {
+      "source": "hospitals.txt",
+      "chunk_id": 0,
+      "content_type": "recommendation",
+      "content_type_confidence": 1,
+      "word_count": 485,
+      "entity_count": 7,
+      "has_ckd": true,
+      "has_gfr": false,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": true,
+      "medical_entities": "chronic kidney disease,kidney failure,dialysis,hemodialysis,peritoneal dialysis,kidney transplant,screening",
+      "year": "2026",
+      "organization": "Unknown",
+      "section": "METADATA:"
+    },
+    {
+      "source": "hospitals.txt",
+      "chunk_id": 1,
+      "content_type": "recommendation",
+      "content_type_confidence": 1,
+      "word_count": 304,
+      "entity_count": 4,
+      "has_ckd": true,
+      "has_gfr": false,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": true,
+      "medical_entities": "chronic kidney disease,dialysis,hemodialysis,screening",
+      "year": "2026",
+      "organization": "Unknown"
+    }
+  ],
+  "ids": [
+    "hospitals_0",
+    "hospitals_1"
+  ]
+}

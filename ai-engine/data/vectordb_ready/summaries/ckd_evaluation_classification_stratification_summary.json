@@ -1,0 +1,22 @@
+{
+  "total_documents": 77,
+  "source_file": "ckd_evaluation_classification_stratification_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\ckd_evaluation_classification_stratification_chunks.json",
+  "preparation_date": "2025-12-31T14:58:48.244467",
+  "avg_word_count": 584.7922077922078,
+  "content_types": {
+    "recommendation": 6,
+    "dietary": 20,
+    "evidence": 33,
+    "treatment": 10,
+    "definition": 1,
+    "monitoring": 7
+  },
+  "medical_entity_coverage": {
+    "CKD": 48,
+    "GFR": 52,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 26
+  }
+}

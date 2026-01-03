@@ -1,0 +1,17 @@
+{
+  "total_pages": 24,
+  "raw_text_length": 25692,
+  "cleaned_text_length": 26492,
+  "source_file": "11-50-0160_patientguideCKD.pdf",
+  "extraction_date": "2025-12-31T14:23:30.422544",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "kidney function"
+  ],
+  "total_chunks": 8,
+  "avg_chunk_size": 557.875,
+  "processing_date": "2025-12-31T14:23:30.521197"
+}

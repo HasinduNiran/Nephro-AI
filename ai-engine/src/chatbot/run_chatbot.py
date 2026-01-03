@@ -1,5 +1,7 @@
 import sys
 import time
+import re # Added for text cleaning
+import webbrowser
 from pathlib import Path
 
 # Add parent directory to path
@@ -9,6 +11,17 @@ from chatbot.patient_input import PatientInputHandler
 from chatbot.rag_engine import RAGEngine
 from chatbot.tts_engine import TTSEngine
 from chatbot.sinhala_nlu import SinhalaNLUEngine
+
+# --- HELPER FROM SERVER.PY ---
+def clean_text_for_tts(text: str) -> str:
+    """Removes Markdown symbols and unsupported characters."""
+    # Remove bold/italic markers (*, _)
+    text = re.sub(r'[\*_#]', '', text) 
+    # Remove markdown links [text](url) -> text
+    text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
+    # Remove emojis and unsupported chars (keep only Sinhala, English, numbers, punctuation)
+    text = re.sub(r'[^\w\s\u0D80-\u0DFF\.,\?!a-zA-Z0-9]', '', text)
+    return text
 
 def main():
     print("=" * 70)
@@ -97,13 +110,41 @@ def main():
             # Process Query
             print("\n🤔 Thinking...")
             
+            # --- GIBBERISH DETECTION (SYNCED WITH SERVER.PY) ---
+            gibberish_triggers = ["Tamb", "Hue", "כש", "subs", "Amara", "Unara"]
+            is_garbage = any(x in query for x in gibberish_triggers) or len(query) < 2
+            
+            if is_garbage:
+                 print("   ⚠️ Detected Silence/Gibberish. Skipping processing.")
+                 print("🤖 NEPHRO-AI: I couldn't hear you clearly. Please try again.")
+                 continue
+
             # Handle Sinhala Input (Text or Voice)
             if current_mode == "sinhala" or current_mode == "sinhala_voice":
                 print(f"🇱🇰 Analyzing Sinhala: '{query}'...")
             
-            # Pass History to RAG Engine
-            result = chatbot.process_query(query, chat_history=chat_history)
+            # Pass History to RAG Engine (With Patient ID)
+            result = chatbot.process_query(query, patient_id="default_patient_cli", chat_history=chat_history)
             response_text = result["response"]
+            
+            # --- 🕵️ AGENTIC LAYER: CHECK FOR TOOLS ---
+            map_tag = "[MAPS:"
+            if map_tag in response_text:
+                # 1. Extract the location
+                start_index = response_text.find(map_tag) + len(map_tag)
+                end_index = response_text.find("]", start_index)
+                if end_index != -1:
+                    location_query = response_text[start_index:end_index].strip()
+                    
+                    # 2. Clean the response (Remove the tag so the user doesn't hear it)
+                    response_text = response_text.replace(f"{map_tag} {location_query}]", "")
+                    response_text = response_text.replace(f"{map_tag}{location_query}]", "")
+                    
+                    # 3. Execute the Tool
+                    print(f"\n🗺️  AGENT ACTION: Opening Google Maps for '{location_query}'...")
+                    maps_url = f"https://www.google.com/maps/search/{location_query.replace(' ', '+')}"
+                    webbrowser.open(maps_url) 
+            # ----------------------------------------
             
             # Update History
             chat_history.append({"role": "user", "content": query})
@@ -122,7 +163,8 @@ def main():
             # Voice Output (en/si)
             # Uses Edge TTS (High Quality + Free)
             if current_mode == "voice" or current_mode == "sinhala_voice":
-                tts.generate_and_play(response_text)
+                clean_response = clean_text_for_tts(response_text)
+                tts.generate_and_play(clean_response)
             
         except KeyboardInterrupt:
             print("\n👋 Goodbye!")

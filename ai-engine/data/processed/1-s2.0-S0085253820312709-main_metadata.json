@@ -1,0 +1,20 @@
+{
+  "total_pages": 87,
+  "raw_text_length": 389531,
+  "cleaned_text_length": 419994,
+  "source_file": "1-s2.0-S0085253820312709-main.pdf",
+  "extraction_date": "2025-12-31T14:50:59.099082",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2021",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "dialysis",
+    "nephrology",
+    "albuminuria"
+  ],
+  "total_chunks": 85,
+  "avg_chunk_size": 581.3294117647059,
+  "processing_date": "2025-12-31T14:51:00.500683"
+}

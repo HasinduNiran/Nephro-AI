@@ -1,0 +1,20 @@
+{
+  "total_pages": 1,
+  "raw_text_length": 54716,
+  "cleaned_text_length": 59638,
+  "source_file": "New Text Document (4).txt",
+  "extraction_date": "2025-12-31T14:52:06.601761",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2007",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "kidney function",
+    "renal",
+    "albuminuria"
+  ],
+  "total_chunks": 16,
+  "avg_chunk_size": 564.9375,
+  "processing_date": "2025-12-31T14:52:06.828957"
+}

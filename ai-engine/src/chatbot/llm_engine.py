@@ -7,6 +7,7 @@ Implements the 'Sandwich Architecture' for Low-Resource Languages.
 import sys
 import json
 import requests
+import re
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -15,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from chatbot import config
 from chatbot.sinhala_nlu import SinhalaNLUEngine
+from utils.logger import ConsoleLogger as Log
 
 class LLMEngine:
     def __init__(self):
@@ -45,6 +47,32 @@ class LLMEngine:
                 "kanna": "eat"
             }
             self._save_translations()
+
+        # Hybrid Search: Load Medical Dictionary
+        self.med_dict = {}
+        try:
+            dict_path = config.DATA_DIR / "sinhala_med_dict.json"
+            if dict_path.exists():
+                with open(dict_path, "r", encoding="utf-8") as f:
+                    raw_dict = json.load(f)
+                    # Filter out metadata/comments
+                    self.med_dict = {k.lower(): v for k, v in raw_dict.items() if not k.startswith("//") and not k.startswith("__")}
+                print(f"✅ Loaded {len(self.med_dict)} Sinhala/Singlish terms from dictionary.")
+        except Exception as e:
+            print(f"⚠️ Warning: Could not load Sinhala Dictionary: {e}")
+
+        # 🆕 LOAD GENERATION GLOSSARY
+        self.gen_glossary = {}
+        try:
+            glossary_path = config.DATA_DIR / "english_to_sinhala.json"
+            if glossary_path.exists():
+                with open(glossary_path, "r", encoding="utf-8") as f:
+                    raw_data = json.load(f)
+                    # Filter out comments/metadata
+                    self.gen_glossary = {k: v for k, v in raw_data.items() if not k.startswith("//") and not k.startswith("__")}
+                print(f"✅ Loaded {len(self.gen_glossary)} generation rules from glossary.")
+        except Exception as e:
+            print(f"⚠️ Warning: Could not load Generation Glossary: {e}")
 
     def _load_translations(self) -> Dict[str, str]:
         if self.cache_path.exists():
@@ -144,142 +172,277 @@ class LLMEngine:
                 
         return False
 
-    def translate_to_english(self, text: str, chat_history: List[Dict] = []) -> str:
+    def _get_dictionary_hints(self, text: str) -> str:
         """
-        Translates Sinhala to English with CONTEXT AWARENESS.
+        [SEMANTIC SEARCH] Scans input for dictionary matches, PRIORITIZING PHRASES.
+        Iterates through dictionary keys to find matches in the text.
         """
-        # 1. Get Context (What did the Doctor ask last?)
-        context_str = "No previous context."
-        if chat_history:
-            # Get the last message from the Assistant (Doctor)
-            last_doctor_msg = next((msg['content'] for msg in reversed(chat_history) if msg['role'] == 'assistant'), None)
-            if last_doctor_msg:
-                context_str = f"Doctor previously asked: '{last_doctor_msg}'"
-
-        # 2. UPDATED DICTIONARY
-        dictionary = """
-        MANDATORY DICTIONARY:
-        # --- Multi-Word Medical Terms (High Priority) ---
-        - Wakugadu amaru / Wakkugadu amaru -> Kidney disease / Kidney trouble
-        - Bada amaru /Bade amaru/ bada ridenawa -> Stomach ache
-        - Papuwe amaru -> Chest pain / Heart trouble
+        matches = []
+        text_lower = text.lower() # Normalize user input
         
-        # --- Severity / Adjectives ---
-        - Podi / Poddak / Tikak / chuttak/ chuti/ chooti -> Mild / Slight / A little bit
-        - Godak /loku -> Severe / Very
-        
-        # --- Symptoms ---
-        - Kakkumai / Kakkuma -> Pain
-        - Ridenawa -> Pain / Hurts
-        - Amaru -> Difficulty / Trouble / Disease (Depends on context)
-        - Idimenne / Idimuma -> Swelling
-        - Hathiya -> Difficulty breathing
-        
-        # --- Context ---
-        - Thiyanwada / Thiyenawada -> Do I have? / Is there?
-        - Mata -> I / To me
-        """
+        # 🚀 NEW LOGIC: Iterate through Dictionary Keys instead of Usert Tokens
+        # This captures phrases like "hoda nathi" automatically.
+        # sort keys by length (descending) so "kanna hoda nathi" matches before "hoda"
+        sorted_keys = sorted(self.med_dict.keys(), key=len, reverse=True)
 
-        system_instruction = (
-            "You are a medical translator. \n"
-            f"CONTEXT: {context_str}\n" 
-            f"{dictionary}\n"
-            "RULES:\n"
-            "1. **COMPOUND WORDS FIRST**: Check for 2-word phrases like 'Wakugadu amaru' BEFORE translating individual words.\n"
-            "2. 'Wakugadu amaru' implies 'Kidney Disease', NOT just 'Kidney pain'.\n"
-            "3. Output ONLY the English translation."
-        )
-
-        try:
-            headers = {
-                "Authorization": f"Bearer {self.api_key}",
-                "HTTP-Referer": "https://github.com/Nephro-AI",
-                "Content-Type": "application/json"
-            }
-            payload = {
-                "model": "openai/gpt-4o-mini",
-                "messages": [
-                    {"role": "system", "content": system_instruction},
-                    {"role": "user", "content": text}
-                ],
-                "temperature": 0.0
-            }
-            response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=10)
-            return response.json()['choices'][0]['message']['content'].strip()
+        for key in sorted_keys:
+            # Skip metadata keys
+            if key.startswith("//") or key.startswith("__"):
+                continue
             
-        except Exception as e:
-            print(f"❌ Bridge Error: {e}")
-            return text
+            # Check if the dictionary key exists in the user text
+            if key in text_lower:
+                value = self.med_dict[key]
+                matches.append(f"'{key}' = '{value}'")
 
-    def enforce_spoken_sinhala(self, text: str) -> str:
+        if not matches:
+            return ""
+
+        # Limit to top 8 unique matches
+        unique_matches = []
+        seen = set()
+        for m in matches:
+            if m not in seen:
+                unique_matches.append(m)
+                seen.add(m)
+                if len(unique_matches) >= 8:
+                    break
+                    
+        return ", ".join(unique_matches)
+
+    def contextualize_query(self, query: str, history: List[Dict]) -> str:
         """
-        [SAFETY NET] Deterministically replaces formal words with spoken Sinhala (Code-Mixed).
-        This runs AFTER the LLM to catch any mistakes.
+        [INDUSTRY STANDARD] Standalone Query Generator.
+        Rewrites the query to include context from history.
         """
-        replacements = {
-            "රුධිර පීඩනය": "Pressure eka",  # Rudira Peedanaya -> Pressure eka
-            "පීඩනය": "Pressure eka",       # Peedanaya -> Pressure eka
-            "දියවැඩියාව": "Sugar",         # Diyawadiyawa -> Sugar
-            "රුධිර සීනි": "Sugar",         # Rudira Seeni -> Sugar
-            "වෛද්‍යවරයා": "Dosthara",      # Waidyawaraya -> Dosthara
-            "වෛද්‍ය": "Dosthara",          # Waidya -> Dosthara
-            "අවදානම": "Risk eka",          # Awadanama -> Risk eka
-            "පරීක්ෂණය": "Test eka",        # Parikshanaya -> Test eka
-            "වාර්තාව": "Report eka",       # Warthawa -> Report eka
-            "සායනය": "Clinic eka",         # Sayanaya -> Clinic eka
-            "අවාසනාවන්තයි": "කණගාටුයි",    # Awasanawanthai -> Kanagatui
-            "පැතිකඩ": "විස්තර",             # Pathikada -> Wisthara
-            "සක්‍රීය": "සැලකිලිමත්",        # Sakriya -> Selakilimath
-            "ඖෂධ": "බෙහෙත්",               # Oushada -> Beheth
-            "ආරක්ෂාව": "පරිස්සම් වෙන්න",   # Arakshawa -> Parissam wenna
-            "#": "",                       # Remove Headers
-            "*": ""                        # Remove Bolding
-        }
-        
-        for formal, spoken in replacements.items():
-            text = text.replace(formal, spoken)
+        if not history:
+            return query
             
-        return text
-
-    def translate_to_sinhala_fallback(self, text: str) -> str:
-        """[STYLE LAYER] Concept-Mapping + Safety Net."""
-        print(f"⚠️ Style: Mapping concepts to Spoken Sinhala...")
+        # Take last 2 turns only (for speed)
+        short_history = history[-2:]
+        history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in short_history])
         
+        Log.step("🧠", "REWRITER: Contextualizing...", f"History: {len(short_history)} turns")
+
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "HTTP-Referer": "https://github.com/Nephro-AI",
             "Content-Type": "application/json"
         }
         
-        # Keep your strong prompt here (The one I gave you in the previous step)
-        # It is still the first line of defense.
+        prompt = (
+            "Given the chat history and the latest user question, "
+            "rewrite the question to be a standalone sentence that explicitly contains the context.\n"
+            "Do NOT answer the question. Just rewrite it.\n"
+            "If the question is already standalone, return it as is.\n\n"
+            f"Chat History:\n{history_text}\n\n"
+            f"Latest Question: {query}\n\n"
+            "Standalone Question:"
+        )
+
+        try:
+            payload = {
+                "model": "openai/gpt-3.5-turbo", # Fast & Cheap for rewriting
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.3
+            }
+            
+            response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=5
+            )
+
+            if response.status_code == 200:
+                rewritten = response.json()['choices'][0]['message']['content'].strip()
+                Log.step("  ", "Rewrite Result", f"'{query}' -> '{rewritten}'")
+                return rewritten
+            else:
+                 Log.error(f"Rewriter API Error: {response.status_code}")
+                 return query
+                 
+        except Exception as e:
+            Log.error(f"Rewriter Exception: {e}")
+            return query
+
+    def translate_to_english(self, text: str, chat_history: List[Dict] = []) -> str:
+        """
+        [BRIDGE LAYER] Translates Singlish/Sinhala to English for the RAG Engine.
+        Now includes DIET & FOOD examples to prevent hallucinations.
+        """
+        # Log.step("🔄", "BRIDGE: Translating...", f"'{text}'") # Called by RAGEngine already
+
+        # 1. Get Context (What did the Doctor ask last?)
+        context_str = "No previous context."
+        if chat_history:
+            last_doctor_msg = next((msg['content'] for msg in reversed(chat_history) if msg['role'] == 'assistant'), None)
+            if last_doctor_msg:
+                context_str = f"Doctor previously asked: '{last_doctor_msg}'"
+
+        # 2. Get Dictionary Hints (Hybrid Search)
+        dict_hints = self._get_dictionary_hints(text)
+        if dict_hints:
+            Log.step("  ", "MedDict Hit", f"{{ {dict_hints} }}")
+            system_hint_str = f"⚠️ **STRICT DICTIONARY RULES** (from sinhala_med_dict.json): {dict_hints}"
+        else:
+            # Log.step("ℹ️", "MedDict Miss", "No specific medical terms found.")
+            system_hint_str = ""
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "https://github.com/Nephro-AI",
+            "Content-Type": "application/json"
+        }
+
+        # 🚨 THE FIX: Specific Context + Food Examples + Dictionary Injection
         system_prompt = (
-            "You are a Sri Lankan friend. Translate medical advice into **SPOKEN SINHALA (Katha Wahara)**.\n"
-            "Use English words for: Pressure, Sugar, Clinic, Report, Test.\n"
-            "Use 'Dosthara' for Doctor, 'Beheth' for Medicine.\n"
-            "Never use formal words like 'Oba', 'Yuthuya', 'Peedanaya'.\n"
-            "Output UNICODE SINHALA only."
+            "You are a medical translator for a Nephrology Chatbot. "
+            "Translate the user's Singlish or Sinhala input into clear English medical queries.\n"
+            f"{system_hint_str}\n\n"
+            
+            "🎯 FOCUS AREAS:\n"
+            "1. **Food Items:** Aligetapera (Avocado), Kesel (Banana), Kos (Jackfruit), Pol (Coconut).\n"
+            "2. **Symptoms:** Ridenawa (Pain), Kakkuma (Ache), Kalantha (Dizziness).\n"
+            "3. **Context:** If the user asks 'Can I eat...', it is a DIET query, not a symptom query.\n\n"
+
+            "💡 FEW-SHOT EXAMPLES:\n"
+            "   - Input: 'Mata aligetapera kilo ekak kanna puluwanda den?'\n"
+            "   - Output: 'Can I eat a kilo of avocado right now?'\n\n"
+            
+            "   - Input: 'Mage bada ridenawa'\n"
+            "   - Output: 'I have stomach pain.'\n\n"
+            
+            "   - Input: 'Kos kanna hondada?'\n"
+            "   - Output: 'Is it okay to eat Jackfruit?'\n\n"
+
+            "Now translate the following input:"
+        )
+
+        payload = {
+            "model": "openai/gpt-4o-mini",
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"CONTEXT: {context_str}\n\nUSER INPUT: {text}"}
+            ],
+            "temperature": 0.1  # Keep it strictly logical
+        }
+
+        try:
+            response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=10)
+            if response.status_code == 200:
+                translation = response.json()['choices'][0]['message']['content'].strip()
+                # Remove any quotes or extra explanations
+                translation = translation.replace('"', '').replace("'", "")
+                print(f"   ↳ Result: '{translation}'")
+                return translation
+        except Exception as e:
+            print(f"❌ Translation Error: {e}")
+            pass
+            
+        return text
+
+    def enforce_spoken_sinhala(self, text: str) -> str:
+        """
+        [SAFETY NET] Deterministically replaces words using the loaded JSON glossary.
+        """
+        # 1. Load Dynamic Rules from JSON
+        replacements = self.gen_glossary.copy()
+        
+        # 2. Add Hardcoded Structural Rules (things that aren't simple words)
+        # These are safer to keep in code as they affect grammar/formatting
+        replacements.update({
+            "පැතිකඩ": "වර්තමාන තත්ත්වය",
+            "වත්මන් පැතිකඩ": "වර්තමාන තත්ත්වය",
+            "අසමත්": "පාලනය නොකළ",
+            "Uncontrolled": "පාලනය නොකළ",
+            "අවාසනාවන්තයි": "කණගාටුයි",
+            "#": "",
+            "*": ""
+        })
+        
+        # 3. Apply Replacements
+        # Sort by length (longest first) to prevent partial matching errors
+        # e.g. Replace "Blood Pressure" before "Pressure"
+        sorted_keys = sorted(replacements.keys(), key=len, reverse=True)
+        
+        for english_term in sorted_keys:
+            sinhala_term = replacements[english_term]
+            # Case-insensitive replacement for English terms
+            if english_term.isascii():
+                pattern = re.compile(re.escape(english_term), re.IGNORECASE)
+                text = pattern.sub(sinhala_term, text)
+            else:
+                text = text.replace(english_term, sinhala_term)
+            
+        return text
+
+    def translate_to_sinhala_fallback(self, text: str) -> str:
+        """
+        [STYLE LAYER] Translates medical advice to Natural Spoken Sinhala (Katha Wahara).
+        Uses 'Restructuring' instead of literal translation to sound like a local doctor.
+        """
+        print(f"⚠️ Style: Transforming to Natural Spoken Sinhala...")
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "https://github.com/Nephro-AI",
+            "Content-Type": "application/json"
+        }
+        
+        # 🚨 UPDATED PROMPT: TEACHING THE "PERFECT" STYLE
+        system_prompt = (
+            "You are a compassionate Sri Lankan friend giving medical advice. "
+            "Do NOT translate literally. Rewrite the text into **CASUAL SPOKEN SINHALA (Katha Wahara)**.\n\n"
+            
+            "🔥 STYLE RULES:\n"
+            "1. **Opener:** Start with 'ඔයාගේ තත්ත්වයත් එක්ක බලද්දී...' (Considering your condition...).\n"
+            "2. **Tone:** Use warm words like 'පුළුවන් නම්' (If possible), 'වගේ දේවල්' (Things like).\n"
+            "3. **Code-Mixing:** Keep English medical terms (Dietitian, Kiwi) in brackets or plain English.\n"
+            "4. **Formatting:** Use Bullet points for lists.\n\n"
+
+            "💡 GOLDEN EXAMPLE (MIMIC THIS EXACTLY):\n"
+            "--------------------------------------------------\n"
+            "📥 English Input:\n"
+            "   'For your condition, it is best to avoid fruits high in potassium like Bananas, Oranges, Kiwi, and Avocados. Instead, eat apples and berries. Consult your dietitian.'\n\n"
+            "📤 Sinhala Output (Target):\n"
+            "   'ඔයාගේ තත්ත්වයත් එක්ක බලද්දී, පොටෑසියම් වැඩි පලතුරු කන එක අඩු කරන එක තමයි වඩාත්ම හොඳ. මේ තියෙන්නේ ඔයා අඩුවෙන් කන්න ඕන, නැත්නම් පුළුවන් නම් නොකා ඉන්න ඕන පලතුරු ටිකක්:\n\n"
+            "   * කෙසෙල්\n"
+            "   * දොඩම්\n"
+            "   * කිවි (Kiwi)\n"
+            "   * අලිගැටපේර\n"
+            "   * වේලපු පලතුරු (වියළි මිදි/මුද්දරප්පලම් වගේ දේවල්)\n\n"
+            "   ඒ වෙනුවට පොටෑසියම් අඩු පලතුරු ජාති වන ඇපල්, බෙරි වර්ග, මිදි සහ පෙයාර්ස් වගේ දේවල් කන්න පුළුවන්.\n"
+            "   හැබැයි ඔයාටම හරියන කෑම බීම ගැන හරියටම දැනගන්න පෝෂණවේදියෙක් (Dietitian) හමුවෙලා උපදෙස් ගන්න අමතක කරන්න එපා.\n"
+            "   තව මොනවා හරි දැනගන්න ඕන නම් අපෙන් අහන්න!'\n"
+            "--------------------------------------------------\n\n"
+
+            "Now, rewrite the following input using this exact natural style:"
         )
         
         payload = {
-            "model": "openai/gpt-4o-mini", 
+            "model": "openai/gpt-4o-mini",  # Flash model is fine if prompt is good
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": text}
             ],
-            "temperature": 0.1
+            "temperature": 0.3 # Low temp to stick to the example pattern
         }
         
         try:
             response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
             if response.status_code == 200:
-                raw_translation = response.json()['choices'][0]['message']['content'].strip()
+                translation = response.json()['choices'][0]['message']['content'].strip()
                 
-                # 🛡️ RUN THE SAFETY NET
-                final_translation = self.enforce_spoken_sinhala(raw_translation)
+                # 🛡️ SAFETY NET: Deterministic Fixes (Your Python Rules)
+                translation = translation.replace("දොස්තර", "Doctor")
+                translation = translation.replace("රුධිර පීඩනය", "Pressure එක")
+                translation = translation.replace("සායනය", "Clinic එක")
+                translation = translation.replace("දියවැඩියාව", "Sugar")
+                translation = translation.replace("අවදානම", "Risk එක")
                 
-                print(f"✅ Style Output: {final_translation[:50]}...") 
-                return final_translation
+                print(f"✅ Natural Output: {translation}") 
+                return translation
         except Exception as e:
             print(f"❌ Style Layer Error: {e}")
             pass
@@ -318,6 +481,12 @@ class LLMEngine:
            - REPLY POLITELY: "You're welcome! Take care of your health." or "Glad I could help. Stay safe."
 
         7. **TONE**: Empathetic, professional, decisive.
+
+        🤖 TOOL USE INSTRUCTIONS:
+        - If you recommend a specific hospital or location based on the context, you MUST append a search tag at the very end of your response.
+        - Format: [MAPS: <Location Name>]
+        - Example: "The nearest facility is Anuradhapura Teaching Hospital. [MAPS: Anuradhapura Teaching Hospital]"
+        - If you don't know the location, advise the user to search online and append: [MAPS: Hospitals near me]
         """
 
 

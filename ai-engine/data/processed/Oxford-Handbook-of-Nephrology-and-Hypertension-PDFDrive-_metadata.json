@@ -1,0 +1,16 @@
+{
+  "total_pages": 999,
+  "raw_text_length": 1856285,
+  "cleaned_text_length": 1929434,
+  "source_file": "Oxford-Handbook-of-Nephrology-and-Hypertension-PDFDrive-.pdf",
+  "extraction_date": "2025-12-31T14:47:49.072251",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "dialysis",
+    "nephrology"
+  ],
+  "total_chunks": 474,
+  "avg_chunk_size": 604.6856540084389,
+  "processing_date": "2025-12-31T14:47:55.352249"
+}

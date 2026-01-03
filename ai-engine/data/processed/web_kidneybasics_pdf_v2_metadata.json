@@ -1,0 +1,19 @@
+{
+  "total_pages": 16,
+  "raw_text_length": 60847,
+  "cleaned_text_length": 58637,
+  "source_file": "web_kidneybasics_pdf_v2.pdf",
+  "extraction_date": "2025-12-31T14:23:44.096043",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2021",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "kidney function",
+    "renal"
+  ],
+  "total_chunks": 16,
+  "avg_chunk_size": 559.9375,
+  "processing_date": "2025-12-31T14:23:44.316343"
+}

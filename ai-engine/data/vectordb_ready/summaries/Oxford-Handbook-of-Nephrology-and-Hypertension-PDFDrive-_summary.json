@@ -1,0 +1,23 @@
+{
+  "total_documents": 460,
+  "source_file": "Oxford-Handbook-of-Nephrology-and-Hypertension-PDFDrive-_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\Oxford-Handbook-of-Nephrology-and-Hypertension-PDFDrive-_chunks.json",
+  "preparation_date": "2025-12-31T14:58:46.978056",
+  "avg_word_count": 586.3586956521739,
+  "content_types": {
+    "evidence": 64,
+    "recommendation": 96,
+    "reference": 16,
+    "dietary": 101,
+    "monitoring": 31,
+    "treatment": 132,
+    "definition": 20
+  },
+  "medical_entity_coverage": {
+    "CKD": 197,
+    "GFR": 172,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 158
+  }
+}

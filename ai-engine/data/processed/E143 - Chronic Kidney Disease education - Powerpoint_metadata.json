@@ -1,0 +1,17 @@
+{
+  "total_pages": 82,
+  "raw_text_length": 37070,
+  "cleaned_text_length": 41727,
+  "source_file": "E143 - Chronic Kidney Disease education - Powerpoint.pdf",
+  "extraction_date": "2025-12-31T14:50:34.642803",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis",
+    "nephrology"
+  ],
+  "total_chunks": 11,
+  "avg_chunk_size": 572.6363636363636,
+  "processing_date": "2025-12-31T14:50:34.789773"
+}

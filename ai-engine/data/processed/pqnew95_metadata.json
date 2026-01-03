@@ -1,0 +1,17 @@
+{
+  "total_pages": 33,
+  "raw_text_length": 204782,
+  "cleaned_text_length": 225173,
+  "source_file": "pqnew95.pdf",
+  "extraction_date": "2025-12-31T14:49:38.632246",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2010",
+  "keywords": [
+    "chronic kidney disease",
+    "dialysis"
+  ],
+  "total_chunks": 56,
+  "avg_chunk_size": 574.7321428571429,
+  "processing_date": "2025-12-31T14:49:39.405948"
+}

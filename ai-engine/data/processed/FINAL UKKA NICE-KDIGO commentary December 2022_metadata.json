@@ -1,0 +1,17 @@
+{
+  "total_pages": 16,
+  "raw_text_length": 39666,
+  "cleaned_text_length": 41753,
+  "source_file": "FINAL UKKA NICE-KDIGO commentary December 2022.pdf",
+  "extraction_date": "2025-12-31T14:53:15.967608",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2022",
+  "keywords": [
+    "chronic kidney disease",
+    "renal"
+  ],
+  "total_chunks": 11,
+  "avg_chunk_size": 557.6363636363636,
+  "processing_date": "2025-12-31T14:53:16.122369"
+}

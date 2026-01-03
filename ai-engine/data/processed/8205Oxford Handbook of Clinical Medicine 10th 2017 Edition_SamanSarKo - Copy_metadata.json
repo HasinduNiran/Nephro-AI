@@ -1,0 +1,13 @@
+{
+  "total_pages": 911,
+  "raw_text_length": 2712520,
+  "cleaned_text_length": 2706746,
+  "source_file": "8205Oxford Handbook of Clinical Medicine 10th 2017 Edition_SamanSarKo - Copy.pdf",
+  "extraction_date": "2025-12-31T14:45:48.883227",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [],
+  "total_chunks": 649,
+  "avg_chunk_size": 587.6471494607088,
+  "processing_date": "2025-12-31T14:45:58.103922"
+}

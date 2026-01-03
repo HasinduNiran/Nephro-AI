@@ -1,0 +1,15 @@
+{
+  "total_pages": 2,
+  "raw_text_length": 10344,
+  "cleaned_text_length": 10597,
+  "source_file": "blood_pressure_medication_should_not_be_routinely.96943.pdf",
+  "extraction_date": "2025-12-31T14:50:10.320389",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "nephrology"
+  ],
+  "total_chunks": 3,
+  "avg_chunk_size": 411.6666666666667,
+  "processing_date": "2025-12-31T14:50:10.364674"
+}

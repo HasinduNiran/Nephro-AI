@@ -119,7 +119,7 @@ def predict_kidney_length(image_path_or_data):
     if kidney_length_cm < 8:
         interpretation = "Small kidney - may indicate CKD or atrophy"
         status = "abnormal"
-    elif kidney_length_cm <= 12:
+    elif kidney_length_cm <= 14:
         interpretation = "Normal kidney size"
         status = "normal"
     else:

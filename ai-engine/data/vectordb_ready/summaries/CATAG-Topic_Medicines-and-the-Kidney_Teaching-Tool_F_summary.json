@@ -1,0 +1,19 @@
+{
+  "total_documents": 5,
+  "source_file": "CATAG-Topic_Medicines-and-the-Kidney_Teaching-Tool_F_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\CATAG-Topic_Medicines-and-the-Kidney_Teaching-Tool_F_chunks.json",
+  "preparation_date": "2025-12-31T14:58:44.836178",
+  "avg_word_count": 572.2,
+  "content_types": {
+    "treatment": 3,
+    "dietary": 1,
+    "reference": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 1,
+    "GFR": 4,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

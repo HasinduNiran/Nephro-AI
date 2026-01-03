@@ -1,8 +1,8 @@
 {
   "total_documents": 8,
   "source_file": "coping_chunks.json",
-  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\coping_chunks.json",
-  "preparation_date": "2025-11-19T02:22:20.885615",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\coping_chunks.json",
+  "preparation_date": "2025-12-31T14:58:48.283312",
   "avg_word_count": 582.625,
   "content_types": {
     "recommendation": 3,

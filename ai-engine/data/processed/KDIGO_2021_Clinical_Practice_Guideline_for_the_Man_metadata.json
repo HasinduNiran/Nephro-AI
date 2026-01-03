@@ -1,0 +1,20 @@
+{
+  "total_pages": 87,
+  "raw_text_length": 389530,
+  "cleaned_text_length": 419993,
+  "source_file": "KDIGO_2021_Clinical_Practice_Guideline_for_the_Man.pdf",
+  "extraction_date": "2025-12-31T14:52:47.884074",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2021",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "dialysis",
+    "nephrology",
+    "albuminuria"
+  ],
+  "total_chunks": 85,
+  "avg_chunk_size": 581.3176470588236,
+  "processing_date": "2025-12-31T14:52:49.205797"
+}
