@@ -9,8 +9,7 @@ import axios from "axios";
 
 // Centralized IP Configuration
 // Change this ONE IP to update both Backend (5000) and Chatbot Server (8001)
-const API_IP = "192.168.184.97";
-
+const API_IP = "172.28.2.221";
 
 
 // Exported URLs for use across the app

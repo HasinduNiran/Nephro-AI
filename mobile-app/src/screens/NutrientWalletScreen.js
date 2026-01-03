@@ -32,7 +32,8 @@ const NutrientWalletScreen = ({ navigation }) => {
       if (reloadWallet) {
         reloadWallet();
       }
-    }, [reloadWallet])
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
   );
 
   useEffect(() => {

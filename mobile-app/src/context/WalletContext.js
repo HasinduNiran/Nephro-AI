@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const WalletContext = createContext();
@@ -165,10 +165,10 @@ export const WalletProvider = ({ children }) => {
     return { isSafe, warnings };
   };
 
-  const reloadWallet = () => {
+  const reloadWallet = useCallback(() => {
     console.log('🔄 [WalletContext] Manual reload requested');
     loadWallet();
-  };
+  }, []);
 
   const value = {
     wallet,
