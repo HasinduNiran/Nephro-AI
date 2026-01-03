@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import api from "../api/axiosConfig";
+import api, { API_URL } from "../api/axiosConfig";
 
 const ScanAnalysisScreen = ({ navigation, route }) => {
   const userName = route.params?.userName || "User";
@@ -38,13 +38,13 @@ const ScanAnalysisScreen = ({ navigation, route }) => {
       // Launch image picker
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
+        allowsEditing: false,
         quality: 1,
       });
 
       if (!result.canceled) {
         setSelectedImage(result.assets[0]);
-        setResult(null); // Clear previous results
+        console.log("Ultrasound image selected:", result.assets[0].uri);
       }
     } catch (error) {
       console.error("Error picking image:", error);
@@ -98,20 +98,9 @@ const ScanAnalysisScreen = ({ navigation, route }) => {
       console.log("Platform:", Platform.OS);
       console.log("Uploading with name:", userName || userEmail || "Unknown");
       console.log("File name:", fileName);
-      console.log("FormData entries:");
-      for (let pair of formData.entries()) {
-        console.log(pair[0], ":", typeof pair[1], pair[1] instanceof File ? "File" : pair[1] instanceof Blob ? "Blob" : pair[1]);
-      }
-
-      // Use native fetch for file upload (better FormData handling than axios)
-      // Use localhost for web, IP address for mobile devices
-      const BACKEND_URL = Platform.OS === "web" 
-        ? "http://localhost:5000/api" 
-        : "http://172.20.10.2:5000/api";
+      console.log("Connecting to:", API_URL);
       
-      console.log("Connecting to:", BACKEND_URL);
-      
-      const uploadResponse = await fetch(`${BACKEND_URL}/upload-ultrasound`, {
+      const uploadResponse = await fetch(`${API_URL}/upload-ultrasound`, {
         method: "POST",
         body: formData,
         // Don't set Content-Type header - let browser set it with boundary

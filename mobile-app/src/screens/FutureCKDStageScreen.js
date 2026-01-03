@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,21 +13,79 @@ import {
   Platform,
   TextInput,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect } from "@react-navigation/native";
-import axios from "../api/axiosConfig";
+import axios, { API_URL } from "../api/axiosConfig";
 
 const FutureCKDStageScreen = ({ navigation, route }) => {
   // Try multiple param shapes to recover email passed from upstream screens/auth
   const userFromRoute = route.params?.user || null;
   const userName = route.params?.userName || userFromRoute?.name || "User";
-  const userEmail =
+  const [userEmail, setUserEmail] = useState(
     route.params?.userEmail ||
     route.params?.email ||
     userFromRoute?.email ||
     userFromRoute?.userEmail ||
-    "";
+    ""
+  );
+
+  // Load userEmail from AsyncStorage if not available
+  useEffect(() => {
+    const loadUserEmail = async () => {
+      if (!userEmail) {
+        try {
+          const storedEmail = await AsyncStorage.getItem("userEmail");
+          if (storedEmail) {
+            setUserEmail(storedEmail);
+          }
+        } catch (error) {
+          console.error("Error loading user email:", error);
+        }
+      }
+    };
+    loadUserEmail();
+  }, []);
+
+  // Load user data (age and gender) from AsyncStorage
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const userDataString = await AsyncStorage.getItem("userData");
+        if (userDataString) {
+          const userData = JSON.parse(userDataString);
+
+          // Calculate age from birthday
+          if (userData.birthday) {
+            const birthDate = new Date(userData.birthday);
+            const today = new Date();
+            let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+
+            if (
+              monthDiff < 0 ||
+              (monthDiff === 0 && today.getDate() < birthDate.getDate())
+            ) {
+              calculatedAge--;
+            }
+
+            setAge(calculatedAge.toString());
+          }
+
+          // Set gender from user data (convert "Female"/"Male" to "F"/"M")
+          if (userData.gender) {
+            const genderCode = userData.gender === "Female" ? "F" : "M";
+            setGender(genderCode);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading user data:", error);
+      }
+    };
+
+    loadUserData();
+  }, []);
   
   const [ultrasoundImage, setUltrasoundImage] = useState(null);
   const [labReportImage, setLabReportImage] = useState(null);
@@ -93,6 +151,22 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
 
   const pickImage = async (type) => {
     try {
+      // Check if user is trying to upload lab report while manual data exists
+      if (type === "lab" && (creatinine || egfr || bun || albumin || hemoglobin)) {
+        Alert.alert(
+          "Remove Manual Data First",
+          "You have already entered manual lab values. Please clear them before uploading a lab report.\n\nTap the Manual Values section to collapse it and remove the data.",
+          [
+            {
+              text: "OK",
+              onPress: () => setShowManualEntry(true), // Auto-expand manual entry section
+            },
+            { text: "Cancel" }
+          ]
+        );
+        return;
+      }
+
       // Request permission
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
@@ -104,18 +178,20 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
         return;
       }
 
-      // Launch image picker
+      // Launch image picker - NO CROPPING
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
+        allowsEditing: false,
         quality: 1,
       });
 
-      if (!result.canceled) {
+      if (!result.canceled && result.assets && result.assets.length > 0) {
         if (type === "ultrasound") {
           setUltrasoundImage(result.assets[0]);
+          console.log("Ultrasound image selected:", result.assets[0].uri);
         } else {
           setLabReportImage(result.assets[0]);
+          console.log("Lab report image selected:", result.assets[0].uri);
         }
       }
     } catch (error) {
@@ -231,15 +307,13 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
         console.log("Uploading ultrasound:", ultrasoundImage.uri.split("/").pop());
       }
       console.log("Manual lab values:", { creatinine, egfr, bun, albumin, hemoglobin });
-      const BACKEND_URL = Platform.OS === "web" 
-        ? "http://localhost:5000/api" 
-        : "http://172.20.10.2:5000/api";
       
-      console.log("Connecting to:", BACKEND_URL);
+      console.log("Connecting to:", API_URL);
       
-      const uploadResponse = await fetch(`${BACKEND_URL}/stage-progression/upload`, {
+      const uploadResponse = await fetch(`${API_URL}/stage-progression/upload`, {
         method: "POST",
         body: formData,
+        timeout: 30000,
       });
 
       console.log("Response status:", uploadResponse.status);
@@ -273,15 +347,54 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
           userName,
           userEmail,
         });
+      } else if (responseData.message && responseData.message.includes("extraction")) {
+        // Data extraction from lab report failed
+        Alert.alert(
+          "Unable to Extract Data",
+          "Could not automatically extract lab values from the image.\n\nPlease enter the values manually instead.",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                setLabReportImage(null); // Clear lab report
+                setShowManualEntry(true); // Auto-expand manual entry section
+              },
+            },
+          ]
+        );
       } else {
         throw new Error(responseData.message || "Analysis failed");
       }
     } catch (error) {
       console.error("Analysis error:", error);
-      Alert.alert(
-        "Error",
-        error.message || "Failed to process data. Please try again."
-      );
+      
+      // Handle network request failures
+      if (error.message.includes("Network") || error.message.includes("fetch") || error.message.includes("ERR_")) {
+        Alert.alert(
+          "Network Connection Error",
+          "Failed to connect to the server. Please check your internet connection and try again.\n\nError: " + error.message,
+          [{ text: "OK" }]
+        );
+      } else if (error.message.includes("extraction")) {
+        Alert.alert(
+          "Data Extraction Failed",
+          "Could not extract lab values from the uploaded image.\n\nPlease enter the values manually instead.",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                setLabReportImage(null); // Clear lab report
+                setShowManualEntry(true); // Auto-expand manual entry section
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert(
+          "Error",
+          error.message || "Failed to process data. Please try again."
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -369,43 +482,21 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                 <Text style={styles.sectionTitle}>Patient Details</Text>
               </View>
 
-              {/* Age Input */}
+              {/* Age Input - Read Only */}
               <View style={styles.ageGenderField}>
                 <Text style={styles.fieldLabel}>Age</Text>
-                
-                  <TextInput
-                      style={styles.textInput}
-                      value={age}
-                      onChangeText={setAge}
-                      placeholder="e.g., 30"
-                      placeholderTextColor="#007AFF"
-                      keyboardType="decimal-pad"
-                    />
-                
+                <View style={styles.readOnlyInput}>
+                  <Text style={styles.readOnlyText}>{age} years</Text>
+                </View>
               </View>
 
-              {/* Gender Selection */}
+              {/* Gender Selection - Read Only */}
               <View style={styles.ageGenderField}>
                 <Text style={styles.fieldLabel}>Gender</Text>
-                <View style={styles.genderContainer}>
-                  <TouchableOpacity
-                    style={[styles.genderButton, gender === "M" && styles.genderButtonActive]}
-                    onPress={() => setGender("M")}
-                  >
-                    <Ionicons name="male" size={20} color={gender === "M" ? "#FFFFFF" : "#007AFF"} />
-                    <Text style={[styles.genderButtonText, gender === "M" && styles.genderButtonTextActive]}>
-                      Male
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.genderButton, gender === "F" && styles.genderButtonActive]}
-                    onPress={() => setGender("F")}
-                  >
-                    <Ionicons name="female" size={20} color={gender === "F" ? "#FFFFFF" : "#007AFF"} />
-                    <Text style={[styles.genderButtonText, gender === "F" && styles.genderButtonTextActive]}>
-                      Female
-                    </Text>
-                  </TouchableOpacity>
+                <View style={styles.readOnlyInput}>
+                  <Text style={styles.readOnlyText}>
+                    {gender === "F" ? "Female" : "Male"}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -468,7 +559,14 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                   style={{ marginLeft: "auto" }}
                 />
               </TouchableOpacity>
-              <Text style={styles.optionalLabel}>(Optional if Lab Report uploaded)</Text>
+              {labReportImage && (
+                <Text style={styles.disabledLabel}>
+                  ⚠️ Lab report already uploaded. Remove it to enter manual values.
+                </Text>
+              )}
+              {!labReportImage && (
+                <Text style={styles.optionalLabel}>(Optional if Lab Report uploaded)</Text>
+              )}
               
               <Text style={styles.manualEntryHint}>
                 Use instead of or along with lab image
@@ -822,6 +920,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontStyle: "italic",
   },
+  disabledLabel: {
+    fontSize: 11,
+    color: "#FF3B30",
+    marginTop: -12,
+    marginBottom: 8,
+    fontStyle: "italic",
+    fontWeight: "600",
+  },
   manualEntryContainer: {
     marginTop: 12,
     gap: 12,
@@ -849,6 +955,18 @@ const styles = StyleSheet.create({
     color: "#1C1C1E",
     borderWidth: 1,
     borderColor: "#E5E5EA",
+  },
+  readOnlyInput: {
+    backgroundColor: "#F5F7FA",
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#E5E5EA",
+  },
+  readOnlyText: {
+    fontSize: 14,
+    color: "#1C1C1E",
+    fontWeight: "600",
   },
   sectionHeader: {
     flexDirection: "row",

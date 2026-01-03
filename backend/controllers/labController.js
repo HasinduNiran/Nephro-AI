@@ -184,3 +184,88 @@ exports.getLatestLabTest = async (req, res) => {
     });
   }
 };
+
+// Upload lab report and extract data via OCR
+exports.uploadLabReport = async (req, res) => {
+  try {
+    console.log("=== LAB REPORT UPLOAD START ===");
+    console.log("File received:", req.file ? req.file.filename : "NO FILE");
+    console.log("Body:", req.body);
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const { name, userEmail, age, gender } = req.body;
+
+    // Validate required fields
+    if (!name) {
+      return res.status(400).json({ message: "Name is required" });
+    }
+
+    // Use OCR to extract lab values from image
+    const ocrProcessor = require("../utils/ocrProcessor");
+    
+    console.log("Starting OCR processing...");
+    const ocrResult = await ocrProcessor.processLabReport(req.file.path, {
+      age: age ? parseInt(age) : null,
+      gender: gender || null,
+    });
+
+    console.log("OCR extraction complete:", ocrResult);
+
+    const labValues = ocrResult.labValues;
+
+    // Determine CKD stage based on eGFR
+    const ckdInfo = labValues.eGFR ? determineCKDStage(labValues.eGFR) : {
+      stage: "Pending Analysis",
+      description: "Lab values extracted, awaiting complete analysis",
+      eGFRRange: "N/A",
+    };
+
+    // Create lab test record with OCR-extracted values
+    const labTest = await LabTest.create({
+      name,
+      userEmail: userEmail || null,
+      eGFR: labValues.eGFR || 60,
+      creatinine: labValues.creatinine || null,
+      creatinineStatus: labValues.creatinineStatus || null,
+      bun: labValues.bun || null,
+      albumin: labValues.albumin || null,
+      age: labValues.age || (age ? parseInt(age) : null),
+      gender: labValues.gender || gender || null,
+      imagePath: req.file.path,
+      imageFilename: req.file.filename,
+      testMethod: "ocr",
+      ocrRawText: ocrResult.extractedText,
+      extractionConfidence: labValues.confidence,
+      ckdStage: ckdInfo.stage,
+      stageDescription: ckdInfo.description,
+      eGFRRange: ckdInfo.eGFRRange,
+    });
+
+    console.log("=== LAB REPORT UPLOAD SUCCESS ===");
+    res.status(201).json({
+      success: true,
+      message: "Lab report processed successfully",
+      labTest: labTest,
+      ocrExtracted: {
+        eGFR: labValues.eGFR,
+        creatinine: labValues.creatinine,
+        bun: labValues.bun,
+        albumin: labValues.albumin,
+        age: labValues.age,
+        gender: labValues.gender,
+      },
+      confidence: labValues.confidence,
+    });
+  } catch (error) {
+    console.error("=== LAB REPORT UPLOAD ERROR ===");
+    console.error("Error:", error.message);
+    console.error("Stack:", error.stack);
+    res.status(500).json({
+      message: "Error uploading lab report",
+      error: error.message,
+    });
+  }
+};

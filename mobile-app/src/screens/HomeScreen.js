@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,11 +8,30 @@ import {
   SafeAreaView,
   StatusBar,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 
 const HomeScreen = ({ navigation, route }) => {
   const userName = route.params?.userName || "User";
-  const userID = route.params?.userID; // Capture the passed userID
+  const userID = route.params?.userID;
+  const [userEmail, setUserEmail] = useState(route.params?.userEmail || "");
+
+  // Retrieve userEmail from AsyncStorage if not in route params
+  useEffect(() => {
+    const loadUserEmail = async () => {
+      if (!userEmail) {
+        try {
+          const storedEmail = await AsyncStorage.getItem("userEmail");
+          if (storedEmail) {
+            setUserEmail(storedEmail);
+          }
+        } catch (error) {
+          console.error("Error loading user email:", error);
+        }
+      }
+    };
+    loadUserEmail();
+  }, []);
 
   const getInitials = (name) => {
     if (!name) return "U";
@@ -38,7 +57,7 @@ const HomeScreen = ({ navigation, route }) => {
       subtitle: "Stage progression",
       icon: "trending-up",
       color: "#50E3C2", // Teal
-      onPress: () => console.warn("Future Stage Pressed"),
+      onPress: () => navigation.navigate("ScanLab", { userName, userEmail, userID }),
     },
     {
       id: 3,

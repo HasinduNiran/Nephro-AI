@@ -19,16 +19,18 @@ const LoginScreen = ({ navigation }) => {
 
       const userName = response.data?.user?.name || "User";
       const userID = response.data?.user?.id || email;
+      const userEmail = response.data?.user?.email || email;
       const userData = response.data?.user || {};
 
       // Store complete user data in AsyncStorage
       await AsyncStorage.setItem("userData", JSON.stringify(userData));
       await AsyncStorage.setItem("userID", userID);
       await AsyncStorage.setItem("userName", userName);
+      await AsyncStorage.setItem("userEmail", userEmail);
 
       Alert.alert("Success", "Logged in successfully");
-      console.log("Navigating to Home with:", { userName, userID });
-      navigation.navigate("Home", { userName, userID });
+      console.log("Navigating to Home with:", { userName, userID, userEmail });
+      navigation.navigate("Home", { userName, userID, userEmail });
     } catch (error) {
       console.error("Login Error:", error);
       const errorMessage =

@@ -40,7 +40,7 @@ const LabImageUploadScreen = ({ navigation, route }) => {
 
       // Launch image picker
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: "images",
         allowsEditing: true,
         quality: 1,
       });
@@ -94,8 +94,11 @@ const LabImageUploadScreen = ({ navigation, route }) => {
         });
       }
       
-      // Add patient name
+      // Add patient name and email
       formData.append("name", userName || userEmail || "Unknown");
+      if (userEmail) {
+        formData.append("userEmail", userEmail);
+      }
       // Add age and gender as fallback (if OCR fails to extract)
       if (age) {
         formData.append("age", age);

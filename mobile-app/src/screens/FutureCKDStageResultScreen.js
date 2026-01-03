@@ -368,13 +368,13 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   gridContainer: {
-    flexDirection: "row",
+    flexDirection: "column",
     gap: 16,
     marginBottom: 16,
   },
   gridColumn: {
     flex: 1,
-    minWidth: 280,
+    width: "100%",
   },
   welcomeText: {
     fontSize: 24,

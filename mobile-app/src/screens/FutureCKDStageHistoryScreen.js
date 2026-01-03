@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   Alert,
   TextInput,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "../api/axiosConfig";
@@ -28,17 +29,35 @@ const formatDateTime = (isoString) => {
 };
 
 const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
-  const userEmail =
+  const [userEmail, setUserEmail] = useState(
     route.params?.userEmail ||
     route.params?.email ||
     route.params?.user?.email ||
     route.params?.user?.userEmail ||
-    "";
+    ""
+  );
 
   const userName = route.params?.userName || route.params?.user?.name || "User";
 
+  // Load userEmail from AsyncStorage if not available
+  useEffect(() => {
+    const loadUserEmail = async () => {
+      if (!userEmail) {
+        try {
+          const storedEmail = await AsyncStorage.getItem("userEmail");
+          if (storedEmail) {
+            setUserEmail(storedEmail);
+          }
+        } catch (error) {
+          console.error("Error loading user email:", error);
+        }
+      }
+    };
+    loadUserEmail();
+  }, []);
+
   // Allow manual override while still falling back to the best-known email
-  const [emailOverride, setEmailOverride] = useState(userEmail);
+  const [emailOverride, setEmailOverride] = useState("");
   const effectiveEmail = (emailOverride || userEmail || "").trim();
 
   const [records, setRecords] = useState([]);
