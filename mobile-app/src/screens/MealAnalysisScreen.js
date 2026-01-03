@@ -285,6 +285,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
     let warnings = [];
     let isSafe = true;
     let hasWarnings = false;
+    let foodSuggestions = [];
 
     const checkNutrient = (name, current, meal, limit) => {
       const total = current + meal;
@@ -292,6 +293,22 @@ const MealAnalysisScreen = ({ route, navigation }) => {
       if (percentage > 100) {
         isSafe = false;
         warnings.push(`🚫 ${name}: ${total.toFixed(0)}/${limit}mg (${percentage.toFixed(0)}%) - EXCEEDED!`);
+        
+        // Find food contributing most to this nutrient
+        const nutrientKey = name.toLowerCase();
+        const topContributor = breakdown.reduce((max, item) => 
+          item[nutrientKey] > max[nutrientKey] ? item : max
+        );
+        
+        if (topContributor && topContributor[nutrientKey] > 0) {
+          const contribution = ((topContributor[nutrientKey] / meal) * 100).toFixed(0);
+          foodSuggestions.push({
+            nutrient: name,
+            food: topContributor.food,
+            amount: topContributor[nutrientKey].toFixed(0),
+            contribution: contribution
+          });
+        }
       } else if (percentage > 80) {
         hasWarnings = true;
         warnings.push(`⚠️ ${name}: ${total.toFixed(0)}/${limit}mg (${percentage.toFixed(0)}%) - Getting high`);
@@ -339,6 +356,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         isSafe: isSafe,
         status: status,
         warnings: warnings.length > 0 ? warnings : safetyCheck.warnings,
+        foodSuggestions: foodSuggestions,
         breakdown: breakdown.map(b => ({
           food: b.food,
           details: `${b.amount} (${b.grams.toFixed(0)}g): Na ${b.sodium.toFixed(0)}mg, K ${b.potassium.toFixed(0)}mg`
@@ -372,13 +390,35 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   };
 
   const addManualFood = (foodName) => {
-    // Check if food already exists in the list
+    // Check if food already exists in the list (exact match)
     const existingFood = items.find(item => item.food === foodName);
     
     if (existingFood) {
       Alert.alert(
         "Food Already Added", 
         `${foodName} is already in your meal. You can adjust the amount instead.`,
+        [{ text: "OK" }]
+      );
+      setSearchModalVisible(false);
+      setSearchText('');
+      return;
+    }
+    
+    // Check if this food is a variant of an existing food or vice versa
+    const foodBaseName = foodName.replace(/ - (gotukola|mukunuwenna|murunga|kathurumurunga|asamodagam|tempered|lime added)/i, '');
+    const isDuplicate = items.some(item => {
+      const itemBaseName = item.food.replace(/ - (gotukola|mukunuwenna|murunga|kathurumurunga|asamodagam|tempered|lime added)/i, '');
+      return foodBaseName.toLowerCase() === itemBaseName.toLowerCase();
+    });
+    
+    if (isDuplicate) {
+      const existingItem = items.find(item => {
+        const itemBaseName = item.food.replace(/ - (gotukola|mukunuwenna|murunga|kathurumurunga|asamodagam|tempered|lime added)/i, '');
+        return foodBaseName.toLowerCase() === itemBaseName.toLowerCase();
+      });
+      Alert.alert(
+        "Similar Food Already Added", 
+        `${existingItem.food} is already in your meal. You can adjust the amount or change the variety instead.`,
         [{ text: "OK" }]
       );
       setSearchModalVisible(false);
@@ -574,22 +614,42 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                "🚫 Unsafe Meal"}
             </Text>
             
-            <View style={styles.nutrientSummary}>
-              <Text style={styles.nutrientSummaryTitle}>Total Meal Nutrients:</Text>
-              <Text style={styles.nutrientDetail}>• Sodium: {analysisResult?.totalNutrients.sodium.toFixed(0)} mg</Text>
-              <Text style={styles.nutrientDetail}>• Potassium: {analysisResult?.totalNutrients.potassium.toFixed(0)} mg</Text>
-              <Text style={styles.nutrientDetail}>• Phosphorus: {analysisResult?.totalNutrients.phosphorus.toFixed(0)} mg</Text>
-              <Text style={styles.nutrientDetail}>• Protein: {analysisResult?.totalNutrients.protein.toFixed(1)} g</Text>
-            </View>
-
-            {analysisResult?.warnings?.length > 0 && (
-              <View style={styles.warningsBox}>
-                <Text style={styles.warningsTitle}>Warnings:</Text>
-                {analysisResult.warnings.map((w, i) => (
-                  <Text key={i} style={styles.warningText}>• {w}</Text>
-                ))}
+            <ScrollView 
+              style={styles.modalScrollView}
+              showsVerticalScrollIndicator={true}
+              nestedScrollEnabled={true}
+            >
+              <View style={styles.nutrientSummary}>
+                <Text style={styles.nutrientSummaryTitle}>Total Meal Nutrients:</Text>
+                <Text style={styles.nutrientDetail}>• Sodium: {analysisResult?.totalNutrients.sodium.toFixed(0)} mg</Text>
+                <Text style={styles.nutrientDetail}>• Potassium: {analysisResult?.totalNutrients.potassium.toFixed(0)} mg</Text>
+                <Text style={styles.nutrientDetail}>• Phosphorus: {analysisResult?.totalNutrients.phosphorus.toFixed(0)} mg</Text>
+                <Text style={styles.nutrientDetail}>• Protein: {analysisResult?.totalNutrients.protein.toFixed(1)} g</Text>
               </View>
-            )}
+
+              {analysisResult?.warnings?.length > 0 && (
+                <View style={styles.warningsBox}>
+                  <Text style={styles.warningsTitle}>Warnings:</Text>
+                  {analysisResult.warnings.map((w, i) => (
+                    <Text key={i} style={styles.warningText}>• {w}</Text>
+                  ))}
+                </View>
+              )}
+
+              {analysisResult?.foodSuggestions?.length > 0 && (
+                <View style={styles.suggestionsBox}>
+                  <Text style={styles.suggestionsTitle}>💡 Tips to Make This Meal Safer:</Text>
+                  {analysisResult.foodSuggestions.map((suggestion, i) => (
+                    <View key={i} style={styles.suggestionItem}>
+                      <Text style={styles.suggestionText}>
+                        • <Text style={styles.suggestionBold}>{suggestion.food}</Text> contributes {suggestion.contribution}% of {suggestion.nutrient} ({suggestion.amount}mg)
+                      </Text>
+                      <Text style={styles.suggestionAction}>Consider removing or reducing this item</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </ScrollView>
 
             <View style={styles.modalButtonRow}>
               <TouchableOpacity 
@@ -887,7 +947,7 @@ const styles = StyleSheet.create({
   // Analysis Result Modal
   analysisModalBox: {
     width: '85%',
-    maxHeight: '70%',
+    maxHeight: '75%',
     backgroundColor: 'white',
     borderRadius: 16,
     padding: 20,
@@ -896,6 +956,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
+  },
+  modalScrollView: {
+    maxHeight: '100%',
   },
   safeModal: {
     borderWidth: 3,
@@ -962,6 +1025,38 @@ const styles = StyleSheet.create({
     color: '#856404',
     fontSize: 13,
     marginBottom: 3,
+  },
+  suggestionsBox: {
+    backgroundColor: '#ffe6e6',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#ff9999',
+  },
+  suggestionsTitle: {
+    fontWeight: 'bold',
+    fontSize: 15,
+    color: '#cc0000',
+    marginBottom: 8,
+  },
+  suggestionItem: {
+    marginBottom: 8,
+  },
+  suggestionText: {
+    color: '#8b0000',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  suggestionBold: {
+    fontWeight: 'bold',
+    color: '#cc0000',
+  },
+  suggestionAction: {
+    color: '#8b0000',
+    fontSize: 12,
+    fontStyle: 'italic',
+    marginTop: 2,
   },
   modalButtonRow: {
     flexDirection: 'row',
