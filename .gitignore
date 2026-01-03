@@ -24,15 +24,16 @@ share/python-wheels/
 MANIFEST
 
 # Virtual Environment
+.venv/
 venv/
 env/
 ENV/
 env.bak/
 venv.bak/
 
-# ChromaDB
-vectordb/chroma_db/*
-!vectordb/chroma_db/.gitkeep
+# ChromaDB - Now tracked in Git for easy deployment
+# vectordb/chroma_db/*
+# !vectordb/chroma_db/.gitkeep
 
 # Logs
 logs/*.log
