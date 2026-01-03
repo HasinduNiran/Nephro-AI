@@ -33,7 +33,7 @@ class PatientDataManager:
                 "last_updated": datetime.now().strftime("%Y-%m-%d") # Mock timestamp
             },
             "lasal": {
-                "id": "P002",
+                "id": "6958e269f3b8652cceae2abd",
                 "name": "Lasal",
                 "email": "l@gmail.com",
                 "age": 24,
@@ -67,10 +67,11 @@ class PatientDataManager:
         if pid in self.mock_db:
             return self.mock_db[pid]
             
-        # 2. Check for Alias/Value Match (e.g., if ID matches Name or Email)
+        # 2. Check for Alias/Value Match (e.g., if ID matches ID field, Name or Email)
         for key, record in self.mock_db.items():
-            # Check if patient_id matches the record's name or email (case-insensitive)
-            if (record.get("name", "").lower() == pid) or \
+            # Check if patient_id matches the record's id, name or email (case-insensitive)
+            if (record.get("id", "").lower() == pid) or \
+               (record.get("name", "").lower() == pid) or \
                (record.get("email", "").lower() == pid):
                 return record
                 
