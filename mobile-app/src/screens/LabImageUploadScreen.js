@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,15 +15,92 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
-import api from "../api/axiosConfig";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../api/axiosConfig";
 
 const LabImageUploadScreen = ({ navigation, route }) => {
-  const userName = route.params?.userName || "User";
-  const userEmail = route.params?.userEmail || "";
+  const [userName, setUserName] = useState(route.params?.userName || "User");
+  const [userEmail, setUserEmail] = useState(route.params?.userEmail || "");
+  const [userID, setUserID] = useState(route.params?.userID || "");
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingUser, setLoadingUser] = useState(true);
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("M");
+
+  // Helper function to calculate age from birthday
+  const calculateAge = (birthday) => {
+    if (!birthday) return "";
+    const birthDate = new Date(birthday);
+    const today = new Date();
+    let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      calculatedAge--;
+    }
+    return calculatedAge.toString();
+  };
+
+  // Helper function to convert gender format (Backend: "Male"/"Female" -> Form: "M"/"F")
+  const convertGenderFormat = (genderValue) => {
+    if (!genderValue) return "M";
+    const lowerGender = genderValue.toLowerCase();
+    if (lowerGender === "male" || lowerGender === "m") return "M";
+    if (lowerGender === "female" || lowerGender === "f") return "F";
+    return "M"; // Default
+  };
+
+  // Load user data from AsyncStorage on component mount
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        // Get user data from AsyncStorage
+        const storedUserName = await AsyncStorage.getItem("userName");
+        const storedUserEmail = await AsyncStorage.getItem("userEmail");
+        const storedUserID = await AsyncStorage.getItem("userID");
+        const storedUserData = await AsyncStorage.getItem("userData");
+
+        // Use route params if available, otherwise use AsyncStorage
+        if (!route.params?.userName && storedUserName) {
+          setUserName(storedUserName);
+        }
+        if (!route.params?.userEmail && storedUserEmail) {
+          setUserEmail(storedUserEmail);
+        }
+        if (!route.params?.userID && storedUserID) {
+          setUserID(storedUserID);
+        }
+
+        // If we have complete userData, extract age and gender
+        if (storedUserData) {
+          const userData = JSON.parse(storedUserData);
+          console.log("Loaded user data from AsyncStorage:", userData);
+
+          // Calculate age from birthday
+          if (userData.birthday) {
+            const calculatedAge = calculateAge(userData.birthday);
+            setAge(calculatedAge);
+            console.log("Calculated age from birthday:", calculatedAge);
+          }
+
+          // Set gender from user data
+          if (userData.gender) {
+            const convertedGender = convertGenderFormat(userData.gender);
+            setGender(convertedGender);
+            console.log("User gender:", userData.gender, "-> Converted:", convertedGender);
+          }
+        }
+
+        console.log("User loaded - Name:", storedUserName || route.params?.userName, "Email:", storedUserEmail || route.params?.userEmail);
+      } catch (error) {
+        console.error("Error loading user data from AsyncStorage:", error);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+
+    loadUserData();
+  }, [route.params]);
 
   const pickImage = async () => {
     try {
@@ -41,7 +118,6 @@ const LabImageUploadScreen = ({ navigation, route }) => {
       // Launch image picker
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: "images",
-        allowsEditing: true,
         quality: 1,
       });
 
@@ -109,10 +185,10 @@ const LabImageUploadScreen = ({ navigation, route }) => {
       console.log("Uploading lab report for:", userName || userEmail || "Unknown");
       console.log("File name:", fileName);
 
-      // Use localhost for web, IP address for mobile devices
+      // Use centralized API URL from axiosConfig
       const BACKEND_URL = Platform.OS === "web" 
         ? "http://localhost:5000/api" 
-        : "http://172.20.10.2:5000/api";
+        : API_URL;
       
       console.log("Connecting to:", BACKEND_URL);
       
@@ -146,8 +222,8 @@ const LabImageUploadScreen = ({ navigation, route }) => {
 
       if (responseData.success || responseData.labTest) {
         Alert.alert("Success", "Lab report processed successfully!");
-        // Navigate to results page
-        navigation.navigate("LabResult", { result: responseData, userName, userEmail });
+        // Navigate to results page with all user details
+        navigation.navigate("LabResult", { result: responseData, userName, userEmail, userID });
       } else {
         throw new Error(responseData.message || "Processing failed");
       }
@@ -161,6 +237,16 @@ const LabImageUploadScreen = ({ navigation, route }) => {
       setLoading(false);
     }
   };
+
+  // Show loading while fetching user data
+  if (loadingUser) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#4A90E2" />
+        <Text style={styles.loadingText}>Loading user data...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -185,32 +271,33 @@ const LabImageUploadScreen = ({ navigation, route }) => {
         showsVerticalScrollIndicator={true}
       >
         <Text style={styles.sectionTitle}>Upload Lab Report Image</Text>
-        <Text style={styles.patientInfo}>Patient: {userName || userEmail}</Text>
+        <Text style={styles.patientInfo}>Patient: {userName || userEmail || "Unknown"}</Text>
 
         {/* Info Card */}
        
 
-        {/* Optional Age and Gender Fields (Fallback for OCR) */}
-        <Text style={styles.sectionTitle}>Add Patient Information</Text>
+        {/* Patient Information (Auto-filled from profile) */}
+        <Text style={styles.sectionTitle}>Patient Information</Text>
+        <Text style={styles.autoFillNote}>Auto-filled from your profile</Text>
         <View style={styles.row}>
           <View style={styles.halfInputGroup}>
-            <Text style={styles.label}>Age (Optional)</Text>
+            <Text style={styles.label}>Age</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, age ? styles.inputFilled : null, styles.inputReadOnly]}
               value={age}
-              onChangeText={setAge}
-              placeholder="If not in report"
+              editable={false}
+              placeholder="From profile"
               placeholderTextColor="#C7C7CC"
               keyboardType="numeric"
             />
           </View>
 
           <View style={styles.halfInputGroup}>
-            <Text style={styles.label}>Gender (Optional)</Text>
-            <View style={styles.pickerContainer}>
+            <Text style={styles.label}>Gender</Text>
+            <View style={[styles.pickerContainer, styles.pickerFilled, styles.pickerReadOnly]}>
               <Picker
                 selectedValue={gender}
-                onValueChange={setGender}
+                enabled={false}
                 style={styles.picker}
               >
                 <Picker.Item label="Male" value="M" />
@@ -236,7 +323,7 @@ const LabImageUploadScreen = ({ navigation, route }) => {
         >
           <Ionicons name="cloud-upload-outline" size={24} color="#4A90E2" />
           <Text style={styles.uploadButtonText}>
-            {selectedImage ? "Change Image" : "Select Lab Report Image"}
+            {selectedImage ? "Change Lab Report" : "Upload Lab Report Image"}
           </Text>
         </TouchableOpacity>
 
@@ -252,8 +339,8 @@ const LabImageUploadScreen = ({ navigation, route }) => {
               <ActivityIndicator color="#FFFFFF" />
             ) : (
               <>
-                <Text style={styles.processButtonText}>Process & Analyze</Text>
-                <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+                <Text style={styles.processButtonText}>Analyze Lab Report</Text>
+                <Ionicons name="analytics" size={20} color="#FFFFFF" />
               </>
             )}
           </TouchableOpacity>
@@ -267,6 +354,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F5F7FA",
+  },
+  loadingContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#8E8E93",
   },
   header: {
     flexDirection: "row",
@@ -412,12 +508,33 @@ const styles = StyleSheet.create({
     color: "#1C1C1E",
     backgroundColor: "#FFFFFF",
   },
+  inputFilled: {
+    borderColor: "#50E3C2",
+    backgroundColor: "#F0FDF9",
+  },
   pickerContainer: {
     borderWidth: 3,
     borderColor: "#2a2a33ff",
     borderRadius: 12,
     overflow: "hidden",
     backgroundColor: "#FFFFFF",
+  },
+  pickerFilled: {
+    borderColor: "#50E3C2",
+    backgroundColor: "#F0FDF9",
+  },
+  autoFillNote: {
+    fontSize: 13,
+    color: "#50E3C2",
+    marginBottom: 12,
+    fontStyle: "italic",
+  },
+  inputReadOnly: {
+    opacity: 0.7,
+    color: "#6B7280",
+  },
+  pickerReadOnly: {
+    opacity: 0.7,
   },
   picker: {
     height: 50,
