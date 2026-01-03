@@ -441,6 +441,10 @@ class LLMEngine:
                 translation = translation.replace("දියවැඩියාව", "Sugar")
                 translation = translation.replace("අවදානම", "Risk එක")
                 
+                # 🚨 THE FIX: Apply the full glossary from english_to_sinhala.json
+                # This catches LLM mistakes like "මැදුරු රෝගය" (Mosquito Disease) for Diabetes
+                translation = self.enforce_spoken_sinhala(translation)
+                
                 print(f"✅ Natural Output: {translation}") 
                 return translation
         except Exception as e:
