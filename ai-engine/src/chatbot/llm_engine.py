@@ -377,9 +377,8 @@ class LLMEngine:
             "අවාසනාවන්තයි": "කණගාටුයි",
             "දොස්තර": "Doctor",
             "සායනය": "Clinic එක",
-            "මැදුරු රෝගය": "Diabetes",
-            "#": "",
-            "*": ""
+            "මැදුරු රෝගය": "Diabetes"
+            # Note: Removed "#" and "*" to preserve markdown formatting
         })
         
         # 3. Apply Replacements
