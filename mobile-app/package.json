@@ -11,13 +11,15 @@
   "dependencies": {
     "@lottiefiles/dotlottie-react": "^0.13.5",
     "@react-native-async-storage/async-storage": "^2.2.0",
+
     "@react-native-community/datetimepicker": "^8.5.1",
     "@react-native-picker/picker": "^2.11.4",
+
     "@react-navigation/native": "^6.1.9",
     "@react-navigation/stack": "^6.3.20",
     "axios": "^1.13.2",
     "buffer": "^6.0.3",
-    "expo": "~54.0.29",
+    "expo": "~54.0.30",
     "expo-av": "~16.0.8",
     "expo-constants": "~18.0.12",
     "expo-file-system": "~19.0.21",
@@ -37,7 +39,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
-    "babel-preset-expo": "^54.0.7",
+    "babel-preset-expo": "~54.0.9",
     "expo-module-scripts": "^5.0.8"
   },
   "private": true

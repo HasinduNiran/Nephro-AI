@@ -24,7 +24,41 @@ export const WalletProvider = ({ children }) => {
   // Load wallet from storage on mount
   useEffect(() => {
     loadWallet();
+    checkAndResetDaily();
   }, []);
+
+  // Check if wallet needs to be reset at midnight
+  useEffect(() => {
+    const checkMidnight = setInterval(() => {
+      checkAndResetDaily();
+    }, 60000); // Check every minute
+
+    return () => clearInterval(checkMidnight);
+  }, []);
+
+  const checkAndResetDaily = async () => {
+    try {
+      const lastResetDate = await AsyncStorage.getItem('lastWalletReset');
+      const today = new Date().toDateString();
+
+      console.log('🕐 [WalletContext] Checking daily reset...');
+      console.log('🕐 [WalletContext] Last reset:', lastResetDate);
+      console.log('🕐 [WalletContext] Today:', today);
+
+      if (lastResetDate !== today) {
+        console.log('🔄 [WalletContext] New day detected! Auto-resetting wallet...');
+        const emptyWallet = { sodium: 0, potassium: 0, phosphorus: 0, protein: 0 };
+        await AsyncStorage.setItem('nutrientWallet', JSON.stringify(emptyWallet));
+        await AsyncStorage.setItem('lastWalletReset', today);
+        setWallet(emptyWallet);
+        console.log('✅ [WalletContext] Wallet auto-reset completed');
+      } else {
+        console.log('✅ [WalletContext] Wallet already reset today');
+      }
+    } catch (error) {
+      console.error('❌ [WalletContext] Error checking daily reset:', error);
+    }
+  };
 
   const loadWallet = async () => {
     console.log('💰 [WalletContext] Loading wallet from storage...');
@@ -88,10 +122,14 @@ export const WalletProvider = ({ children }) => {
     console.log('✅ [WalletContext] Nutrients added and saved');
   };
 
-  // Reset wallet (start new day)
-  const resetWallet = () => {
+  // Reset wallet (start new day) - Manual reset for testing/demos
+  const resetWallet = async () => {
+    console.log('🔄 [WalletContext] Manual reset requested');
     const emptyWallet = { sodium: 0, potassium: 0, phosphorus: 0, protein: 0 };
-    saveWallet(emptyWallet);
+    const today = new Date().toDateString();
+    await AsyncStorage.setItem('lastWalletReset', today);
+    await saveWallet(emptyWallet);
+    console.log('✅ [WalletContext] Manual reset completed');
   };
 
   // Get current limits based on CKD stage
