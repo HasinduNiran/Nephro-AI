@@ -1,5 +1,16 @@
 # 🛠️ Developer Setup Guide
 
+## Prerequisites
+
+Before starting, ensure you have these **system tools** installed:
+- Python 3.10+
+- FFmpeg (for audio processing)
+- Git
+
+📘 See [SYSTEM_REQUIREMENTS.md](SYSTEM_REQUIREMENTS.md) for installation instructions.
+
+---
+
 ## Quick Start (After Cloning/Pulling)
 
 ### Windows (PowerShell)
