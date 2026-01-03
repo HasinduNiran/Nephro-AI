@@ -1,15 +1,19 @@
 """
 LLM Engine for Nephro-AI
-Handles communication with OpenRouter/OpenAI API to generate responses.
+Handles communication with Google Gemini API to generate responses.
 Implements the 'Sandwich Architecture' for Low-Resource Languages.
 """
 
 import sys
 import json
-import requests
 import re
+import os
 from pathlib import Path
 from typing import List, Dict, Any
+
+# Google GenAI SDK
+from google import genai
+from google.genai import types
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -20,19 +24,21 @@ from utils.logger import ConsoleLogger as Log
 
 class LLMEngine:
     def __init__(self):
-        """Initialize LLM Engine with config"""
-        self.api_key = config.OPENROUTER_API_KEY
-        self.api_url = "https://openrouter.ai/api/v1/chat/completions"
+        """Initialize LLM Engine with Google Gemini"""
+        # Set Google API Key
+        self.google_api_key = os.getenv("GOOGLE_API_KEY", "AIzaSyDz_cOenuITABuIUwVnZSVkRwwCmysUQOM")
+        
+        # Initialize Google GenAI Client
+        self.client = genai.Client(api_key=self.google_api_key)
         
         # RESEARCH NOTE: 'flash' models are critical for the <2s latency requirement
-        self.model = "openai/gpt-4o-mini" 
-        # If you want to test the heavy model, use: "openai/gpt-4o" 
+        self.model = "gemini-2.5-flash"
+        # Alternative: "gemini-2.0-flash" for faster responses
         
         # Initialize Sinhala NLU
         self.sinhala_nlu = SinhalaNLUEngine()
         
-        if not self.api_key:
-            print("⚠️ Warning: OPENROUTER_API_KEY not found in config.")
+        print(f"✅ Initialized Google Gemini: {self.model}")
             
         # Cache Setup
         self.cache_path = config.DATA_DIR / "translation_cache.json"
@@ -224,12 +230,6 @@ class LLMEngine:
         
         Log.step("🧠", "REWRITER: Contextualizing...", f"History: {len(short_history)} turns")
 
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "HTTP-Referer": "https://github.com/Nephro-AI",
-            "Content-Type": "application/json"
-        }
-        
         prompt = (
             "Given the chat history and the latest user question, "
             "rewrite the question to be a standalone sentence that explicitly contains the context.\n"
@@ -241,26 +241,18 @@ class LLMEngine:
         )
 
         try:
-            payload = {
-                "model": "openai/gpt-3.5-turbo", # Fast & Cheap for rewriting
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.3
-            }
-            
-            response = requests.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers=headers,
-                json=payload,
-                timeout=5
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.3,
+                    max_output_tokens=256
+                )
             )
-
-            if response.status_code == 200:
-                rewritten = response.json()['choices'][0]['message']['content'].strip()
-                Log.step("  ", "Rewrite Result", f"'{query}' -> '{rewritten}'")
-                return rewritten
-            else:
-                 Log.error(f"Rewriter API Error: {response.status_code}")
-                 return query
+            
+            rewritten = response.text.strip()
+            Log.step("  ", "Rewrite Result", f"'{query}' -> '{rewritten}'")
+            return rewritten
                  
         except Exception as e:
             Log.error(f"Rewriter Exception: {e}")
@@ -289,12 +281,6 @@ class LLMEngine:
             # Log.step("ℹ️", "MedDict Miss", "No specific medical terms found.")
             system_hint_str = ""
 
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "HTTP-Referer": "https://github.com/Nephro-AI",
-            "Content-Type": "application/json"
-        }
-
         # 🚨 THE FIX: Specific Context + Food Examples + Dictionary Injection
         system_prompt = (
             "You are a medical translator for a Nephrology Chatbot. "
@@ -316,26 +302,25 @@ class LLMEngine:
             "   - Input: 'Kos kanna hondada?'\n"
             "   - Output: 'Is it okay to eat Jackfruit?'\n\n"
 
-            "Now translate the following input:"
+            f"CONTEXT: {context_str}\n\n"
+            f"Now translate the following input:\nUSER INPUT: {text}"
         )
 
-        payload = {
-            "model": "openai/gpt-4o-mini",
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"CONTEXT: {context_str}\n\nUSER INPUT: {text}"}
-            ],
-            "temperature": 0.1  # Keep it strictly logical
-        }
-
         try:
-            response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=10)
-            if response.status_code == 200:
-                translation = response.json()['choices'][0]['message']['content'].strip()
-                # Remove any quotes or extra explanations
-                translation = translation.replace('"', '').replace("'", "")
-                print(f"   ↳ Result: '{translation}'")
-                return translation
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=system_prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.1,  # Keep it strictly logical
+                    max_output_tokens=256
+                )
+            )
+            
+            translation = response.text.strip()
+            # Remove any quotes or extra explanations
+            translation = translation.replace('"', '').replace("'", "")
+            print(f"   ↳ Result: '{translation}'")
+            return translation
         except Exception as e:
             print(f"❌ Translation Error: {e}")
             pass
@@ -408,12 +393,6 @@ class LLMEngine:
         
         hint_str = ", ".join(hints) if hints else "(No specific terms detected)"
         print(f"   💡 Style Hints: {{ {hint_str} }}")
-
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "HTTP-Referer": "https://github.com/Nephro-AI",
-            "Content-Type": "application/json"
-        }
         
         # 2. UPDATED PROMPT WITH HINTS
         system_prompt = (
@@ -447,36 +426,35 @@ class LLMEngine:
             "   තව මොනවා හරි දැනගන්න ඕන නම් අපෙන් අහන්න!'\n"
             "--------------------------------------------------\n\n"
 
-            "Now, rewrite the following input using this exact natural style:"
+            "Now, rewrite the following input using this exact natural style:\n\n"
+            f"{text}"
         )
         
-        payload = {
-            "model": "openai/gpt-4o-mini",  # Flash model is fine if prompt is good
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": text}
-            ],
-            "temperature": 0.2  # Even lower to force adherence to hints
-        }
-        
         try:
-            response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
-            if response.status_code == 200:
-                translation = response.json()['choices'][0]['message']['content'].strip()
-                
-                # 🛡️ SAFETY NET: Deterministic Fixes (Your Python Rules)
-                translation = translation.replace("දොස්තර", "Doctor")
-                translation = translation.replace("රුධිර පීඩනය", "Pressure එක")
-                translation = translation.replace("සායනය", "Clinic එක")
-                translation = translation.replace("දියවැඩියාව", "Sugar")
-                translation = translation.replace("අවදානම", "Risk එක")
-                
-                # 🚨 THE FIX: Apply the full glossary from english_to_sinhala.json
-                # This catches LLM mistakes like "මැදුරු රෝගය" (Mosquito Disease) for Diabetes
-                translation = self.enforce_spoken_sinhala(translation)
-                
-                print(f"✅ Natural Output: {translation}") 
-                return translation
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=system_prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.2,  # Even lower to force adherence to hints
+                    max_output_tokens=1024
+                )
+            )
+            
+            translation = response.text.strip()
+            
+            # 🛡️ SAFETY NET: Deterministic Fixes (Your Python Rules)
+            translation = translation.replace("දොස්තර", "Doctor")
+            translation = translation.replace("රුධිර පීඩනය", "Pressure එක")
+            translation = translation.replace("සායනය", "Clinic එක")
+            translation = translation.replace("දියවැඩියාව", "Sugar")
+            translation = translation.replace("අවදානම", "Risk එක")
+            
+            # 🚨 THE FIX: Apply the full glossary from english_to_sinhala.json
+            # This catches LLM mistakes like "මැදුරු රෝගය" (Mosquito Disease) for Diabetes
+            translation = self.enforce_spoken_sinhala(translation)
+            
+            print(f"✅ Natural Output: {translation}") 
+            return translation
         except Exception as e:
             print(f"❌ Style Layer Error: {e}")
             pass
@@ -538,43 +516,43 @@ class LLMEngine:
         print("\n[2] 🧠 BRAIN LAYER (Generating Response...)")
         
         # 1. Base System Prompt
-        system_prompt = self._generate_system_prompt(patient_context)
+        system_instruction = self._generate_system_prompt(patient_context)
         knowledge_context = "\n\n".join(context_documents[:3])
         
-        # 2. Construct Message List
-        messages = [{"role": "system", "content": system_prompt}]
+        # 2. Build conversation history for Gemini
+        contents = []
         
         # 3. Inject History (Limit to last 4 turns)
         if history:
             valid_history = history[-4:] 
             for msg in valid_history:
-                role = "user" if msg['role'] == "user" else "assistant"
-                messages.append({"role": role, "content": msg['content']})
+                role = "user" if msg['role'] == "user" else "model"
+                contents.append(types.Content(
+                    role=role,
+                    parts=[types.Part.from_text(text=msg['content'])]
+                ))
 
         # 4. Add Current User Question with RAG Context
         user_message_content = f"KNOWLEDGE BASE:\n{knowledge_context}\n\nCURRENT PATIENT QUERY:\n{query}"
-        messages.append({"role": "user", "content": user_message_content})
-
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "HTTP-Referer": "https://github.com/Nephro-AI",
-            "Content-Type": "application/json"
-        }
-        
-        payload = {
-            "model": self.model,
-            "messages": messages, 
-            "temperature": 0.7
-        }
+        contents.append(types.Content(
+            role="user",
+            parts=[types.Part.from_text(text=user_message_content)]
+        ))
 
         try:
-            response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
-            if response.status_code == 200:
-                english_response = response.json()['choices'][0]['message']['content'].strip()
-                print(f"✅ Brain Output: {english_response}")
-                return english_response
-            else:
-                return f"Error: {response.status_code}"
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=contents,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    temperature=0.7,
+                    max_output_tokens=1024
+                )
+            )
+            
+            english_response = response.text.strip()
+            print(f"✅ Brain Output: {english_response}")
+            return english_response
         except Exception as e:
             return f"Error: {str(e)}"
 
