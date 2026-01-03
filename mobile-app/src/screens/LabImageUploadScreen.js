@@ -188,7 +188,7 @@ const LabImageUploadScreen = ({ navigation, route }) => {
        
 
         {/* Optional Age and Gender Fields (Fallback for OCR) */}
-        <Text style={styles.sectionTitle}>Optional Patient Info (for OCR backup)</Text>
+        <Text style={styles.sectionTitle}>Add Patient Information</Text>
         <View style={styles.row}>
           <View style={styles.halfInputGroup}>
             <Text style={styles.label}>Age (Optional)</Text>
@@ -405,13 +405,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: 14,
     color: "#1C1C1E",
     backgroundColor: "#FFFFFF",
   },
   pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#E5E5EA",
+    borderWidth: 3,
+    borderColor: "#2a2a33ff",
     borderRadius: 12,
     overflow: "hidden",
     backgroundColor: "#FFFFFF",

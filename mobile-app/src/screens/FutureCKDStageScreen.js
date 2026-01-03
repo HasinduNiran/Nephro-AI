@@ -588,9 +588,6 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
               <Ionicons name="time" size={22} color="#4A90E2" />
               <View>
                 <Text style={styles.historyTitle}>Past Future CKD Stages</Text>
-                <Text style={styles.historySubtitle}>
-                  Tap to view all records, details, and delete options
-                </Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={22} color="#8E8E93" />
@@ -630,7 +627,7 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                             <Text style={styles.historyCardDate}>Submission #{record.submissionIndex}</Text>
                           ) : null}
                         </View>
-                        <View style={styles.badgeRow}>
+                        {/* <View style={styles.badgeRow}>
                           {uploaded.labReport && (
                             <View style={[styles.badge, styles.badgePrimary]}>
                               <Text style={styles.badgeText}>Lab</Text>
@@ -646,14 +643,12 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                               <Text style={styles.badgeText}>Manual Labs</Text>
                             </View>
                           )}
-                        </View>
+                        </View> */}
                       </View>
                     </View>
                   );
                 })}
-                {history.length > 2 && (
-                  <Text style={styles.historyFooter}>Showing latest 2 of {history.length} records. Tap header to view all.</Text>
-                )}
+                {history.length > 2 }
               </>
             )}
           </View>
@@ -667,6 +662,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F5F7FA",
+    paddingTop: StatusBar.currentHeight || 0,
   },
   header: {
     flexDirection: "row",
@@ -705,15 +701,16 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 24,
+    paddingTop: 36,
   },
   gridContainer: {
-    flexDirection: "row",
+    flexDirection: "column",
     gap: 16,
     marginBottom: 16,
   },
   gridColumn: {
     flex: 1,
-    minWidth: 280,
+    width: "100%",
   },
   welcomeText: {
     fontSize: 24,
@@ -989,19 +986,24 @@ const styles = StyleSheet.create({
   },
   historyCard: {
     borderWidth: 1,
-    borderColor: "#E5E5EA",
-    borderRadius: 12,
-    padding: 12,
-    backgroundColor: "#FBFBFD",
+    borderColor: "#EEF0F4",
+    borderRadius: 14,
+    padding: 14,
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 3,
   },
   historyCardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 10,
   },
   historyCardTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "700",
     color: "#1C1C1E",
   },

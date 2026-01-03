@@ -316,10 +316,6 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={true}>
         <View style={styles.introCard}>
           <Text style={styles.introTitle}>History for {userName}</Text>
-          <Text style={styles.introText}>
-            Each new submission is chained with your previous {"\n"}
-            results to produce a history-aware prediction.
-          </Text>
           <Text style={styles.introMeta}>{effectiveEmail || "No email provided"}</Text>
           {!effectiveEmail && (
             <View style={styles.emailCapture}>
@@ -354,7 +350,6 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
           <View style={styles.emptyState}>
             <Ionicons name="analytics-outline" size={48} color="#C7C7CC" />
             <Text style={styles.emptyTitle}>No saved predictions</Text>
-            <Text style={styles.emptyText}>Run an analysis to see it appear here.</Text>
           </View>
         ) : (
           <View style={{ gap: 12 }}>
@@ -370,6 +365,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F5F7FA",
+    paddingTop: StatusBar.currentHeight || 0,
   },
   header: {
     flexDirection: "row",
