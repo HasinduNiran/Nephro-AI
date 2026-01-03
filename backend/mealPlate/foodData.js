@@ -61,7 +61,43 @@ const foodDatabase = {
   "mallum": {
     nutrients: { protein: 3, sodium: 20, potassium: 400, phosphorus: 50 },
     units: {
-      "tbsp": 15
+      "tbsp": 15,
+      "serving_spoon": 60
+    }
+  },
+  "mallum - gotukola": {
+    nutrients: { protein: 2, sodium: 15, potassium: 380, phosphorus: 45 },
+    units: {
+      "tbsp": 15,
+      "serving_spoon": 60
+    }
+  },
+  "mallum - mukunuwenna": {
+    nutrients: { protein: 3.5, sodium: 25, potassium: 420, phosphorus: 55 },
+    units: {
+      "tbsp": 15,
+      "serving_spoon": 60
+    }
+  },
+  "mallum - murunga": {
+    nutrients: { protein: 4, sodium: 18, potassium: 450, phosphorus: 60 },
+    units: {
+      "tbsp": 15,
+      "serving_spoon": 60
+    }
+  },
+  "mallum - kathurumurunga": {
+    nutrients: { protein: 3.8, sodium: 20, potassium: 410, phosphorus: 52 },
+    units: {
+      "tbsp": 15,
+      "serving_spoon": 60
+    }
+  },
+  "mallum - asamodagam": {
+    nutrients: { protein: 2.5, sodium: 22, potassium: 390, phosphorus: 48 },
+    units: {
+      "tbsp": 15,
+      "serving_spoon": 60
     }
   },
   "pineapple": {
@@ -73,6 +109,18 @@ const foodDatabase = {
   },
   "Pol sambol": {
     nutrients: { protein: 3, sodium: 400, potassium: 300, phosphorus: 100 },
+    units: {
+      "tbsp": 15
+    }
+  },
+  "Pol sambol - tempered": {
+    nutrients: { protein: 3, sodium: 450, potassium: 320, phosphorus: 105 },
+    units: {
+      "tbsp": 15
+    }
+  },
+  "Pol sambol - lime added": {
+    nutrients: { protein: 3, sodium: 380, potassium: 310, phosphorus: 98 },
     units: {
       "tbsp": 15
     }

@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from "react-native";
+import Svg, { Line, Circle } from "react-native-svg";
 import axios from "../api/axiosConfig";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -99,9 +100,11 @@ const RiskHistoryScreen = ({ route }) => {
     }
 
     const { dataPoints, regressionLine, slope } = trendAnalysis;
-    const maxY = Math.max(...dataPoints.map((p) => p.y), 100);
-    const minY = Math.min(...dataPoints.map((p) => p.y), 0);
-    const yRange = maxY - minY || 100;
+    
+    // Extend Y-axis range to show full 0-100 scale for better visualization
+    const maxY = 100;
+    const minY = 0;
+    const yRange = maxY - minY;
 
     // Scale functions
     const scaleX = (x) =>
@@ -118,90 +121,95 @@ const RiskHistoryScreen = ({ route }) => {
 
         {/* Y-axis labels */}
         <View style={styles.yAxisLabels}>
-          <Text style={styles.axisLabel}>{maxY.toFixed(0)}</Text>
-          <Text style={styles.axisLabel}>{((maxY + minY) / 2).toFixed(0)}</Text>
-          <Text style={styles.axisLabel}>{minY.toFixed(0)}</Text>
+          <Text style={styles.axisLabel}>100</Text>
+          <Text style={styles.axisLabel}>50</Text>
+          <Text style={styles.axisLabel}>0</Text>
         </View>
 
         {/* Graph Area */}
         <View style={styles.graphArea}>
-          {/* Grid lines */}
-          <View style={[styles.gridLine, { top: "0%" }]} />
-          <View style={[styles.gridLine, { top: "50%" }]} />
-          <View style={[styles.gridLine, { top: "100%" }]} />
+          {/* Grid lines with risk zone colors */}
+          <View style={[styles.gridLine, { top: "0%", borderColor: "#FFE8EA" }]} />
+          <View style={[styles.gridLine, { top: "33.33%", borderColor: "#FFF5E6", borderWidth: 1.5 }]} />
+          <View style={[styles.gridLine, { top: "66.67%", borderColor: "#E8FFF0", borderWidth: 1.5 }]} />
+          <View style={[styles.gridLine, { top: "100%", borderColor: "#E8FFF0" }]} />
+          
+          {/* Risk zone labels */}
+          <Text style={[styles.riskZoneLabel, { top: "10%", color: "#FF4757" }]}>High Risk</Text>
+          <Text style={[styles.riskZoneLabel, { top: "45%", color: "#FFA502" }]}>Medium Risk</Text>
+          <Text style={[styles.riskZoneLabel, { top: "80%", color: "#2ED573" }]}>Low Risk</Text>
 
-          {/* Regression Line (y = mx + c) */}
+          {/* Best-fit Regression Line (Straight Line) */}
           {regressionLine && regressionLine.length >= 2 && (
-            <View
-              style={[
-                styles.regressionLine,
-                {
-                  position: "absolute",
-                  left: scaleX(0),
-                  top: scaleY(regressionLine[0].y),
-                  width: scaleX(regressionLine.length - 1) - scaleX(0),
-                  height: 3,
-                  backgroundColor: trendStyle.color,
-                  transform: [
-                    {
-                      rotate: `${Math.atan2(
-                        scaleY(regressionLine[regressionLine.length - 1].y) - scaleY(regressionLine[0].y),
-                        scaleX(regressionLine.length - 1) - scaleX(0)
-                      )}rad`,
-                    },
-                  ],
-                  transformOrigin: "left center",
-                },
-              ]}
-            />
+            <Svg
+              height={GRAPH_HEIGHT}
+              width={GRAPH_WIDTH}
+              style={styles.svgContainer}
+            >
+              <Line
+                x1={scaleX(regressionLine[0].x)}
+                y1={scaleY(regressionLine[0].y)}
+                x2={scaleX(regressionLine[regressionLine.length - 1].x)}
+                y2={scaleY(regressionLine[regressionLine.length - 1].y)}
+                stroke={trendStyle.color}
+                strokeWidth="3"
+                strokeDasharray="8,4"
+              />
+            </Svg>
           )}
 
-          {/* Data Points */}
+          {/* Connect points with smooth line using SVG */}
+          {dataPoints.length > 1 && (
+            <Svg
+              height={GRAPH_HEIGHT}
+              width={GRAPH_WIDTH}
+              style={styles.svgContainer}
+            >
+              {dataPoints.slice(0, -1).map((point, index) => {
+                const nextPoint = dataPoints[index + 1];
+                return (
+                  <Line
+                    key={`line-${index}`}
+                    x1={scaleX(point.x)}
+                    y1={scaleY(point.y)}
+                    x2={scaleX(nextPoint.x)}
+                    y2={scaleY(nextPoint.y)}
+                    stroke="#3B71F3"
+                    strokeWidth="2.5"
+                  />
+                );
+              })}
+              
+              {/* Data Points as SVG Circles */}
+              {dataPoints.map((point, index) => (
+                <Circle
+                  key={`point-${index}`}
+                  cx={scaleX(point.x)}
+                  cy={scaleY(point.y)}
+                  r="6"
+                  fill="#3B71F3"
+                  stroke="#FFF"
+                  strokeWidth="2"
+                />
+              ))}
+            </Svg>
+          )}
+          
+          {/* Tooltips for data points */}
           {dataPoints.map((point, index) => (
             <View
-              key={index}
+              key={`tooltip-${index}`}
               style={[
-                styles.dataPoint,
+                styles.dataPointTooltip,
                 {
-                  left: scaleX(point.x) - 8,
-                  top: scaleY(point.y) - 8,
+                  left: scaleX(point.x) - 20,
+                  top: scaleY(point.y) - 35,
                 },
               ]}
             >
-              <View style={styles.dataPointInner} />
-              <View style={styles.dataPointTooltip}>
-                <Text style={styles.tooltipText}>{point.y.toFixed(0)}</Text>
-              </View>
+              <Text style={styles.tooltipText}>{point.y.toFixed(1)}</Text>
             </View>
           ))}
-
-          {/* Connect points with line */}
-          {dataPoints.length > 1 &&
-            dataPoints.slice(0, -1).map((point, index) => {
-              const nextPoint = dataPoints[index + 1];
-              const x1 = scaleX(point.x);
-              const y1 = scaleY(point.y);
-              const x2 = scaleX(nextPoint.x);
-              const y2 = scaleY(nextPoint.y);
-              const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-              const angle = Math.atan2(y2 - y1, x2 - x1);
-
-              return (
-                <View
-                  key={`line-${index}`}
-                  style={{
-                    position: "absolute",
-                    left: x1,
-                    top: y1,
-                    width: length,
-                    height: 2,
-                    backgroundColor: "#3B71F3",
-                    transform: [{ rotate: `${angle}rad` }],
-                    transformOrigin: "left center",
-                  }}
-                />
-              );
-            })}
         </View>
 
         {/* X-axis labels */}
@@ -217,20 +225,24 @@ const RiskHistoryScreen = ({ route }) => {
         <View style={styles.legend}>
           <View style={styles.legendItem}>
             <View style={[styles.legendColor, { backgroundColor: "#3B71F3" }]} />
-            <Text style={styles.legendText}>Actual Risk</Text>
+            <Text style={styles.legendText}>Actual Risk Score</Text>
           </View>
           <View style={styles.legendItem}>
-            <View style={[styles.legendColor, { backgroundColor: trendStyle.color }]} />
-            <Text style={styles.legendText}>Trend Line (y = mx + c)</Text>
+            <View style={[styles.legendColorDashed, { borderColor: trendStyle.color }]} />
+            <Text style={styles.legendText}>Best-Fit Line (Linear Regression)</Text>
           </View>
         </View>
 
         {/* Equation Display */}
         {trendAnalysis.equation && (
           <View style={styles.equationContainer}>
-            <Text style={styles.equationText}>{trendAnalysis.equation}</Text>
+            <Text style={styles.equationText}>📐 {trendAnalysis.equation}</Text>
             <Text style={styles.slopeText}>
-              Slope (m) = {slope > 0 ? "+" : ""}{slope.toFixed(4)}
+              Slope: {slope > 0 ? "+" : ""}{slope.toFixed(4)} 
+              {slope > 0 ? " ⬆️" : slope < 0 ? " ⬇️" : " ➡️"}
+            </Text>
+            <Text style={styles.r2Text}>
+              R² shows correlation strength (closer to 1.0 = better fit)
             </Text>
           </View>
         )}
@@ -624,16 +636,37 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginRight: 5,
   },
+  legendColorDashed: {
+    width: 20,
+    height: 3,
+    borderWidth: 1.5,
+    borderStyle: "dashed",
+    marginRight: 5,
+  },
   legendText: {
     fontSize: 11,
     color: "#666",
   },
+  riskZoneLabel: {
+    position: "absolute",
+    right: 10,
+    fontSize: 9,
+    fontWeight: "600",
+    opacity: 0.5,
+  },
+  svgContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+  },
   equationContainer: {
     marginTop: 15,
-    padding: 10,
+    padding: 12,
     backgroundColor: "#F8F9FA",
     borderRadius: 8,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E5E5E5",
   },
   equationText: {
     fontSize: 16,
@@ -642,9 +675,16 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
   },
   slopeText: {
-    fontSize: 12,
+    fontSize: 13,
     color: "#666",
     marginTop: 5,
+    fontWeight: "600",
+  },
+  r2Text: {
+    fontSize: 10,
+    color: "#999",
+    marginTop: 3,
+    fontStyle: "italic",
   },
   noDataContainer: {
     alignItems: "center",

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  View, Text, Image, ScrollView, TextInput, Alert, StyleSheet, TouchableOpacity, ActivityIndicator, Modal, FlatList, Platform 
+  View, Text, Image, ScrollView, TextInput, Alert, StyleSheet, TouchableOpacity, ActivityIndicator, Modal, FlatList, Platform, KeyboardAvoidingView 
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
@@ -19,9 +19,16 @@ const foodNutrientDB = {
   "dahl curry": { protein: 6, sodium: 250, potassium: 300, phosphorus: 180, units: { "tbsp": 15, "serving_spoon": 60 } },
   "fish curry": { protein: 20, sodium: 350, potassium: 350, phosphorus: 200, units: { "small_piece": 50, "large_piece": 100 } },
   "fried rice": { protein: 4, sodium: 400, potassium: 100, phosphorus: 90, units: { "serving_spoon": 60, "tea_cup": 150 } },
-  "mallum": { protein: 3, sodium: 20, potassium: 400, phosphorus: 50, units: { "tbsp": 15 } },
+  "mallum": { protein: 3, sodium: 20, potassium: 400, phosphorus: 50, units: { "tbsp": 15, "serving_spoon": 60 } },
+  "mallum - gotukola": { protein: 2, sodium: 15, potassium: 380, phosphorus: 45, units: { "tbsp": 15, "serving_spoon": 60 } },
+  "mallum - mukunuwenna": { protein: 3.5, sodium: 25, potassium: 420, phosphorus: 55, units: { "tbsp": 15, "serving_spoon": 60 } },
+  "mallum - murunga": { protein: 4, sodium: 18, potassium: 450, phosphorus: 60, units: { "tbsp": 15, "serving_spoon": 60 } },
+  "mallum - kathurumurunga": { protein: 3.8, sodium: 20, potassium: 410, phosphorus: 52, units: { "tbsp": 15, "serving_spoon": 60 } },
+  "mallum - asamodagam": { protein: 2.5, sodium: 22, potassium: 390, phosphorus: 48, units: { "tbsp": 15, "serving_spoon": 60 } },
   "pineapple": { protein: 0.5, sodium: 1, potassium: 109, phosphorus: 8, units: { "piece_cube": 20, "slice": 80 } },
   "Pol sambol": { protein: 3, sodium: 400, potassium: 300, phosphorus: 100, units: { "tbsp": 15 } },
+  "Pol sambol - tempered": { protein: 3, sodium: 450, potassium: 320, phosphorus: 105, units: { "tbsp": 15 } },
+  "Pol sambol - lime added": { protein: 3, sodium: 380, potassium: 310, phosphorus: 98, units: { "tbsp": 15 } },
   "red rice": { protein: 2.5, sodium: 1, potassium: 85, phosphorus: 78, units: { "serving_spoon": 60, "tea_cup": 150 } },
   "roti": { protein: 8, sodium: 320, potassium: 120, phosphorus: 100, units: { "small": 40, "large": 80 } },
   "tempered sprats": { protein: 35, sodium: 900, potassium: 400, phosphorus: 350, units: { "tbsp": 15 } },
@@ -39,7 +46,9 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [hasScanned, setHasScanned] = useState(false); 
+  const [hasScanned, setHasScanned] = useState(false);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [imageSource, setImageSource] = useState(null); // 'camera' or 'gallery' 
 
   useEffect(() => {
     const loadUserId = async () => {
@@ -62,13 +71,23 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   }, []);
 
   const handleCameraPress = () => {
+    setImageSource('camera');
     setShowGuidelines(true);
   };
 
-  const confirmAndOpenCamera = () => {
+  const handleGalleryPress = () => {
+    setImageSource('gallery');
+    setShowGuidelines(true);
+  };
+
+  const confirmAndProceed = () => {
     setShowGuidelines(false);
     setTimeout(() => {
+      if (imageSource === 'camera') {
         pickImageCamera();
+      } else if (imageSource === 'gallery') {
+        pickImageGallery();
+      }
     }, 300);
   };
 
@@ -115,6 +134,30 @@ const MealAnalysisScreen = ({ route, navigation }) => {
     }
   };
 
+  // --- HELPER: Get food variants ---
+  const getFoodVariants = (foodName) => {
+    const normalized = foodName.toLowerCase();
+    
+    if (normalized.includes('mallum')) {
+      return [
+        'mallum - gotukola',
+        'mallum - mukunuwenna',
+        'mallum - murunga',
+        'mallum - kathurumurunga',
+        'mallum - asamodagam'
+      ];
+    }
+    
+    if (normalized.includes('sambol') || normalized.includes('pol sambol')) {
+      return [
+        'Pol sambol - tempered',
+        'Pol sambol - lime added'
+      ];
+    }
+    
+    return null;
+  };
+
   // --- DETECT ---
   const detectFoods = async (uri) => {
     setLoading(true);
@@ -149,21 +192,34 @@ const MealAnalysisScreen = ({ route, navigation }) => {
       const detectedData = response.data.detected || [];
 
       const initialItems = detectedData.map((item) => {
+        let foodName = item.food;
+        const variants = getFoodVariants(foodName);
+        
+        // If this food has variants, use the first one as default
+        if (variants && variants.length > 0) {
+          foodName = variants[0];
+        }
+        
         let units = item.availableUnits || [];
         if (!units || units.length === 0 || (units.length === 1 && units[0] === 'grams')) {
-          const localFood = foodNutrientDB[item.food];
+          const localFood = foodNutrientDB[foodName];
           if (localFood && localFood.units) {
-            units = Object.keys(localFood.units);
+            units = Object.keys(localFood.units).filter(u => u && u !== 'undefined');
           } else {
             units = ['grams'];
           }
+        } else {
+          // Filter out undefined or invalid values from backend response
+          units = units.filter(u => u && u !== 'undefined' && u !== null);
         }
         
         return {
-          food: item.food,
+          food: foodName,
           amount: "1",
-          unit: units[0],
-          availableUnits: units
+          unit: (units && units.length > 0 && units[0]) ? units[0] : 'grams',
+          availableUnits: (units && units.length > 0) ? units : ['grams'],
+          hasVariants: variants !== null,
+          variants: variants || []
         };
       });
 
@@ -228,6 +284,8 @@ const MealAnalysisScreen = ({ route, navigation }) => {
     const safetyCheck = checkSafety(totalNutrients);
     let warnings = [];
     let isSafe = true;
+    let hasWarnings = false;
+    let foodSuggestions = [];
 
     const checkNutrient = (name, current, meal, limit) => {
       const total = current + meal;
@@ -235,7 +293,24 @@ const MealAnalysisScreen = ({ route, navigation }) => {
       if (percentage > 100) {
         isSafe = false;
         warnings.push(`🚫 ${name}: ${total.toFixed(0)}/${limit}mg (${percentage.toFixed(0)}%) - EXCEEDED!`);
+        
+        // Find food contributing most to this nutrient
+        const nutrientKey = name.toLowerCase();
+        const topContributor = breakdown.reduce((max, item) => 
+          item[nutrientKey] > max[nutrientKey] ? item : max
+        );
+        
+        if (topContributor && topContributor[nutrientKey] > 0) {
+          const contribution = ((topContributor[nutrientKey] / meal) * 100).toFixed(0);
+          foodSuggestions.push({
+            nutrient: name,
+            food: topContributor.food,
+            amount: topContributor[nutrientKey].toFixed(0),
+            contribution: contribution
+          });
+        }
       } else if (percentage > 80) {
+        hasWarnings = true;
         warnings.push(`⚠️ ${name}: ${total.toFixed(0)}/${limit}mg (${percentage.toFixed(0)}%) - Getting high`);
       }
     };
@@ -270,23 +345,25 @@ const MealAnalysisScreen = ({ route, navigation }) => {
 
       Alert.alert("Success ✅", "Meal confirmed and saved!", [{ text: "OK", onPress: () => navigation.goBack() }]);
     } else {
+      let status = 'safe';
+      if (!isSafe) {
+        status = 'unsafe';
+      } else if (hasWarnings) {
+        status = 'warning';
+      }
+      
       setAnalysisResult({
-        isSafe: safetyCheck.safe && isSafe,
+        isSafe: isSafe,
+        status: status,
         warnings: warnings.length > 0 ? warnings : safetyCheck.warnings,
+        foodSuggestions: foodSuggestions,
         breakdown: breakdown.map(b => ({
           food: b.food,
           details: `${b.amount} (${b.grams.toFixed(0)}g): Na ${b.sodium.toFixed(0)}mg, K ${b.potassium.toFixed(0)}mg`
         })),
         totalNutrients
       });
-
-      if (!isSafe) {
-        Alert.alert("🚫 UNSAFE MEAL", "This meal exceeds your daily limits!\n\n" + warnings.join("\n"));
-      } else if (warnings.length > 0) {
-        Alert.alert("⚠️ Caution", "You are nearing your daily limits.\n\n" + warnings.join("\n"));
-      } else {
-        Alert.alert("✅ Safe", "This meal fits your daily limits.");
-      }
+      setShowAnalysisModal(true);
     }
   };
 
@@ -313,14 +390,50 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   };
 
   const addManualFood = (foodName) => {
+    // Check if food already exists in the list (exact match)
+    const existingFood = items.find(item => item.food === foodName);
+    
+    if (existingFood) {
+      Alert.alert(
+        "Food Already Added", 
+        `${foodName} is already in your meal. You can adjust the amount instead.`,
+        [{ text: "OK" }]
+      );
+      setSearchModalVisible(false);
+      setSearchText('');
+      return;
+    }
+    
+    // Check if this food is a variant of an existing food or vice versa
+    const foodBaseName = foodName.replace(/ - (gotukola|mukunuwenna|murunga|kathurumurunga|asamodagam|tempered|lime added)/i, '');
+    const isDuplicate = items.some(item => {
+      const itemBaseName = item.food.replace(/ - (gotukola|mukunuwenna|murunga|kathurumurunga|asamodagam|tempered|lime added)/i, '');
+      return foodBaseName.toLowerCase() === itemBaseName.toLowerCase();
+    });
+    
+    if (isDuplicate) {
+      const existingItem = items.find(item => {
+        const itemBaseName = item.food.replace(/ - (gotukola|mukunuwenna|murunga|kathurumurunga|asamodagam|tempered|lime added)/i, '');
+        return foodBaseName.toLowerCase() === itemBaseName.toLowerCase();
+      });
+      Alert.alert(
+        "Similar Food Already Added", 
+        `${existingItem.food} is already in your meal. You can adjust the amount or change the variety instead.`,
+        [{ text: "OK" }]
+      );
+      setSearchModalVisible(false);
+      setSearchText('');
+      return;
+    }
+    
     const foodData = foodNutrientDB[foodName];
     if (foodData) {
-      const units = Object.keys(foodData.units);
+      const units = Object.keys(foodData.units).filter(u => u && u !== 'undefined');
       const newItem = {
         food: foodName,
         amount: "1",
-        unit: units[0],
-        availableUnits: units
+        unit: units[0] || 'grams',
+        availableUnits: units.length > 0 ? units : ['grams']
       };
       setItems([...items, newItem]);
       setSearchModalVisible(false);
@@ -333,12 +446,45 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   );
 
   return (
-    <View style={{flex: 1, backgroundColor: '#fff'}}> 
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.header}>Meal Plate Analyzer</Text>
-
+    <KeyboardAvoidingView 
+      style={{flex: 1, backgroundColor: '#fff'}}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      enabled
+    > 
+      <View style={styles.headerContainer}>
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#051C60" />
+        </TouchableOpacity>
+        <Text style={styles.header}>Meal Analysis</Text>
+        <View style={styles.headerSpacer} />
+      </View>
+      
+      <ScrollView 
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={true}
+        nestedScrollEnabled={true}
+        automaticallyAdjustKeyboardInsets={true}
+      >
         {imageUri ? (
-          <Image source={{ uri: imageUri }} style={styles.image} />
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: imageUri }} style={styles.image} />
+            <TouchableOpacity 
+              style={styles.removeImageIcon} 
+              onPress={() => {
+                setImageUri(null);
+                setItems([]);
+                setAnalysisResult(null);
+                setHasScanned(false);
+              }}
+            >
+              <Ionicons name="close-circle" size={32} color="#dc3545" />
+            </TouchableOpacity>
+          </View>
         ) : (
           <View style={styles.placeholder}><Text>No Image Selected</Text></View>
         )}
@@ -348,7 +494,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
               {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>📸 Camera</Text>}
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.scanBtn, styles.galleryBtn]} onPress={pickImageGallery} disabled={loading}>
+            <TouchableOpacity style={[styles.scanBtn, styles.galleryBtn]} onPress={handleGalleryPress} disabled={loading}>
               <Text style={styles.btnText}>🖼️ Gallery</Text>
             </TouchableOpacity>
         </View>
@@ -364,29 +510,75 @@ const MealAnalysisScreen = ({ route, navigation }) => {
               <Text style={styles.subHeader}>Verify Portions:</Text>
               
               {items.map((item, index) => (
-                  <View key={index} style={styles.row}>
-                      <Text style={styles.foodLabel}>{item.food}</Text>
-                      <TextInput
-                          style={styles.input}
-                          keyboardType="numeric"
-                          value={item.amount}
-                          onChangeText={(text) => updateRow(index, 'amount', text)}
-                          placeholder="Qty"
-                      />
-                      <View style={styles.pickerContainer}>
-                          <Picker
-                              selectedValue={item.unit}
-                              style={styles.picker}
-                              onValueChange={(val) => updateRow(index, 'unit', val)}
-                          >
-                              {(item.availableUnits || ['grams']).map((u, idx) => (
-                                  <Picker.Item key={`${u}-${idx}`} label={u.replace(/_/g, ' ')} value={u} />
-                              ))}
-                          </Picker>
+                  <View key={index} style={styles.itemCard}>
+                      <View style={styles.foodRow}>
+                          {item.hasVariants && item.variants.length > 0 ? (
+                              <View style={styles.foodNameSection}>
+                                  <Text style={styles.categoryLabel}>
+                                      {item.food.includes('mallum') ? ' Mallum' : ' Pol Sambol'}
+                                  </Text>
+                                  <View style={styles.variantPickerWrapper}>
+                                      <Picker
+                                          selectedValue={item.food}
+                                          style={styles.variantPicker}
+                                          onValueChange={(val) => {
+                                              const updated = [...items];
+                                              updated[index].food = val;
+                                              const localFood = foodNutrientDB[val];
+                                              if (localFood && localFood.units) {
+                                                  const newUnits = Object.keys(localFood.units).filter(u => u && u !== 'undefined');
+                                                  updated[index].availableUnits = newUnits.length > 0 ? newUnits : ['grams'];
+                                                  updated[index].unit = newUnits[0] || 'grams';
+                                              }
+                                              setItems(updated);
+                                          }}
+                                      >
+                                          {item.variants.map((variant, vIdx) => (
+                                              <Picker.Item 
+                                                  key={`${variant}-${vIdx}`} 
+                                                  label={variant.replace(/mallum - |Pol sambol - /i, '').toUpperCase()} 
+                                                  value={variant} 
+                                              />
+                                          ))}
+                                      </Picker>
+                                  </View>
+                              </View>
+                          ) : (
+                              <Text style={styles.foodLabelStatic}>{item.food}</Text>
+                          )}
+                          <TouchableOpacity onPress={() => removeItem(index)} style={styles.deleteIcon}>
+                              <Ionicons name="close-circle" size={24} color="#dc3545" />
+                          </TouchableOpacity>
                       </View>
-                      <TouchableOpacity onPress={() => removeItem(index)} style={styles.trashBtn}>
-                          <Ionicons name="trash-outline" size={24} color="#dc3545" />
-                      </TouchableOpacity>
+                      <View style={styles.portionRow}>
+                          <View style={styles.portionControl}>
+                              <Text style={styles.portionLabel}>Amount</Text>
+                              <TextInput
+                                  style={styles.amountInput}
+                                  keyboardType="numeric"
+                                  value={item.amount}
+                                  onChangeText={(text) => updateRow(index, 'amount', text)}
+                                  placeholder="1"
+                              />
+                          </View>
+                          <View style={styles.portionControl}>
+                              <Text style={styles.portionLabel}>Unit</Text>
+                              <View style={styles.unitPickerWrapper}>
+                                  <Picker
+                                      selectedValue={item.unit || 'grams'}
+                                      style={styles.unitPicker}
+                                      onValueChange={(val) => updateRow(index, 'unit', val)}
+                                  >
+                                      {(item.availableUnits || ['grams'])
+                                          .filter(u => u && u !== 'undefined' && u !== null && typeof u === 'string')
+                                          .map((u, idx) => (
+                                              <Picker.Item key={`${u}-${idx}`} label={u.replace(/_/g, ' ')} value={u} />
+                                          ))
+                                      }
+                                  </Picker>
+                              </View>
+                          </View>
+                      </View>
                   </View>
               ))}
 
@@ -395,37 +587,91 @@ const MealAnalysisScreen = ({ route, navigation }) => {
               </TouchableOpacity>
           </View>
         )}
+      </ScrollView>
 
-        {analysisResult && (
-          <View style={[styles.resultBox, analysisResult.isSafe ? styles.safe : styles.unsafe]}>
-              <Text style={styles.resultTitle}>
-                  {analysisResult.isSafe ? "Meal is Safe ✅" : "Caution ⚠️"}
-              </Text>
-              
-              <View style={{backgroundColor: '#f8f9fa', padding: 10, borderRadius: 8, marginVertical: 10}}>
-                  <Text style={{fontWeight: 'bold', fontSize: 14, marginBottom: 5}}>Total Meal Nutrients:</Text>
-                  <Text style={styles.detailText}>• Sodium: {analysisResult.totalNutrients.sodium.toFixed(0)} mg</Text>
-                  <Text style={styles.detailText}>• Potassium: {analysisResult.totalNutrients.potassium.toFixed(0)} mg</Text>
-                  <Text style={styles.detailText}>• Phosphorus: {analysisResult.totalNutrients.phosphorus.toFixed(0)} mg</Text>
-                  <Text style={styles.detailText}>• Protein: {analysisResult.totalNutrients.protein.toFixed(1)} g</Text>
+      {/* --- ANALYSIS RESULT MODAL --- */}
+      <Modal
+        visible={showAnalysisModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowAnalysisModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[
+            styles.analysisModalBox,
+            analysisResult?.status === 'safe' ? styles.safeModal : 
+            analysisResult?.status === 'warning' ? styles.warningModal : 
+            styles.unsafeModal
+          ]}>
+            <Text style={[
+              styles.analysisModalTitle,
+              analysisResult?.status === 'safe' ? styles.safeTitle : 
+              analysisResult?.status === 'warning' ? styles.warningTitle : 
+              styles.unsafeTitle
+            ]}>
+              {analysisResult?.status === 'safe' ? "✅ Meal is Safe" : 
+               analysisResult?.status === 'warning' ? "⚠️ Warning" : 
+               "🚫 Unsafe Meal"}
+            </Text>
+            
+            <ScrollView 
+              style={styles.modalScrollView}
+              showsVerticalScrollIndicator={true}
+              nestedScrollEnabled={true}
+            >
+              <View style={styles.nutrientSummary}>
+                <Text style={styles.nutrientSummaryTitle}>Total Meal Nutrients:</Text>
+                <Text style={styles.nutrientDetail}>• Sodium: {analysisResult?.totalNutrients.sodium.toFixed(0)} mg</Text>
+                <Text style={styles.nutrientDetail}>• Potassium: {analysisResult?.totalNutrients.potassium.toFixed(0)} mg</Text>
+                <Text style={styles.nutrientDetail}>• Phosphorus: {analysisResult?.totalNutrients.phosphorus.toFixed(0)} mg</Text>
+                <Text style={styles.nutrientDetail}>• Protein: {analysisResult?.totalNutrients.protein.toFixed(1)} g</Text>
               </View>
 
-              {analysisResult.warnings?.length > 0 && (
-                  <View style={{marginTop: 10}}>
-                      <Text style={{fontWeight: 'bold', color: '#721c24'}}>Warnings:</Text>
-                      {analysisResult.warnings.map((w, i) => (
-                          <Text key={i} style={{color: '#721c24', fontSize: 13}}>• {w}</Text>
-                      ))}
-                  </View>
+              {analysisResult?.warnings?.length > 0 && (
+                <View style={styles.warningsBox}>
+                  <Text style={styles.warningsTitle}>Warnings:</Text>
+                  {analysisResult.warnings.map((w, i) => (
+                    <Text key={i} style={styles.warningText}>• {w}</Text>
+                  ))}
+                </View>
               )}
 
-              <View style={styles.divider} />
-              <TouchableOpacity style={styles.eatBtn} onPress={() => handleAnalyze(true)}>
-                  <Text style={styles.btnText}>Confirm & Eat</Text>
+              {analysisResult?.foodSuggestions?.length > 0 && (
+                <View style={styles.suggestionsBox}>
+                  <Text style={styles.suggestionsTitle}>💡 Tips to Make This Meal Safer:</Text>
+                  {analysisResult.foodSuggestions.map((suggestion, i) => (
+                    <View key={i} style={styles.suggestionItem}>
+                      <Text style={styles.suggestionText}>
+                        • <Text style={styles.suggestionBold}>{suggestion.food}</Text> contributes {suggestion.contribution}% of {suggestion.nutrient} ({suggestion.amount}mg)
+                      </Text>
+                      <Text style={styles.suggestionAction}>Consider removing or reducing this item</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </ScrollView>
+
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity 
+                style={styles.modalCancelBtn} 
+                onPress={() => setShowAnalysisModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.modalConfirmBtn} 
+                onPress={() => {
+                  setShowAnalysisModal(false);
+                  handleAnalyze(true);
+                }}
+              >
+                <Text style={styles.btnText}>Confirm & Eat</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        )}
-      </ScrollView>
+        </View>
+      </Modal>
 
       {/* --- PROTOCOL MODAL (UPDATED) --- */}
       <Modal
@@ -489,9 +735,9 @@ const MealAnalysisScreen = ({ route, navigation }) => {
 
             <TouchableOpacity 
               style={styles.iUnderstandBtn} 
-              onPress={confirmAndOpenCamera}
+              onPress={confirmAndProceed}
             >
-              <Text style={styles.btnText}>I Understand, Open Camera</Text>
+              <Text style={styles.btnText}>I Understand, Continue</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setShowGuidelines(false)}>
@@ -535,15 +781,42 @@ const MealAnalysisScreen = ({ route, navigation }) => {
             />
         </View>
       </Modal>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 50, backgroundColor: '#fff', flexGrow: 1 },
-  header: { fontSize: 24, fontWeight: 'bold', marginBottom: 15, color: '#051C60' },
+  container: { padding: 20, paddingTop: 10, paddingBottom: 30, backgroundColor: '#fff', flexGrow: 1 },
+  headerContainer: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between',
+    paddingTop: 50, 
+    paddingBottom: 15, 
+    paddingHorizontal: 15,
+    backgroundColor: '#fff', 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#e8e8e8' 
+  },
+  backButton: {
+    padding: 5,
+    width: 40,
+  },
+  header: { 
+    fontSize: 22, 
+    fontWeight: '700', 
+    color: '#051C60', 
+    textAlign: 'center', 
+    letterSpacing: 0.5,
+    flex: 1,
+  },
+  headerSpacer: {
+    width: 40,
+  },
   subHeader: { fontSize: 18, fontWeight: '600', marginBottom: 10, marginTop: 10 },
-  image: { width: '100%', height: 200, borderRadius: 12, marginBottom: 15 },
+  imageContainer: { position: 'relative', width: '100%', marginBottom: 15 },
+  image: { width: '100%', height: 200, borderRadius: 12 },
+  removeImageIcon: { position: 'absolute', top: 8, right: 8, backgroundColor: '#fff', borderRadius: 16, padding: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 3, elevation: 5 },
   placeholder: { width: '100%', height: 150, backgroundColor: '#eee', borderRadius: 12, marginBottom: 15, justifyContent: 'center', alignItems: 'center' },
   buttonRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
   scanBtn: { backgroundColor: '#007BFF', padding: 15, borderRadius: 8, alignItems: 'center', width: '48%' },
@@ -554,6 +827,20 @@ const styles = StyleSheet.create({
   addFoodBtn: { backgroundColor: '#E7F9EE', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 5, marginBottom: 15, borderWidth: 1, borderColor: '#28a745' },
   addFoodText: { color: '#28a745', fontSize: 16, fontWeight: '600' },
   listContainer: { marginTop: 10 },
+  itemCard: { backgroundColor: '#fff', borderRadius: 12, padding: 15, marginBottom: 12, borderWidth: 1, borderColor: '#e0e0e0', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
+  foodRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  foodNameSection: { flex: 1, marginRight: 10 },
+  categoryLabel: { fontSize: 13, fontWeight: '700', color: '#495057', marginBottom: 4, letterSpacing: 0.5 },
+  variantPickerWrapper: { borderWidth: 1, borderColor: '#007BFF', borderRadius: 8, backgroundColor: '#f0f8ff', height: 55 },
+  variantPicker: { height: 55, width: '100%', color: '#007BFF', fontSize: 15 },
+  foodLabelStatic: { flex: 1, fontSize: 16, fontWeight: '600', color: '#212529', textTransform: 'capitalize' },
+  deleteIcon: { padding: 5 },
+  portionRow: { flexDirection: 'row', gap: 12 },
+  portionControl: { flex: 1 },
+  portionLabel: { fontSize: 12, fontWeight: '600', color: '#6c757d', marginBottom: 6 },
+  amountInput: { borderWidth: 1, borderColor: '#ced4da', borderRadius: 8, padding: 12, fontSize: 16, textAlign: 'center', backgroundColor: '#fff', fontWeight: '600', height: 55 },
+  unitPickerWrapper: { borderWidth: 1, borderColor: '#ced4da', borderRadius: 8, backgroundColor: '#fff', height: 55 },
+  unitPicker: { height: 55, width: '100%', fontSize: 15, fontWeight: '500' },
   row: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, borderWidth: 1, borderColor: '#eee', padding: 5, borderRadius: 8 },
   foodLabel: { flex: 1.5, fontSize: 16, fontWeight: '500', paddingLeft: 5, textTransform: 'capitalize' }, 
   input: { flex: 0.8, borderWidth: 1, borderColor: '#ccc', borderRadius: 5, padding: 8, textAlign: 'center', marginRight: 5, backgroundColor: '#f9f9f9' },
@@ -655,7 +942,147 @@ const styles = StyleSheet.create({
   searchInput: { borderWidth: 1, borderColor: '#ccc', borderRadius: 10, padding: 12, fontSize: 16, backgroundColor: '#f9f9f9', marginBottom: 15 },
   searchItem: { flexDirection: 'row', justifyContent: 'space-between', padding: 15, borderBottomWidth: 1, borderBottomColor: '#eee', alignItems: 'center' },
   searchItemText: { fontSize: 18, textTransform: 'capitalize', color: '#333' },
-  emptyText: { textAlign: 'center', marginTop: 20, color: '#666', fontSize: 16 }
+  emptyText: { textAlign: 'center', marginTop: 20, color: '#666', fontSize: 16 },
+
+  // Analysis Result Modal
+  analysisModalBox: {
+    width: '85%',
+    maxHeight: '75%',
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    elevation: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  modalScrollView: {
+    maxHeight: '100%',
+  },
+  safeModal: {
+    borderWidth: 3,
+    borderColor: '#28a745',
+    backgroundColor: '#f0fff4',
+  },
+  warningModal: {
+    borderWidth: 3,
+    borderColor: '#ffc107',
+    backgroundColor: '#fffbf0',
+  },
+  unsafeModal: {
+    borderWidth: 3,
+    borderColor: '#dc3545',
+    backgroundColor: '#fff5f5',
+  },
+  analysisModalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  safeTitle: {
+    color: '#28a745',
+  },
+  warningTitle: {
+    color: '#ffc107',
+  },
+  unsafeTitle: {
+    color: '#dc3545',
+  },
+  nutrientSummary: {
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  nutrientSummaryTitle: {
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginBottom: 8,
+    color: '#333',
+  },
+  nutrientDetail: {
+    fontSize: 14,
+    marginBottom: 5,
+    color: '#495057',
+  },
+  warningsBox: {
+    backgroundColor: '#fff3cd',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#ffc107',
+  },
+  warningsTitle: {
+    fontWeight: 'bold',
+    fontSize: 15,
+    color: '#856404',
+    marginBottom: 6,
+  },
+  warningText: {
+    color: '#856404',
+    fontSize: 13,
+    marginBottom: 3,
+  },
+  suggestionsBox: {
+    backgroundColor: '#ffe6e6',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#ff9999',
+  },
+  suggestionsTitle: {
+    fontWeight: 'bold',
+    fontSize: 15,
+    color: '#cc0000',
+    marginBottom: 8,
+  },
+  suggestionItem: {
+    marginBottom: 8,
+  },
+  suggestionText: {
+    color: '#8b0000',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  suggestionBold: {
+    fontWeight: 'bold',
+    color: '#cc0000',
+  },
+  suggestionAction: {
+    color: '#8b0000',
+    fontSize: 12,
+    fontStyle: 'italic',
+    marginTop: 2,
+  },
+  modalButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+    gap: 10,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    backgroundColor: '#6c757d',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    color: 'white',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  modalConfirmBtn: {
+    flex: 1,
+    backgroundColor: '#28a745',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
 });
 
 export default MealAnalysisScreen;

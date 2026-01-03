@@ -5,16 +5,7 @@ const jwt = require("jsonwebtoken");
 // Register a new user
 exports.register = async (req, res) => {
   try {
-    const {
-      name,
-      age,
-      gender,
-      district,
-      hasDiabetes,
-      hasHypertension,
-      email,
-      password,
-    } = req.body;
+    const { name, birthday, gender, district, email, password } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -29,11 +20,9 @@ exports.register = async (req, res) => {
     // Create new user
     const newUser = new User({
       name,
-      age,
+      birthday,
       gender,
       district,
-      hasDiabetes,
-      hasHypertension,
       email,
       password: hashedPassword,
     });
@@ -89,6 +78,8 @@ exports.login = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        gender: user.gender,
+        birthday: user.birthday,
       },
     });
   } catch (error) {

@@ -15,6 +15,15 @@ import { useFocusEffect } from '@react-navigation/native';
 
 const NutrientWalletScreen = ({ navigation }) => {
   const { wallet, ckdStage, limits, resetWallet: resetWalletContext, reloadWallet } = useWallet();
+  const [currentDate, setCurrentDate] = React.useState(new Date());
+  
+  // Update date every minute
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDate(new Date());
+    }, 60000); // Update every minute
+    return () => clearInterval(timer);
+  }, []);
   
   // Reload wallet data when screen comes into focus
   useFocusEffect(
@@ -151,6 +160,22 @@ const NutrientWalletScreen = ({ navigation }) => {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
+        {/* Date Info */}
+        <View style={styles.dateCard}>
+          <Ionicons name="calendar-outline" size={20} color="#4A90E2" />
+          <View style={styles.dateTextContainer}>
+            <Text style={styles.dateLabel}>Today</Text>
+            <Text style={styles.dateValue}>
+              {currentDate.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </Text>
+          </View>
+        </View>
+
         {/* CKD Stage Info */}
         <View style={styles.stageCard}>
           <View style={styles.stageHeader}>
@@ -223,6 +248,31 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+  },
+  dateCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F2FD',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 15,
+    borderLeftWidth: 4,
+    borderLeftColor: '#4A90E2',
+  },
+  dateTextContainer: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  dateLabel: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  dateValue: {
+    fontSize: 15,
+    color: '#1C1C1E',
+    fontWeight: '700',
   },
   stageCard: {
     backgroundColor: '#E3F2FD',

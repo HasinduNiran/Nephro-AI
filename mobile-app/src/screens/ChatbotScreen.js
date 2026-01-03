@@ -37,6 +37,7 @@ import { CHATBOT_URL } from "../api/axiosConfig";
 // Use centralized URL from axiosConfig
 const BACKEND_URL = CHATBOT_URL;
 
+
 // Custom base64 decode for React Native (atob polyfill)
 const base64Decode = (str) => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
