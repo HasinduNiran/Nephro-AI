@@ -1,0 +1,20 @@
+{
+  "total_pages": 6,
+  "raw_text_length": 16226,
+  "cleaned_text_length": 18146,
+  "source_file": "current-trends-in-hypertension-takeaways-from-the-2021-kdigo-guidelines.pdf",
+  "extraction_date": "2025-12-31T14:52:24.183813",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2022",
+  "keywords": [
+    "chronic kidney disease",
+    "renal",
+    "nephrology",
+    "proteinuria",
+    "albuminuria"
+  ],
+  "total_chunks": 5,
+  "avg_chunk_size": 542.4,
+  "processing_date": "2025-12-31T14:52:24.255343"
+}

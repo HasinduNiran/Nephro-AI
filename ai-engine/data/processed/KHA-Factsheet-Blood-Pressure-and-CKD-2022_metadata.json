@@ -1,0 +1,17 @@
+{
+  "total_pages": 3,
+  "raw_text_length": 6324,
+  "cleaned_text_length": 6421,
+  "source_file": "KHA-Factsheet-Blood-Pressure-and-CKD-2022.pdf",
+  "extraction_date": "2025-12-31T14:52:06.027548",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "kidney function",
+    "albuminuria"
+  ],
+  "total_chunks": 2,
+  "avg_chunk_size": 515.5,
+  "processing_date": "2025-12-31T14:52:06.058860"
+}

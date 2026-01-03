@@ -1,0 +1,15 @@
+{
+  "total_pages": 10,
+  "raw_text_length": 26814,
+  "cleaned_text_length": 26736,
+  "source_file": "#13 Renal System Lect Notes.pdf",
+  "extraction_date": "2025-12-31T14:22:25.276044",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "renal"
+  ],
+  "total_chunks": 7,
+  "avg_chunk_size": 557.0,
+  "processing_date": "2025-12-31T14:22:25.398336"
+}

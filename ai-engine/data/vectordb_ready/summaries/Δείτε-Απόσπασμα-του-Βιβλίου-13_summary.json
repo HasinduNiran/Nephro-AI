@@ -1,0 +1,21 @@
+{
+  "total_documents": 42,
+  "source_file": "Δείτε-Απόσπασμα-του-Βιβλίου-13_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\Δείτε-Απόσπασμα-του-Βιβλίου-13_chunks.json",
+  "preparation_date": "2025-12-31T14:58:51.825291",
+  "avg_word_count": 585.1666666666666,
+  "content_types": {
+    "dietary": 15,
+    "reference": 6,
+    "evidence": 12,
+    "recommendation": 4,
+    "monitoring": 5
+  },
+  "medical_entity_coverage": {
+    "CKD": 17,
+    "GFR": 29,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "total_pages": 1,
+  "raw_text_length": 17589,
+  "cleaned_text_length": 20680,
+  "source_file": "New Text Document (3).txt",
+  "extraction_date": "2025-12-31T14:52:07.100711",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "GFR",
+    "renal",
+    "proteinuria",
+    "eGFR"
+  ],
+  "total_chunks": 5,
+  "avg_chunk_size": 588.8,
+  "processing_date": "2025-12-31T14:52:07.177502"
+}

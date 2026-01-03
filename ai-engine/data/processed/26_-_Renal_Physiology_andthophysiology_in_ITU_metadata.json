@@ -1,0 +1,16 @@
+{
+  "total_pages": 13,
+  "raw_text_length": 38037,
+  "cleaned_text_length": 38406,
+  "source_file": "26_-_Renal_Physiology_andthophysiology_in_ITU.pdf",
+  "extraction_date": "2025-12-31T14:20:21.015941",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2004",
+  "keywords": [
+    "renal"
+  ],
+  "total_chunks": 10,
+  "avg_chunk_size": 568.4,
+  "processing_date": "2025-12-31T14:20:21.200856"
+}

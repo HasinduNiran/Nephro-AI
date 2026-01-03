@@ -1,0 +1,17 @@
+{
+  "total_documents": 2,
+  "source_file": "hospitals_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\hospitals_chunks.json",
+  "preparation_date": "2026-01-01T22:04:12.480328",
+  "avg_word_count": 394.5,
+  "content_types": {
+    "recommendation": 2
+  },
+  "medical_entity_coverage": {
+    "CKD": 2,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 2
+  }
+}

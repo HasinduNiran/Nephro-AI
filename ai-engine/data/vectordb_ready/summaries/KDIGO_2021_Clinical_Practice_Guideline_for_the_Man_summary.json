@@ -1,0 +1,21 @@
+{
+  "total_documents": 69,
+  "source_file": "KDIGO_2021_Clinical_Practice_Guideline_for_the_Man_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\KDIGO_2021_Clinical_Practice_Guideline_for_the_Man_chunks.json",
+  "preparation_date": "2025-12-31T14:58:46.048503",
+  "avg_word_count": 581.4927536231884,
+  "content_types": {
+    "evidence": 40,
+    "treatment": 11,
+    "dietary": 6,
+    "recommendation": 10,
+    "reference": 2
+  },
+  "medical_entity_coverage": {
+    "CKD": 62,
+    "GFR": 24,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 16
+  }
+}

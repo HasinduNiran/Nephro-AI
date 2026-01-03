@@ -1,0 +1,20 @@
+{
+  "total_documents": 22,
+  "source_file": "furthetalkdigocontroversyobesityandckd_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\furthetalkdigocontroversyobesityandckd_chunks.json",
+  "preparation_date": "2025-12-31T14:58:48.771484",
+  "avg_word_count": 566.3636363636364,
+  "content_types": {
+    "evidence": 18,
+    "recommendation": 1,
+    "reference": 1,
+    "dietary": 2
+  },
+  "medical_entity_coverage": {
+    "CKD": 21,
+    "GFR": 17,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 7
+  }
+}

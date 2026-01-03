@@ -1,8 +1,8 @@
 {
   "total_documents": 11,
   "source_file": "Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021_chunks.json",
-  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\data\\processed\\Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021_chunks.json",
-  "preparation_date": "2025-11-19T02:22:20.605948",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021_chunks.json",
+  "preparation_date": "2025-12-31T14:58:44.958487",
   "avg_word_count": 519.4545454545455,
   "content_types": {
     "treatment": 1,

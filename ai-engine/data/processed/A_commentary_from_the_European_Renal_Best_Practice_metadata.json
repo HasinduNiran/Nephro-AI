@@ -1,0 +1,18 @@
+{
+  "total_pages": 10,
+  "raw_text_length": 55943,
+  "cleaned_text_length": 60380,
+  "source_file": "A_commentary_from_the_European_Renal_Best_Practice.pdf",
+  "extraction_date": "2025-12-31T14:49:52.698841",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2025",
+  "keywords": [
+    "chronic kidney disease",
+    "renal",
+    "nephrology"
+  ],
+  "total_chunks": 16,
+  "avg_chunk_size": 563.75,
+  "processing_date": "2025-12-31T14:49:52.977993"
+}

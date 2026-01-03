@@ -1,0 +1,14 @@
+{
+  "total_pages": 12,
+  "raw_text_length": 57833,
+  "cleaned_text_length": 58783,
+  "source_file": "NEJMoa1712231.pdf",
+  "extraction_date": "2025-12-31T14:20:07.637529",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2001",
+  "keywords": [],
+  "total_chunks": 14,
+  "avg_chunk_size": 579.1428571428571,
+  "processing_date": "2025-12-31T14:20:07.848618"
+}

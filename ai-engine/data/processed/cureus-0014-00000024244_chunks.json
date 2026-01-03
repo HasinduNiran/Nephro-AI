@@ -1,0 +1,492 @@
+[
+  {
+    "chunk_id": 0,
+    "text": "Open Access Review Article DOI: 10. 7759/cureus. 24244 Blood Hypertension and Chronic Kidney Disease Progression: An Updated Review Elmukhtar Habas Sr. 1, 2, Eshrak Habas 3, Fahmi Y. Khan 2, 1, Amnna Rayani 4, Aml Habas 5, Mehdi Errayes Review began 04/11/2022 Review ended 04/15/2022 2, Khalifa L. Farfar 6, Abdel-Naser Y. Elzouki 2, 1 Published 04/18/2022 Copyright 2022 1. Internal Medicine, Hamad Medical Corporation, Doha, QAT 2. Internal Medicine, Hamad General Hospital, Doha, Habas et al. This is an open access article QAT 3. Internal Medicine, Tripoli University, Tripoli, LBY 4. Hemato-oncology Department, Tripoli Pediatric Hospital, distributed under the terms of the Creative Tripoli University, Tripoli, LBY 5. Renal and Dialysis Department, Tripoli Pediatric Hospital, Tripoli, LBY 6. Internal Commons Attribution License CC-BY 4. 0. , Medicine, Alwakra Hospital, Alwakra, QAT which permits unrestricted use, distribution, and reproduction in any medium, provided the original author and source are credited. Corresponding author: Elmukhtar Habas Sr. , habas1962gmail. com Abstract Hypertension (hypertension) is common in chronic Kidney disease (chronic kidney disease), and it may aggravate chronic kidney disease progression. The optimal Blood Hypertension (blood pressure) value in chronic kidney disease patients is not established yet, although systolic blood pressure ≤130 mmHg is acceptable as a target. Continuous blood pressure monitoring is essential to detect the different variants of High blood pressure and monitor the treatment response. Various methods of blood pressure measurement in the clinic office and at home are currently used. One of these methods is ambulatory blood pressure monitoring (ABPM), by which blood pressure can be closely assessed for even diurnal changes. We conducted a non-systematic literature review to explore and update the association between High blood pressure and the course of chronic kidney disease and to review various blood pressure monitoring methods to determine the optimal method for blood pressure recording in chronic kidney disease patients. PubMed, EMBASE, Google, Google Scholar, and Web Science were searched for published reviews and original articles on blood pressure and chronic kidney disease by using various phrases and keywords such as hypertension and chronic kidney disease, chronic kidney disease progression and hypertension, chronic kidney disease stage and hypertension, blood pressure control in chronic kidney disease, blood pressure measurement methods, diurnal blood pressure variation effect on chronic kidney disease progression, and types of hypertension. We evaluated and discussed published articles relevant to the review objective. Before preparing the final draft of this article, each author was assigned a section of the topic to read, research deeply, and write a summary about the assigned section. Then a summary of each authors contribution was collected and discussed in several group sessions. Early detection of High blood pressure is essential to prevent chronic kidney disease development and progression. Although the latest Kidney Disease Improving Global Outcomes (Kidney Disease: Improving Global Outcomes) guidelines suggest that a systolic blood pressure ≤120 mmHg is the target to prevent chronic kidney disease progression, systolic blood pressure ≤130 mmHg is universally recommended. ABPM is a promising method to diagnose and follow up on blood pressure control; however, the High cost of the new devices and patient unfamiliarity with them have proven to be major disadvantages with regard to this method.",
+    "word_count": 529,
+    "char_count": 3635,
+    "sentence_count": 25,
+    "metadata": {
+      "source_file": "cureus-0014-00000024244.pdf",
+      "extraction_date": "2025-12-31T14:52:13.467312",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2022",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal",
+        "nephrology"
+      ],
+      "chunk_index": 0,
+      "total_chunks": 14,
+      "position": "1/14",
+      "section": "Open Access Review Article DOI:",
+      "content_type": "recommendation",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "dialysis",
+        "blood pressure control",
+        "follow up",
+        "monitoring"
+      ],
+      "entity_count": 5
+    }
+  },
+  {
+    "chunk_id": 1,
+    "text": "Categories: Internal Medicine, Nephrology, Public Health Keywords: hypertension, blood pressure record, blood pressure diurnal variation, home Blood Hypertension, chronic kidney disease progression Introduction And Background Chronic Kidney disease (chronic kidney disease) is a global health problem, with an estimated prevalence of 11-13% 1, and it is continuously on the rise 2. chronic kidney disease can progress to end-stage renal disease (end-stage renal disease) in rare cases 3 as well as cardiovascular disease (cardiovascular disease), leading to High rates of mortality 4. chronic kidney disease prevention and reducing its progression rate are major concerns in healthcare settings. The prevalence of hypertension (hypertension) in chronic kidney disease patients is 80-85%, which is significantly higher than in the general population (28. 5%) 5, 6. This difference in hypertension prevalence is attributed to an increase in the aging population 7 as well as the prevalence of Diabetes mellitus 8. Blood Hypertension (blood pressure) changes are associated with alteration of Kidney function, and High blood pressure worsens chronic kidney disease, thereby increasing end-stage renal disease incidence and cardiovascular disease risk 9, 10. Optimum blood pressure control is essential in chronic kidney disease patients to prevent chronic kidney disease progression and other complications 11. hypertension prevalence is inversely related to the estimated glomerular estimated glomerular filtration rate (estimated glomerular filtration rate), increasing significantly from 67% in patients with an estimated glomerular filtration rate of 60 milliliters per minute/1. 73 m2 to 92% in those with an estimated glomerular filtration rate of 30 milliliters per minute/1. 73 m2 12, 13. The variability of 24-hour blood pressure in chronic kidney disease patients is higher than that in the general population 14. In addition, a mean systolic blood pressure 120 mmHg is associated with imminent chronic kidney disease and increases the rate of sudden renal function deterioration 9. Studies have reported that lowering blood pressure reduces chronic kidney disease progression and cardiovascular disease risks; however, the ideal blood pressure value in chronic kidney disease patients has yet to be established 15, 16. The most recent guidelines state that a blood pressure 120 mmHg as the lowest targeted is desirable in chronic kidney disease patients; nevertheless, the targeted blood pressure in chronic kidney disease patients differs between various published How to cite this article Habas E, Habas E, Khan F Y, et al. (April 18, 2022) Blood Hypertension and Chronic Kidney Disease Progression: An Updated Review. Cureus 14(4): e24244. DOI 10. 7759/cureus. 24244 guidelines 11, 17. Furthermore, it has been recently reported that intensive blood pressure control may reduce estimated glomerular filtration rate and increase tubule biomarkers 18. Mercury-based sphygmomanometer devices are the primary blood pressure measuring techniques currently used. However, automatic, ambulatory blood pressure monitoring (ABPM), and ultrasonic-based methods have recently gained currency as blood pressure recording techniques. Each technique has its own limitations, advantages, disadvantages, and abilities to detect blood pressure variations and assess the response to treatment. In light of this, we aim to discuss and update the effect of blood pressure on chronic kidney disease progression and explore the various methods of blood pressure recording in chronic kidney disease patients. Review chronic kidney disease and hypertension chronic kidney disease is classified into five main stages and further subdivided into subgroups according to the glomerular filtration rate value and albuminuria 19. There is reportedly an evident association between the interstitial fibrosis and tubular atrophy and the mean 24-hour ABPM records 20. There is substantial evidence to indicate that chronic kidney disease is strongly linked to uncontrolled High blood pressure, resistant hypertension, masked hypertension, and even normotensive non-dipping blood pressure records 21. In their study, Aggarwal et al.",
+    "word_count": 600,
+    "char_count": 4209,
+    "sentence_count": 26,
+    "metadata": {
+      "source_file": "cureus-0014-00000024244.pdf",
+      "extraction_date": "2025-12-31T14:52:13.467312",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2022",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal",
+        "nephrology"
+      ],
+      "chunk_index": 1,
+      "total_chunks": 14,
+      "position": "2/14",
+      "section": "Categories:",
+      "content_type": "evidence",
+      "content_type_confidence": 2,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "kidney function",
+        "renal function",
+        "end-stage renal disease",
+        "albuminuria",
+        "cardiovascular disease",
+        "blood pressure control",
+        "monitoring"
+      ],
+      "entity_count": 9
+    }
+  },
+  {
+    "chunk_id": 2,
+    "text": "In their study, Aggarwal et al. found that in non-tight glycemic control diabetic patients with chronic kidney disease stage 3 or more, intensive systolic blood pressure management (130 mmHg) lowers all-death causes when compared to a blood pressure of 140 mmHg 22. Another recent study has reported a significant improvement in renal outcomes in patients who had diastolic blood pressure ≥90 mmHg 23. The same study noted that patients with blood pressure 130/80 mmHg had the benefit of risk reduction in terms of chronic kidney disease progression, even in cases that had proteinuria at presentation. Furthermore, after a year of systolic blood pressure control (130 mmHg), the risk of chronic kidney disease progression decreased by 42% in those with systolic blood pressure ≥130 mmHg at baseline, and their renal outcomes also improved 23. The Systolic Blood Hypertension Intervention Trial (SPRINT) concluded that tight blood pressure control reduces mortality rates in chronic kidney disease patients 15. Appel et al. , on the other hand, reported that intensive blood pressure control had no effect on chronic kidney disease progression, despite the fact that tight blood pressure control may have different effects on patients with or without proteinuria at presentation 24. Son et al. concluded that renal outcomes and death are related more to abnormal 24-hour ABPM than office blood pressure records in chronic kidney disease patients 25. A Korean study has reported that advanced renal dysfunction and proteinuria were significantly related to non-dipping blood pressure records. As per another study, in obese diabetic Chinese patients with chronic kidney disease, the hypertension control was suboptimal, increasing the risk of diabetic hypertensive Kidney complications 26. The International Society of Hypertension (ISH) has modified the worldwide practice guidelines for hypertension diagnosis and management in adults aged ≥18 years 27. The guidelines for hypertension diagnostic criteria have been updated concisely and regularly and streamlined for universal use. According to the American College of Cardiology/American Heart Association (ACC/AHA) 2017 guidelines, lowering blood pressure in chronic kidney disease patients to a level 130/80 mmHg reduces chronic kidney disease progression 11. In chronic kidney disease, careful hypertension control is critical to slow the progression of the disease. The importance of blood pressure measurement and strict blood pressure control are emphasized in the recent Kidney Disease Improving Global Outcomes (Kidney Disease: Improving Global Outcomes) guidelines on blood pressure therapy in chronic kidney disease 28. Although the recent Kidney Disease: Improving Global Outcomes guidelines recommend a systolic blood pressure target of 120 mmHg, the recommendation has been controversial because it is based on limited data from only one randomized controlled trial and its chronic kidney disease subgroup analysis 16. According to Dasgupta et al. , this target systolic blood pressure cannot be extrapolated to routine clinic blood pressure measurements because it may cause falls and fractures in multimorbid and frail chronic kidney disease patients. Furthermore, achieving this target blood pressure in the majority of chronic kidney disease patients appears to be a challenge for both patients and physicians. Moreover, the newly recommended systolic blood pressure in the new Kidney Disease: Improving Global Outcomes guidelines is an outlier among current major international hypertension guidelines, which may confuse clinicians in the future. Therefore, the new systolic blood pressure target of 120 mmHg established by Kidney Disease: Improving Global Outcomes for chronic kidney disease patients may be harmful and inappropriate for the majority of the chronic kidney disease patients 28. Types of hypertension Primary (essential) and secondary hypertension are the two basic types of hypertension. Primary hypertension accounts for the majority of cases (95%), and it has no known cause.",
+    "word_count": 596,
+    "char_count": 4065,
+    "sentence_count": 25,
+    "metadata": {
+      "source_file": "cureus-0014-00000024244.pdf",
+      "extraction_date": "2025-12-31T14:52:13.467312",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2022",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal",
+        "nephrology"
+      ],
+      "chunk_index": 2,
+      "total_chunks": 14,
+      "position": "3/14",
+      "content_type": "evidence",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "proteinuria",
+        "blood pressure control",
+        "glycemic control",
+        "stage 3"
+      ],
+      "entity_count": 5
+    }
+  },
+  {
+    "chunk_id": 3,
+    "text": "Primary hypertension accounts for the majority of cases (95%), and it has no known cause. Thyroid disorders, sleep apnea, excessive alcohol use, obesity, High-salt food consumption, tumors, adrenal hyperfunction, medicines, Kidney illness, and other factors are all linked to secondary hypertension. In addition to these hypertension categories, other types such as isolated systolic, malignant, resistant, labile, and white-coat HTNs have also been identified, and these have their own particular diagnostic criteria. Isolated systolic hypertension is diagnosed when the systolic blood pressure is 140 mmHg, and the diastolic blood pressure is ≤80 mmHg. Isolated systolic hypertension is more widely prevalent in people aged 65 years, and it is most probably due to arterial wall stiffness 29. The incidence of malignant hypertension type is two new cases/100, 000/year in the general population 30. It is highly prevalent among young adults, individuals with eclampsia, and African American men 30. Malignant hypertension is diagnosed when the blood pressure increases suddenly and the diastolic blood pressure reaches 130 mmHg and when there are bilateral retinal exudates and/or hemorrhages, with or without 2022 Habas et al. Cureus 14(4): e24244. DOI 10. 7759/cureus. 24244 2 of 9 papilledema 31. It is considered a medical emergency and needs prompt management. Malignant hypertension is a type of hypertension in which the systolic blood pressure is ≥140 mmHg or the diastolic blood pressure is ≥90 mmHg despite the concurrent use of three antihypertensive medications of various classes, including a diuretic, or controlled blood pressure with more than four antihypertensive medications 11. Resistant hypertension has been reported in 20-30% of hypertensive cases. Resistant hypertension appears to have an underlying genetic component. It is commonly seen in the elderly, obese women, African Americans, diabetics, and chronic kidney disease patients. White-coat and labile hypertension are types of hypertension that are not uncommon. These terms have been alternatively used to label cases with High normal blood pressure levels. These cases are more likely to have hypertension, although they may indicate an increase in blood pressure as a physiological response. Labile hypertension occurs in almost every individual, and it can be related to blood pressure record changes due to factors such as stress, environment, food, etc. On the other hand, a white-coat hypertension diagnosis is usually given to subjects who have High blood pressure levels when measured by a medical professional but have normal blood pressure levels when recorded in other settings. Therefore, due to the variability of blood pressure values and the effect of white-coat, the American Heart Association recommends that blood pressure measurement must be conducted a minimum of three times during different times of the day for a precise hypertension diagnosis. However, some physicians prefer to reassess blood pressure 5-10 minutes after the first High blood pressure record in the same setting in a single visit. White-coat hypertension was reported in 28. 8%, and masked hypertension was noted in 7% of chronic kidney disease patients in one study 32, causing chronic kidney disease and affecting its progression. Night-time hypertension and non-dipping night blood pressure patterns are the other types that may negatively affect end organs. Non-dipping is not a specific independent risk factor that negatively impacts chronic kidney disease outcomes, although it is a recognized risk factor for chronic kidney disease progression. However, the early studies on the subject were not controlled for proteinuria. Proteinuria has been linked to blood pressure non-dipping, and proteinuria is a risk factor for chronic kidney disease deterioration 33.",
+    "word_count": 572,
+    "char_count": 3843,
+    "sentence_count": 30,
+    "metadata": {
+      "source_file": "cureus-0014-00000024244.pdf",
+      "extraction_date": "2025-12-31T14:52:13.467312",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2022",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal",
+        "nephrology"
+      ],
+      "chunk_index": 3,
+      "total_chunks": 14,
+      "position": "4/14",
+      "content_type": "treatment",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "proteinuria",
+        "antihypertensive"
+      ],
+      "entity_count": 3
+    }
+  },
+  {
+    "chunk_id": 4,
+    "text": "Proteinuria has been linked to blood pressure non-dipping, and proteinuria is a risk factor for chronic kidney disease deterioration 33. As a result, it was proposed that the non-dipping blood pressure effect on chronic kidney disease development is doubtful, but instead, non-dipping is a pathological process that may increase chronic kidney disease deterioration. Furthermore, when non-dipping was examined as a risk factor for mortality, end-stage renal disease, and cardiovascular disease events, it was found to be insignificant when daytime blood pressure or 24-hour blood pressure were considered and cardiovascular disease event risk factors were excluded 33, 34. However, according to one study, non-dipping is still a significant risk factor for both end-stage renal disease and cardiovascular disease events, even after controlling for blood pressure, when it was assessed by 24-hour monitoring, in the presence of proteinuria 35. There is enough evidence to show that all phenotypes of hypertension occur in chronic kidney disease patients, thereby affecting chronic kidney disease development and progression. hypertension is a well-known cause of chronic kidney disease, and chronic kidney disease is also a cause of secondary hypertension. hypertension associated with chronic kidney disease causes is multi-factorial. Sodium dysregulation 36, decreased Kidney tissue mass and function 37, increased sympathetic system activity, and distributed renin-angiotensin-aldosterone system function 38 are the possible mechanisms of hypertension in chronic kidney disease patients. Advanced chronic kidney disease (estimated glomerular filtration rate of 30 milliliters per minute/1. 73 m2) is characterized by endothelial dysfunction, and these endothelial alterations are strongly related to hypertension 39. Additionally, chronic kidney disease is associated with an increased rate of arterial stiffness 40, implying the development of hypertension 41. As hypertension progresses, variables such as increased oxidative metabolism associated with renal hypoxia may contribute to elevated blood pressure and chronic kidney disease progression 42, 43. Detection of these phenotypes is not usually possible with the clinic office blood pressure measurement methods, but these are easily detected with ABPM. It appears that ABPM is the best method to differentiate between various hypertension phenotypes and also to assess their response to therapy. General considerations for High-blood pressure management The number of hypertensive patients aged between 30 and 79 years has doubled in the recent decades, increasing from an estimated 317 million men and 331 million women in 1990 to about 626 million women and 652 million men in 2019. More than 50% of these hypertensive individuals (720 million) received no treatment in 2019 44. Globally, only 23% and 18% of women and men had well-controlled blood pressure respectively. The increase in the hypertension rate is mainly due to the increase in the number of aging populations worldwide. The rising number of hypertensive population has not shown a uniform pattern, and hypertension prevalence is higher in most Lowand middle-income countries. In High-income countries, counterweighing progress in hypertension prevalence reduction has been noted. It has been claimed that the great success in early hypertension detection and treatment in developed countries has indicated the possibility of reducing hypertension prevalence and complications in middleand Low-income countries as well 45. Setting optimal blood pressure targets has a sizeable clinical impact 11 on morbidity, mortality, and renal function outcomes. According to the published guidelines, systolic blood pressure of 130 mmHg is categorized as stage 1 hypertension. Non-chronic kidney disease patients with this level of blood pressure have been advised to change their eating and exercise habits to control their blood pressure. The reports on hypertension management among chronic kidney disease patients have been inconclusive.",
+    "word_count": 579,
+    "char_count": 4057,
+    "sentence_count": 25,
+    "metadata": {
+      "source_file": "cureus-0014-00000024244.pdf",
+      "extraction_date": "2025-12-31T14:52:13.467312",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2022",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal",
+        "nephrology"
+      ],
+      "chunk_index": 4,
+      "total_chunks": 14,
+      "position": "5/14",
+      "content_type": "dietary",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "renal function",
+        "end-stage renal disease",
+        "proteinuria",
+        "sodium",
+        "cardiovascular disease",
+        "exercise",
+        "monitoring",
+        "stage 1"
+      ],
+      "entity_count": 10
+    }
+  },
+  {
+    "chunk_id": 5,
+    "text": "The reports on hypertension management among chronic kidney disease patients have been inconclusive. Studies have revealed that a targeted blood pressure 130/80 mmHg, as compared to a blood pressure 140/90 mmHg, is useful in decelerating renal disease progression in proteinuric chronic kidney disease patients; however, other studies have not endorsed these suggestions 36. A significant reduction in mortality rate after intensive blood pressure control in chronic kidney disease patients has not been consistently validated in RCTs, as other trials were not powered enough to investigate this outcome, and the supporting evidence was primarily obtained from observational studies 46, 47. However, a study by Ku et al. has suggested that strict blood pressure control has no effect on delaying end-stage renal disease onset, even though it may decrease the risk of mortality in chronic kidney disease cases 48. There is evidence to suggest that the advocated mortality benefit could depend on proteinuria existence at presentation; however, this 2022 Habas et al. Cureus 14(4): e24244. DOI 10. 7759/cureus. 24244 3 of 9 assumption was also derived from observational trials 36, 49. Additionally, the incidence of cardiovascular disease outcomes in chronic kidney disease patients who were adherent to intensive targets was poorly characterized 15. blood pressure measurement methods and recommendations blood pressure measurement is usually conducted by a doctor or nurse with a sphygmomanometer in their clinics; however, the recent wide availability of semi or fully automatic machines has enabled medical professionals or patients themselves to measure blood pressure. Currently, there are four methods to measure blood pressure. A. Clinic Office blood pressure Measurement Methods Clinic office blood pressure recording needs to fulfill specific requirements, which are summarized in Table 1 50. Factors Description blood pressure measurement Office of the physician or the nurse place Condition of A quiet room with a temperature between 36. 537. 5 oC place Before blood pressure recording: no cigarette smoking, no caffeine consumption, and no exercise (even walking) for 30 minutes; empty bladder; Patient status should remain seated and relaxed for at least 35 minutes The machine must be validated, especially the oscillometric electronic machine, regularly. Validated accurate electronic devices for use Machine in office and home, and ambulatory blood pressure measurement devices for adults and pregnant women are available Patients and staff should not communicate before, during, and between measurements. The patient must be sitting, and the arm must Patient and be rested on a table at the level of the Heart. The patients back should be supported on a chair. The patients feet must be in a flat the personnel position, and legs should be uncrossed Cuff and Cuff and its balloon should be selected according to the individuals arm circumference. A manual auscultatory inflatable balloon should balloon cover 75100% of the arm circumference. For the cuffs of electronic devices, see the instruction booklet that comes with the device blood pressure Three records must be taken a minute apart during each visit, and a mean of the last two stable records is then calculated. If the first measurement blood pressure record is 130/85 mmHg, no more re-measurements are needed. If 2-3 office-based records show blood pressure ≥140/90 mmHg, it indicates protocol hypertension TABLE 1: blood pressure measurement requirements and conditions blood pressure: Blood Hypertension 1. Auscultatory method: this method is the gold standard for clinic office blood pressure recording. This mercury-based device used to measure blood pressure is currently sparingly used and even abandoned in various countries due to the toxicity risk associated with mercury 51. New hybrid incorporated sphygmomanometers are rapidly replacing the old version of mercury-based devices.",
+    "word_count": 594,
+    "char_count": 3969,
+    "sentence_count": 28,
+    "metadata": {
+      "source_file": "cureus-0014-00000024244.pdf",
+      "extraction_date": "2025-12-31T14:52:13.467312",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2022",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal",
+        "nephrology"
+      ],
+      "chunk_index": 5,
+      "total_chunks": 14,
+      "position": "6/14",
+      "content_type": "recommendation",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "end-stage renal disease",
+        "proteinuria",
+        "cardiovascular disease",
+        "exercise",
+        "blood pressure control"
+      ],
+      "entity_count": 6
+    }
+  },
+  {
+    "chunk_id": 6,
+    "text": "New hybrid incorporated sphygmomanometers are rapidly replacing the old version of mercury-based devices. The mercury-based sphygmomanometer method requires a medical professional to detect Korotkoff sounds and record blood pressure, which may adversely affect blood pressure records 51. Automatic and aneroid blood pressure record devices are more practical, and people can use them independently, even in the clinic; however, their lack of precision and the need for regular calibration limit their use 51. 2. Automated office blood pressure monitoring: novel non-mercury-based oscillometric devices are now widely used for blood pressure recording in the clinic office 52, and other sites such as pharmacies, homes, and work offices. These devices are either semi-automatic or fully automatic, which can sense the changes in the Blood flow and the artery wall that refect the blood pressure record, thereby reducing blood pressure variability due to the presence of medical staff, although it may increase patient blood pressure reporting bias. B. Home Self-blood pressure Monitoring Methods 1. Intermittent home self-blood pressure measurement method: intermittent blood pressure monitoring by fully automatic electronic devices at home is widely practiced in developed countries to confirm hypertension and follow up on the response to treatment. Furthermore, the intermittent home blood pressure recording method is a more suitable and acceptable alternative to the ABPM method to differentiate between hypertension phenotypes 53. Higher intermittent home blood pressure values are associated with chronic kidney disease progression compared to clinic office-based blood pressure records 54. However, the High cost of the device, patient unfamiliarity, and inaccurately reported records by 2022 Habas et al. Cureus 14(4): e24244. DOI 10. 7759/cureus. 24244 4 of 9 the subjects have made the home blood pressure monitoring method not very ideal. A home-clinic blood pressure telemonitoring system has been invented to minimize patient blood pressure reporting bias, especially in hypertension control follow-ups. Recently, it was reported that the zero digits in the electronic device have reduced the chance of bias and inaccurate patient reporting 55. 2. ABPM method: ABPM has been in use for more than 30 years. The ABPM technique is used to measure blood pressure every 15 minutes during the day and every 30 minutes during the night while subjects are conducting their daily activities 27. One of the advantages of ABPM is blood pressure measurement at night, which can detect the night blood pressure pattern during sleep. Low estimated glomerular filtration rate is reported in masked, true sustained, night-time hypertension, and normal blood pressure non-dipping patterns at night 21. It has been noted that abnormal ABPM pattern is typically related to proteinuria than to deterioration of estimated glomerular filtration rate in chronic kidney disease patients 56. Also, it has been reported that arterial stiffness is increased in uncontrolled masked blood pressure variant, leading to continuous progressive estimated glomerular filtration rate reduction and blood pressure increase 57. It was claimed that frequent abnormal ABPM records are linked to vascular endothelium dysfunction, increased sympathetic tone, Sodium retention, and induced inflammatory reactions 58. The recommended blood pressure records in both office and ABPM methods to diagnose hypertension are presented in Table 2. Place of blood pressure measurement Systolic/diastolic blood pressure records (mmHg) Hypertension office-based blood pressure record ≥140/≥90 Ambulatory blood pressure monitoring average record Hypertension average 24-hour record ≥130/≥80 Hypertension awake time (daytime) ≥135/≥85 Hypertension night-time (sleeping) ≥120/≥70 TABLE 2: Hypertensive record limits in office and ambulatory blood pressure monitoring (ABPM) blood pressure: Blood Hypertension C. Central blood pressure Monitoring Method Central blood pressure monitoring is an invasive blood pressure recording technique. This technique is performed by inserting an arterial catheter with tonometry at the carotid artery 59.",
+    "word_count": 598,
+    "char_count": 4197,
+    "sentence_count": 29,
+    "metadata": {
+      "source_file": "cureus-0014-00000024244.pdf",
+      "extraction_date": "2025-12-31T14:52:13.467312",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2022",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal",
+        "nephrology"
+      ],
+      "chunk_index": 6,
+      "total_chunks": 14,
+      "position": "7/14",
+      "content_type": "monitoring",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "proteinuria",
+        "sodium",
+        "catheter",
+        "follow up",
+        "monitoring"
+      ],
+      "entity_count": 7
+    }
+  },
+  {
+    "chunk_id": 7,
+    "text": "This technique is performed by inserting an arterial catheter with tonometry at the carotid artery 59. Although the internal Kidney Hypertension is correspondent to the central than peripheral blood pressure, the relationship between the central blood pressure and Kidney function assessed by Urine Protein and estimated glomerular filtration rate is not well investigated. Hence, further studies are required to assess the relationship between central blood pressure and the degree of estimated glomerular filtration rate, proteinuria, and chronic kidney disease progression. D. Smartphone and Other Device-Based blood pressure Monitoring Method The smartphone-based method of blood pressure recording is a recently invented way to measure blood pressure via smartphone applications 60, 61. This method has been reported to be inaccurate in blood pressure measurement. Even though phone-, watch-, or scale-based devices can record the peripheral blood pressure, they are not currently able to read the brachial blood pressure. There is not enough data supporting their usage in continuous blood pressure monitoring as ABPM except for one reported study involving an iPhone-based application. To the best of our knowledge, their accuracy and blood pressure records have not been assessed in chronic kidney disease patients. Recently, Degott et al. , based on their analysis of 353 paired recordings from 91 persons, have reported that the smartphone embedded OptiBP cuffless mobile application achieves the validation requirements of the Association for the Advancement of Medical Instrumentation (AAMI), the European Society of Hypertension (ESH), and the International Organization for Standardization (ISO), universal standards in a general population for the measurement of diastolic blood pressure and systolic blood pressure 62. Another study conducted by Chandrasekhar et al. concluded that the oscillometric finger-pressing method for measuring blood pressure on a smartphone demonstrated bias and precision errors in systolic and diastolic blood pressure records. These inaccuracies were equivalent to those observed when using the finger-cuff device. The same study noted that cuff-less and calibration-free systolic and diastolic blood pressure monitoring can be possible with a smartphone-based method 63. Recommendations based on current guidelines In November 2015, the U. S. Preventive Services Task Force (USPSTF) accepted the clinic offices repeated blood pressure recording method to diagnose hypertension and advised that blood pressure be recorded outside of the clinic office to confirm 2022 Habas et al. Cureus 14(4): e24244. DOI 10. 7759/cureus. 24244 5 of 9 hypertension before treatment and follow-up 53. The USPSTF advice was based on the fact that 25% of people who had High blood pressure in the clinic office setting had reportedly turned normotensive when measured by the ABPM method and would not require treatment. The Eighth Joint National Committee and the European Society of hypertension (ESH) advised that office blood pressure is the gold standard for hypertension diagnosis and treatment 61. On the other hand, ESH 2013, ACC/AHA 2017, and ISH 2020 guidelines have advised using intermittent home or ABPM methods if the white-coat and masked hypertension are suspected 27. None of the published guidelines have reported that the central blood pressure recoding technique can be used for routine hypertension diagnosis or treatment followup 58. The recommended blood pressure recording methods by the existing guidelines are summarized in Table 3.",
+    "word_count": 523,
+    "char_count": 3584,
+    "sentence_count": 24,
+    "metadata": {
+      "source_file": "cureus-0014-00000024244.pdf",
+      "extraction_date": "2025-12-31T14:52:13.467312",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2022",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal",
+        "nephrology"
+      ],
+      "chunk_index": 7,
+      "total_chunks": 14,
+      "position": "8/14",
+      "content_type": "recommendation",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "kidney function",
+        "proteinuria",
+        "catheter",
+        "monitoring"
+      ],
+      "entity_count": 6
+    }
+  },
+  {
+    "chunk_id": 8,
+    "text": "The recommended blood pressure recording methods by the existing guidelines are summarized in Table 3. Guidelines Recommended blood pressure recording methods Intermittent home or ambulatory blood pressure monitoring if the white-coat and masked European Society of Hypertension (ESH), 2013 hypertension are suspected 8th Joint National Committee (JNC), 2014 Office blood pressure recording U. S. Preventive Services Task Force (USPSTF), 2015 Repeated office blood pressure measurements with blood pressure recorded outside the clinic office American College of Cardiology (ACC)/American Heart Association Intermittent home or ambulatory blood pressure monitoring if the white-coat and masked (AHA), 2017 hypertension are suspected Intermittent home or ambulatory blood pressure monitoring if the white-coat and masked International Society of Hypertension (ISH), 2020 hypertension are suspected TABLE 3: Recommended blood pressure recording methods as per the existing guidelines blood pressure: Blood Hypertension Automatic blood pressure measuring devices with multiple records in the physician clinic are better at overcoming white-coat hypertension overdiagnosis compared to the usual clinic office blood pressure recording method 64. Numerous automatic office-based blood pressure records significantly correspond to the average blood pressure records during the daytime 65, although it is not always consistent 66. Although 2017 ACC/AHA recommendations did not specifically advocate that automatic office blood pressure recordings are superior to ABPM, they noted that there is growing evidence supporting the use of automated office blood pressure 67. ISH 2020 guideline recommendation has not stated that ABPM is superior to the office automatic blood pressure measurement method 27. blood pressure measurement by ABPM or home blood pressure recording is highly recommended to diagnose and manage hypertension in the newly published guidelines 11, 15, 17. ABPM allows daytime, night-time, and 24-hour blood pressure determination and diurnal blood pressure variation recording. ABPM reading is strongly linked with target organ damage and cardiovascular disease events than office or clinic blood pressure readings 68, although these conclusions were drawn from studies with several limitations 69. Gender and chronic kidney disease progression Several guidelines have suggested that early hypertension detection and prompt treatment can delay the chronic kidney disease progression and decrease complications in both genders 61, 70. However, the degree to which females and males with hypertension are at equal risk to develop chronic kidney disease outcomes was not thoroughly examined. Murphy et al. have predicted that the prevalence of chronic kidney disease is more common in females 71, although Albertus et al. have noted that end-stage renal disease risk is higher in the male gender 72. A meta-analysis review of the gender-specific effect of chronic kidney disease progression on non-diabetic chronic kidney disease patients proposed that females progress at a slower rate toward end-stage renal disease than males, regardless of the underlying cause 73. On the contrary, another patient-level metaanalysis study that used angiotensin-converting enzyme inhibitors to control the blood pressure concluded that renal disease progression rate is possibly quicker among females than males 74. Recently, a study reported an unequal influence of hypertension on chronic kidney disease progression in females versus males, and the discrepancy is questionable to be related to biological differences alone 75. Conclusions blood pressure measurement is essential for diagnosis and following up on the response to therapy. Accurate diagnosis and detection of the hypertension phenotype are critical to preventing chronic kidney disease complications development and progression. Despite the diversity of methods and devices for blood pressure measurement, the mercury sphygmomanometer is still considered the gold standard. However, new devices are increasingly being used currently, but they are not highly accurate and need frequent calibrations.",
+    "word_count": 581,
+    "char_count": 4158,
+    "sentence_count": 19,
+    "metadata": {
+      "source_file": "cureus-0014-00000024244.pdf",
+      "extraction_date": "2025-12-31T14:52:13.467312",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2022",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal",
+        "nephrology"
+      ],
+      "chunk_index": 8,
+      "total_chunks": 14,
+      "position": "9/14",
+      "content_type": "recommendation",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "end-stage renal disease",
+        "cardiovascular disease",
+        "monitoring",
+        "guideline"
+      ],
+      "entity_count": 5
+    }
+  },
+  {
+    "chunk_id": 9,
+    "text": "However, new devices are increasingly being used currently, but they are not highly accurate and need frequent calibrations. Although it appears that ABPM is the best method to confirm or rule out hypertension and differentiate between various hypertension phenotypes, its superiority over the other blood pressure measurement methods is questionable and not clearly established. Therefore, new research projects are required to assess and explore the superiority of the ABPM technique. 2022 Habas et al. Cureus 14(4): e24244. DOI 10. 7759/cureus. 24244 6 of 9 Clinicians should reach a consensus that a systolic blood pressure level 130 mmHg in chronic kidney disease improves all-cause mortality rates, despite the variations between the reported data. However, further studies are required to assess the link between the early detection and control of High blood pressure levels and chronic kidney disease development and progression patterns. We propose that tight control of blood pressure at a level 130/80 mmHg is highly recommended and that ABPM is a highly reliable method for hypertension diagnosis, especially in doubtful cases, and it is especially more effective in predicting chronic kidney disease progression. Additional Information Disclosures Conflicts of interest: In compliance with the ICMJE uniform disclosure form, all authors declare the following: Payment/services info: All authors have declared that no financial support was received from any organization for the submitted work. Financial relationships: All authors have declared that they have no financial relationships at present or within the previous three years with any organizations that might have an interest in the submitted work. Other relationships: All authors have declared that there are no other relationships or activities that could appear to have influenced the submitted work. References 1. Hill NR, Fatoba ST, Oke JL, Hirst JA, OCallaghan calcium, Lasserson DS, Hobbs FD: Global prevalence of chronic Kidney disease - a systematic review and meta-analysis. PLoS One. 2016, 11: e0158765. 10. 1371/journal. pone. 0158765 2. Saran R, Robinson B, Abbott KC, et al. : ultrasound Renal Data System 2018 annual data report: epidemiology of Kidney disease in the United States. Am J Kidney Dis. 2019, 73: A7-8. 10. 1053/j. ajkd. 2019. 01. 001 3. Kazancioğlu R: Risk factors for chronic Kidney disease: an update. Kidney Int Suppl (2011). 2013, 3: 368-71. 10. 1038/kisup. 2013. 79 4. Tonelli M, Wiebe N, Culleton B, et al. : Chronic Kidney disease and mortality risk: a systematic review. J Am Soc Nephrol. 2006, 17: 2034-47. 10. 1681/American Society of Nephrology. 2005101085 5. Mills KT, Bundy JD, Kelly TN, et al. : Global disparities of hypertension prevalence and control: a systematic analysis of population-based studies from 90 countries. Circulation. 2016, 134: 441-50. 10. 1161/CIRCULATIONAHA. 115. 018912 6. Egan BM, Zhao Y, Axon RN: ultrasound trends in prevalence, awareness, treatment, and control of hypertension, 1988-2008. JAMA. 2010, 303: 2043-50. 10. 1001/jama. 2010. 650 7. Tonelli M, Riella M: Chronic Kidney disease and the aging population. Indian J Nephrol. 2014, 24: 71-4. 10. 4103/0971-4065. 127881 8. Gansevoort RT, Correa-Rotter R, Hemmelgarn BR, et al. : Chronic Kidney disease and cardiovascular risk: epidemiology, mechanisms, and prevention. Lancet. 2013, 382: 339-52. 10. 1016/S0140-6736(13)60595-4 9. Hanratty R, Chonchol M, Havranek EP, et al. : Relationship between Blood Hypertension and incident chronic Kidney disease in hypertensive patients. Clin J Am Soc Nephrol. 2011, 6: 2605-11. 10. 2215/CJN. 02240311 10. Anderson AH, Yang W, Townsend respiratory rate, et al. : Time-updated systolic Blood Hypertension and the progression of chronic Kidney disease: a cohort study. Ann Intern Med. 2015, 162: 258-65. 10. 7326/M14-0488 11. Whelton PK, Carey RM, Aronow WS, et al.",
+    "word_count": 588,
+    "char_count": 3900,
+    "sentence_count": 86,
+    "metadata": {
+      "source_file": "cureus-0014-00000024244.pdf",
+      "extraction_date": "2025-12-31T14:52:13.467312",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2022",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal",
+        "nephrology"
+      ],
+      "chunk_index": 9,
+      "total_chunks": 14,
+      "position": "10/14",
+      "content_type": "evidence",
+      "content_type_confidence": 5,
+      "medical_entities": [
+        "chronic kidney disease",
+        "calcium"
+      ],
+      "entity_count": 2
+    }
+  },
+  {
+    "chunk_id": 10,
+    "text": "Ann Intern Med. 2015, 162: 258-65. 10. 7326/M14-0488 11. Whelton PK, Carey RM, Aronow WS, et al. : 2017 ACC/AHA/AAPA/ABC/ACPM/AGS/APhA/ASH/ASPC/NMA/PCNA guideline for the prevention, detection, evaluation, and management of Hypertension in adults: executive summary: a report of the American College of Cardiology/American Heart Association Task Force on Clinical Practice Guidelines. Hypertension. 2018, 71: 1269-324. 10. 1161/HYP. 0000000000000066 12. Judd E, Calhoun DA: Management of hypertension in chronic kidney disease: beyond the guidelines. Adv Chronic Kidney Dis. 2015, 22: 116-22. 10. 1053/j. ackd. 2014. 12. 001 13. Muntner P, Anderson A, Charleston J, et al. : Hypertension awareness, treatment, and control in adults with chronic kidney disease: results from the Chronic Renal Insufficiency Cohort (CRIC) Study. Am J Kidney Dis. 2010, 55: 441-51. 10. 1053/j. ajkd. 2009. 09. 014 14. Tanner RM, Shimbo D, Dreisbach AW, Carson AP, Fox ER, Muntner P: Association between 24-hour Blood Hypertension variability and chronic Kidney disease: a cross-sectional analysis of African Americans participating in the Jackson Heart study. BMC Nephrol. 2015, 16: 84. 10. 1186/s12882-015-0085-6 15. Cheung AK, Rahman M, Reboussin diabetes mellitus, et al. : Effects of intensive blood pressure control in chronic kidney disease. J Am Soc Nephrol. 2017, 28: 2812-23. 10. 1681/American Society of Nephrology. 2017020148 16. Wright JT Jr, Williamson JD, Whelton PK, et al. : A randomized trial of intensive versus standard BloodHypertension control. N Engl J Med. 2015, 373: 2103-16. 10. 1056/NEJMoa1511939 17. Umemura S, Arima H, Arima S, et al. : The Japanese Society of Hypertension guidelines for the management of hypertension (JSH 2019). Hypertens Res. 2019, 42: 1235-481. 10. 1038/s41440-019-0284-9 18. Walther CP, Shah M, Navaneethan SD: Estimated glomerular filtration rate decline and tubular injury biomarkers with intensive Blood Hypertension control. Am J Kidney Dis. 2019, 73: 4-7. 10. 1053/j. ajkd. 2018. 09. 008 19. Andrassy KM: Comments on Kidney Disease: Improving Global Outcomes 2012 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease. Kidney Int. 2013, 84: 622-3. 10. 1038/ki. 2013. 243 20. Haruhara potassium, Tsuboi N, Koike potassium, et al. : Renal histopathological findings in relation to ambulatory Blood Hypertension in chronic Kidney disease patients. Hypertens Res. 2015, 38: 116-22. 10. 1038/heart rate. 2014. 140 21. Drawz physical examination, Alper AB, Anderson AH, et al. : Masked hypertension and elevated nighttime Blood Hypertension in chronic kidney disease: prevalence and association with target organ damage. Clin J Am Soc Nephrol. 2016, 11: 642-52. 10. 2215/CJN. 08530815 22. Aggarwal R, Petrie B, Bala W, Chiu N: Mortality outcomes with intensive Blood Hypertension targets in chronic Kidney disease patients. Hypertension. 2019, 73: 1275-82. 10. 1161/HYPERTENSIONAHA. 119. 12697 23. Tsuchida-Nishiwaki M, Uchida HA, Takeuchi H, et al. : Association of Blood Hypertension and renal outcome in 2022 Habas et al. Cureus 14(4): e24244. DOI 10. 7759/cureus. 24244 7 of 9 patients with chronic Kidney disease; a post hoc analysis of FROM-J study. Sci Rep. 2021, 11: 14990. 10. 1038/s41598-021-94467-z 24. Appel LJ, Wright JT Jr, Greene T, et al. : Intensive Blood-Hypertension control in hypertensive chronic Kidney disease. N Engl J Med. 2010, 363: 918-29. 10. 1056/NEJMoa0910975 25. Son HE, Ryu JY, Go S, et al. : Association of ambulatory Blood Hypertension monitoring with renal outcome in patients with chronic Kidney disease. Kidney Res Clin Pract. 2020, 39: 70-80. 10. 23876/j. krcp. 19. 103 26. Yan Z, Wang Y, Li S, et al. : Hypertension control in adults with chronic kidney disease in China: baseline results from the Chinese Cohort Study of Chronic Kidney Disease (C-STRIDE). Am J Hypertens. 2018, 31: 486-94. 10. 1093/ajh/hpx222 27. Unger T, Borghi C, Charchar F, et al.",
+    "word_count": 597,
+    "char_count": 3955,
+    "sentence_count": 123,
+    "metadata": {
+      "source_file": "cureus-0014-00000024244.pdf",
+      "extraction_date": "2025-12-31T14:52:13.467312",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2022",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal",
+        "nephrology"
+      ],
+      "chunk_index": 10,
+      "total_chunks": 14,
+      "position": "11/14",
+      "content_type": "evidence",
+      "content_type_confidence": 6,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "potassium",
+        "blood pressure control",
+        "monitoring",
+        "guideline"
+      ],
+      "entity_count": 6
+    }
+  },
+  {
+    "chunk_id": 11,
+    "text": "Am J Hypertens. 2018, 31: 486-94. 10. 1093/ajh/hpx222 27. Unger T, Borghi C, Charchar F, et al. : 2020 International Society of Hypertension Global Hypertension practice guidelines. Hypertension. 2020, 75: 1334-57. 10. 1161/HYPERTENSIONAHA. 120. 15026 28. Dasgupta I, Zoccali C: Is the Kidney Disease: Improving Global Outcomes systolic Blood Hypertension target 120 mmHg for chronic Kidney disease appropriate in routine clinical practice? . Hypertension. 2022, 79: 4-11. 10. 1161/HYPERTENSIONAHA. 121. 18434 29. Palatini P, Rosei EA, Avolio A, et al. : Isolated systolic hypertension in the young: a position paper endorsed by the European Society of Hypertension. J Hypertens. 2018, 36: 1222-36. 10. 1097/HJH. 0000000000001726 30. van den Born BJ, Koopmans RP, Groeneveld JO, van Montfrans GA: Ethnic disparities in the incidence, presentation and complications of malignant hypertension. J Hypertens. 2006, 24: 2299-304. 10. 1097/01. hjh. 0000249710. 21146. 38 31. Shantsila A, Lip GY: Malignant hypertension revisited-does this still exist? . Am J Hypertens. 2017, 30: 543-9. 10. 1093/ajh/hpx008 32. Gorostidi M, Sarafidis PA, de la Sierra A, Segura J, de la Cruz JJ, Banegas JR, Ruilope LM: Differences between office and 24-hour Blood Hypertension control in hypertensive patients with chronic kidney disease: A 5, 693-patient cross-sectional analysis from Spain. Am J Kidney Dis. 2013, 62: 285-94. 10. 1053/j. ajkd. 2013. 03. 025 33. Agarwal R, Kariyanna SS, Light RP: Prognostic value of circadian Blood Hypertension variation in chronic Kidney disease. Am J Nephrol. 2009, 30: 547-53. 10. 1159/000252775 34. Gabbai FB, Rahman M, Hu B, et al. : Relationship between ambulatory blood pressure and clinical outcomes in patients with hypertensive chronic kidney disease. Clin J Am Soc Nephrol. 2012, 7: 1770-6. 10. 2215/CJN. 11301111 35. Minutolo R, Agarwal R, Borrelli S, et al. : Prognostic role of ambulatory Blood Hypertension measurement in patients with nondialysis chronic Kidney disease. Arch Intern Med. 2011, 171: 1090-8. 10. 1001/archinternmed. 2011. 230 36. Koomans HA, Roos JC, Boer P, Geyskes GG, Mees EJ: Salt sensitivity of Blood Hypertension in chronic renal failure. Evidence for renal control of body fluid distribution in man. Hypertension. 1982, 4: 190-7. 10. 1161/01. hyp. 4. 2. 190 37. Converse RL Jr, Jacobsen TN, Toto RD, Jost CM, Cosentino F, Fouad-Tarazi F, Victor RG: Sympathetic overactivity in patients with chronic renal failure. N Engl J Med. 1992, 327: 1912-8. 10. 1056/NEJM199212313272704 38. Hamrahian SM, Falkner B: Hypertension in chronic Kidney disease. Adv Exp Med Biol. 2017, 956: 307-25. 10. 1007/5584_2016_84 39. Dhaun N, Goddard J, Webb DJ: The endothelin system and its antagonism in chronic Kidney disease. J Am Soc Nephrol. 2006, 17: 943-55. 10. 1681/American Society of Nephrology. 2005121256 40. Townsend respiratory rate, Wimmer NJ, Chirinos JA, et al. : Aortic PWV in chronic Kidney disease: a CRIC ancillary study. Am J Hypertens. 2010, 23: 282-9. 10. 1038/ajh. 2009. 240 41. Kim ED, Tanaka H, Ballew social history, Sang Y, Heiss G, Coresh J, Matsushita potassium: Associations between Kidney disease measures and regional pulse wave velocity in a large community-based cohort: the Atherosclerosis Risk in Communities (ARIC) Study. Am J Kidney Dis. 2018, 72: 682-90. 10. 1053/j. ajkd. 2018. 04. 018 42. Brazy after meals, Klotman physical examination: Increased oxidative metabolism in renal tubules from spontaneously hypertensive rats. Am J Physiol. 1989, 257: F818-25. 10. 1152/ajprenal. 1989. 257. 5. F818 43. Fine LG, Norman JT: Chronic hypoxia as a mechanism of progression of chronic Kidney diseases: from hypothesis to novel therapeutics. Kidney Int. 2008, 74: 867-72. 10. 1038/ki. 2008. 350 44.",
+    "word_count": 573,
+    "char_count": 3761,
+    "sentence_count": 129,
+    "metadata": {
+      "source_file": "cureus-0014-00000024244.pdf",
+      "extraction_date": "2025-12-31T14:52:13.467312",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2022",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal",
+        "nephrology"
+      ],
+      "chunk_index": 11,
+      "total_chunks": 14,
+      "position": "12/14",
+      "content_type": "evidence",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "renal failure",
+        "potassium"
+      ],
+      "entity_count": 3
+    }
+  },
+  {
+    "chunk_id": 12,
+    "text": "Kidney Int. 2008, 74: 867-72. 10. 1038/ki. 2008. 350 44. NCD Risk Factor Collaboration (NCD-RisC): Worldwide trends in hypertension prevalence and progress in treatment and control from 1990 to 2019: a pooled analysis of 1201 population-representative studies with 104 million participants. Lancet. 2021, 398: 957-80. 10. 1016/S0140-6736(21)01330-1 45. Lamelas P, Diaz R, Orlandini A, et al. : Prevalence, awareness, treatment and control of hypertension in rural and urban communities in Latin American countries. J Hypertens. 2019, 37: 1813-21. 10. 1097/HJH. 0000000000002108 46. Tsai WC, Wu HY, Peng YS, et al. : Association of intensive Blood Hypertension control and Kidney disease progression in nondiabetic patients with chronic Kidney disease: a systematic review and meta-analysis. JAMA Intern Med. 2017, 177: 792-9. 10. 1001/jamainternmed. 2017. 0197 47. Vettoretti S, Caldiroli L, Zanoni F, Azzini V, Villarini A, Meazza R, Messa P: Patients with hypertensive nephropathy and chronic Kidney disease might not benefit from strict Blood Hypertension control. Kidney Blood Press Res. 2018, 43: 1706-15. 10. 1159/000495388 48. Ku E, Gassman J, Appel LJ, et al. : blood pressure control and long-term risk of end-stage renal disease and mortality. J Am Soc Nephrol. 2017, 28: 671-7. 10. 1681/American Society of Nephrology. 2016030326 49. Upadhyay A, Earley A, Haynes SM, Uhlig potassium: Systematic review: Blood Hypertension target in chronic Kidney disease and proteinuria as an effect modifier. Ann Intern Med. 2011, 154: 541-8. 10. 7326/0003-4819-154-8201104190-00335 50. Muntner P, Shimbo D, Carey RM, et al. : Measurement of Blood Hypertension in humans: a scientific statement from the American Heart Association. Hypertension. 2019, 73: e35-66. 10. 1161/HYP. 0000000000000087 51. Pickering TG, Hall JE, Appel LJ, et al. : Recommendations for Blood Hypertension measurement in humans and experimental animals: part 1: Blood Hypertension measurement in humans: a statement for professionals from the Subcommittee of Professional and Public Education of the American Heart Association Council on High Blood Hypertension Research. Hypertension. 2005, 45: 142-61. 10. 1161/01. HYP. 0000150859. 47929. 8e 52. Ogedegbe G, Pickering T: Principles and techniques of Blood Hypertension measurement. Cardiol Clin. 2010, 2022 Habas et al. Cureus 14(4): e24244. DOI 10. 7759/cureus. 24244 8 of 9 28: 571-86. 10. 1016/j. ccl. 2010. 07. 006 53. Siu AL: Screening for Hypertension in adults: U. S. Preventive Services Task Force recommendation statement. Ann Intern Med. 2015, 163: 778-86. 10. 7326/M15-2223 54. Niiranen TJ, Hänninen MR, Johansson J, Reunanen A, Jula AM: Home-measured Blood Hypertension is a stronger predictor of cardiovascular risk than office Blood Hypertension: the Finn-Home study. Hypertension. 2010, 55: 1346-51. 10. 1161/HYPERTENSIONAHA. 109. 149336 55. Parker RA, Paterson M, Padfield P, et al. : Are self-reported telemonitored Blood Hypertension readings affected by end-digit preference: a prospective cohort study in Scotland. BMJ Open. 2018, 8: e019431. 10. 1136/bmjopen-2017-019431 56. De Nicola L, Gabbai FB, Agarwal R, et al. : Prevalence and prognostic role of resistant hypertension in chronic Kidney disease patients. J Am Coll Cardiol. 2013, 61: 2461-7. 10. 1016/j. jacc. 2012. 12. 061 57. Hajjar I, Zhao P, Alsop D, Abduljalil A, Selim M, Novak P, Novak V: Association of Blood Hypertension elevation and nocturnal dipping with brain atrophy, perfusion and functional measures in stroke and nonstroke individuals. Am J Hypertens. 2010, 23: 17-23. 10. 1038/ajh. 2009. 187 58. Minutolo R, Gabbai FB, Agarwal R, et al. : Assessment of achieved clinic and ambulatory Blood Hypertension recordings and outcomes during treatment in hypertensive patients with chronic kidney disease: a multicenter prospective cohort study. Am J Kidney Dis. 2014, 64: 744-52. 10. 1053/j. ajkd. 2014. 06. 014 59. McEniery CM, Yasmin, McDonnell B, et al.",
+    "word_count": 588,
+    "char_count": 3967,
+    "sentence_count": 119,
+    "metadata": {
+      "source_file": "cureus-0014-00000024244.pdf",
+      "extraction_date": "2025-12-31T14:52:13.467312",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2022",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal",
+        "nephrology"
+      ],
+      "chunk_index": 12,
+      "total_chunks": 14,
+      "position": "13/14",
+      "content_type": "evidence",
+      "content_type_confidence": 5,
+      "medical_entities": [
+        "chronic kidney disease",
+        "end-stage renal disease",
+        "nephropathy",
+        "proteinuria",
+        "potassium",
+        "blood pressure control",
+        "screening"
+      ],
+      "entity_count": 7
+    }
+  },
+  {
+    "chunk_id": 13,
+    "text": "2014, 64: 744-52. 10. 1053/j. ajkd. 2014. 06. 014 59. McEniery CM, Yasmin, McDonnell B, et al. : Central Hypertension: variability and impact of cardiovascular risk factors: the Anglo-Cardiff Collaborative Trial II. Hypertension. 2008, 51: 1476-82. 10. 1161/HYPERTENSIONAHA. 107. 105445 60. Drawz physical examination, Abdalla M, Rahman M: Blood Hypertension measurement: clinic, home, ambulatory, and beyond. Am J Kidney Dis. 2012, 60: 449-62. 10. 1053/j. ajkd. 2012. 01. 026 61. James PA, Oparil S, Carter BL, et al. : 2014 evidence-based guideline for the management of High Blood Hypertension in adults: report from the panel members appointed to the Eighth Joint National Committee (JNC 8). JAMA. 2014, 311: 507-20. 10. 1001/jama. 2013. 284427 62. Degott J, Ghajarzadeh-Wurzner A, Hofmann G, et al. : Smartphone based Blood Hypertension measurement: accuracy of the OptiBP mobile application according to the AAMI/ESH/ISO universal validation protocol. Blood Press Monit. 2021, 26: 441-8. 10. 1097/MBP. 0000000000000556 63. Chandrasekhar A, Kim CS, Naji M, Natarajan potassium, Hahn JO, Mukkamala R: Smartphone-based Blood Hypertension monitoring via the oscillometric finger-pressing method. Sci Transl Med. 2018, 10: 8674. 10. 1126/scitranslmed. aap8674 64. Myers magnesium, Godwin M: Automated office Blood Hypertension. Can J Cardiol. 2012, 28: 341-6. 10. 1016/j. cjca. 2011. 09. 004 65. Agarwal R: Implications of Blood Hypertension measurement technique for implementation of Systolic Blood Hypertension Intervention Trial (SPRINT). J Am Heart Assoc. 2017, 6: 1-9. 10. 1161/JAHA. 116. 004536 66. Drawz physical examination, Pajewski NM, Bates JT, et al. : Effect of intensive versus standard clinic-based hypertension management on ambulatory Blood Hypertension: Results from the SPRINT (Systolic Blood Hypertension Intervention Trial) Ambulatory Blood Hypertension Study. Hypertension. 2017, 69: 42-50. 10. 1161/HYPERTENSIONAHA. 116. 08076 67. Leung AA, Daskalopoulou SS, Dasgupta potassium, et al. : Hypertension Canadas 2017 guidelines for diagnosis, risk assessment, prevention, and treatment of hypertension in adults. Can J Cardiol. 2017, 33: 557-76. 10. 1016/j. cjca. 2017. 03. 005 68. Kario potassium, Thijs L, Staessen JA: Blood Hypertension measurement and treatment decisions. Circ Res. 2019, 124: 9901008. 10. 1161/CIRCRESAHA. 118. 313219 69. Kario potassium, Hoshide S, Mizuno H, et al. : Nighttime Blood Hypertension phenotype and cardiovascular prognosis: practitioner-based nationwide JAMP Study. Circulation. 2020, 142: 1810-20. 10. 1161/CIRCULATIONAHA. 120. 049730 70. Kidney Disease Outcomes Quality Initiative (potassium/DOQI): potassium/DOQI clinical practice guidelines on hypertension and antihypertensive agents in chronic Kidney disease. Am J Kidney Dis. 2004, 43: S1-290. 71. Murphy D, McCulloch CE, Lin F, et al. : Trends in prevalence of chronic Kidney disease in the United States. Ann Intern Med. 2016, 165: 473-81. 10. 7326/M16-0273 72. Albertus P, Morgenstern H, Robinson B, Saran R: Risk of end-stage renal disease in the United States. Am J Kidney Dis. 2016, 68: 862-72. 10. 1053/j. ajkd. 2016. 05. 030 73. Neugarten J, Acharya A, Silbiger SR: Effect of gender on the progression of nondiabetic renal disease: a meta-analysis. J Am Soc Nephrol. 2000, 11: 319-29. 10. 1681/American Society of Nephrology. V112319 74. Jafar TH, Stark after meals, Schmid CH, et al. : Progression of chronic Kidney disease: the role of Blood Hypertension control, proteinuria, and angiotensin-converting enzyme inhibition: a patient-level meta-analysis. Ann Intern Med. 2003, 139: 244-52. 10. 7326/0003-4819-139-4-200308190-00006 75. Weldegiorgis M, Woodward M: The impact of hypertension on chronic Kidney disease and end-stage renal disease is greater in men than women: a systematic review and meta-analysis. BMC Nephrol. 2020, 21: 506. 10. 1186/s12882-020-02151-7 2022 Habas et al. Cureus 14(4): e24244. DOI 10. 7759/cureus. 24244 9 of 9",
+    "word_count": 569,
+    "char_count": 3966,
+    "sentence_count": 134,
+    "metadata": {
+      "source_file": "cureus-0014-00000024244.pdf",
+      "extraction_date": "2025-12-31T14:52:13.467312",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2022",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal",
+        "nephrology"
+      ],
+      "chunk_index": 13,
+      "total_chunks": 14,
+      "position": "14/14",
+      "content_type": "evidence",
+      "content_type_confidence": 6,
+      "medical_entities": [
+        "chronic kidney disease",
+        "end-stage renal disease",
+        "proteinuria",
+        "potassium",
+        "magnesium",
+        "antihypertensive",
+        "monitoring",
+        "guideline"
+      ],
+      "entity_count": 8
+    }
+  }
+]

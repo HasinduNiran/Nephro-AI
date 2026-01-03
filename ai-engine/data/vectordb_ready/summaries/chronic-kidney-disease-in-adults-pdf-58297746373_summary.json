@@ -1,0 +1,19 @@
+{
+  "total_documents": 9,
+  "source_file": "chronic-kidney-disease-in-adults-pdf-58297746373_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\chronic-kidney-disease-in-adults-pdf-58297746373_chunks.json",
+  "preparation_date": "2025-12-31T14:58:48.033196",
+  "avg_word_count": 588.4444444444445,
+  "content_types": {
+    "definition": 2,
+    "recommendation": 6,
+    "treatment": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 9,
+    "GFR": 5,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

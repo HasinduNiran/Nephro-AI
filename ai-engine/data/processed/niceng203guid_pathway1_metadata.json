@@ -1,0 +1,19 @@
+{
+  "total_pages": 7,
+  "raw_text_length": 8197,
+  "cleaned_text_length": 8283,
+  "source_file": "niceng203guid_pathway1.pdf",
+  "extraction_date": "2025-12-31T14:53:20.824003",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2021",
+  "keywords": [
+    "chronic kidney disease",
+    "GFR",
+    "renal",
+    "eGFR"
+  ],
+  "total_chunks": 2,
+  "avg_chunk_size": 570.0,
+  "processing_date": "2025-12-31T14:53:20.861197"
+}

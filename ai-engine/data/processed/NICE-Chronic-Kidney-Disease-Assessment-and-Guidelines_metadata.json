@@ -1,0 +1,22 @@
+{
+  "total_pages": 3,
+  "raw_text_length": 7045,
+  "cleaned_text_length": 7963,
+  "source_file": "NICE-Chronic-Kidney-Disease-Assessment-and-Guidelines.pdf",
+  "extraction_date": "2025-12-31T14:53:22.023455",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2021",
+  "keywords": [
+    "chronic kidney disease",
+    "GFR",
+    "dialysis",
+    "kidney function",
+    "renal",
+    "proteinuria",
+    "eGFR"
+  ],
+  "total_chunks": 2,
+  "avg_chunk_size": 579.5,
+  "processing_date": "2025-12-31T14:53:22.056580"
+}

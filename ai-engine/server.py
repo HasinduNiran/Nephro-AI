@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from src.chatbot.rag_engine import RAGEngine
 from src.chatbot.patient_input import PatientInputHandler
+from src.utils.logger import ConsoleLogger as Log
 
 app = FastAPI(title="Nephro-AI Context-Aware Chatbot API")
 
@@ -43,18 +44,17 @@ app.add_middleware(
 # -----------------------------------------------------------------------------
 # GLOBAL ENGINES
 # -----------------------------------------------------------------------------
-# -----------------------------------------------------------------------------
-# GLOBAL ENGINES
-# -----------------------------------------------------------------------------
 SESSIONS = {} 
 
-print("⚙️ Loading AI Engines...")
+Log.section("NEPHRO-AI SERVER STARTUP")
 try:
+    Log.step("⚙️", "Initializing AI Engines...")
     rag_engine = RAGEngine()
     stt_engine = PatientInputHandler(model_size="small")
-    print("✅ All Engines Loaded Successfully")
+    Log.success("All Engines Loaded Successfully")
+    print("-" * 60)
 except Exception as e:
-    print(f"❌ Error loading engines: {e}")
+    Log.error(f"Error loading engines: {e}")
     sys.exit(1)
 
 Path("temp_inputs").mkdir(exist_ok=True)
@@ -150,8 +150,20 @@ def health_check():
 @app.post("/api/chat/text")
 async def text_chat(request: ChatRequest):
     patient_id = request.patient_id
-    print(f"📨 Server received request for Patient ID: '{patient_id}'")
+    Log.step("📨", "REQUEST RECEIVED", f"Patient ID: '{patient_id}'")
     
+    # --- ZOMBIE CONTEXT FIX ---
+    # Detect session starters and wipe memory
+    GREETINGS = ["hi", "hello", "ayubowan", "start over", "help", "hey", "good morning", "good evening"]
+    
+    # Clean and check
+    clean_input = request.text.lower().strip().replace(".", "").replace("!", "")
+    
+    if clean_input in GREETINGS:
+        Log.warning(f"DETECTED GREETING ('{clean_input}'): Clearing history for {patient_id}")
+        SESSIONS[patient_id] = []
+    # ---------------------------
+
     # Retrieve THIS patient's history (default to empty list if new)
     user_history = SESSIONS.get(patient_id, [])
     
@@ -182,7 +194,7 @@ async def audio_chat(
     file: UploadFile = File(...), 
     patient_id: str = Form("default_patient")
 ):
-    print(f"\n🎙️ Audio Request Received (Patient: {patient_id})")
+    Log.step("🎙️", "AUDIO REQUEST", f"Patient: {patient_id}")
     
     temp_filename = f"temp_{hashlib.md5(file.filename.encode()).hexdigest()}.wav"
     input_path = Path("temp_inputs") / temp_filename
@@ -193,7 +205,7 @@ async def audio_chat(
         
     try:
         # 2. Normalize Audio
-        print("   🔊 Normalizing Audio...")
+        Log.step(" ", "Normalizing Audio...")
         audio = AudioSegment.from_file(str(input_path))
         normalized_audio = audio.apply_gain(-20.0 - audio.dBFS)
         normalized_path = input_path.with_name(f"clean_{input_path.name}")
@@ -203,7 +215,7 @@ async def audio_chat(
         # 3. Transcribe
         loop = asyncio.get_event_loop()
         transcribed_text = await loop.run_in_executor(None, stt_engine.transcribe_audio, str(normalized_path))
-        print(f"   📝 Transcribed: '{transcribed_text}'")
+        Log.step("📝", "Transcribed", f"'{transcribed_text}'")
         
         gibberish_triggers = ["Tamb", "Hue", "כש", "subs", "Amara", "Unara"]
         is_garbage = any(x in transcribed_text for x in gibberish_triggers) or len(transcribed_text) < 2
@@ -213,7 +225,7 @@ async def audio_chat(
         user_history = SESSIONS.get(patient_id, [])
 
         if is_garbage:
-            print("   ⚠️ Detected Silence/Gibberish. Skipping processing.")
+            Log.warning("Detected Silence/Gibberish. Skipping processing.")
             transcribed_text = "(Silence/Noise)"
             response_text = "I couldn't hear you clearly. Please try again."
         else:

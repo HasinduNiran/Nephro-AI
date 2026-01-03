@@ -1,0 +1,27 @@
+{
+  "documents": [
+    "Kidney Disease: Improving Global Outcomes 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease Publication of the supplement was sponsored by Kidney Disease: Improving Global Outcomes (Kidney Disease: Improving Global Outcomes). This article is published as part of a supplement sponsored by Kidney Disease: Improving Global Outcomes (Kidney Disease: Improving Global Outcomes). Theopinionsorviewsexpressedinthissupplementarethoseoftheauthorsanddonotnecessarily reflect the opinions or recommendations of the International Society of Nephrology or Elsevier. Practitioners and researchers must always rely on their own experience and knowledge in evaluating and usinganyinformation, methods, compounds, orexperimentsdescribedherein. Because ofrapidadvancesin themedicalsciences, inparticular, independentverificationofdiagnosesanddrugdosagesshouldbemade. To the fullest extent of the law, no responsibility is assumed by the publisher, Kidney Disease: Improving Global Outcomes (Kidney Disease: Improving Global Outcomes), nor the International Society of Nephrology for any injury and/or damage to personsorpropertyasamatterofproductsliability, negligenceorotherwise, orfromanyuseoroperationof any methods, products, instructions or ideas contained in the material herein. Official Journal of the International Society of Nephrology Elsevier"
+  ],
+  "metadatas": [
+    {
+      "source": "Title-Page_2024_Kidney-International.pdf",
+      "chunk_id": 0,
+      "content_type": "recommendation",
+      "content_type_confidence": 3,
+      "word_count": 153,
+      "entity_count": 2,
+      "has_ckd": true,
+      "has_gfr": false,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": false,
+      "medical_entities": "chronic kidney disease,guideline",
+      "year": "2024",
+      "organization": "Unknown",
+      "section": "Kidney Disease:"
+    }
+  ],
+  "ids": [
+    "title_page_2024_kidney_international_0"
+  ]
+}

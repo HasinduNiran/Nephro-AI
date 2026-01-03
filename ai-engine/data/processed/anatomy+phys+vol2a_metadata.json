@@ -1,0 +1,13 @@
+{
+  "total_pages": 540,
+  "raw_text_length": 1537392,
+  "cleaned_text_length": 1522023,
+  "source_file": "anatomy+phys+vol2a.pdf",
+  "extraction_date": "2025-12-31T14:21:24.484603",
+  "document_type": "medical_guideline",
+  "language": "es",
+  "keywords": [],
+  "total_chunks": 226,
+  "avg_chunk_size": 686.3805309734513,
+  "processing_date": "2025-12-31T14:21:28.983506"
+}

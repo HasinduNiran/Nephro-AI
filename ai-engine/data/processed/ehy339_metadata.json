@@ -1,0 +1,14 @@
+{
+  "total_pages": 98,
+  "raw_text_length": 540280,
+  "cleaned_text_length": 545386,
+  "source_file": "ehy339.pdf",
+  "extraction_date": "2025-12-31T14:20:03.033242",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2018",
+  "keywords": [],
+  "total_chunks": 85,
+  "avg_chunk_size": 591.5058823529412,
+  "processing_date": "2025-12-31T14:20:04.887804"
+}

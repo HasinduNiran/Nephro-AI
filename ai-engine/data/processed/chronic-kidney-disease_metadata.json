@@ -1,21 +1,19 @@
 {
-  "total_pages": 44,
-  "raw_text_length": 8932,
-  "cleaned_text_length": 11344,
+  "total_pages": 8,
+  "raw_text_length": 39592,
+  "cleaned_text_length": 44033,
   "source_file": "chronic-kidney-disease.pdf",
-  "extraction_date": "2025-11-21T14:30:06.850240",
+  "extraction_date": "2025-12-31T14:49:47.028162",
   "document_type": "medical_guideline",
   "language": "en",
-  "year": "2012",
   "keywords": [
     "chronic kidney disease",
-    "dialysis",
-    "kidney function",
     "renal",
+    "nephrology",
     "proteinuria",
     "albuminuria"
   ],
-  "total_chunks": 4,
-  "avg_chunk_size": 463.5,
-  "processing_date": "2025-11-21T14:30:06.902839"
+  "total_chunks": 11,
+  "avg_chunk_size": 589.1818181818181,
+  "processing_date": "2025-12-31T14:49:47.250607"
 }

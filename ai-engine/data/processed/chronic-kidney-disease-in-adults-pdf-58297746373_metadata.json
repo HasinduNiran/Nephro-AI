@@ -1,0 +1,20 @@
+{
+  "total_pages": 23,
+  "raw_text_length": 37993,
+  "cleaned_text_length": 37350,
+  "source_file": "chronic-kidney-disease-in-adults-pdf-58297746373.pdf",
+  "extraction_date": "2025-12-31T14:52:15.993913",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2011",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "GFR",
+    "kidney function",
+    "eGFR"
+  ],
+  "total_chunks": 10,
+  "avg_chunk_size": 552.9,
+  "processing_date": "2025-12-31T14:52:16.214448"
+}

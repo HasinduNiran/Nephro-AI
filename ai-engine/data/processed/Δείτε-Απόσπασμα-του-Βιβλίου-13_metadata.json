@@ -1,0 +1,16 @@
+{
+  "total_pages": 36,
+  "raw_text_length": 194208,
+  "cleaned_text_length": 203693,
+  "source_file": "Δείτε-Απόσπασμα-του-Βιβλίου-13.pdf",
+  "extraction_date": "2025-12-31T14:22:41.286046",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "kidney function",
+    "renal"
+  ],
+  "total_chunks": 56,
+  "avg_chunk_size": 579.2321428571429,
+  "processing_date": "2025-12-31T14:22:42.010542"
+}

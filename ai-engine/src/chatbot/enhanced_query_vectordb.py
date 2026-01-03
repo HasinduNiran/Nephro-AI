@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 from typing import List, Dict, Any
 from sentence_transformers import CrossEncoder
+import numpy as np
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -80,7 +81,13 @@ class EnhancedVectorQuery(VectorDBQuery):
                             'query_used': q
                         })
                         seen_ids.add(doc_id)
-        
+
+        # DEBUG: Log raw retrieval results
+        print(f"   ↳ 📥 DB RETRIEVAL: Found {len(all_results)} raw candidates.")
+        for idx, res in enumerate(all_results):
+            print(f"      [{idx+1}] ID: {res['id']} | Dist: {res['distance']:.4f} | Src: {res['query_used']}")
+            print(f"          Snippet: {res['document'][:100]}...")
+
         # 5. RE-RANKING UPGRADE (Cross-Encoder)
         print("⚖️  Applying AI Re-ranking (Cross-Encoder)...")
         
@@ -93,16 +100,29 @@ class EnhancedVectorQuery(VectorDBQuery):
             
             # Attach scores to results
             for i, result in enumerate(all_results):
-                result['relevance_score'] = float(scores[i])
+                raw_score = float(scores[i])
+                # APPLY SIGMOID: Convert Logits to Probability (0.0 - 1.0)
+                probability = 1 / (1 + np.exp(-raw_score))
+
+                result['relevance_score'] = probability
+                
                 # Update distance for compatibility (1 - score makes it "distance-like")
-                result['distance'] = 1.0 - float(scores[i])
+                result['distance'] = 1.0 - probability
                 
             # Sort by AI Score (Highest confidence first)
             all_results.sort(key=lambda x: x['relevance_score'], reverse=True)
             
+            # DEBUG: Log re-ranking scores
+            print(f"   ↳ 📊 CROSS-ENCODER SCORES:")
+            for idx, res in enumerate(all_results):
+                print(f"      [{idx+1}] Score: {res['relevance_score']:.4f} | ID: {res['id']}")
+
             # Filter out "Garbage" (Low relevance)
             # This reduces hallucinations by removing irrelevant retrieved docs
             final_results = [res for res in all_results if res['relevance_score'] > 0.01] # Lowered threshold slightly to be safe
+
+            # DEBUG: Log final filtered count
+            print(f"   ↳ ✂️ POST-FILTERING: Kept {len(final_results)} results (Threshold > 0.01).")
         else:
             final_results = []
         

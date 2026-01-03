@@ -1,0 +1,349 @@
+[
+  {
+    "chunk_id": 0,
+    "text": "This article has been retracted: N Engl J Med. DOI: 10. 1056/NEJMc2001445. The new england journal of medicine Original Article Relationship between Clinic and Ambulatory Blood-Hypertension Measurements and Mortality J. R. Banegas, L. M. Ruilope, A. de la Sierra, E. Vinyoles, M. Gorostidi, J. J. de la Cruz, G. RuizHurtado, J. Segura, F. RodríguezArtalejo, and B. Williams ABSTRACT BACKGROUND Evidence for the influence of ambulatory Blood Hypertension on prognosis derives mainly The authors full names, academic de from population-based studies and a few relatively small clinical investigations. This grees, and affiliations are listed in the Appendix. Address reprint requests to Dr. study examined the associations of Blood Hypertension measured in the clinic (clinic Blood Banegas at the Department of Preventive Hypertension) and 24-hour ambulatory Blood Hypertension with all-cause and cardiovascular Medicine and Public Health, Universidad mortality in a large cohort of patients in primary care. Autónoma de Madrid/IdiPAZCIBER of Epidemiology and Public Health, Avda. METHODS Arzobispo Morcillo 2, 28029 Madrid, We analyzed data from a registry-based, multicenter, national cohort that included Spain, or at joseramon. banegas uam. es. 63, 910 adults recruited from 2004 through 2014 in Spain. Clinic and 24-hour ambulaN Engl J Med 2018; 378: 1509-20. tory Blood-Hypertension data were examined in the following categories: sustained hyperDOI: 10. 1056/NEJMoa1712231 Copyright 2018 Massachusetts Medical Society. tension (elevated clinic and elevated 24-hour ambulatory Blood Hypertension), white-coat hypertension (elevated clinic and normal 24-hour ambulatory Blood Hypertension), masked hypertension (normal clinic and elevated 24-hour ambulatory Blood Hypertension), and normotension (normal clinic and normal 24-hour ambulatory Blood Hypertension). Analyses were conducted with Cox regression models, adjusted for clinic and 24-hour ambulatory Blood pressures and for confounders. RESULTS During a median follow-up of 4. 7 years, 3808 patients died from any cause, and 1295 of these patients died from cardiovascular causes. In a model that included both 24hour and clinic measurements, 24-hour systolic Hypertension was more strongly associated with all-cause mortality (hazard ratio, 1. 58 per 1-SD increase in Hypertension; 95% confidence interval CI, 1. 56 to 1. 60, after adjustment for clinic Blood Hypertension) than the clinic systolic Hypertension (hazard ratio, 1. 02; 95% CI, 1. 00 to 1. 04, after adjustment for 24-hour Blood Hypertension). Corresponding hazard ratios per 1-SD increase in Hypertension were 1. 55 (95% CI, 1. 53 to 1. 57, after adjustment for clinic and daytime Blood pressures) for nighttime ambulatory systolic Hypertension and 1. 54 (95% CI, 1. 52 to 1. 56, after adjustment for clinic and nighttime Blood pressures) for daytime ambulatory systolic pressure. These relationships were consistent across subgroups of age, sex, and status with respect to obesity, Diabetes, cardiovascular disease, and antihypertensive treatment. Masked hypertension was more strongly associated with all-cause mortality (hazard ratio, 2. 83; 95% CI, 2. 12 to 3. 79) than sustained hypertension (hazard ratio, 1. 80; 95% CI, 1. 41 to 2. 31) or white-coat hypertension (hazard ratio, 1. 79; 95% CI, 1. 38 to 2. 32). Results for cardiovascular mortality were similar to those for all-cause mortality. CONCLUSIONS Ambulatory Blood-Hypertension measurements were a stronger predictor of all-cause and cardiovascular mortality than clinic Blood-Hypertension measurements. White-coat hypertension was not benign, and masked hypertension was associated with a greater risk of death than sustained hypertension. (Funded by the Spanish Society of Hypertension and others. ) n engl j med 378; 16 nejm. org April 19, 2018 1509 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2018 Massachusetts Medical Society.",
+    "word_count": 586,
+    "char_count": 4049,
+    "sentence_count": 51,
+    "metadata": {
+      "source_file": "NEJMoa1712231.pdf",
+      "extraction_date": "2025-12-31T14:20:07.637529",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2001",
+      "keywords": [],
+      "chunk_index": 0,
+      "total_chunks": 14,
+      "position": "1/14",
+      "section": "This article has been retracted:",
+      "content_type": "evidence",
+      "content_type_confidence": 5,
+      "medical_entities": [
+        "antihypertensive",
+        "cardiovascular disease"
+      ],
+      "entity_count": 2
+    }
+  },
+  {
+    "chunk_id": 1,
+    "text": "Downloaded from nejm. org on December 31, 2025. Copyright 2018 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. The new england journal of medicine Ambulatory Blood-Hypertension data their physicians at 223 primary care centers provide a more comprehensive assesswithin the Spanish National Health System in all ment of Blood Hypertension over the course of the 17 regions of Spain. 24, 25 Patients were required a day and have been reported to better predict to be 18 years of age or older and to meet health outcomes than Blood Hypertension measured guideline-recommended indications for ambulain the clinic (clinic Blood Hypertension) or at home. 1-3 tory Blood-Hypertension monitoring, 24-28 which includEvidence for the influence of ambulatory Blood ed suspected white-coat hypertension, refractory Hypertension on prognosis is derived mainly from or resistant hypertension, High-risk hypertension, population-based studies4-7 and a few relatively and labile or borderline hypertension, as well as small clinical investigations. 8-11 However, in these assessment of drug-treatment efficacy and study studies, the number of clinical outcomes was of the circadian Blood-Hypertension pattern (details limited, which reduced the ability to assess the are provided in the Supplementary Appendix). predictive value of clinic Blood-Hypertension data as All patients included in the registry provided compared with ambulatory data. In addition, written informed consent. whether the average ambulatory Blood Hypertension The current study is an analysis of mortality over the nighttime, the daytime, or the full 24 among 66, 636 persons 18 years of age or older hours is the strongest predictor of mortality rewho were enrolled in the registry between mains uncertain. 3-8, 10, 12, 13 Moreover, the implicaMarch 1, 2004, and December 31, 2014. Of these, tions of hypertension phenotypes, such as white2726 were excluded because of incomplete inforcoat hypertension and masked hypertension, with mation on demographic or clinical characterisregard to mortality have remained ill-defined, tics; thus, 63, 910 patients were included in the mainly because of the small number of events analysis. reported in previous studies. 14-23 We report the prognostic value of clinic and Blood Hypertension and Other Study Variables ambulatory Blood pressures, as well as of hyperBlood Hypertension was measured in the clinic before mealstension phenotypes, on total and cardiovascular cording to standardized procedures, with the use mortality. We used data from the Spanish Ambuof validated oscillometric devices (in 85% of palatory Blood Hypertension Registry, which includes a tients) or calibrated mercury sphygmomanometers large cohort of patients in primary care practice. (in 15%), after the patient had been resting in a seated position for 5 minutes. 26-28 We used the mean of two clinic Blood-Hypertension readings. Methods Thereafter, ambulatory Blood-Hypertension monitorStudy Oversight ing was performed with validated, automated, This study was supported by the Spanish Society oscillometric devices (Spacelabs model 90207, of Hypertension, Lacer Laboratories, and EuroSpacelabs Healthcare) that were programmed to pean government agencies. The funding sources record Blood Hypertension at 20-minute intervals had no role in the design of the study, the colduring the day and at 30-minute intervals during lection and analysis of the data, the interpretathe night. An appropriate cuff size (one of two tion of results, the writing of the report, or the sizes) was used for each patient. We used the decision to submit the report for publication. mean of all valid readings for the analysis. Valid The study protocol and analyses were apmeasurements had to fulfill prespecified quality proved by the institutional review board for all criteria, including the successful recording of at participating centers. The authors vouch for the least 70% of systolic and diastolic Blood-Hypertension accuracy and completeness of the data.",
+    "word_count": 600,
+    "char_count": 4108,
+    "sentence_count": 25,
+    "metadata": {
+      "source_file": "NEJMoa1712231.pdf",
+      "extraction_date": "2025-12-31T14:20:07.637529",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2001",
+      "keywords": [],
+      "chunk_index": 1,
+      "total_chunks": 14,
+      "position": "2/14",
+      "content_type": "evidence",
+      "content_type_confidence": 5,
+      "medical_entities": [
+        "monitoring",
+        "guideline"
+      ],
+      "entity_count": 2
+    }
+  },
+  {
+    "chunk_id": 2,
+    "text": "The authors vouch for the least 70% of systolic and diastolic Blood-Hypertension accuracy and completeness of the data. The full readings during the 24-hour recording period. list of investigators is provided in the SuppleDay and night periods were defined according to mentary Appendix, available with the full text of sleeping and waking times reported by the patient. this article at NEJM. org. Patient data were obtained from interviews and physical examinations during the visits and Patient Population from clinical records. The clinical characteristics Data for this study were obtained from the onof the patients were assessed in accordance with going Spanish Ambulatory Blood Hypertension Reginternational guidelines. 26-28 Additional details are istry, a national study of patients selected by provided in the Supplementary Appendix. 1510 n engl j med 378; 16 nejm. org April 19, 2018 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2018 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. Clinic and Ambulatory Blood Hypertension and Mortality Mortality Data normotension. Two Cox models were constructThe date and cause of death were ascertained ed. Model 1 was adjusted for age, sex, smoking from a computerized search of the vital registry status, body-mass index (the weight in kilograms of the Spanish National Institute of Statistics; divided by the square of the height in meters), and evidence of the completeness, accuracy, and relistatus with respect to Diabetes, dyslipidemia, ability of this vital-status information has been previous cardiovascular disease, and number of made available by the Institute. 29 Persons were antihypertensive medications used. To assess designated as having died if the deaths were whether the associations were independent of recorded in the vital registry. The cause of death other Blood-Hypertension measurements, additional was determined from the death certificate by a adjustments were performed (model 2): the haznosologist and was coded according to the Interard ratio for clinic Blood Hypertension was adjusted national Statistical Classification of Diseases, 10th Revifor 24-hour Blood Hypertension; 24-hour Hypertension was sion. We included all deaths that were classified adjusted for clinic Hypertension; daytime Hypertension as being of cardiovascular origin (codes I00 to was adjusted for clinic and nighttime Hypertension; I99) and further subcategorized cardiovascularnighttime Hypertension was adjusted for clinic and related deaths as having been caused by ischedaytime Hypertension; and the hazard ratios for each mic Heart disease (codes I21I25), stroke (codes hypertension phenotype were adjusted for clinic I60I69), or Heart failure (code I50). For each Hypertension. study participant, follow-up was from the date We assessed consistency in the results accordof the recruitment visit for the Blood-Hypertension ing to age (60 vs. ≥60 years), sex, body-mass registry to the date of death or December 31, index (30 vs. ≥30), presence of Diabetes (yes vs. 2014, whichever occurred first. no), previous cardiovascular disease (yes vs. no), and antihypertensive medication use (yes vs. no). Statistical Analysis We also calculated the discriminative perforHypertension phenotypes in untreated patients mance (expressed as the C statistic area under were defined as white-coat hypertension (clinic the receiver-operating-characteristic curve) and systolic Blood Hypertension ≥140 mm Hg or diapredictive performance (Akaike and Bayesian instolic ≥90 mm Hg and 24-hour systolic presformation criteria) of models containing Bloodsure 130 mm Hg and diastolic 80 mm Hg), Hypertension components.",
+    "word_count": 558,
+    "char_count": 3865,
+    "sentence_count": 25,
+    "metadata": {
+      "source_file": "NEJMoa1712231.pdf",
+      "extraction_date": "2025-12-31T14:20:07.637529",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2001",
+      "keywords": [],
+      "chunk_index": 2,
+      "total_chunks": 14,
+      "position": "3/14",
+      "content_type": "evidence",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "antihypertensive",
+        "cardiovascular disease",
+        "heart failure",
+        "classification"
+      ],
+      "entity_count": 4
+    }
+  },
+  {
+    "chunk_id": 3,
+    "text": "30 masked hypertension (clinic systolic Hypertension In addition, we calculated rate advancement 140 mm Hg and diastolic 90 mm Hg and 24periods31 to estimate the number of additional hour systolic Hypertension ≥130 mm Hg or diastolic years of chronologic age that would be required ≥80 mm Hg), sustained hypertension (clinic systo yield the equivalent mortality rate per 1-SD tolic Hypertension ≥140 mm Hg or diastolic ≥90 mm Hg increase in Blood Hypertension or for each hypertenand ambulatory 24-hour systolic Hypertension ≥130 sion phenotype as compared with normotension. mm Hg or diastolic ≥80 mm Hg), or normotenPopulation attributable fractions32 were calcusion (clinic systolic Hypertension 140 mm Hg and lated to estimate the fraction of mortality in the diastolic 90 mm Hg and 24-hour systolic prespopulation that could be attributed to each hypersure 130 mm Hg and diastolic 80 mm Hg). 26-28 tension phenotype (formulas are provided in the An explanation of the Blood-Hypertension thresholds Supplementary Appendix). we used is provided in the Supplementary AppenSensitivity analyses were performed in which dix. In treated patients, the corresponding terms persons who died in the first 2 years of followwere white-coat uncontrolled hypertension, up were excluded, to minimize the influence of masked uncontrolled hypertension, sustained unreverse causation. We also checked the robustcontrolled hypertension, and controlled hyperness of results by defining hypertension phenotension, respectively. types on the basis of all ambulatory periods Associations between Blood Hypertension and mor- (24-hour, daytime, and nighttime) (see the Suptality were summarized with hazard ratios and plementary Appendix). 26-28, 33, 34 Finally, we tested 95% confidence intervals, estimated with Cox the reproducibility of the main results among models. Hazard ratios were calculated per 1-SD the 2811 participants who had two ambulatory increment in Blood Hypertension, and for hypertenBlood-Hypertension measurement sessions, separated sion phenotypes the reference group was untreated by a median time of 6. 5 months. n engl j med 378; 16 nejm. org April 19, 2018 1511 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2018 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. The new england journal of medicine Table 1. Characteristics of the Study Cohort. Patients Alive at the Patients Who Died All Patients End of the Study during Follow-up Characteristic (N 63, 910) (N 60, 102) (N 3808) P Value Male sex no. (%) 37, 050 (58. 0) 34, 975 (58. 2) 2075 (54. 5) 0. 001 Age yr 58. 4±14. 2 57. 9±14. 0 67. 3±13. 4 0. 001 Risk factors Bodymass index Mean 29. 3±5. 7 29. 3±5. 7 29. 7±6. 3 0. 001 ≥30 no. (%) 25, 866 (40. 5) 24, 234 (40. 3) 1632 (42. 9) 0. 001 Current smoker no. (%) 10, 141 (15. 9) 9, 588 (16. 0) 553 (14. 5) 0. 02 Diabetes no. (%) 12, 510 (19. 6) 11, 271 (18. 8) 1239 (32. 5) 0. 001 Dyslipidemia no. (%) 26, 896 (42. 1) 25, 124 (41. 8) 1772 (46. 5) 0. 001 Previous cardiovascular disease no. (%) Ischemic Heart disease 3, 262 (5. 1) 2907 (4. 8) 355 (9. 3) 0. 001 Stroke 2, 392 (3. 7) 2104 (3. 5) 288 (7. 6) 0. 001 Heart failure 1, 231 (1. 9) 1038 (1. 7) 193 (5. 1) 0. 001 Any cardiovascular disease 7, 192 (11. 3) 6335 (10. 5) 857 (22. 5) 0. 001 Blood Hypertension mm Hg Clinic systolic 147. 9±18. 8 147. 3±18. 4 156. 3±22. 0 0. 001 Clinic diastolic 86. 7±11. 6 86. 8±11.",
+    "word_count": 599,
+    "char_count": 3587,
+    "sentence_count": 85,
+    "metadata": {
+      "source_file": "NEJMoa1712231.pdf",
+      "extraction_date": "2025-12-31T14:20:07.637529",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2001",
+      "keywords": [],
+      "chunk_index": 3,
+      "total_chunks": 14,
+      "position": "4/14",
+      "content_type": "reference",
+      "content_type_confidence": 4,
+      "medical_entities": [
+        "cardiovascular disease",
+        "heart failure"
+      ],
+      "entity_count": 2
+    }
+  },
+  {
+    "chunk_id": 4,
+    "text": "9±18. 8 147. 3±18. 4 156. 3±22. 0 0. 001 Clinic diastolic 86. 7±11. 6 86. 8±11. 4 85. 1±13. 2 0. 001 24Hour systolic 129. 2±13. 7 128. 6±13. 1 138. 4±18. 7 0. 001 24Hour diastolic 76. 5±10. 1 76. 6±10. 0 75. 7±12. 0 0. 001 Daytime systolic 132. 3±14. 0 131. 8±13. 5 140. 7±18. 8 0. 001 Daytime diastolic 79. 4±10. 7 79. 5±10. 6 78. 0±12. 5 0. 001 Nighttime systolic 120. 2±15. 8 119. 4±15. 0 132. 0±21. 4 0. 001 Nighttime diastolic 68. 4±10. 2 68. 3±10. 0 69. 4±12. 0 0. 001 Hypertension phenotypes no. (%) Normotension 4, 221 (6. 6) 4, 145 (6. 9) 76 (2. 0) 0. 001 Controlled hypertension 6, 692 (10. 5) 6, 490 (10. 8) 202 (5. 3) 0. 001 Whitecoat hypertension 6, 628 (10. 4) 6, 319 (10. 5) 309 (8. 1) 0. 001 Whitecoat uncontrolled hypertension 11, 042 (17. 3) 10, 373 (17. 3) 669 (17. 6) 0. 97 Masked hypertension 2, 278 (3. 6) 2, 165 (3. 6) 113 (3. 0) 0. 07 Masked uncontrolled hypertension 3, 092 (4. 8) 2, 855 (4. 8) 237 (6. 2) 0. 001 Sustained hypertension 12, 555 (19. 6) 11, 960 (19. 9) 595 (15. 6) 0. 001 Sustained uncontrolled hypertension 17, 402 (27. 2) 15, 795 (26. 3) 1607 (42. 2) 0. 001 No. of BloodHypertension medications no. (%) 0 25, 682 (40. 2) 24, 589 (40. 9) 1093 (28. 7) 0. 001 1 13, 791 (21. 6) 13, 081 (21. 8) 710 (18. 6) ≥2 24, 437 (38. 2) 22, 432 (37. 3) 2005 (52. 7) Plusminus values are means ±SD. P values are for the comparison of patients who were alive at the end of the study with those who died during followup. Bodymass index is the weight in kilograms divided by the square of the height in meters. A bodymass index of 30 or more indicates obesity. Participants were considered to have Diabetes mellitus if they had a plasma fasting glucose level of 7 mmol or more per liter (130 magnesium per deciliter) or received antidiabetic drugs. Dyslipidemia was defined as a total cholesterol level greater than 4. 9 mmol per liter (190 magnesium per deciliter), Lowdensity lipoprotein cholesterol level greater than 3 mmol per liter (120 magnesium per deciliter), or Highdensity lipoprotein cholesterol level less than 1. 0 mmol per liter (40 magnesium per deciliter) in men or less than 1. 2 mmol per liter (46 magnesium per deciliter) in women; fasting triglycerides level greater than 1. 7 mmol per liter (150 magnesium per deciliter); or the use of lipidlowering drugs. The specific cardiovascular diseases that were considered were ischemic Heart disease, stroke, and Heart failure, as documented in the clinical record. Hypertension phenotypes were defined in untreated patients as follows: normotension was normal clinic Blood Hypertension (systolic 140 mm Hg and diastolic 90 mm Hg) and normal 24hour Hypertension (systolic 130 mm Hg and diastolic 80 mm Hg); whitecoat hypertension was defined as elevated clinic Blood Hypertension (systolic ≥140 mm Hg or diastolic ≥90 mm Hg) and normal 24hour Hypertension; masked hypertension was de fined as normal clinic Blood Hypertension and elevated 24hour Hypertension (systolic ≥130 mm Hg or diastolic ≥80 mm Hg); and sustained hyperten sion was defined as elevated clinic and 24hour Blood pressures. In treated patients, the corresponding terms were controlled hypertension, whitecoat uncontrolled hypertension, masked uncontrolled hypertension, and sustained uncontrolled hypertension, respectively, and were defined with the same BloodHypertension cutoff points as those used for untreated patients. 1512 n engl j med 378; 16 nejm.",
+    "word_count": 598,
+    "char_count": 3413,
+    "sentence_count": 114,
+    "metadata": {
+      "source_file": "NEJMoa1712231.pdf",
+      "extraction_date": "2025-12-31T14:20:07.637529",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2001",
+      "keywords": [],
+      "chunk_index": 4,
+      "total_chunks": 14,
+      "position": "5/14",
+      "content_type": "definition",
+      "content_type_confidence": 2,
+      "medical_entities": [
+        "magnesium",
+        "heart failure"
+      ],
+      "entity_count": 2
+    }
+  },
+  {
+    "chunk_id": 5,
+    "text": "01 (0. 981. 04) 0. 73 Nighttime systolic Blood Hypertension 1. 57 (1. 541. 59) 0. 001 1. 55 (1. 531. 57) 0. 001 Nighttime diastolic Blood Hypertension 1. 56 (1. 531. 59) 0. 001 1. 56 (1. 531. 59) 0. 001 Of the 63, 910 patients included in the analysis, 3808 died from any cause, and 1295 of those died from cardiovascular causes. Hazard ratios were estimated per 1SD increase of each systolic and diastolic BloodHypertension component, equivalent to approximately 19/12 mm Hg for clinic Blood Hypertension or 14/10 mm Hg for ambulatory Blood Hypertension. Rounding may have obscured small differences in hazard ratios. CI denotes confidence interval. Model 1 was adjusted for age, sex, smoking status, bodymass index, and status with respect to Diabetes, dyslipidemia, previous cardiovas cular disease, and number of antihypertensive drugs used. Model 2 was additionally adjusted as follows: clinic Blood Hypertension was adjusted for 24hour Hypertension, 24hour Blood Hypertension was adjusted for clinic Hypertension, daytime Blood Hypertension was adjusted for clinic and nighttime pressures, and nighttime Blood Hypertension was adjusted for clinic and daytime pressures. n engl j med 378; 16 nejm. org April 19, 2018 1513 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2018 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. The new england journal of medicine additional adjustment for 24-hour systolic presincremental improvement in discrimination with sure, clinic systolic Hypertension lost much of its the addition of 24-hour ambulatory Blood prespredictive power (hazard ratio for all-cause morsure to the clinic Blood-Hypertension models. tality, 1. 54 before adjustment and 1. 02 after adjustment); conversely, the hazard ratio for 24-hour Relationship of Hypertension Phenotypes ambulatory systolic Hypertension did not change with Mortality markedly after adjustment for clinic Blood presOf all the hypertension phenotypes evaluated, sure (hazard ratio for all-cause mortality, 1. 58 masked hypertension was associated with the before adjustment and 1. 58 after adjustment) highest risk and showed a stronger association (model 2 in Table 2). with all-cause mortality (hazard ratio, 2. 83) than Most results were similar in analyses stratisustained hypertension (hazard ratio, 1. 80) or fied according to age, sex, and status with rewhite-coat hypertension (hazard ratio, 1. 79) when spect to obesity, Diabetes, cardiovascular disease, adjusted for clinic Blood Hypertension (Table 3). antihypertensive medication use, the number of Similar findings were noted for cardiovascular antihypertensive drugs used, and the use of spemortality. Results for treated patients were simcific antihypertensive drug classes (Fig. S3 and ilar to those for untreated patients, except that Tables S1 and S2 in the Supplementary Appenthe results for white-coat uncontrolled hypertendix). Figure 1 shows that the risk of death insion did not reach statistical significance (model 2 creased as all clinic and ambulatory Bloodin Table 3). Cumulative mortality curves illusHypertension components increased. With regard to trate that, after full adjustment, masked hypercause-specific cardiovascular mortality, 24-hour tension was the strongest predictor of risk, folsystolic Hypertension showed a stronger association lowed by masked uncontrolled hypertension with ischemic Heart disease, stroke, and Heart (Fig. S4 in the Supplementary Appendix). Most failure than clinic systolic Hypertension (Table S3 in results were similar in analyses stratified accordthe Supplementary Appendix). ing to age, sex, and status with respect to obesity, Diabetes, and cardiovascular disease (Fig. S5 Mortality Discrimination and Predictive in the Supplementary Appendix).",
+    "word_count": 573,
+    "char_count": 3957,
+    "sentence_count": 51,
+    "metadata": {
+      "source_file": "NEJMoa1712231.pdf",
+      "extraction_date": "2025-12-31T14:20:07.637529",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2001",
+      "keywords": [],
+      "chunk_index": 5,
+      "total_chunks": 14,
+      "position": "6/14",
+      "content_type": "reference",
+      "content_type_confidence": 4,
+      "medical_entities": [
+        "antihypertensive",
+        "cardiovascular disease"
+      ],
+      "entity_count": 2
+    }
+  },
+  {
+    "chunk_id": 6,
+    "text": "S5 Mortality Discrimination and Predictive in the Supplementary Appendix). Finally, when Performance the group with masked uncontrolled hypertenIn a model that included age, sex, and status with sion was compared with the group with conrespect to cardiovascular risk factors (model 1), trolled hypertension, fully adjusted hazard ratios the addition of ambulatory systolic Hypertension rewere 2. 61 (95% confidence interval CI, 2. 14 to sulted in a model with better mortality discrim3. 17) for all-cause mortality and 2. 48 (95% CI, ination (C statistic for model, 0. 94) than the 1. 83 to 3. 37) for cardiovascular mortality. addition of clinic systolic Hypertension (C statistic for model, 0. 79). Predictive performance was also Additional Analyses better for the model that included ambulatory The rate advancement period for all-cause morHypertension (lower values for the Akaike and Bayesian tality was 1. 4 years per 1-SD increase in clinic information criteria) (model 1 in Table S4 in the systolic Blood Hypertension and increased to 8. 5 to Supplementary Appendix). Also, when 24-hour 10. 2 years per 1-SD increase in ambulatory sysBlood Hypertension was added to the clinic Bloodtolic Blood pressures (Table 4). Of all the hyperHypertension models (model 2), the discriminative tension phenotypes, masked hypertension had the and predictive performance improved for the greatest rate advancement periods as compared relationship between systolic Hypertension and allwith normotension. Rate advancement periods cause mortality (C statistic for model 1, 0. 79; for treated patients were somewhat smaller. The C statistic for model 2, 0. 94; P 0. 002). However, values were generally similar for cardiovascular with the converse adjustment (clinic Blood presmortality. sure added to the 24-hour ambulatory BloodRegarding population attributable fractions, Hypertension model), there was only a minor change sustained hypertension (observed in 15. 6% of in discrimination (C statistic for model 1, 0. 94; the patients who died) and masked hypertension C statistic for model 2, 0. 94; P 0. 93). For dia- (in 3. 0% of the patients who died) accounted for stolic Blood Hypertension, and for overall cardiovas7. 0% and 1. 9%, respectively, of deaths from any cular mortality, there was less evidence of an cause that occurred in the whole cohort. Among 1514 n engl j med 378; 16 nejm. org April 19, 2018 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2018 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. Clinic and Ambulatory Blood Hypertension and Mortality n engl j med 378; 16 nejm. org April 19, 2018 1515. seulaV erusserP-doolB ssorca, serusserP doolB cilotsaiD dna cilotsyS htiw detaicossA htaeD fo ksiR raeY-eviF. 1 erugiF mm 5 dna erusserp doolb cilotsys yrotalubma dna )cinilc eht ni derusaem erusserp doolb cilotsys( erusserp doolb cilotsys cinilc ni stnemercni gH mm 01 rep detaluclac saw htaed fo ksir ehT iverp, aimedipilsyd, setebaid ot tcepser htiw sutats dna, xedni ssamydob, sutats gnikoms, xes, ega rof detsujda erew ataD. erusserp doolb cilotsaid yrotalubma dna cinilc ni stnemercni gH detsujda saw erusserp doolb ruoh42, erusserp doolb ruoh42 rof detsujda saw erusserp doolb cinilc, noitidda nI. desu sgurd evisnetrepyhitna fo rebmun eht dna, esaesid ralucsavoidrac suo.",
+    "word_count": 537,
+    "char_count": 3502,
+    "sentence_count": 43,
+    "metadata": {
+      "source_file": "NEJMoa1712231.pdf",
+      "extraction_date": "2025-12-31T14:20:07.637529",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2001",
+      "keywords": [],
+      "chunk_index": 6,
+      "total_chunks": 14,
+      "position": "7/14",
+      "content_type": "evidence",
+      "content_type_confidence": 3,
+      "medical_entities": [],
+      "entity_count": 0
+    }
+  },
+  {
+    "chunk_id": 7,
+    "text": "desu sgurd evisnetrepyhitna fo rebmun eht dna, esaesid ralucsavoidrac suo. serusserp doolb emityad dna cinilc rof detsujda saw erusserp doolb emitthgin dna, serusserp doolb emitthgin dna cinilc rof detsujda saw erusserp doolb emityad, erusserp doolb cinilc rof )%( stneitaP erusserp doolb emitthgiN erusserp doolb emityaD erusserp doolb rH-42 erusserp doolb cinilC seulaV erusserP-doolB cilotsyS ssorca esuaC ynA morf htaeD fo ksiR A 001 09 08 07 06 05 04 03 02 01 0 )gH mm( erusserP doolB cilotsyS ksiR ta. oN 286, 3 940, 4 646, 7 286, 21707, 51920, 11600, 6 181, 2 127 561 24 cinilC 561 733 420, 1 640, 3 087, 7 040, 61344, 91780, 21894, 3 444 64 rH-42 622 005 015, 1 332, 4 734, 01570, 81233, 71219, 8 943, 2 103 53 emityaD 381 862 096 747, 1 729, 3 941, 8 502, 41196, 71914, 21 389, 3 846 emitthgiN seulaV erusserP-doolB cilotsyS ssorca sesuaC caidraC morf htaeD fo ksiR C )%( stneitaP 081≥ 071 061 051 041 031 021 011 001 09 09 seulaV erusserP-doolB cilotsaiD ssorca esuaC ynA morf htaeD fo ksiR B 001 09 08 07 06 05 04 03 02 01 0 )gH mm( erusserP doolB cilotsaiD ksiR ta. oN 985, 1 797, 1 406, 4 413, 7 628, 11340, 11421, 01454, 6 228, 4 372, 2 460, 2 cinilC 501 222 616 224, 1 304, 3 567, 6 613, 01866, 21448, 11325, 8 620, 8 rH-42 542 484 721, 1 657, 2 934, 5 888, 8 853, 11997, 11965, 9 316, 6 236, 5 emityaD 43 15 261 193 389 261, 2 212, 4 686, 7 129, 01509, 21304, 42 emitthgiN 011≥ 501 001 59 09 58 08 57 07 56 56 )%( stneitaP 001 09 08 07 06 05 04 03 02 01 0 )gH mm( erusserP doolB cilotsyS ksiR ta. oN 286, 3 940, 4 646, 7 286, 21707, 51920, 11600, 6 181, 2 127 561 24 cinilC 561 733 420, 1 640, 3 087, 7 040, 61344, 91780, 21894, 3 444 64 rH-42 622 005 015, 1 332, 4 734, 01570, 81233, 71219, 8 943, 2 103 53 emityaD 381 862 096 747, 1 729, 3 941, 8 502, 41196, 71914, 21 389, 3 846 emitthgiN )%( stneitaP 081≥ 071 061 051 041 031 021 011 001 09 09 seulaV erusserP-doolB cilotsaiD ssorca sesuaC caidraC morf htaeD fo ksiR D 001 09 08 07 06 05 04 03 02 01 0 )gH mm( erusserP doolB cilotsaiD 011≥ 501 001 59 09 58 08 57 07 56 56 ksiR ta. oN 985, 1 797, 1 406, 4 413, 7 628, 11340, 11421, 01454, 6 228, 4 372, 2 460, 2 cinilC 501 222 616 224, 1 304, 3 567, 6 613, 01866, 21448, 11325, 8 620, 8 rH-42 542 484 721, 1 657, 2 934, 5 888, 8 853, 11997, 11965, 9 316, 6 236, 5 emityaD 43 15 261 193 389 261, 2 212, 4 686, 7 129, 01509, 21304, 42 emitthgiN The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2018 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. The new england journal of medicine Table 3. Association of Hypertension Phenotypes with All-Cause and Cardiovascular Mortality in Cox Regression Models.",
+    "word_count": 564,
+    "char_count": 2823,
+    "sentence_count": 12,
+    "metadata": {
+      "source_file": "NEJMoa1712231.pdf",
+      "extraction_date": "2025-12-31T14:20:07.637529",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2001",
+      "keywords": [],
+      "chunk_index": 7,
+      "total_chunks": 14,
+      "position": "8/14",
+      "content_type": "reference",
+      "content_type_confidence": 1,
+      "medical_entities": [],
+      "entity_count": 0
+    }
+  },
+  {
+    "chunk_id": 8,
+    "text": "Association of Hypertension Phenotypes with All-Cause and Cardiovascular Mortality in Cox Regression Models. Mortality and Blood-Hypertension Phenotype Model 1 Model 2 Hazard Ratio Hazard Ratio All Patients Deaths (95% CI) P Value (95% CI) P Value Allcause mortality Normotension 4, 221 76 Reference Reference Controlled hypertension 6, 692 202 0. 76 (0. 570. 99) 0. 04 0. 81 (0. 621. 07) 0. 133 Whitecoat hypertension 6, 628 309 2. 24 (1. 742. 88) 0. 001 1. 79 (1. 382. 32) 0. 001 Whitecoat uncontrolled 11, 042 669 1. 30 (1. 011. 66) 0. 045 1. 06 (0. 821. 37) 0. 66 hypertension Masked hypertension 2, 278 113 2. 92 (2. 183. 90) 0. 001 2. 83 (2. 123. 79) 0. 001 Masked uncontrolled hypertension 3, 092 237 1. 89 (1. 442. 47) 0. 001 1. 96 (1. 502. 56) 0. 001 Sustained hypertension 12, 555 595 2. 36 (1. 862. 99) 0. 001 1. 80 (1. 412. 31) 0. 001 Sustained uncontrolled hypertension 17, 402 1607 1. 90 (1. 492. 42) 0. 001 1. 43 (1. 111. 85) 0. 006 Cardiovascular mortality Normotension 4, 221 22 Reference Reference Controlled hypertension 6, 692 84 0. 90 (0. 551. 46) 0. 66 0. 95 (0. 591. 55) 0. 84 Whitecoat hypertension 6, 628 94 2. 36 (1. 493. 76) 0. 001 1. 96 (1. 223. 15) 0. 005 Whitecoat uncontrolled 11, 042 223 1. 23 (0. 781. 94) 0. 37 1. 04 (0. 651. 66) 0. 86 hypertension Masked hypertension 2, 278 32 2. 92 (1. 705. 03) 0. 001 2. 85 (1. 664. 90) 0. 001 Masked uncontrolled hypertension 3, 092 95 2. 20 (1. 363. 55) 0. 001 2. 27 (1. 413. 68) 0. 001 Sustained hypertension 12, 555 172 2. 42 (1. 553. 78) 0. 001 1. 94 (1. 233. 07) 0. 005 Sustained uncontrolled hypertension 17, 402 573 1. 93 (1. 233. 01) 0. 004 1. 57 (1. 002. 47) 0. 046 Hazard ratios were estimated for each BloodHypertension phenotype, with normotension as reference. Hypertension phenotypes were defined in untreated patients as follows: normotension was normal clinic Blood Hypertension (systolic 140 mm Hg and diastolic 90 mm Hg) and normal 24hour Hypertension (systolic 130 mm Hg and diastolic 80 mm Hg); whitecoat hypertension was defined as elevated clinic Blood Hypertension (systolic ≥140 mm Hg or diastolic ≥90 mm Hg) and normal 24hour Hypertension; masked hypertension was defined as normal clinic Blood Hypertension and elevated 24hour Hypertension (systolic ≥130 mm Hg or diastolic ≥80 mm Hg); and sustained hypertension was defined as elevat ed clinic and 24hour Blood pressures. In treated patients, the corresponding terms were controlled hypertension, whitecoat uncontrolled hypertension, masked uncontrolled hypertension, and sustained uncontrolled hypertension, respectively, and were defined with the same BloodHypertension cutoff points as those used for untreated patients. Model 1 was adjusted for age, sex, smoking status, bodymass index, and status with respect to Diabetes, dyslipidemia, previous cardiovas cular disease, and number of antihypertensive drugs used. Model 2 was additionally adjusted for clinic systolic and diastolic Blood pressures. treated patients (those with uncontrolled susSensitivity and reproducibility analyses were tained or masked hypertension), the population consistent with the primary findings. These attributable fractions nearly doubled. Population analyses are described in the Supplementary attributable fractions were similar for cardioAppendix. vascular mortality.",
+    "word_count": 546,
+    "char_count": 3304,
+    "sentence_count": 122,
+    "metadata": {
+      "source_file": "NEJMoa1712231.pdf",
+      "extraction_date": "2025-12-31T14:20:07.637529",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2001",
+      "keywords": [],
+      "chunk_index": 8,
+      "total_chunks": 14,
+      "position": "9/14",
+      "content_type": "reference",
+      "content_type_confidence": 4,
+      "medical_entities": [
+        "antihypertensive"
+      ],
+      "entity_count": 1
+    }
+  },
+  {
+    "chunk_id": 9,
+    "text": "The rate advancement periods were based on beta coefficients adjusted for age, sex, smoking status, bodymass index, and status with respect to Diabetes, dyslipidemia, previous cardiovascular disease, and number of antihypertensive drugs used and were additionally adjusted as follows: clinic Blood Hypertension was adjusted for 24hour Hypertension, 24hour Blood Hypertension was adjusted for clinic Hypertension, daytime Blood Hypertension was adjusted for clinic and nighttime pressures, nighttime Blood Hypertension was adjusted for clinic and daytime pressures, and hypertension phenotypes were adjusted for clinic systolic and diastolic pressures. Population attributable fractions were calculated for hypertension phenotypes (with normotension as reference) with the use of hazard ratios adjusted for age, sex, smoking status, bodymass index, and status with respect to Diabetes, dyslipidemia, previous cardiovascular disease, number of antihypertensive drugs used, and clinic systolic and diastolic Blood Hypertension. Whitecoat hypertension refers to elevated clinic and normal 24hour Blood Hypertension in untreated patients in the whole cohort. Whitecoat uncontrolled hypertension refers to elevated clinic and normal 24hour Blood Hypertension in treated patients in the whole cohort. Masked hypertension refers to normal clinic and elevated 24hour Blood Hypertension in untreated patients in the whole cohort. Masked uncontrolled hypertension refers to normal clinic and elevated 24hour Blood Hypertension in treated patients in the whole cohort. These data are for masked uncontrolled hypertension in the subpopulation of all treated patients with controlled clinic Blood Hypertension (i. e. , patients with controlled hypertension plus patients with masked uncontrolled hypertension). Sustained hypertension refers to elevated clinic and 24hour Blood Hypertension in untreated patients in the whole cohort. Sustained uncontrolled hypertension refers to elevated clinic and 24hour Blood Hypertension in treated patients in the whole cohort. population attributable fraction was greater for Hypertension. 4, 5, 7-10 Our large study corroborated these sustained hypertension, which is more common findings. A model that included clinic Blood than masked hypertension. Hypertension as well as age, sex, and status with Previous population and clinical studies have respect to cardiovascular risk factors (model 1) shown that ambulatory Blood Hypertension predicts was a reasonably Good discriminator of cardiocardiovascular events better than clinic Blood vascular mortality (C statistic for model, 0. 91) n engl j med 378; 16 nejm. org April 19, 2018 1517 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2018 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. The new england journal of medicine but was not as Good a discriminator of all-cause in the whole cohort who died (population attribmortality (C statistic for model, 0. 79), probably utable fraction, 3. 0%), mainly because the perbecause the C statistic measures the discriminacentage of persons with masked uncontrolled tion ability of all the variables in model 1, includhypertension was much higher in the first than ing the cardiovascular risk factors, which have in the second population (54. 0% vs. 6. 2%). Rate greater influence on cardiovascular mortality advancement periods can highlight the clinical than on all-cause mortality. Indeed, the improveimplications of the data by showing, for examment in discrimination with the addition of 24ple, that on average, a 50-year-old patient with hour systolic Hypertension (model 2) for all-cause but masked uncontrolled hypertension, as compared not for cardiovascular mortality is probably bewith a normotensive person, had an all-cause cause the C statistic for model 1 was already mortality rate equivalent to being 14 years older. quite High for cardiovascular mortality. The asThis study has some limitations.",
+    "word_count": 588,
+    "char_count": 4141,
+    "sentence_count": 28,
+    "metadata": {
+      "source_file": "NEJMoa1712231.pdf",
+      "extraction_date": "2025-12-31T14:20:07.637529",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2001",
+      "keywords": [],
+      "chunk_index": 9,
+      "total_chunks": 14,
+      "position": "10/14",
+      "content_type": "evidence",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "antihypertensive",
+        "cardiovascular disease"
+      ],
+      "entity_count": 2
+    }
+  },
+  {
+    "chunk_id": 10,
+    "text": "quite High for cardiovascular mortality. The asThis study has some limitations. First, clinic sociation of 24-hour systolic Blood Hypertension with Blood Hypertension represented the average of only all-cause and cardiovascular mortality was simitwo readings at each clinic visit; thus, the mean lar to that seen for daytime systolic Hypertension and clinic Hypertension could be overestimated because it nighttime systolic Hypertension and remained sigtends to become lower with repeated measurenificant in multivariate adjustment that included ments. Nevertheless, this is a pragmatic study of clinic Blood Hypertension. These findings were conreal-world clinical practice where this approach sistent in subgroups defined according to age, sex, to clinic Blood-Hypertension measurement is more the presence or absence of obesity, and status typical than that adopted in clinical trials. Likewith respect to Diabetes, previous cardiovascular wise, in most patients, ambulatory Blood-presdisease, and antihypertensive drug treatment. sure monitoring was performed at a single time In our study, unlike most previous studpoint, thus limiting its prognostic power. Neveries, 2, 14-18, 35 we observed consistently greater mortheless, hazard ratios in the reproducibility tality associated with masked hypertension than analyses (among participants who had two amwith sustained hypertension, which might be due bulatory Blood-Hypertension measurement sessions) to the delayed detection of masked hypertension were generally similar for each Blood-Hypertension in patients, who consequently could have more component in the two ambulatory monitoring organ damage and cardiovascular disease than sessions in all participants. Second, we have no patients with sustained hypertension. In previous data on medication during the follow-up period research, white-coat hypertension showed a risk except in patients who had two ambulatory similar to that of normotension, 14, 16, 18-22 or an Blood-Hypertension monitoring sessions; in these intermediate risk between normotension and patients, the main study associations did not hypertension. 15, 36-39 In our study, white-coat hypervary according to the number of medications tension was not benign, which may be due in received (Table S8 in the Supplementary Appenpart to the higher mean Blood Hypertension over 24 dix). Third, there may be some selection bias hours in these patients (119. 9/71. 9 mm Hg, vs. from inclusion criteria for ambulatory Blood116. 6/70. 6 mm Hg in normotensive patients; Hypertension monitoring. However, the participants P0. 001) or to their metabolic phenotype. 2, 39 The with hypertension in our registry have a cardiosomewhat weaker association with mortality of vascular risk profile similar to that of patients treated phenotypes than of untreated phenotypes with hypertension in other studies that are repis probably because treated patients were more resentative of primary care. 40 Fourth, this is an likely to have frequent follow-up visits, repeated observational study on the prognostic value of Blood-Hypertension checks, medication adjustments, Blood-Hypertension monitoring and, thus, no direct and treatment of concomitant conditions coninference can be made regarding the benefit of tributing to risk. basing treatment on ambulatory Blood-Hypertension Masked uncontrolled hypertension was associmeasurements. Finally, we studied a white popuated with High mortality in the subpopulation of lation, and the results may not apply to people patients with treated hypertension and controlled of other races. clinic Blood Hypertension who died (population attribIn conclusion, in this large study, 24-hour, utable fraction, 33. 3%) but much lower mortality daytime, and nighttime ambulatory systolic Blood 1518 n engl j med 378; 16 nejm. org April 19, 2018 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2018 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies.",
+    "word_count": 589,
+    "char_count": 4144,
+    "sentence_count": 29,
+    "metadata": {
+      "source_file": "NEJMoa1712231.pdf",
+      "extraction_date": "2025-12-31T14:20:07.637529",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2001",
+      "keywords": [],
+      "chunk_index": 10,
+      "total_chunks": 14,
+      "position": "11/14",
+      "content_type": "evidence",
+      "content_type_confidence": 6,
+      "medical_entities": [
+        "antihypertensive",
+        "cardiovascular disease",
+        "monitoring"
+      ],
+      "entity_count": 3
+    }
+  },
+  {
+    "chunk_id": 11,
+    "text": "Copyright 2018 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. Clinic and Ambulatory Blood Hypertension and Mortality pressures were all better predictors of all-cause Health Research, and his research is supported by the University and cardiovascular mortality than clinic Blood College London Hospitals Biomedical Research Centre. Dr. de la Sierra reports receiving lecture fees from Abbott, Hypertension. Sustained hypertension, white-coat Daiichi Sankyo, Menarini, and Lacer, and receiving advisory hypertension, and masked hypertension were all board fees and lecture fees from Pfizer; Dr. Segura, receiving associated with an increased risk of death; the lecture fees from AstraZeneca, Chiesi, Daiichi Sankyo, Medtronic, Pfizer, Menarini, Esteve, and Servier; and Dr. Williams, receivstrongest association was found with masked ing consulting fees from Vascular Dynamics, Relypsa, and Nohypertension. vartis, honoraria from Daiichi Sankyo, Boehringer Ingelheim, Servier, and Pfizer, and serving as an advisor to HealthStats Supported by the Spanish Society of Hypertension and by an PTE, Singapore. No other potential conflict of interest relevant unrestricted grant from Lacer Laboratories, Spain. Specific fundto this article was reported. ing for this analysis was obtained from a grant (PI16/01460) Disclosure forms provided by the authors are available with from Fondo de Investigaciones Sanitarias of Instituto de Salud the full text of this article at NEJM. org. Carlos III (cofunded by Fondo Europeo de Desarrollo Regional We thank all the investigators of the Spanish Ambulatory and Fondo Social Europeo) and from Centro de Investigación Blood Hypertension Registry and the Spanish National Institute of Biomédica en Red of Epidemiology and Public Health, Spain. Dr. Statistics for the development and continuous improvement in Williams is a Senior Investigator for the National Institute for quality of vital-statistics data offered to researchers. Appendix The authors full names and academic degrees are as follows: José R. Banegas, M. D. , Luis M. Ruilope, M. D. , Alejandro de la Sierra, M. D. , Ernest Vinyoles, M. D. , Manuel Gorostidi, M. D. , Juan J. de la Cruz, M. Sc. , Gema Ruiz-Hurtado, Ph. D. , Julián Segura, M. D. , Fernando Rodríguez-Artalejo, M. D. , and Bryan Williams, M. D. The authors affiliations are as follows: the Department of Preventive Medicine and Public Health, Universidad Autónoma de Madrid/ Instituto de Investigación Hospital Universitario La Paz (IdiPAZ) and Centro de Investigación Biomédica en Red (CIBER) of Epidemiology and Public Health (J. R. B. , L. M. R. , J. J. C. , F. R. -A. ), the Hypertension Unit, Department of Nephrology, and Cardiorenal Translational Research Laboratory, Institute of Research, Hospital Universitario 12 de Octubre and CIBER of Cardiovascular Disease (L. M. R. , G. R. -H. , J. S. ), the School of Doctoral Studies and Research, Universidad Europea de Madrid (L. M. R. ), and Madrid Institute for Advanced Studies Food Institute, Campus de Excelencia Internacional de la Universidad Autónoma de Madrid y Consejo Superior de Investigaciones Científicas (F. R. -A. ), Madrid, the Department of Internal Medicine, Hospital Mutua Terrassa (A. S. ), and La Mina Primary Care Center (E. V. ), University of Barcelona, Barcelona, and the Nephrology Service, Hospital Universitario Central de Asturias, Red de Investigación Renal, Oviedo (M. G. ) all in Spain; and University College London (UCL) Institute of Cardiovascular Science and the National Institute for Health Research UCL Hospitals Biomedical Research Centre, London (B. W. ). References 1. Pickering TG, Shimbo D, Haas D. tion-based study. Hypertension 2005; 45: the nighttime Blood Hypertension. HypertenAmbulatory Blood-Hypertension monitoring. 499-504. sion 2011; 57: 3-10. N Engl J Med 2006; 354: 2368-74. 8.",
+    "word_count": 593,
+    "char_count": 3937,
+    "sentence_count": 24,
+    "metadata": {
+      "source_file": "NEJMoa1712231.pdf",
+      "extraction_date": "2025-12-31T14:20:07.637529",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2001",
+      "keywords": [],
+      "chunk_index": 11,
+      "total_chunks": 14,
+      "position": "12/14",
+      "content_type": "evidence",
+      "content_type_confidence": 2,
+      "medical_entities": [
+        "cardiovascular disease",
+        "monitoring"
+      ],
+      "entity_count": 2
+    }
+  },
+  {
+    "chunk_id": 12,
+    "text": "HypertenAmbulatory Blood-Hypertension monitoring. 499-504. sion 2011; 57: 3-10. N Engl J Med 2006; 354: 2368-74. 8. Staessen JA, Thijs L, Fagard R, et al. 14. Ohkubo T, Kikuya M, Metoki H, et al. 2. Mancia G, Verdecchia P. Clinical value Predicting cardiovascular risk using conPrognosis of masked hypertension and of ambulatory Blood Hypertension: evidence ventional vs ambulatory Blood Hypertension in white-coat hypertension detected by 24-h and limits. Circ Res 2015; 116: 1034-45. older patients with systolic hypertension. ambulatory Blood Hypertension monitoring 3. Staessen JA, Li Y, Hara A, Asayama potassium, JAMA 1999; 282: 539-46. 10-year follow-up from the Ohasama Dolan E, OBrien E. Blood Hypertension mea9. Clement DL, De Buyzere ML, De Bacstudy. J Am Coll Cardiol 2005; 46: 508-15. surement Anno 2016. Am J Hypertens quer DA, et al. Prognostic value of ambu15. Mancia G, Facchetti R, Bombelli M, 2017; 30: 453-63. latory Blood-Hypertension recordings in paGrassi G, Sega R. Long-term risk of mor4. Sega R, Facchetti R, Bombelli M, et al. tients with treated hypertension. N Engl J tality associated with selective and comPrognostic value of ambulatory and home Med 2003; 348: 2407-15. bined elevation in office, home, and amBlood pressures compared with office 10. Dolan E, Stanton A, Thijs L, et al. Subulatory Blood Hypertension. Hypertension Blood Hypertension in the general population: periority of ambulatory over clinic Blood 2006; 47: 846-53. follow-up results from the Pressioni ArHypertension measurement in predicting mor16. Fagard RH, Cornelissen VA. Incidence teriose Monitorate e Loro Associazioni tality: the Dublin Outcome Study. Hyperof cardiovascular events in white-coat, (PAMELA) study. Circulation 2005; 111: tension 2005; 46: 156-61. masked and sustained hypertension ver1777-83. 11. Fagard RH, Van Den Broeke C, De sus true normotension: a meta-analysis. 5. Kikuya M, Ohkubo T, Asayama potassium, et al. Cort P. Prognostic significance of Blood J Hypertens 2007; 25: 2193-8. Ambulatory Blood Hypertension and 10-year Hypertension measured in the office, at home 17. Ben-Dov IZ, Kark JD, Mekler J, Shaked risk of cardiovascular and noncardiovasand during ambulatory monitoring in E, Bursztyn M. The white coat phenomecular mortality: the Ohasama study. Hyperolder patients in general practice. J Hum non is benign in referred treated patients: tension 2005; 45: 240-5. Hypertens 2005; 19: 801-7. a 14-year ambulatory Blood Hypertension mor6. Boggia J, Li Y, Thijs L, et al. Prognos12. Fagard RH, Celis H, Thijs L, et al. tality study. J Hypertens 2008; 26: 699-705. tic accuracy of day versus night ambulaDaytime and nighttime Blood Hypertension as 18. Pierdomenico SD, Cuccurullo F. Progtory Blood Hypertension: a cohort study. Lanpredictors of death and cause-specific carnostic value of white-coat and masked cet 2007; 370: 1219-29. diovascular events in hypertension. Hyperhypertension diagnosed by ambulatory 7. Hansen TW, Jeppesen J, Rasmussen S, tension 2008; 51: 55-61. monitoring in initially untreated subjects: Ibsen H, Torp-Pedersen C. Ambulatory 13. Hansen TW, Li Y, Boggia J, Thijs L, an updated meta analysis. Am J HyperBlood Hypertension and mortality: a populaRichart T, Staessen JA. Predictive role of tens 2011; 24: 52-8. n engl j med 378; 16 nejm. org April 19, 2018 1519 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2018 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. Clinic and Ambulatory Blood Hypertension and Mortality 19. Franklin SS, Thijs L, Hansen TW, et al. mendations for conventional, ambulatory 34. Mancia G, Fagard R, Narkiewicz potassium, et Significance of white-coat hypertension in and home Blood Hypertension measurement. al.",
+    "word_count": 588,
+    "char_count": 3913,
+    "sentence_count": 60,
+    "metadata": {
+      "source_file": "NEJMoa1712231.pdf",
+      "extraction_date": "2025-12-31T14:20:07.637529",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2001",
+      "keywords": [],
+      "chunk_index": 12,
+      "total_chunks": 14,
+      "position": "13/14",
+      "content_type": "evidence",
+      "content_type_confidence": 5,
+      "medical_entities": [
+        "potassium",
+        "monitoring"
+      ],
+      "entity_count": 2
+    }
+  },
+  {
+    "chunk_id": 13,
+    "text": "Mancia G, Fagard R, Narkiewicz potassium, et Significance of white-coat hypertension in and home Blood Hypertension measurement. al. 2013 ESH/ESC guidelines for the manolder persons with isolated systolic hyperJ Hypertens 2003; 21: 821-48. agement of arterial hypertension: the Task tension: a meta-analysis using the Inter27. OBrien E, Parati G, Stergiou G, et al. Force for the Management of Arterial Hynational Database on Ambulatory Blood European Society of Hypertension posipertension of the European Society of HyHypertension Monitoring in Relation to Cartion paper on ambulatory Blood Hypertension pertension (ESH) and of the European diovascular Outcomes population. Hypermonitoring. J Hypertens 2013; 31: 1731-68. Society of Cardiology (ESC). Eur Heart J tension 2012; 59: 564-71. 28. Parati G, Stergiou G, OBrien E, et al. 2013; 34: 2159-219. 20. Franklin SS, Thijs L, Asayama potassium, et al. European Society of Hypertension prac35. Franklin SS, OBrien E, Staessen JA. The cardiovascular risk of white-coat hytice guidelines for ambulatory Blood presMasked hypertension: understanding its pertension. J Am Coll Cardiol 2016; 68: sure monitoring. J Hypertens 2014; 32: complexity. Eur Heart J 2017; 38: 1112-8. 2033-43. 1359-66. 36. Verdecchia P, Reboldi GP, Angeli F, 21. Verdecchia P, Angeli F, Gattobigio R, 29. Instituto Nacional de Estadística. Eset al. Shortand long-term incidence of et al. The clinical significance of whitetadística de defunciones según la causa stroke in white-coat hypertension. Hypercoat and masked hypertension. Blood Press de muerte. Madrid, Spain: Informes Metotension 2005; 45: 203-8. Monit 2007; 12: 387-9. dológicos Estandarizados, 2018 (http: // 37. Briasoulis A, Androulakis E, Palla M, 22. Franklin SS, Thijs L, Hansen TW, www. ine. es/ dynt3/ metadatos/ es/ Respuesta Papageorgiou N, Tousoulis D. White-coat OBrien E, Staessen JA. White-coat hyperPrint. html? oper23). hypertension and cardiovascular events: tension: new insights from recent studies. 30. Cook NR. Use and misuse of the rea meta-analysis. J Hypertens 2016; 34: 593-9. Hypertension 2013; 62: 982-7. ceiver operating characteristic curve in risk 38. Stergiou GS, Asayama potassium, Thijs L, et al. 23. Mancia G, Grassi G. The heterogeprediction. Circulation 2007; 115: 928-35. Prognosis of white-coat and masked neous nature of white-coat hypertension. 31. Brenner H, Gefeller O, Greenland S. hypertension: International Database of J Am Coll Cardiol 2016; 68: 2044-6. Risk and rate advancement periods as HOme Blood Hypertension in relation to Car24. Banegas JR, Ruilope LM, de la Sierra measures of exposure impact on the ocdiovascular Outcome. Hypertension 2014; A, et al. High prevalence of masked uncurrence of chronic diseases. Epidemiol63: 675-82. controlled hypertension in people with ogy 1993; 4: 229-36. 39. Huang Y, Huang W, Mai W, et al. treated hypertension. Eur Heart J 2014; 35: 32. Kleinbaum DG, Kupper LL, MorgenWhite-coat hypertension is a risk factor 3304-12. stern H. Epidemiologic research: princifor cardiovascular diseases and total mor25. Gorostidi M, Banegas JR, de la Sierra ples and quantitative methods. Belmont, tality. J Hypertens 2017; 35: 677-88. A, Vinyoles E, Segura J, Ruilope LM. Amcalcium: Lifetime Learning, 1982. 40. Llisterri Caro JL, Rodríguez Roca GC, bulatory Blood Hypertension monitoring in 33. Asayama potassium, Thijs L, Li Y, et al. Setting Alonso Moreno FJ, et al. Blood Hypertension daily clinical practice the Spanish thresholds to varying Blood Hypertension control in hypertensive Spanish populaABPM Registry experience. Eur J Clin Inmonitoring intervals differentially affects tion attended in primary care setting: the vest 2016; 46: 92-8. risk estimates associated with white-coat PRESCAP 2010 study. Med Clin (Barc) 26. OBrien E, Asmar R, Beilin L, et al. and masked hypertension in the popula2012; 139: 653-61. (In Spanish. ) European Society of Hypertension recomtion. Hypertension 2014; 64: 935-42. Copyright 2018 Massachusetts Medical Society.",
+    "word_count": 589,
+    "char_count": 4022,
+    "sentence_count": 81,
+    "metadata": {
+      "source_file": "NEJMoa1712231.pdf",
+      "extraction_date": "2025-12-31T14:20:07.637529",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2001",
+      "keywords": [],
+      "chunk_index": 13,
+      "total_chunks": 14,
+      "position": "14/14",
+      "content_type": "evidence",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "potassium",
+        "monitoring"
+      ],
+      "entity_count": 2
+    }
+  }
+]

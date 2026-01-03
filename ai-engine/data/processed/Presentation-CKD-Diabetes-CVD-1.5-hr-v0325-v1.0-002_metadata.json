@@ -1,0 +1,18 @@
+{
+  "total_pages": 81,
+  "raw_text_length": 40127,
+  "cleaned_text_length": 47492,
+  "source_file": "Presentation-CKD-Diabetes-CVD-1.5-hr-v0325-v1.0-002.pdf",
+  "extraction_date": "2025-12-31T14:51:49.758553",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "kidney function",
+    "renal",
+    "nephrology"
+  ],
+  "total_chunks": 12,
+  "avg_chunk_size": 580.1666666666666,
+  "processing_date": "2025-12-31T14:51:49.977746"
+}

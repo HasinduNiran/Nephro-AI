@@ -1,0 +1,29 @@
+[
+  {
+    "chunk_id": 0,
+    "text": "www. Kidney-international. org contents VOL 105 ISSUE 4S APRIL 2024 Kidney Disease: Improving Global Outcomes 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease S117 Kidney Disease: Improving Global Outcomes 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease Kidney Disease: Improving Global Outcomes (Kidney Disease: Improving Global Outcomes) chronic kidney disease Work Group OPEN",
+    "word_count": 63,
+    "char_count": 467,
+    "sentence_count": 3,
+    "metadata": {
+      "source_file": "Table-of-Contents_2024_Kidney-International.pdf",
+      "extraction_date": "2025-12-31T14:55:30.175234",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "year": "2024",
+      "keywords": [
+        "chronic kidney disease"
+      ],
+      "chunk_index": 0,
+      "total_chunks": 1,
+      "position": "1/1",
+      "content_type": "recommendation",
+      "content_type_confidence": 1,
+      "medical_entities": [
+        "chronic kidney disease",
+        "guideline"
+      ],
+      "entity_count": 2
+    }
+  }
+]

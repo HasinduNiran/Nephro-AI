@@ -1,0 +1,20 @@
+{
+  "total_documents": 13,
+  "source_file": "J of Clinical Hypertension - 2008 - Pickering - Call to Action on Use and Reimbursement for Home Blood Pressure Monitoring _chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\J of Clinical Hypertension - 2008 - Pickering - Call to Action on Use and Reimbursement for Home Blood Pressure Monitoring _chunks.json",
+  "preparation_date": "2025-12-31T14:58:45.481728",
+  "avg_word_count": 567.3076923076923,
+  "content_types": {
+    "recommendation": 6,
+    "monitoring": 3,
+    "treatment": 2,
+    "evidence": 2
+  },
+  "medical_entity_coverage": {
+    "CKD": 3,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 1
+  }
+}

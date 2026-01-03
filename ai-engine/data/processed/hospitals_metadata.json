@@ -1,0 +1,19 @@
+{
+  "total_pages": 1,
+  "raw_text_length": 6877,
+  "cleaned_text_length": 6444,
+  "source_file": "hospitals.txt",
+  "extraction_date": "2026-01-01T22:04:12.013359",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "dialysis",
+    "renal",
+    "nephrology"
+  ],
+  "total_chunks": 2,
+  "avg_chunk_size": 394.5,
+  "processing_date": "2026-01-01T22:04:12.471882"
+}

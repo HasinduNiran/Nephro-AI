@@ -1,0 +1,17 @@
+{
+  "total_pages": 9,
+  "raw_text_length": 18114,
+  "cleaned_text_length": 19263,
+  "source_file": "CATAG-Topic_Medicines-and-the-Kidney_Teaching-Tool_F.pdf",
+  "extraction_date": "2025-12-31T14:50:12.450660",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2024",
+  "keywords": [
+    "kidney function",
+    "renal"
+  ],
+  "total_chunks": 6,
+  "avg_chunk_size": 485.8333333333333,
+  "processing_date": "2025-12-31T14:50:12.523130"
+}

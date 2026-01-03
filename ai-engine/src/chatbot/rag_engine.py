@@ -15,16 +15,17 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from chatbot.enhanced_query_vectordb import EnhancedVectorQuery
 from chatbot.patient_data import PatientDataManager
 from chatbot.llm_engine import LLMEngine
+from utils.logger import ConsoleLogger as Log
 
 class RAGEngine:
     def __init__(self):
         """Initialize all components"""
-        print("⚙️ Initializing RAG Engine...")
+        Log.section("Initializing RAGEngine")
         self.vector_db = EnhancedVectorQuery()
         self.patient_data = PatientDataManager()
         self.llm = LLMEngine()
         self.cache = {} # Simple in-memory cache (Use Redis for production)
-        print("✅ RAG Engine Ready")
+        Log.success("RAG Engine Ready")
 
     def get_cache_key(self, query, patient_id):
         data_version = self.patient_data.get_last_update_timestamp(patient_id)
@@ -83,32 +84,49 @@ class RAGEngine:
         return 'en'
 
     def process_query(self, query: str, patient_id: str = "default_patient", chat_history: List[Dict[str, str]] = []) -> Dict[str, Any]:
-        print("\n" + "="*50)
-        print(f"🚀 PROCESSING QUERY: '{query}'")
-        print("="*50)
+        Log.section(f"PROCESSING QUERY: '{query}'")
 
         # 1. CHECK CACHE
         cache_key = self.get_cache_key(query, patient_id)
         if cache_key in self.cache:
-            print(f"⚡ CACHE HIT")
+            Log.step("⚡", "CACHE HIT", "Returning cached response")
             return self.cache[cache_key]
 
         # 2. DETERMINE OUTPUT LANGUAGE
         target_lang = self._detect_output_language(query)
-        print(f"🌍 LANGUAGE DETECTED: {'SINHALA' if target_lang == 'si' else 'ENGLISH'}")
+        Log.step("🔍", "Detecting Language", f"Result: {'SINHALA' if target_lang == 'si' else 'ENGLISH'}")
 
         # 3. BRIDGE LAYER (Translation)
         english_query = query
         if target_lang == 'si':
-            print(f"🔄 BRIDGE: Translating Input...")
+            Log.step("🔄", "NLU BRIDGE: Translating Input...")
             english_query = self.llm.translate_to_english(query, chat_history) 
-            print(f"   ↳ Result: '{english_query}'")
+            Log.step("  ", "Translation Result", f"'{english_query}'")
 
-        # 4. RAG RETRIEVAL
-        print(f"📡 RAG: Searching Knowledge Base...")
+        # 3.5 [NEW] CONTEXT REWRITER
+        # Rewrite query to be standalone (e.g. "it" -> "kidney disease")
+        search_query = english_query
+        if chat_history:
+             # Log handled inside the method, but we can add a high level step here
+             pass
+             
+        search_query = self.llm.contextualize_query(english_query, chat_history)
+
+        # 4. RAG RETRIEVAL (Use REWRITTEN query)
+        Log.step("📡", "RAG: Searching Vector DB", f"Query: '{search_query}'")
         t_retrieval_start = time.time()
-        search_results = self.vector_db.query_with_nlu(english_query)
+        search_results = self.vector_db.query_with_nlu(search_query) # <--- Use Search Query
         t_retrieval_end = time.time()
+        
+        if search_results and 'results' in search_results:
+             count = len(search_results['results'])
+             Log.step("📥", "DB Retrieval", f"Found {count} candidates")
+             for idx, res in enumerate(search_results['results']):
+                 doc_id = res.get('metadata', {}).get('source', 'Unknown')
+                 score = res.get('score', 0)
+                 # print(f"      [{idx+1}] {doc_id} (Score: {score:.4f})") 
+        else:
+             Log.warning("DB Retrieval: No chunks found")
         
         context_documents = []
         source_metadata = []
@@ -119,19 +137,14 @@ class RAGEngine:
                 if item.get('metadata'):
                     source_metadata.append(item['metadata'])
         
-        print(f"   ↳ Found {len(context_documents)} documents ({t_retrieval_end - t_retrieval_start:.2f}s)")
-
         # 5. RETRIEVE PATIENT DATA (WITH NEW LOGS)
         # -----------------------------------------------------------------
         patient_context = self.patient_data.get_patient_context_string(patient_id)
-        print(f"👤 PATIENT DATA: Loaded record for '{patient_id}'")
-        # Print a short preview of the medical data to confirm it's correct
-        preview = patient_context.replace('\n', ' ')[:100] 
-        print(f"   ↳ Context Preview: {preview}...")
+        Log.step("👤", "Patient Data", f"Loaded record for '{patient_id}'")
         # -----------------------------------------------------------------
 
         # 6. GENERATE RESPONSE (Brain Layer)
-        print("🧠 BRAIN: Generating Medical Response...")
+        Log.step("🧠", "BRAIN: Reasoning...")
         t_llm_start = time.time()
         
         llm_response = self.llm.generate_response(
@@ -141,18 +154,17 @@ class RAGEngine:
             history=chat_history 
         )
         t_llm_end = time.time()
-        print(f"   ↳ Generated ({t_llm_end - t_llm_start:.2f}s): {llm_response[:50]}...")
+        Log.step("  ", "Generated Response", f"({t_llm_end - t_llm_start:.2f}s) {llm_response[:50]}...")
 
         # 6. STYLE LAYER (Translation Back)
         final_response = llm_response
         
         if target_lang == 'si':
-            print(f"🎨 STYLE: Translating Output to Sinhala...")
+            Log.step("🎨", "STYLE: Sinhala Localization...")
             final_response = self.llm.translate_to_sinhala_fallback(llm_response)
-            # LOG THE RESULT TO CATCH GIBBERISH
-            print(f"   ↳ Final Sinhala: {final_response[:100]}...") 
+            Log.success(f"Final Output: {final_response[:50]}...")
         else:
-            print("ℹ️ STYLE: Skipped (English Mode)")
+            Log.step("ℹ️", "STYLE: Skipped (English Mode)")
         
         response_payload = {
             "response": final_response,
@@ -163,7 +175,6 @@ class RAGEngine:
         }
         
         self.cache[cache_key] = response_payload
-        print("="*50 + "\n")
         
         return response_payload
 

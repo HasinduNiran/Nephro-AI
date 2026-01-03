@@ -1,0 +1,16 @@
+{
+  "total_pages": 20,
+  "raw_text_length": 15781,
+  "cleaned_text_length": 15731,
+  "source_file": "furenalpre-courseworkbook.pdf",
+  "extraction_date": "2025-12-31T14:22:31.608845",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "year": "2016",
+  "keywords": [
+    "renal"
+  ],
+  "total_chunks": 5,
+  "avg_chunk_size": 462.4,
+  "processing_date": "2025-12-31T14:22:31.672269"
+}

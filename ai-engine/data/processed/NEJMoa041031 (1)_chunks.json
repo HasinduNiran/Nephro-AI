@@ -1,0 +1,445 @@
+[
+  {
+    "chunk_id": 0,
+    "text": "new england journal medicine The of original article Chronic Kidney Disease and the Risks of Death, Cardiovascular Events, and Hospitalization Alan S. Go, M. D. , Glenn M. Chertow, M. D. , M. P. H. , Dongjie Fan, M. S. P. H. , Charles E. McCulloch, Ph. D. , and Chi-yuan Hsu, M. D. abstract background From the Division of Research, Kaiser PerEnd-stage renal disease substantially increases the risks of death, cardiovascular dismanente of Northern California, Oakland ease, and use of specialized health care, but the effects of less severe Kidney dysfunction (A. S. G. , D. F. ); and the Departments of on these outcomes are less well defined. Epidemiology and Biostatistics (A. S. G. , G. M. C. , C. E. M. ) and Medicine (A. S. G. , G. M. C. , C. -y. H. ), University of California, methods San Francisco, San Francisco. Address reWe estimated the longitudinal glomerular estimated glomerular filtration rate (glomerular filtration rate) among 1, 120, 295 print requests to Dr. Go at the Division of Research, Kaiser Permanente of Northern adults within a large, integrated system of health care delivery in whom serum creatiCalifornia, 2000 Broadway, 3rd Fl. , Oakland, nine had been measured between 1996 and 2000 and who had not undergone Dialysis calcium 94612-2304, or at alan. s. gokp. org. or Kidney transplantation. We examined the multivariable association between the estiN Engl J Med 2004; 351: 1296-305. mated glomerular filtration rate and the risks of death, cardiovascular events, and hospitalization. Copyright 2004 Massachusetts Medical Society. results The median follow-up was 2. 84 years, the mean age was 52 years, and 55 percent of the group were women. After adjustment, the risk of death increased as the glomerular filtration rate decreased below 60 ml per minute per 1. 73 m2 of body-surface area: the adjusted hazard ratio for death was 1. 2 with an estimated glomerular filtration rate of 45 to 59 ml per minute per 1. 73 m2 (95 percent confidence interval, 1. 1 to 1. 2), 1. 8 with an estimated glomerular filtration rate of 30 to 44 ml per minute per 1. 73 m2 (95 percent confidence interval, 1. 7 to 1. 9), 3. 2 with an estimated glomerular filtration rate of 15 to 29 ml per minute per 1. 73 m2 (95 percent confidence interval, 3. 1 to 3. 4), and 5. 9 with an estimated glomerular filtration rate of less than 15 ml per minute per 1. 73 m2 (95 percent confidence interval, 5. 4 to 6. 5). The adjusted hazard ratio for cardiovascular events also increased inversely with the estimated glomerular filtration rate: 1. 4 (95 percent confidence interval, 1. 4 to 1. 5), 2. 0 (95 percent confidence interval, 1. 9 to 2. 1), 2. 8 (95 percent confidence interval, 2. 6 to 2. 9), and 3. 4 (95 percent confidence interval, 3. 1 to 3. 8), respectively. The adjusted risk of hospitalization with a reduced estimated glomerular filtration rate followed a similar pattern. conclusions An independent, graded association was observed between a reduced estimated glomerular filtration rate and the risk of death, cardiovascular events, and hospitalization in a large, communitybased population. These findings highlight the clinical and public health importance of chronic renal insufficiency. 1296 n engl j med 351; 13 www. nejm. org september 23, 2004 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2004 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies.",
+    "word_count": 600,
+    "char_count": 3580,
+    "sentence_count": 53,
+    "metadata": {
+      "source_file": "NEJMoa041031 (1).pdf",
+      "extraction_date": "2025-12-31T14:48:01.418069",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal"
+      ],
+      "chunk_index": 0,
+      "total_chunks": 13,
+      "position": "1/13",
+      "content_type": "evidence",
+      "content_type_confidence": 4,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "calcium",
+        "dialysis"
+      ],
+      "entity_count": 4
+    }
+  },
+  {
+    "chunk_id": 1,
+    "text": "Copyright 2004 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. m chronic Kidney disease and adverse outcomes ore than 400, 000 americans Permanente of Northern California, a large integrathave end-stage renal disease, and over ed health care system insuring more than 35 per300, 000 of these patients require maincent of the adult population of the San Francisco 1 tenance Dialysis. Mortality rates remain above 20 Bay Area, whose Kidney function was known. To be percent per year with the use of Dialysis, with more eligible for the registry, the subjects had to have than half of the deaths related to cardiovascular had one or more outpatient determinations of sedisease. The annual direct medical costs for endrum Creatinine levels recorded in a health-plan lab1 stage renal disease are nearly 23 billion. Although oratory database between January 1, 1996, and Dean estimated 8 million adults in the United States cember 31, 2000. We excluded subjects who had have chronic Kidney disease of at least stage 3 (as already received a Kidney transplant or who were defined by an estimated glomerular estimated glomerular filtration rate receiving maintenance Dialysis at entry. Given the glomerular filtration rate of less than 60 ml per minute per 1. 73 m2 of nature of the study, the institutional review board 2 body-surface area), less is known about the rates of the Kaiser Foundation Research Institute deterof death, cardiovascular disease, and resource use mined that informed consent was not required. among persons with a reduced estimated glomerular filtration rate who We used the abbreviated Modification of Diet are not yet receiving maintenance Dialysis. in Renal Disease (MDRD) equation to estimate 19, 20 Several, but not all, previous studies suggested the glomerular filtration rate. We calibrated the measurement of sethat mild-to-moderate elevations in serum creatirum Creatinine by the Kaiser regional laboratory 21 nine levels are associated with increased rates of against that of the MDRD core laboratory. The 3-9 death from any cause and from cardiovascular date of the first measurement of glomerular filtration rate during the 5, 7, 10-13 causes, but whether chronic Kidney disease study period was considered the subjects index independently increases the risk of any type of cardate (baseline). Changes in glomerular filtration rate during follow-up 4-7, 14 diovascular disease has not been established. were estimated from serum Creatinine determinaFurthermore, previous studies have been limited by tions not associated with hospitalizations to reflect the inclusion of relatively small numbers of permore accurately stable estimates of Kidney func3-8, 11-17 sons with Kidney disease, the use of dichottion. We used a modified National Kidney Foun3-8, 15 22 omous groups of estimated Kidney function, dation classification of chronic Kidney disease, the use of the serum Creatinine level alone as a which classifies estimated glomerular filtration rate in the following proxy for glomerular filtration rate and nonuniform cutoff values to deranges: at least 60 ml per minute per 1. 73 m2, 45 to fine Kidney disease, 3-11, 15 lack of information on 59 ml per minute per 1. 73 m2 (stage 3a), 30 to 44 ml longitudinal changes in glomerular filtration rate and coexisting conper minute per 1. 73 m2 (stage 3b), 15 to 29 ml per ditions, 3-11, 14-17 selected populations, 6, 8, 11, 14, 16 minute per 1. 73 m2 (stage 4), and less than 15 ml and populations with limited racial or ethnic diverper minute per 1. 73 m2 (stage 5). sity.",
+    "word_count": 575,
+    "char_count": 3642,
+    "sentence_count": 23,
+    "metadata": {
+      "source_file": "NEJMoa041031 (1).pdf",
+      "extraction_date": "2025-12-31T14:48:01.418069",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal"
+      ],
+      "chunk_index": 1,
+      "total_chunks": 13,
+      "position": "2/13",
+      "content_type": "evidence",
+      "content_type_confidence": 2,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "kidney function",
+        "end-stage renal disease",
+        "creatinine",
+        "serum creatinine",
+        "diet",
+        "dialysis",
+        "kidney transplant",
+        "cardiovascular disease"
+      ],
+      "entity_count": 10
+    }
+  },
+  {
+    "chunk_id": 2,
+    "text": "73 m2 (stage 5). sity. In addition, few studies have investigated the association between chronic Kidney disease and the characteristics of the subjects 18 risk of hospitalization, which has important ecoData on age, sex, and racial or ethnic group were nomic implications. obtained from health-plan databases. All names Using longitudinal measures of estimated glomerular filtration rate, and identifiers were removed before any data were a more accurate method of assessing Kidney funcanalyzed, according to procedures approved by the tion than the measurement of serum Creatinine institutional review board at Kaiser. alone, we examined the effect of the severity of kidWe identified coexisting illnesses using vali23-26 ney dysfunction on the risks of death, cardiovascular dated methods based on health-plan databases events, and hospitalization among a large, diverse for hospitalization-discharge diagnoses, ambulagroup of adults. We hypothesized that there would tory diagnoses, laboratory results, and medication be a graded, independent association between the prescriptions, as well as regional cancer-registry 24 estimated glomerular filtration rate and the risks of these outcomes. data (diagnostic criteria are listed in the Appendix). These diagnoses included coronary disease, methods stroke or transient ischemic attack, Heart failure, peripheral arterial disease, Diabetes mellitus, hyperstudy sample and measures tension, dyslipidemia, lung or Liver disease, cancer, of Kidney function and dementia. We also evaluated laboratory-dataThe Kaiser Permanente Renal Registry included all base entries for serum albumin to identify subjects adult members (20 years of age or older) of Kaiser with a value of 3. 5 g per deciliter or less. The presn engl j med 351; 13 www. nejm. org september 23, 2004 1297 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2004 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. new england journal medicine The of ence of proteinuria was based on laboratory-datavariates included as dichotomous variables. For rebase entries of Urine dipstick results of 1 or greater current outcomes of cardiovascular events and hos- (approximately 30 magnesium per deciliter or greater) in pitalizations, we used a sandwich estimate of the the absence of a possible urinary tract infection variancecovariance matrix to obtain standard er- (i. e. , concomitant positive test for urinary nitrite or rors accommodating the clustering of observa31 esterase). tions on subjects. In the model for death, we did Socioeconomic status was assigned with the use not include cardiovascular events or hospitalizaof 2000 U. S. Census-block data, which generally tions that occurred after the index date, since they 28 correspond to city blocks or neighborhoods. were hypothesized to be part of the pathway by Subjects with a Low income were defined as those which reduced glomerular filtration rate may increase the risk of death. living in a Census-block group with a median annuEach subject and time was assigned an estial household income under 35, 000, and those with mated glomerular filtration rate with the use of the last-value-carrieda Low level of education were categorized as those forward method. Given the varying numbers and living in a Census-block group in which more than spacing of measurements of glomerular filtration rate for each subject, 25 percent of residents older than 25 years had less this approach may preferentially attribute outcome than a 12th-grade education. events to higher levels of glomerular filtration rate.",
+    "word_count": 561,
+    "char_count": 3770,
+    "sentence_count": 26,
+    "metadata": {
+      "source_file": "NEJMoa041031 (1).pdf",
+      "extraction_date": "2025-12-31T14:48:01.418069",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal"
+      ],
+      "chunk_index": 2,
+      "total_chunks": 13,
+      "position": "3/13",
+      "content_type": "evidence",
+      "content_type_confidence": 2,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "kidney function",
+        "proteinuria",
+        "creatinine",
+        "magnesium",
+        "serum creatinine",
+        "heart failure",
+        "stage 5"
+      ],
+      "entity_count": 9
+    }
+  },
+  {
+    "chunk_id": 3,
+    "text": "events to higher levels of glomerular filtration rate. To address this possibility we analyzed a subgroup of subjects who outcomes had had regular serum Creatinine determinations Data on subjects were censored if they underwent spaced between 1 and 14 months apart throughout Kidney transplantation or disenrolled from the follow-up. Also, although age and sex are imporhealth plan, which was defined as a continuous gap tant predictors of adverse events and are incorpoin membership of more than 90 days without the rated into the MDRD equation, we found no interinterim use of services. Incident end-stage renal disactions among age, sex, and glomerular filtration rate and thus present ease, defined by the receipt of maintenance dialyonly the main-model results. sis or a Kidney transplant, was identified from a All analyses were conducted with the use of 29 comprehensive health-plan registry. The primary SAS software (version 8. 2). The institutional review outcomes of interest included death from any cause, board of each collaborating institution approved cardiovascular events, and hospitalizations through the study. December 31, 2000. Death was identified from a search of health-plan databases and the California results 30 death registry. A cardiovascular event was defined as hospitalization for coronary disease, Heart failbaseline characteristics ure, stroke, or peripheral arterial disease (see the We identified 1, 120, 295 adults who had had one Appendix). or more outpatient measurements of serum creatinine, had not previously received Dialysis or a kidstatistical analysis ney transplant, and were alive on the index date. Event rates were directly adjusted for age with the The median number of outpatient measurements use of the age distribution of the adult source popof serum Creatinine per subject during follow-up ulation and are presented as the number of events was three (interquartile range, one to four). per 100 person-years, with 95 percent confidence Subjects with a Low estimated glomerular filtration rate at baseline intervals. To evaluate the independent effect of the were older than those with an estimated glomerular filtration rate of estimated glomerular filtration rate on outcomes, we used Cox proporat least 60 ml per minute per 1. 73 m2, and there tional-hazards models with time-dependent covarwas greater minority-group representation among iates for changing glomerular filtration rate and coexisting illnesses. subjects with a Low estimated glomerular filtration rate (Table 1). As All variables known to be associated with either the compared with the group with an estimated glomerular filtration rate estimated glomerular filtration rate or the outcomes were included in of at least 60 ml per minute per 1. 73 m2, the groups the final models, along with any variables associwith a reduced estimated glomerular filtration rate also had a higher ated with a reduced estimated glomerular filtration rate (i. e. , less than prevalence of prior cardiovascular disease, Protein60 ml per minute per 1. 73 m2) in univariate analyuria, Diabetes, hypertension, a serum albumin level ses with a P value of less than 0. 01. Age was entered of 3. 5 g per deciliter or less, prior hospitalizations, as a categorical variable (20 to 49, 50 to 59, 60 to and other coexisting illnesses (Table 1). Among the 69, 70 to 79, and 80 years or older), with other co60. 7 percent of subjects who had one or more Urine 1298 n engl j med 351; 13 www. nejm. org september 23, 2004 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2004 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies.",
+    "word_count": 597,
+    "char_count": 3819,
+    "sentence_count": 31,
+    "metadata": {
+      "source_file": "NEJMoa041031 (1).pdf",
+      "extraction_date": "2025-12-31T14:48:01.418069",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal"
+      ],
+      "chunk_index": 3,
+      "total_chunks": 13,
+      "position": "4/13",
+      "content_type": "reference",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "glomerular filtration rate",
+        "creatinine",
+        "serum creatinine",
+        "dialysis",
+        "kidney transplant",
+        "cardiovascular disease"
+      ],
+      "entity_count": 6
+    }
+  },
+  {
+    "chunk_id": 4,
+    "text": "of less than 15 ml per minute per 1. 73 m2 (Table 2). Among the 21. 2 percent of subjects who had one or The adjusted risk of any cardiovascular event also more serum albumin determinations at any time increased as the estimated glomerular filtration rate decreased, ranging during follow-up, 27. 8 percent were found to have from a 43 percent increase in risk with an estimatreduced levels. outcomes according to the estimated glomerular filtration rate The median follow-up among the 1, 120, 295 sub15 jects was 2. 84 years (interquartile range, 1. 65 to 4. 01), which amounts to 3, 132, 192 person-years. Overall, 21. 8 percent of subjects disenrolled during follow-up, but those who disenrolled were substantially younger, were relatively unlikely to have a reduced estimated glomerular filtration rate, and had fewer coexisting illnesses than those who remained enrolled (data not shown). The vital status was complete for all subjects. During follow-up, 3171 (0. 28 percent) subjects began maintenance Dialysis and 329 (0. 03 percent) underwent Kidney transplantation. There were 51, 424 deaths, 138, 291 cardiovascular events, and 554, 651 hospitalizations. Age-standardized rates of death, cardiovascular events, and hospitalization increased substantially with progressively Lower estimated GFRs (Fig. 1). The group of subjects with an estimated glomerular filtration rate of at least 60 ml per minute per 1. 73 m2 was used as the reference group in the analysis of the association between the level of the estimated glomerular filtration rate and each outcome. After adjustment for differences in sociodemographic characteristics and the presence or absence of prior cardiovascular disease, prior hospitalizations, Diabetes, hypertension, dyslipidemia, lung or Liver disease, cancer, a serum albumin level of 3. 5 g per deciliter or less, dementia, Proteinuria, and the initiation of Dialysis during followup, the risk of death from any cause increased sharply as the estimated glomerular filtration rate declined, ranging from a 17 percent increase in risk with an estimated glomerular filtration rate of 45 to 59 ml per minute per 1. 73 m2 to Figure 1. Age-Standardized Rates of Death from Any Cause (Panel A), Cardiovascular Events (Panel B), and Hospitalization (Panel C), According to the Estimated glomerular filtration rate among 1, 120, 295 Ambulatory Adults. A cardiovascular event was defined as hospitalization for coronary Heart disease, Heart failure, ischemic stroke, and peripheral arterial disease. Error bars represent 95 percent confidence intervals. The rate of events is listed above each bar. 1300 n engl j med 351; 13 www. nejm. org september 23, 2004 htaeD fo etaR dezidradnatS-egA )ry-nosrep 001 rep( esuaC ynA morf 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0 ≥60 4559 3044 1529 15 Estimated glomerular filtration rate (milliliters per minute/1. 73 m2) No. of Events 25, 803 11, 569 7802 4408 1842 40 ralucsavoidraC fo etaR dezidradnatS-egA )ry-nosrep 001 rep( stnevE 35 30 25 20 15 10 5 0 ≥60 4559 3044 1529 15 Estimated glomerular filtration rate (milliliters per minute/1. 73 m2) No. of Events 73, 108 34, 690 18, 580 8809 3824 150 noitazilatipsoH fo etaR dezidradnatS-egA )ry-nosrep 001 rep( A 14. 14 11. 36 4. 76 0. 76 1. 08 B 36. 60 21. 80 11. 29 3. 65 2. 11 C 144. 61 140 130 120 110 100 86. 75 90 80 70 60 50 45. 26 40 30 20 13. 54 17. 22 10 0 ≥60 4559 3044 1529 15 Estimated glomerular filtration rate (milliliters per minute/1. 73 m2) No.",
+    "word_count": 576,
+    "char_count": 3473,
+    "sentence_count": 50,
+    "metadata": {
+      "source_file": "NEJMoa041031 (1).pdf",
+      "extraction_date": "2025-12-31T14:48:01.418069",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal"
+      ],
+      "chunk_index": 4,
+      "total_chunks": 13,
+      "position": "5/13",
+      "content_type": "reference",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "glomerular filtration rate",
+        "proteinuria",
+        "dialysis",
+        "cardiovascular disease",
+        "heart failure"
+      ],
+      "entity_count": 5
+    }
+  },
+  {
+    "chunk_id": 5,
+    "text": "54 17. 22 10 0 ≥60 4559 3044 1529 15 Estimated glomerular filtration rate (milliliters per minute/1. 73 m2) No. of Events 366, 757 106, 543 49, 177 20, 581 11, 593 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2004 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. chronic Kidney disease and adverse outcomes ed glomerular filtration rate of 45 to 59 ml per minute per 1. 73 m2 to Table 2. Adjusted Hazard Ratio for Death from Any Cause, Cardiovascular a 343 percent increase with an estimated glomerular filtration rate of Events, and Hospitalization among 1, 120, 295 Ambulatory Adults, less than 15 ml per minute per 1. 73 m2 (Table 2). FiAccording to the Estimated glomerular filtration rate. nally, the adjusted risk of hospitalization increased as the estimated glomerular filtration rate decreased, ranging from an Any Death from Cardiovascular Any increase of 14 percent with an estimated glomerular filtration rate of Estimated glomerular filtration rate Any Cause Event Hospitalization 45 to 59 ml per minute per 1. 73 m2 to an increase adjusted hazard ratio (95 percent confidence interval) of 315 percent with an estimated glomerular filtration rate of less than 15 ml per minute per 1. 73 m2 (Table 2). The pres- ≥60 milliliters per minute/1. 73 m2 1. 00 1. 00 1. 00 ence of documented proteinuria was also an inde4559 milliliters per minute/1. 73 m2 1. 2 (1. 11. 2) 1. 4 (1. 41. 5) 1. 1 (1. 11. 1) pendent predictor of death (adjusted hazard ratio, 3044 milliliters per minute/1. 73 m2 1. 8 (1. 71. 9) 2. 0 (1. 92. 1) 1. 5 (1. 51. 5) 1. 3; 95 percent confidence interval, 1. 3 to 1. 4), car1529 milliliters per minute/1. 73 m2 3. 2 (3. 13. 4) 2. 8 (2. 62. 9) 2. 1 (2. 02. 2) diovascular events (adjusted hazard ratio, 1. 3; 95 15 milliliters per minute/1. 73 m2 5. 9 (5. 46. 5) 3. 4 (3. 13. 8) 3. 1 (3. 03. 3) percent confidence interval, 1. 2 to 1. 3), and hospitalization (adjusted hazard ratio, 1. 4; 95 percent The analyses were adjusted for age, sex, income, education, use or nonuse of Dialysis, and the presence or absence of prior coronary Heart disease, prior confidence interval, 1. 4 to 1. 4). chronic Heart failure, prior ischemic stroke or transient ischemic attack, prior In a subgroup of 172, 144 subjects who had regperipheral arterial disease, Diabetes mellitus, hypertension, dyslipidemia, canular measurements of serum Creatinine during folcer, a serum albumin level of 3. 5 g per deciliter or less, dementia, cirrhosis or chronic Liver disease, chronic lung disease, documented proteinuria, and prior Low-up (mean ±SD number of measurements, hospitalizations. 3. 3±2. 1; mean interval between measurements, This group served as the reference group. 7. 5±3. 4 months), the adjusted risks of adverse outcomes differed materially from those for the entire cohort only among the subjects with an estimated relation between Kidney disease and the risk of glomerular filtration rate of 45 to 59 ml per minute per 1. 73 m2. In the death and cardiovascular disease. With recognition analysis of the subgroup itself, as compared with that the presence of chronic Kidney disease that the subjects with an estimated glomerular filtration rate of at least 60 ml does not necessitate Dialysis is of considerable imper minute per 1.",
+    "word_count": 588,
+    "char_count": 3459,
+    "sentence_count": 81,
+    "metadata": {
+      "source_file": "NEJMoa041031 (1).pdf",
+      "extraction_date": "2025-12-31T14:48:01.418069",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal"
+      ],
+      "chunk_index": 5,
+      "total_chunks": 13,
+      "position": "6/13",
+      "content_type": "reference",
+      "content_type_confidence": 2,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "proteinuria",
+        "creatinine",
+        "serum creatinine",
+        "dialysis",
+        "cardiovascular disease",
+        "heart failure"
+      ],
+      "entity_count": 8
+    }
+  },
+  {
+    "chunk_id": 6,
+    "text": "73 m2, the subjects with an estiportance, several studies have examined the assomated glomerular filtration rate of 45 to 59 ml per minute per 1. 73 m2 ciation of different cutoff values of serum creatihad a similar adjusted hazard ratio for death (1. 0; nine with the risks of death from any cause, death 95 percent confidence interval, 1. 0 to 1. 1) and hosfrom cardiovascular causes, and cardiovascular 3, 4, 6-12, 15 5, 13 pitalization (1. 0; 95 percent confidence interval, events, and most, but not all, of these 1. 0 to 1. 0). The adjusted risk of cardiovascular studies have found increased risks with higher seevents was also attenuated (1. 2; 95 percent confirum Creatinine levels. Others have noted High rates dence interval, 1. 1 to 1. 3). of hospitalization among persons with elevated se18 rum Creatinine levels. However, since serum cre32 discussion atinine levels are not linearly associated with glomerular filtration rate, the use of predictive equations (the CockcroftGault 33 Among a large, diverse population of adults, a reequation for Creatinine clearance and the MDRD 19 duced estimated glomerular filtration rate was associated with increased equation for estimated glomerular filtration rate ) has been proposed risks of death, cardiovascular events, and hospitalas a more accurate means of estimating the glomerular filtration rate, ization that were independent of known risk facwith the MDRD equation having better predictive 20 tors, a history of cardiovascular disease, and the ability in certain populations. presence of documented proteinuria. Our study Relatively few studies have evaluated the estidemonstrates that these graded risks of adverse mated glomerular filtration rate and the risk of outcomes in the general events rose sharply for subjects with an estimated population. In the Second National Health and glomerular filtration rate of less than 45 ml per minute per 1. 73 m2 for Nutrition Examination Survey (NHANES II), 12 an each outcome examined both in the overall cohort estimated glomerular filtration rate of less than 70 ml per minute per and in subgroup analyses. Furthermore, in the co1. 73 m2 was associated with a 68 percent increase hort as a whole, the absolute rates of these outin the risk of death from any cause and a 51 percent comes were considerably higher than the risk of increase in the risk of death from cardiovascular end-stage renal disease. causes, as compared with an estimated glomerular filtration rate of at There has been rapidly growing interest in the least 90 ml per minute per 1. 73 m2. In the Atheron engl j med 351; 13 www. nejm. org september 23, 2004 1301 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2004 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. new england journal medicine The of sclerosis Risk in Communities Study, 17 an estimattions are clearly needed to reduce the dispropored glomerular filtration rate of 15 to 59 ml per minute per 1. 73 m2 at tionate cardiovascular and economic burden in this baseline was associated with a 38 percent increase population. in the risk of cardiovascular disease, as compared Multiple possible explanations exist for the aswith an estimated glomerular filtration rate of 90 to 150 ml per minute sociation between chronic Kidney disease and inper 1. 73 m2. Similar results were obtained in a cocreased risks of death and cardiovascular disease.",
+    "word_count": 578,
+    "char_count": 3590,
+    "sentence_count": 35,
+    "metadata": {
+      "source_file": "NEJMoa041031 (1).pdf",
+      "extraction_date": "2025-12-31T14:48:01.418069",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal"
+      ],
+      "chunk_index": 6,
+      "total_chunks": 13,
+      "position": "7/13",
+      "content_type": "evidence",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "end-stage renal disease",
+        "proteinuria",
+        "creatinine",
+        "nutrition",
+        "cardiovascular disease"
+      ],
+      "entity_count": 7
+    }
+  },
+  {
+    "chunk_id": 7,
+    "text": "73 m2. Similar results were obtained in a cocreased risks of death and cardiovascular disease. hort of older adults (at least 65 years of age)16 for We observed an increased prevalence of prior caran estimated glomerular filtration rate of 15 to 59 ml per minute per diovascular disease, known risk factors for car1. 73 m2, as compared with an estimated glomerular filtration rate of diovascular events and death, and coexisting con90 to 130 ml per minute per 1. 73 m2. However, the ditions with lower levels of the estimated glomerular filtration rate. NHANES I Epidemiologic Follow-up Study did not However, a reduced estimated glomerular filtration rate was an indepenfind a significant association between an estimated dent and strong risk factor for adverse outcomes. glomerular filtration rate of approximately 30 to 60 ml per minute per Reduced Kidney function is also associated with in1. 73 m2 and the risk of death from any cause or creased levels of inflammatory factors, 34, 35 abnor13 34 death from cardiovascular causes. In addition, in mal apolipoprotein levels, elevated plasma ho34 35 36 the Framingham Heart Study, an elevated serum mocysteine, enhanced coagulability, anemia, 37 Creatinine level 1. 5 to 3. 0 magnesium per deciliter (133 left ventricular hypertrophy, increased arterial cal38 39 to 265 µmol per liter) in men and 1. 4 to 3. 0 magnesium per cification, endothelial dysfunction, and arterial 40 deciliter (124 to 265 µmol per liter) in women was stiffness. Whether and how these and other facassociated with a significant risk of death among tors interact to increase the risk of adverse outmen but not women and was not associated with comes remains unclear but are the focus of ongo5 41 the risk of cardiovascular events in either sex. ing investigations. Our large, ethnically diverse These studies were limited by the use of a single population is typical of patients receiving usual measurement of Kidney function, the use of a broad clinical care rather than referral populations, rerange of definitions of diminished Kidney function, cruited cohorts, or clinical-trial participants, and and the inclusion of relatively small numbers of perthus, our results are probably more generalizable. sons with Kidney disease, thus limiting their statisThe inclusion of large numbers of subjects with a tical power to examine different levels of reduced spectrum of Kidney disease also enabled ultrasound to make glomerular filtration rate. Furthermore, although several studies used a more detailed evaluation of the effect of the level the MDRD equation to estimate glomerular filtration rate, serum creatof the glomerular filtration rate on outcomes. Use of outpatient serum inine measurements were not directly calibrated to Creatinine values that were directly calibrated to the values of the MDRD laboratory, so the absolute those of the MDRD core laboratory increased our threshold level of glomerular filtration rate associated with adverse outconfidence in the validity of the observed associacomes cannot be known with confidence. tions of absolute, not just relative, levels of the estiOur study further delineates the relation bemated glomerular filtration rate. Most subjects had serial estimates of tween the glomerular filtration rate and the risk of adverse events. We the glomerular filtration rate in order to characterize Kidney function found nonlinear relations between the glomerular filtration rate and the over time as accurately as possible. We had comrisks of death, cardiovascular events, and hospitalplete records of deaths and hospitalizations among ization, with an increased risk associated with an these subjects that occurred at health-plan and othestimated glomerular filtration rate of less than 60 ml per minute per er facilities. Our study also shows that the use of a 1.",
+    "word_count": 596,
+    "char_count": 3838,
+    "sentence_count": 25,
+    "metadata": {
+      "source_file": "NEJMoa041031 (1).pdf",
+      "extraction_date": "2025-12-31T14:48:01.418069",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal"
+      ],
+      "chunk_index": 7,
+      "total_chunks": 13,
+      "position": "8/13",
+      "content_type": "evidence",
+      "content_type_confidence": 6,
+      "medical_entities": [
+        "glomerular filtration rate",
+        "kidney function",
+        "creatinine",
+        "magnesium",
+        "anemia",
+        "cardiovascular disease"
+      ],
+      "entity_count": 6
+    }
+  },
+  {
+    "chunk_id": 8,
+    "text": "Our study also shows that the use of a 1. 73 m2, which further rose sharply when values baseline estimate of the glomerular filtration rate alone may lead to the dropped below 45 ml per minute per 1. 73 m2. We misattribution of events to a certain level of glomerular filtration rate found that an estimated glomerular filtration rate of 15 to 29 ml per minmeasured in the distant past and to the subsequent ute per 1. 73 m2 and an estimated glomerular filtration rate of less than attenuation of the true strength of the association 15 ml per minute per 1. 73 m2 in the absence of between a reduced glomerular filtration rate and outcomes. Dialysis were associated with strikingly High ageOur study had several limitations. As a study of adjusted mortality rates (11. 4 and 14. 1 per 100 persubjects who received usual clinical care, estimates son-years, respectively). These rates approach the of the glomerular filtration rate were not available for the entire source rates among patients with treated end-stage renal population. For example, patients with a reduced 1 disease. Although the prevention of end-stage glomerular filtration rate who did not use medical services would not renal disease remains a very important goal in pahave been included. However, over half of adult tients with Kidney disease, more effective intervenmembers of the health plan had serum Creatinine 1302 n engl j med 351; 13 www. nejm. org september 23, 2004 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2004 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. chronic Kidney disease and adverse outcomes measurements, which allowed for a robust assessdent at an estimated glomerular filtration rate of less than 60 ml per minment of the estimated glomerular filtration rate and outcomes among ute per 1. 73 m2 and substantially increased with an more than 1. 1 million subjects. We did not have inestimated glomerular filtration rate of less than 45 ml per minute per formation on tobacco or alcohol use, diet, physical 1. 73 m2. Our findings support the validity of the activity, other possible unmeasured confounders National Kidney Foundation staging system for 22 (e. g. , body-mass index), or the severity of certain chronic Kidney disease but suggest that the sysconditions (e. g. , level of Blood Hypertension or severity tem could be further refined, since all persons with of Diabetes). Nevertheless, residual confounding is stage 3 chronic Kidney disease (glomerular filtration rate, 30 to 59 ml unlikely to explain the large effect estimates obper minute per 1. 73 m2) may not be at equal risk for served for most categories of a reduced estimated each outcome. Our findings highlight the clinical glomerular filtration rate. Finally, since our study was conducted among and public health importance of chronic Kidney insured adults in northern California, our results disease that does not necessitate Dialysis. may not be completely generalizable to uninsured Supported by a grant (R01 DK58411) from the National Institute persons or persons in other geographic regions. for Diabetes, Digestive, and Kidney Diseases. Presented in part at the 36th Annual Meeting of the American SoIn conclusion, we found an independent, gradciety of Nephrology, San Diego, Calif. , November 14 to 17, 2003. ed association between lower levels of the estiDr. Go reports having received research support from Amgen.",
+    "word_count": 578,
+    "char_count": 3601,
+    "sentence_count": 34,
+    "metadata": {
+      "source_file": "NEJMoa041031 (1).pdf",
+      "extraction_date": "2025-12-31T14:48:01.418069",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal"
+      ],
+      "chunk_index": 8,
+      "total_chunks": 13,
+      "position": "9/13",
+      "content_type": "evidence",
+      "content_type_confidence": 4,
+      "medical_entities": [
+        "chronic kidney disease",
+        "glomerular filtration rate",
+        "creatinine",
+        "serum creatinine",
+        "diet",
+        "dialysis",
+        "stage 3"
+      ],
+      "entity_count": 7
+    }
+  },
+  {
+    "chunk_id": 9,
+    "text": "Go reports having received research support from Amgen. Dr. mated glomerular filtration rate and the risks of death, cardiovascular Chertow reports having received research support from Genzyme, Amgen, and Kureha Chemical and having served on advisory boards events, and hospitalization. These risks were evifor Genzyme and Amgen. appendix The following criteria and International Classification of Diseases, 9th Revision, Clinical Modification (ICD-9-CM), and Current Procedural Terminology (CPT) codes, if relevant, were used to define coexisting illnesses. Condition Criteria ICD-9-CM CPT Code Acute myocardial Primary discharge diagnosis in hospitaliza410 sodium infarction tion databases Unstable and stable Primary discharge diagnosis in hospitaliza411, 413 sodium angina tion databases or physician-assigned diagnosis in ambulatory-visit database Coronary artery Primary discharge diagnosis in hospitaliza414. 0, 414. 8, 414. 9 sodium disease tion databases or physician-assigned diagnosis in ambulatory-visit database Percutaneous coroProcedural code in hospitalization and am36. 0136. 02, 36. 05, 9298092981, 92982, 9298492996 nary intervention bulatory-visit databases 36. 06, 36. 09 Coronary-artery Procedural code in hospitalization 36. 1036. 17, 36. 19 3351033519, 3352133523, 3353333536 bypass surgery databases Ischemic stroke Primary discharge diagnosis in hospitaliza433. x1, 434. x1, 436. 0 sodium tion databases or physician-assigned diagnosis in emergency-department database Transient ischemic Primary discharge diagnosis in hospitaliza435 sodium attack tion databases or physician-assigned diagnosis in emergency-department database Chronic Heart failure Primary discharge diagnosis in hospitaliza398. 91, 402. 01, 402. 11, sodium tion databases 402. 91, 428. 0, 428. 1, 428. 9 Peripheral arterial Primary discharge diagnosis or procedural 440. 0440. 9, 38. 13, 35450, 35452, 35454, 35456, 35458, 35459, disease code in hospitalization databases or 38. 14, 38. 15, 38. 16, 3547035475, 35879, 75962, 75964, physician-assigned diagnosis in ambu38. 18, 39. 22, 39. 24, 75966, 75968, 33322, 33335, 33860, latory-visit database 39. 25, 39. 26, 39. 28 33870, 35511, 35516, 35518, 35521, 35531, 35533, 35536, 35541, 35546, 35548, 35549, 35551, 35556, 35558, 35560, 35563, 35565, 35566, 35571, 35582, 35583, 35585, 35587, 35612, 35616, 35621, 35623, 35631, 35636, 35641, 35646, 35650, 35651, 35654, 35656, 35661, 35663, 35665, 35666, 35671 n engl j med 351; 13 www. nejm. org september 23, 2004 1303 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2004 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. new england journal medicine The of Appendix (Continued). Condition Criteria ICD-9-CM CPT Code Diabetes mellitus Validated health plan registry based on inSee Selby et al. 26 See Selby et al. 26 patient or outpatient diagnoses, antiDiabetes therapies, laboratory results, and patient self-report26 Diagnosed Two or more physician-assigned diagnoses 401405 sodium hypertension in ambulatory-visit database or one outpatient diagnosis plus receipt of antihypertensive pharmacologic therapy found in pharmacy database Dyslipidemia Physician-assigned clinical diagnosis in am272. 0, 272. 2, 272. 4 sodium bulatory database, record of filled prescriptions for lipid-lowering therapies in automated pharmacy databases within five years before index date, or lipid levels that met the cutoffs for elevated Low-density lipoprotein and reduced High-density lipoprotein cholesterol identified in laboratory databases with the use of Adult Treatment Panel III guidelines27 Chronic lung disease Primary discharge diagnosis of chronic ob491. x, 492. x, 493. x, sodium structive pulmonary disease, chronic 496, 518. 1, 518.",
+    "word_count": 539,
+    "char_count": 3931,
+    "sentence_count": 52,
+    "metadata": {
+      "source_file": "NEJMoa041031 (1).pdf",
+      "extraction_date": "2025-12-31T14:48:01.418069",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal"
+      ],
+      "chunk_index": 9,
+      "total_chunks": 13,
+      "position": "10/13",
+      "content_type": "treatment",
+      "content_type_confidence": 4,
+      "medical_entities": [
+        "glomerular filtration rate",
+        "sodium",
+        "antihypertensive",
+        "heart failure",
+        "classification"
+      ],
+      "entity_count": 5
+    }
+  },
+  {
+    "chunk_id": 10,
+    "text": "x, 492. x, 493. x, sodium structive pulmonary disease, chronic 496, 518. 1, 518. 2 bronchitis, or asthma in hospitalization databases or physician-assigned diagnosis in ambulatory-visit databases Chronic Liver disease Primary discharge diagnosis of cirrhosis or 571 sodium chronic Liver disease in hospitalization database or physician-assigned diagnosis in ambulatory-visit database Dementia Physician-assigned diagnosis of dementia 290, 294, 331 sodium or organic brain disease found in ambulatory-visit database Cancer (other than loComprehensive health-plan registry linked See Fireman et al. 24 See Fireman et al. 24 calized, nonmelato regional Surveillance, Epidemiology, noma skin cancer) and End Results data24 sodium denotes not applicable. Subjects could have met any or all of the criteria. references 1. Renal Data System. USRDS 2003 annual 5. Culleton BF, Larson magnesium, Wilson PW, with and without other traits related to risk data report: atlas of end-stage renal disease Evans JC, Parfrey PS, Levy D. Cardiovascular of mortality. Prog Cardiovasc Dis 1986; 29: in the United States. Bethesda, Md. : Nationdisease and mortality in a community-based Suppl 1: 29-54. al Institutes of Health, National Institute of cohort with mild renal insufficiency. Kidney 9. Drey N, Roderick P, Mullee M, Rogerson Diabetes and Digestive and Kidney DiseasInt 1999; 56: 2214-9. M. A population-based study of the incies, 2003. 6. Ruilope LM, Salvetti A, Jamerson potassium, et dence and outcomes of diagnosed chronic 2. Coresh J, Astor BC, Greene T, Eknoyan al. Renal function and intensive lowering of Kidney disease. Am J Kidney Dis 2003; 42: G, Levey AS. Prevalence of chronic Kidney Blood Hypertension in hypertensive participants 677-84. disease and decreased Kidney function in of the Hypertension Optimal Treatment 10. Shlipak magnesium, Simon JA, Grady D, Lin F, the adult ultrasound population: Third National (HOT) Study. J Am Soc Nephrol 2001; 12: Wenger NK, Furberg CD. Renal insufficienHealth and Nutrition Examination Survey. 218-25. cy and cardiovascular events in postmenoAm J Kidney Dis 2003; 41: 1-12. 7. Mann JF, Gerstein HC, Pogue J, Bosch J, pausal women with coronary Heart disease. 3. Damsgaard EM, Froland A, Jorgensen Yusuf S. Renal insufficiency as a predictor of J Am Coll Cardiol 2001; 38: 705-11. OD, Mogensen CE. Microalbuminuria as cardiovascular outcomes and the impact of 11. Shlipak magnesium, Heidenreich PA, Noguchi predictor of increased mortality in elderly ramipril: the HOPE randomized trial. Ann H, Chertow GM, Browner WS, McClellan people. BMJ 1990; 300: 297-300. Intern Med 2001; 134: 629-36. MB. Association of renal insufficiency with 4. Wannamethee SG, Shaper AG, Perry IJ. 8. Langford HG, Stamler J, Wassertheiltreatment and outcomes after myocardial Serum Creatinine concentration and risk of Smoller S, Prineas RJ. All-cause mortality in infarction in elderly patients. Ann Intern cardiovascular disease: a possible marker the Hypertension Detection and Follow-up Med 2002; 137: 555-62. for increased risk of stroke. Stroke 1997; 28: Program: findings for the whole cohort and 12. Muntner P, He J, Hamm L, Loria C, 557-63. for persons with less severe hypertension, Whelton PK. Renal insufficiency and subse1304 n engl j med 351; 13 www. nejm. org september 23, 2004 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2004 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies. chronic Kidney disease and adverse outcomes quent death resulting from cardiovascular chronic Kidney disease: evaluation, classifimarker in glomerulopathic patients. Kidney disease in the United States. J Am Soc Nephcation, and stratification. Am J Kidney Dis Int 1985; 28: 830-8. rol 2002; 13: 745-53. 2002; 39: Suppl 1: S1-S266. 33. Cockcroft DW, Gault MH.",
+    "word_count": 600,
+    "char_count": 3982,
+    "sentence_count": 59,
+    "metadata": {
+      "source_file": "NEJMoa041031 (1).pdf",
+      "extraction_date": "2025-12-31T14:48:01.418069",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal"
+      ],
+      "chunk_index": 10,
+      "total_chunks": 13,
+      "position": "11/13",
+      "content_type": "evidence",
+      "content_type_confidence": 6,
+      "medical_entities": [
+        "chronic kidney disease",
+        "kidney function",
+        "renal function",
+        "end-stage renal disease",
+        "creatinine",
+        "sodium",
+        "potassium",
+        "magnesium",
+        "serum creatinine",
+        "nutrition"
+      ],
+      "entity_count": 10
+    }
+  },
+  {
+    "chunk_id": 11,
+    "text": "2002; 39: Suppl 1: S1-S266. 33. Cockcroft DW, Gault MH. Prediction of 13. Garg AX, Clark WF, Haynes RB, House 23. Go AS, Hylek EM, Borowsky LH, PhilCreatinine clearance from serum Creatinine. AA. Moderate renal insufficiency and the lips ketoanalogue, Selby JV, Singer DE. Warfarin use Nephron 1976; 16: 31-41. risk of cardiovascular mortality: results among ambulatory patients with nonvalvu34. Muntner P, Hamm LL, Kusek JW, Chen from the NHANES I. Kidney Int 2002; 61: lar atrial fibrillation: the anticoagulation J, Whelton PK, He J. The prevalence of non1486-94. and risk factors in atrial fibrillation (ATRIA) traditional risk factors for coronary Heart 14. Wang JG, Staessen JA, Fagard RH, study. Ann Intern Med 1999; 131: 927-34. disease in patients with chronic Kidney disBirkenhager WH, Gong L, Liu L. Prognostic 24. Fireman BH, Fehrenbacher L, Gruskin ease. Ann Intern Med 2004; 140: 9-17. significance of serum Creatinine and uric EP, Ray GT. Cost of care for patients in can35. Shlipak magnesium, Fried LF, Crump C, et al. acid in older Chinese patients with isolated cer clinical trials. J Natl Cancer Inst 2000; 92: Elevations of inflammatory and procoagusystolic hypertension. Hypertension 2001; 136-42. lant biomarkers in elderly persons with re37: 1069-74. 25. Alexander M, Tekawa I, Hunkeler E, et nal insufficiency. Circulation 2003; 107: 8715. Shulman NB, Ford CE, Hall WD, et al. al. Evaluating hypertension control in a 92. Prognostic value of serum Creatinine and efmanaged care setting. Arch Intern Med 36. Hsu CY, McCulloch CE, Curhan GC. fect of treatment of hypertension on renal 1999; 159: 2673-7. Epidemiology of anemia associated with function: results from the Hypertension De26. Selby JV, Ray GT, Zhang D, Colby CJ. Exchronic renal insufficiency among adults tection and Follow-up Program. Hypertencess costs of medical care for patients with in the United States: results from the Third sion 1989; 13: Suppl: I-80I-93. Diabetes in a managed care population. DiaNational Health and Nutrition Examina16. Manjunath G, Tighiouart H, Coresh J, et betes Care 1997; 20: 1396-402. tion Survey. J Am Soc Nephrol 2002; 13: al. Level of Kidney function as a risk factor 27. Expert Panel on Detection, Evaluation, 504-10. for cardiovascular outcomes in the elderly. and Treatment of High Blood Cholesterol in 37. Levin A, Thompson creatinine, Ethier J, et al. Kidney Int 2003; 63: 1121-9. Adults. Executive summary of the Third ReLeft ventricular mass index increase in early 17. Manjunath G, Tighiouart H, Ibrahim H, port of the National Cholesterol Education renal disease: impact of decline in hemogloet al. Level of Kidney function as a risk factor Program (NCEP) Expert Panel on Detection, bin. Am J Kidney Dis 1999; 34: 125-34. for atherosclerotic cardiovascular outcomes Evaluation, and Treatment of High Blood 38. Raggi P, Boulay A, Chasan-Taber S, et al. in the community. J Am Coll Cardiol 2003; Cholesterol in Adults (Adult Treatment PanCardiac calcification in adult hemodialysis 41: 47-55. el III). JAMA 2001; 285: 2486-97. patients: a link between end-stage renal dis18. Khan SS, Kazmi WH, Abichandani R, 28. Bureau of the Census. 2000 Census of ease and cardiovascular disease? J Am Coll Tighiouart H, Pereira BJ, Kausz AT. Health population and housing: summary files 1 to Cardiol 2002; 39: 695-701. care utilization among patients with chronic 3. Washington, D. C. : Department of Com39. Blacher J, Safar ME, Guerin AP, Pannier Kidney disease. Kidney Int 2002; 62: 229-36. merce, 2001-2003. B, Marchais SJ, London GM. Aortic pulse 19. Levey AS, Greene T, Kusek JW, Beck GJ. 29. Karter AJ, Ferrara A, Liu JY, Moffet HH, wave velocity index and mortality in endA simplified equation to predict glomerular Ackerson LM, Selby JV.",
+    "word_count": 598,
+    "char_count": 3763,
+    "sentence_count": 66,
+    "metadata": {
+      "source_file": "NEJMoa041031 (1).pdf",
+      "extraction_date": "2025-12-31T14:48:01.418069",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal"
+      ],
+      "chunk_index": 11,
+      "total_chunks": 13,
+      "position": "12/13",
+      "content_type": "evidence",
+      "content_type_confidence": 3,
+      "medical_entities": [
+        "kidney function",
+        "nephron",
+        "creatinine",
+        "magnesium",
+        "serum creatinine",
+        "nutrition",
+        "hemodialysis",
+        "anemia",
+        "cardiovascular disease"
+      ],
+      "entity_count": 9
+    }
+  },
+  {
+    "chunk_id": 12,
+    "text": "Ethnic disparities in stage renal disease. Kidney Int 2003; 63: estimated glomerular filtration rate from serum Creatinine. J Am diabetic complications in an insured popu1852-60. Soc Nephrol 2000; 11: 155A. abstract. lation. JAMA 2002; 287: 2519-27. Erratum, 40. London GM, Guerin AP, Marchais SJ, 20. Levey AS, Bosch JP, Lewis JB, Greene T, JAMA 2002; 288: 46. Metivier F, Pannier B, Adda H. Arterial meRogers N, Roth D. A more accurate method 30. Arellano magnesium, Petersen GR, Petitti DB, dia calcification in end-stage renal disease: to estimate glomerular estimated glomerular filtration rate from Smith RE. The California Automated Morimpact on all-cause and cardiovascular serum Creatinine: a new prediction equatality Linkage System (CAMLIS). Am J Public mortality. Nephrol Dial Transplant 2003; 18: tion. Ann Intern Med 1999; 130: 461-70. Health 1984; 74: 1324-30. 1731-40. 21. Landis JR, Gaughan C, Joffe M. Inter31. Therneau TM, Grambsch PM. Modeling 41. Feldman HI, Appel LJ, Chertow GM, et laboratory serum Creatinine (serum creatinine) calibrasurvival data: extending the Cox model. al. The Chronic Renal Insufficiency Cohort tion study. J Am Soc Nephrol 2003; 14: 294A. New York: Springer, 2000. (CRIC) Study: design and methods. J Am abstract. 32. Shemesh O, Golbetz H, Kriss JP, Myers Soc Nephrol 2003; 14: Suppl 2: S148-S153. 22. potassium/DOQI clinical practice guidelines for BD. Limitations of Creatinine as a filtration Copyright 2004 Massachusetts Medical Society. n engl j med 351; 13 www. nejm. org september 23, 2004 1305 The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society. Downloaded from nejm. org on December 31, 2025. Copyright 2004 Massachusetts Medical Society. All rights reserved, including those for text and data mining, AI training, and similar technologies.",
+    "word_count": 284,
+    "char_count": 1857,
+    "sentence_count": 40,
+    "metadata": {
+      "source_file": "NEJMoa041031 (1).pdf",
+      "extraction_date": "2025-12-31T14:48:01.418069",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "keywords": [
+        "chronic kidney disease",
+        "dialysis",
+        "kidney function",
+        "renal"
+      ],
+      "chunk_index": 12,
+      "total_chunks": 13,
+      "position": "13/13",
+      "content_type": "evidence",
+      "content_type_confidence": 2,
+      "medical_entities": [
+        "glomerular filtration rate",
+        "end-stage renal disease",
+        "creatinine",
+        "potassium",
+        "magnesium",
+        "serum creatinine"
+      ],
+      "entity_count": 6
+    }
+  }
+]
