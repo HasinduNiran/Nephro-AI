@@ -214,7 +214,7 @@ const ChatbotScreen = ({ route, navigation }) => {
   // Keyboard listener to scroll to end when keyboard opens
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
       () => {
         setTimeout(() => {
           flatListRef.current?.scrollToEnd({ animated: true });
@@ -786,7 +786,7 @@ const ChatbotScreen = ({ route, navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.card} />
 
       <KeyboardAvoidingView
@@ -795,210 +795,221 @@ const ChatbotScreen = ({ route, navigation }) => {
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 30}
       >
         {/* Enhanced Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="arrow-back" size={24} color={COLORS.textDark} />
-        </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <View style={styles.headerIconContainer}>
-            <Ionicons name="medical" size={22} color={COLORS.white} />
-            <View style={styles.onlineIndicator} />
-          </View>
-          <View>
-            <Text style={styles.headerTitle}>Nephro-AI</Text>
-            <View style={styles.statusRow}>
-              <View style={styles.statusDot} />
-              <Text style={styles.headerSubtitle}>Online • Ready to help</Text>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={24} color={COLORS.textDark} />
+          </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <View style={styles.headerIconContainer}>
+              <Ionicons name="medical" size={22} color={COLORS.white} />
+              <View style={styles.onlineIndicator} />
             </View>
-          </View>
-        </View>
-        <TouchableOpacity
-          style={styles.headerAction}
-          activeOpacity={0.7}
-          onPress={clearChatHistory}
-        >
-          <Ionicons name="trash-outline" size={22} color={COLORS.textLight} />
-        </TouchableOpacity>
-      </View>
-
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.messagesList}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="interactive"
-        onContentSizeChange={() =>
-          flatListRef.current?.scrollToEnd({ animated: true })
-        }
-        onLayout={() =>
-          flatListRef.current?.scrollToEnd({ animated: false })
-        }
-        ListHeaderComponent={messages.length <= 1 ? <WelcomeTips /> : null}
-        ListFooterComponent={
-          isTyping ? (
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "flex-start",
-                marginBottom: 12,
-                paddingHorizontal: 4,
-              }}
-            >
-              <View style={styles.avatarContainer}>
-                <Ionicons name="medical" size={18} color="white" />
-              </View>
-              <View
-                style={[
-                  styles.messageBubble,
-                  styles.botBubble,
-                  styles.typingBubble,
-                ]}
-              >
-                {/* Dynamic Loading Status */}
-                <View style={styles.loadingContainer}>
-                  <MaterialCommunityIcons
-                    name={loadingStep.icon}
-                    size={34}
-                    color={COLORS.primary}
-                    style={{ marginBottom: 0 }}
-                  />
-                  <Text style={styles.loadingText}>{loadingStep.text}</Text>
-                </View>
-              </View>
-            </View>
-          ) : null
-        }
-      />
-
-      <View>
-        {/* Quick Suggestion Chips */}
-        <View style={styles.suggestionsContainer}>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={suggestions}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[styles.chip, { borderColor: item.color }]}
-                onPress={async () => {
-                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  sendTextMessage(item.text);
-                }}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name={item.icon}
-                  size={16}
-                  color={item.color}
-                  style={{ marginRight: 6 }}
-                />
-                <Text style={[styles.chipText, { color: item.color }]}>
-                  {item.text}
+            <View>
+              <Text style={styles.headerTitle}>Nephro-AI</Text>
+              <View style={styles.statusRow}>
+                <View style={styles.statusDot} />
+                <Text style={styles.headerSubtitle}>
+                  Online • Ready to help
                 </Text>
-              </TouchableOpacity>
-            )}
-            keyExtractor={(item) => item.text}
-            contentContainerStyle={{ paddingHorizontal: 16 }}
-          />
-        </View>
-
-        <View style={[styles.inputContainer, { paddingBottom: Platform.OS === 'ios' ? 24 : 12 }]}>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={styles.input}
-              placeholder="Ask about your health..."
-              value={message}
-              onChangeText={setMessage}
-              placeholderTextColor={COLORS.textLighter}
-              multiline
-              maxLength={500}
-            />
-            {message.length > 0 && (
-              <Text style={styles.charCount}>{message.length}/500</Text>
-            )}
-          </View>
-
-          {message.length > 0 ? (
-            <TouchableOpacity
-              onPress={() => sendTextMessage()}
-              style={styles.sendButton}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="send" size={22} color="white" />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              onPressIn={startRecording}
-              onPressOut={stopRecording}
-              style={[styles.micButton, isRecording && styles.micActive]}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name={isRecording ? "mic" : "mic-outline"}
-                size={26}
-                color="white"
-              />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Enhanced Recording Overlay */}
-        {isRecording && (
-          <View style={styles.recordingOverlay}>
-            <View style={styles.recordingCard}>
-              <View style={styles.recordingIconContainer}>
-                <View style={styles.recordingPulse} />
-                <Ionicons name="mic" size={52} color={COLORS.danger} />
               </View>
-              <Text style={styles.recordingTitle}>🎤 Listening...</Text>
-              <Text style={styles.recordingSubtitle}>
-                Speak clearly about your health
-              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={styles.headerAction}
+            activeOpacity={0.7}
+            onPress={clearChatHistory}
+          >
+            <Ionicons name="trash-outline" size={22} color={COLORS.textLight} />
+          </TouchableOpacity>
+        </View>
 
-              <View style={styles.meterTrack}>
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.messagesList}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: true })
+          }
+          onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+          ListHeaderComponent={messages.length <= 1 ? <WelcomeTips /> : null}
+          ListFooterComponent={
+            isTyping ? (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-start",
+                  marginBottom: 12,
+                  paddingHorizontal: 4,
+                }}
+              >
+                <View style={styles.avatarContainer}>
+                  <Ionicons name="medical" size={18} color="white" />
+                </View>
                 <View
                   style={[
-                    styles.meterFill,
-                    {
-                      width: `${Math.min(
-                        100,
-                        Math.max(5, (metering + 160) / 1.0)
-                      )}%`,
-                      backgroundColor:
-                        metering > -30 ? COLORS.accent : COLORS.danger,
-                    },
-                  ]}
-                />
-              </View>
-              <View style={styles.volumeFeedback}>
-                <Ionicons
-                  name={
-                    metering > -30 ? "checkmark-circle" : "alert-circle-outline"
-                  }
-                  size={16}
-                  color={metering > -30 ? COLORS.accent : COLORS.warning}
-                />
-                <Text
-                  style={[
-                    styles.recordingHint,
-                    { color: metering > -30 ? COLORS.accent : COLORS.warning },
+                    styles.messageBubble,
+                    styles.botBubble,
+                    styles.typingBubble,
                   ]}
                 >
-                  {metering > -30 ? "Perfect Volume ✓" : "Speak a bit louder"}
-                </Text>
+                  {/* Dynamic Loading Status */}
+                  <View style={styles.loadingContainer}>
+                    <MaterialCommunityIcons
+                      name={loadingStep.icon}
+                      size={34}
+                      color={COLORS.primary}
+                      style={{ marginBottom: 0 }}
+                    />
+                    <Text style={styles.loadingText}>{loadingStep.text}</Text>
+                  </View>
+                </View>
               </View>
+            ) : null
+          }
+        />
 
-              <Text style={styles.releaseHint}>Release to send</Text>
-            </View>
+        <View>
+          {/* Quick Suggestion Chips */}
+          <View style={styles.suggestionsContainer}>
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              data={suggestions}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[styles.chip, { borderColor: item.color }]}
+                  onPress={async () => {
+                    await Haptics.impactAsync(
+                      Haptics.ImpactFeedbackStyle.Light
+                    );
+                    sendTextMessage(item.text);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name={item.icon}
+                    size={16}
+                    color={item.color}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text style={[styles.chipText, { color: item.color }]}>
+                    {item.text}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item.text}
+              contentContainerStyle={{ paddingHorizontal: 16 }}
+            />
           </View>
-        )}
-      </View>
+
+          <View
+            style={[
+              styles.inputContainer,
+              { paddingBottom: Platform.OS === "ios" ? 24 : 12 },
+            ]}
+          >
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                placeholder="Ask about your health..."
+                value={message}
+                onChangeText={setMessage}
+                placeholderTextColor={COLORS.textLighter}
+                multiline
+                maxLength={500}
+              />
+              {message.length > 0 && (
+                <Text style={styles.charCount}>{message.length}/500</Text>
+              )}
+            </View>
+
+            {message.length > 0 ? (
+              <TouchableOpacity
+                onPress={() => sendTextMessage()}
+                style={styles.sendButton}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="send" size={22} color="white" />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPressIn={startRecording}
+                onPressOut={stopRecording}
+                style={[styles.micButton, isRecording && styles.micActive]}
+                activeOpacity={0.8}
+              >
+                <Ionicons
+                  name={isRecording ? "mic" : "mic-outline"}
+                  size={26}
+                  color="white"
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Enhanced Recording Overlay */}
+          {isRecording && (
+            <View style={styles.recordingOverlay}>
+              <View style={styles.recordingCard}>
+                <View style={styles.recordingIconContainer}>
+                  <View style={styles.recordingPulse} />
+                  <Ionicons name="mic" size={52} color={COLORS.danger} />
+                </View>
+                <Text style={styles.recordingTitle}>🎤 Listening...</Text>
+                <Text style={styles.recordingSubtitle}>
+                  Speak clearly about your health
+                </Text>
+
+                <View style={styles.meterTrack}>
+                  <View
+                    style={[
+                      styles.meterFill,
+                      {
+                        width: `${Math.min(
+                          100,
+                          Math.max(5, (metering + 160) / 1.0)
+                        )}%`,
+                        backgroundColor:
+                          metering > -30 ? COLORS.accent : COLORS.danger,
+                      },
+                    ]}
+                  />
+                </View>
+                <View style={styles.volumeFeedback}>
+                  <Ionicons
+                    name={
+                      metering > -30
+                        ? "checkmark-circle"
+                        : "alert-circle-outline"
+                    }
+                    size={16}
+                    color={metering > -30 ? COLORS.accent : COLORS.warning}
+                  />
+                  <Text
+                    style={[
+                      styles.recordingHint,
+                      {
+                        color: metering > -30 ? COLORS.accent : COLORS.warning,
+                      },
+                    ]}
+                  >
+                    {metering > -30 ? "Perfect Volume ✓" : "Speak a bit louder"}
+                  </Text>
+                </View>
+
+                <Text style={styles.releaseHint}>Release to send</Text>
+              </View>
+            </View>
+          )}
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
