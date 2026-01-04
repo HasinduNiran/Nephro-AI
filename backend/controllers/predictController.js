@@ -2,7 +2,7 @@ const { spawn } = require("child_process");
 const path = require("path");
 
 exports.predictRisk = (req, res) => {
-  const { bp_systolic, bp_diastolic, age, gender, diabetes, diabetes_level } =
+  const { bp_systolic, bp_diastolic, age, gender, diabetes, hba1c_level } =
     req.body;
 
   if (
@@ -11,12 +11,10 @@ exports.predictRisk = (req, res) => {
     age === undefined ||
     gender === undefined
   ) {
-    return res
-      .status(400)
-      .json({
-        message:
-          "Missing required fields: bp_systolic, bp_diastolic, age, and gender",
-      });
+    return res.status(400).json({
+      message:
+        "Missing required fields: bp_systolic, bp_diastolic, age, and gender",
+    });
   }
 
   // Prepare data for python script
@@ -27,15 +25,15 @@ exports.predictRisk = (req, res) => {
     gender: gender, // 'Male' or 'Female'
   };
 
-  // Handle diabetes_level
-  if (diabetes_level !== undefined && diabetes_level !== null) {
-    inputData.diabetes_level = parseFloat(diabetes_level);
+  // Handle hba1c_level
+  if (hba1c_level !== undefined && hba1c_level !== null) {
+    inputData.hba1c_level = parseFloat(hba1c_level);
   } else if (diabetes !== undefined) {
-    // Convert boolean to estimated blood sugar level
-    // Normal: ~90 mg/dL, Diabetic: ~150 mg/dL
-    inputData.diabetes_level = diabetes ? 150 : 90;
+    // Convert boolean to estimated HbA1c level
+    // Normal: ~5.0%, Diabetic: ~7.5%
+    inputData.hba1c_level = diabetes ? 7.5 : 5.0;
   } else {
-    inputData.diabetes_level = 90; // Default normal
+    inputData.hba1c_level = 5.0; // Default normal
   }
 
   // Path to python script. Assuming server.js is in backend/ and api_predict.py is in scripts/
@@ -75,13 +73,11 @@ exports.predictRisk = (req, res) => {
     if (code !== 0) {
       console.error(`Python script exited with code ${code}`);
       console.error(`Stderr: ${errorString}`);
-      return res
-        .status(500)
-        .json({
-          message: "Error calculating risk",
-          error: errorString,
-          path: scriptPath,
-        });
+      return res.status(500).json({
+        message: "Error calculating risk",
+        error: errorString,
+        path: scriptPath,
+      });
     }
 
     try {

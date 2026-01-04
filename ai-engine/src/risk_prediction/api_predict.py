@@ -21,8 +21,8 @@ def load_artifacts():
 def predict(data):
     """
     Predict CKD risk based on patient data
-    Expected input: age, gender, bp_systolic, bp_diastolic, diabetes_level
-    Note: diabetes_level should be blood sugar level (mg/dL), not boolean
+    Expected input: age, gender, bp_systolic, bp_diastolic, hba1c_level
+    Note: hba1c_level should be HbA1c percentage (typically 4.0-14.0%)
     Note: gender should be 'Male' or 'Female' (will be encoded as 1 or 0)
     """
     model, label_encoder = load_artifacts()
@@ -42,16 +42,16 @@ def predict(data):
         else:
             gender = int(gender_raw)  # Already encoded
         
-        # diabetes_level should be continuous blood sugar value
+        # hba1c_level should be continuous HbA1c percentage value
         # If boolean diabetes flag is sent, convert to estimated values
-        if 'diabetes_level' in data:
-            diabetes_level = float(data['diabetes_level'])
+        if 'hba1c_level' in data:
+            hba1c_level = float(data['hba1c_level'])
         elif 'diabetes' in data:
-            # Convert boolean to estimated blood sugar level
-            # Normal: ~90, Diabetic: ~150
-            diabetes_level = 150.0 if data['diabetes'] else 90.0
+            # Convert boolean to estimated HbA1c level
+            # Normal: ~5.0%, Diabetic: ~7.5%
+            hba1c_level = 7.5 if data['diabetes'] else 5.0
         else:
-            diabetes_level = 90.0  # Default normal
+            hba1c_level = 5.0  # Default normal
         
         # Create feature dictionary
         features_dict = {
@@ -59,19 +59,19 @@ def predict(data):
             'gender': gender,
             'bp_systolic': bp_systolic,
             'bp_diastolic': bp_diastolic,
-            'diabetes_level': diabetes_level
+            'hba1c_level': hba1c_level
         }
         
         # Create interaction features (matching training)
         features_dict['age_bp_sys'] = age * bp_systolic
         features_dict['age_bp_dia'] = age * bp_diastolic
-        features_dict['age_sugar'] = age * diabetes_level
-        features_dict['bp_sys_sugar'] = bp_systolic * diabetes_level
-        features_dict['bp_dia_sugar'] = bp_diastolic * diabetes_level
+        features_dict['age_hba1c'] = age * hba1c_level
+        features_dict['bp_sys_hba1c'] = bp_systolic * hba1c_level
+        features_dict['bp_dia_hba1c'] = bp_diastolic * hba1c_level
         features_dict['bp_sys_dia'] = bp_systolic * bp_diastolic
         features_dict['gender_age'] = gender * age
         features_dict['gender_bp_sys'] = gender * bp_systolic
-        features_dict['gender_diabetes'] = gender * diabetes_level
+        features_dict['gender_hba1c'] = gender * hba1c_level
         
         # Calculate pulse pressure and MAP
         features_dict['pulse_pressure'] = bp_systolic - bp_diastolic
@@ -104,26 +104,26 @@ def predict(data):
         else:
             age_group = 2
         
-        # Diabetes Level Categories
-        if diabetes_level < 100:
-            diabetes_category = 0
-        elif diabetes_level < 126:
-            diabetes_category = 1
+        # HbA1c Level Categories: Normal (<5.7), Prediabetic (5.7-6.4), Diabetic (>=6.5)
+        if hba1c_level < 5.7:
+            hba1c_category = 0
+        elif hba1c_level < 6.5:
+            hba1c_category = 1
         else:
-            diabetes_category = 2
+            hba1c_category = 2
         
         features_dict['bp_sys_category'] = bp_sys_category
         features_dict['bp_dia_category'] = bp_dia_category
         features_dict['age_group'] = age_group
-        features_dict['diabetes_category'] = diabetes_category
+        features_dict['hba1c_category'] = hba1c_category
         
         # Create DataFrame with correct column order (matching training)
         features = pd.DataFrame([features_dict], columns=[
-            "age", "gender", "bp_systolic", "bp_diastolic", "diabetes_level",
-            "age_bp_sys", "age_bp_dia", "age_sugar", "bp_sys_sugar", "bp_dia_sugar", "bp_sys_dia",
-            "gender_age", "gender_bp_sys", "gender_diabetes",
+            "age", "gender", "bp_systolic", "bp_diastolic", "hba1c_level",
+            "age_bp_sys", "age_bp_dia", "age_hba1c", "bp_sys_hba1c", "bp_dia_hba1c", "bp_sys_dia",
+            "gender_age", "gender_bp_sys", "gender_hba1c",
             "pulse_pressure", "mean_arterial_pressure",
-            "bp_sys_category", "bp_dia_category", "age_group", "diabetes_category"
+            "bp_sys_category", "bp_dia_category", "age_group", "hba1c_category"
         ])
         
         # Make prediction
@@ -137,13 +137,13 @@ def predict(data):
         age_norm = min(age / 100, 1.0)  # Normalize age (max 100)
         bp_sys_norm = min((bp_systolic - 90) / 90, 1.0)  # Normalize systolic BP (90-180 range)
         bp_dia_norm = min((bp_diastolic - 60) / 60, 1.0)  # Normalize diastolic BP (60-120 range)
-        diabetes_norm = min((diabetes_level - 70) / 180, 1.0)  # Normalize diabetes (70-250 range)
+        hba1c_norm = min((hba1c_level - 4.0) / 10.0, 1.0)  # Normalize HbA1c (4.0-14.0% range)
         
         # Ensure normalized values are between 0 and 1
         age_norm = max(0, min(1, age_norm))
         bp_sys_norm = max(0, min(1, bp_sys_norm))
         bp_dia_norm = max(0, min(1, bp_dia_norm))
-        diabetes_norm = max(0, min(1, diabetes_norm))
+        hba1c_norm = max(0, min(1, hba1c_norm))
         
         # Calculate base risk score using weighted linear combination
         # Weights based on clinical importance
@@ -151,7 +151,7 @@ def predict(data):
             age_norm * 25 +          # Age contributes 25%
             bp_sys_norm * 30 +       # Systolic BP contributes 30%
             bp_dia_norm * 20 +       # Diastolic BP contributes 20%
-            diabetes_norm * 25       # Diabetes level contributes 25%
+            hba1c_norm * 25          # HbA1c level contributes 25%
         )
         
         # Get probability predictions for fine-tuning

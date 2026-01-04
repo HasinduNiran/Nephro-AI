@@ -21,7 +21,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
   const [bpDiastolic, setBpDiastolic] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("Male"); // Male or Female
-  const [diabetesLevel, setDiabetesLevel] = useState(""); // Blood sugar level (mg/dL)
+  const [hba1cLevel, setHba1cLevel] = useState(""); // HbA1c level (%)
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [riskLevel, setRiskLevel] = useState(null);
@@ -70,21 +70,27 @@ const RiskPredictionScreen = ({ navigation, route }) => {
   const VALIDATION_RANGES = {
     bpSystolic: { min: 70, max: 250, label: "Systolic BP" },
     bpDiastolic: { min: 40, max: 150, label: "Diastolic BP" },
-    diabetesLevel: { min: 50, max: 500, label: "Blood Sugar Level" },
+    hba1cLevel: { min: 4.0, max: 14.0, label: "HbA1c Level" },
   };
 
   const validateInput = (value, field) => {
     const range = VALIDATION_RANGES[field];
     const numValue = parseFloat(value);
-    
+
     if (isNaN(numValue)) {
       return { valid: false, message: `${range.label} must be a valid number` };
     }
     if (numValue < range.min) {
-      return { valid: false, message: `${range.label} must be at least ${range.min}` };
+      return {
+        valid: false,
+        message: `${range.label} must be at least ${range.min}`,
+      };
     }
     if (numValue > range.max) {
-      return { valid: false, message: `${range.label} must not exceed ${range.max}` };
+      return {
+        valid: false,
+        message: `${range.label} must not exceed ${range.max}`,
+      };
     }
     return { valid: true };
   };
@@ -121,11 +127,11 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       return;
     }
 
-    // Validate Diabetes Level (if provided)
-    if (diabetesLevel) {
-      const diabetesValidation = validateInput(diabetesLevel, "diabetesLevel");
-      if (!diabetesValidation.valid) {
-        Alert.alert("Invalid Input", diabetesValidation.message);
+    // Validate HbA1c Level (if provided)
+    if (hba1cLevel) {
+      const hba1cValidation = validateInput(hba1cLevel, "hba1cLevel");
+      if (!hba1cValidation.valid) {
+        Alert.alert("Invalid Input", hba1cValidation.message);
         return;
       }
     }
@@ -143,9 +149,9 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         gender,
       };
 
-      // If diabetes level is provided, use it
-      if (diabetesLevel) {
-        requestData.diabetes_level = diabetesLevel;
+      // If HbA1c level is provided, use it
+      if (hba1cLevel) {
+        requestData.hba1c_level = hba1cLevel;
       }
 
       const response = await axios.post("/predict", requestData);
@@ -191,7 +197,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
           bpDiastolic: parseFloat(bpDiastolic),
           age: parseFloat(age),
           gender,
-          diabetesLevel: diabetesLevel ? parseFloat(diabetesLevel) : null,
+          hba1cLevel: hba1cLevel ? parseFloat(hba1cLevel) : null,
         },
       });
 
@@ -258,11 +264,11 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         helperText="Range: 40-150 mmHg"
       />
       <CustomInput
-        placeholder="Blood Sugar Level (mg/dL) - Optional"
-        value={diabetesLevel}
-        setValue={setDiabetesLevel}
+        placeholder="HbA1c Level (%) - Optional"
+        value={hba1cLevel}
+        setValue={setHba1cLevel}
         keyboardType="numeric"
-        helperText="Range: 50-500 mg/dL"
+        helperText="Range: 4.0-14.0%"
       />
 
       <CustomButton text="Predict Risk" onPress={onPredictPressed} />
@@ -340,10 +346,8 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       <View style={styles.infoCard}>
         <Text style={styles.infoTitle}>💡 About the Prediction</Text>
         <Text style={styles.infoText}>
-          This prediction uses an AI model trained with Stacking Classifier
-          (XGBoost + Random Forest).
-          {"\n\n"}Required: Systolic BP, Diastolic BP, and Age
-          {"\n"}Optional: Blood Sugar Level
+                 {"\n\n"}Required: Systolic BP, Diastolic BP, and Age
+          {"\n"}Optional: HbA1c Level (%)
           {"\n\n"}Both blood pressure values are important for accurate kidney
           health assessment.
           {"\n\n"}Save your prediction each month to track your kidney health
