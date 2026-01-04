@@ -199,9 +199,23 @@ const ChatbotScreen = ({ route, navigation }) => {
           style: "destructive",
           onPress: async () => {
             try {
+              // Clear local storage
               await AsyncStorage.removeItem(CHAT_STORAGE_KEY);
               setMessages([welcomeMessage]);
-              console.log("🗑️ Chat history cleared");
+
+              // Clear backend cache for this patient (prevents stale cached responses)
+              try {
+                await axios.post(`${BACKEND_URL}/chat/clear`, {
+                  text: "clear",
+                  patient_id: userID || "default_patient",
+                });
+                console.log("🗑️ Chat history & backend cache cleared");
+              } catch (backendError) {
+                console.warn(
+                  "Backend cache clear failed (non-critical):",
+                  backendError.message
+                );
+              }
             } catch (error) {
               console.error("Error clearing chat:", error);
             }
@@ -209,7 +223,7 @@ const ChatbotScreen = ({ route, navigation }) => {
         },
       ]
     );
-  }, [CHAT_STORAGE_KEY, welcomeMessage]);
+  }, [CHAT_STORAGE_KEY, welcomeMessage, userID]);
 
   // Keyboard listener to scroll to end when keyboard opens
   useEffect(() => {
