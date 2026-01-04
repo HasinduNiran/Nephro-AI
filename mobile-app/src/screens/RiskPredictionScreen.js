@@ -66,6 +66,29 @@ const RiskPredictionScreen = ({ navigation, route }) => {
     loadUserData();
   }, []);
 
+  // Validation ranges for inputs
+  const VALIDATION_RANGES = {
+    bpSystolic: { min: 70, max: 250, label: "Systolic BP" },
+    bpDiastolic: { min: 40, max: 150, label: "Diastolic BP" },
+    diabetesLevel: { min: 50, max: 500, label: "Blood Sugar Level" },
+  };
+
+  const validateInput = (value, field) => {
+    const range = VALIDATION_RANGES[field];
+    const numValue = parseFloat(value);
+    
+    if (isNaN(numValue)) {
+      return { valid: false, message: `${range.label} must be a valid number` };
+    }
+    if (numValue < range.min) {
+      return { valid: false, message: `${range.label} must be at least ${range.min}` };
+    }
+    if (numValue > range.max) {
+      return { valid: false, message: `${range.label} must not exceed ${range.max}` };
+    }
+    return { valid: true };
+  };
+
   const onPredictPressed = async () => {
     if (!bpSystolic || !bpDiastolic || !age) {
       Alert.alert(
@@ -73,6 +96,38 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         "Please fill in Blood Pressure (Systolic and Diastolic) and Age"
       );
       return;
+    }
+
+    // Validate Systolic BP
+    const systolicValidation = validateInput(bpSystolic, "bpSystolic");
+    if (!systolicValidation.valid) {
+      Alert.alert("Invalid Input", systolicValidation.message);
+      return;
+    }
+
+    // Validate Diastolic BP
+    const diastolicValidation = validateInput(bpDiastolic, "bpDiastolic");
+    if (!diastolicValidation.valid) {
+      Alert.alert("Invalid Input", diastolicValidation.message);
+      return;
+    }
+
+    // Validate that Systolic > Diastolic
+    if (parseFloat(bpSystolic) <= parseFloat(bpDiastolic)) {
+      Alert.alert(
+        "Invalid Input",
+        "Systolic BP must be greater than Diastolic BP"
+      );
+      return;
+    }
+
+    // Validate Diabetes Level (if provided)
+    if (diabetesLevel) {
+      const diabetesValidation = validateInput(diabetesLevel, "diabetesLevel");
+      if (!diabetesValidation.valid) {
+        Alert.alert("Invalid Input", diabetesValidation.message);
+        return;
+      }
     }
 
     setLoading(true);
@@ -193,18 +248,21 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         value={bpSystolic}
         setValue={setBpSystolic}
         keyboardType="numeric"
+        helperText="Range: 70-250 mmHg"
       />
       <CustomInput
         placeholder="Diastolic BP (mmHg) *Required"
         value={bpDiastolic}
         setValue={setBpDiastolic}
         keyboardType="numeric"
+        helperText="Range: 40-150 mmHg"
       />
       <CustomInput
         placeholder="Blood Sugar Level (mg/dL) - Optional"
         value={diabetesLevel}
         setValue={setDiabetesLevel}
         keyboardType="numeric"
+        helperText="Range: 50-500 mg/dL"
       />
 
       <CustomButton text="Predict Risk" onPress={onPredictPressed} />

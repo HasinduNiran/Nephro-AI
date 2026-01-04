@@ -8,6 +8,7 @@ const CustomInput = ({
   secureTextEntry,
   label,
   keyboardType,
+  helperText,
 }) => {
   return (
     <View style={styles.container}>
@@ -20,6 +21,7 @@ const CustomInput = ({
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
       />
+      {helperText && <Text style={styles.helperText}>{helperText}</Text>}
     </View>
   );
 };
@@ -43,6 +45,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#e8e8e8",
+  },
+  helperText: {
+    color: "#8E8E93",
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 5,
   },
 });
 
