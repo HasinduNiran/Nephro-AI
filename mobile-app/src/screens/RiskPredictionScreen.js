@@ -346,7 +346,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       <View style={styles.infoCard}>
         <Text style={styles.infoTitle}>💡 About the Prediction</Text>
         <Text style={styles.infoText}>
-                 {"\n\n"}Required: Systolic BP, Diastolic BP, and Age
+          {"\n\n"}Required: Systolic BP, Diastolic BP, and Age
           {"\n"}Optional: HbA1c Level (%)
           {"\n\n"}Both blood pressure values are important for accurate kidney
           health assessment.
