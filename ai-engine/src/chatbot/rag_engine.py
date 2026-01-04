@@ -27,10 +27,19 @@ class RAGEngine:
         self.cache = {} # Simple in-memory cache (Use Redis for production)
         Log.success("RAG Engine Ready")
 
-    def get_cache_key(self, query, patient_id):
+    def get_cache_key(self, query, patient_id, target_lang):
+        """Generate cache key that includes language to prevent wrong-language cached responses"""
         data_version = self.patient_data.get_last_update_timestamp(patient_id)
-        raw_key = f"{patient_id}:{data_version}:{query.lower().strip()}"
+        raw_key = f"{patient_id}:{data_version}:{target_lang}:{query.lower().strip()}"
         return hashlib.md5(raw_key.encode()).hexdigest()
+    
+    def clear_cache_for_patient(self, patient_id: str):
+        """Clear all cached responses for a specific patient"""
+        keys_to_remove = [k for k in self.cache.keys() if patient_id in str(k)]
+        for key in keys_to_remove:
+            del self.cache[key]
+        Log.step("🗑️", "CACHE CLEARED", f"Removed {len(keys_to_remove)} entries for patient '{patient_id}'")
+        return len(keys_to_remove)
 
     def _detect_output_language(self, text: str) -> str:
         """
@@ -86,15 +95,15 @@ class RAGEngine:
     def process_query(self, query: str, patient_id: str = "default_patient", chat_history: List[Dict[str, str]] = []) -> Dict[str, Any]:
         Log.section(f"PROCESSING QUERY: '{query}'")
 
-        # 1. CHECK CACHE
-        cache_key = self.get_cache_key(query, patient_id)
-        if cache_key in self.cache:
-            Log.step("⚡", "CACHE HIT", "Returning cached response")
-            return self.cache[cache_key]
-
-        # 2. DETERMINE OUTPUT LANGUAGE
+        # 1. DETERMINE OUTPUT LANGUAGE FIRST (before cache check)
         target_lang = self._detect_output_language(query)
         Log.step("🔍", "Detecting Language", f"Result: {'SINHALA' if target_lang == 'si' else 'ENGLISH'}")
+
+        # 2. CHECK CACHE (now includes language in key)
+        cache_key = self.get_cache_key(query, patient_id, target_lang)
+        if cache_key in self.cache:
+            Log.step("⚡", "CACHE HIT", f"Returning cached {target_lang.upper()} response")
+            return self.cache[cache_key]
 
         # 3. BRIDGE LAYER (Translation)
         english_query = query

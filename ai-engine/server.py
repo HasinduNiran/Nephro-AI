@@ -146,6 +146,27 @@ async def login(request: LoginRequest):
 def health_check():
     return {"status": "active"}
 
+# --- CLEAR CACHE ENDPOINT ---
+@app.post("/chat/clear")
+@app.post("/api/chat/clear")
+async def clear_chat(request: ChatRequest):
+    """Clear chat history and cache for a patient"""
+    patient_id = request.patient_id
+    Log.step("🗑️", "CLEAR REQUEST", f"Clearing history & cache for '{patient_id}'")
+    
+    # Clear session history
+    if patient_id in SESSIONS:
+        del SESSIONS[patient_id]
+        Log.step("  ", "Session Cleared", f"Removed history for {patient_id}")
+    
+    # Clear RAG cache for this patient
+    cleared_count = rag_engine.clear_cache_for_patient(patient_id)
+    
+    return {
+        "success": True,
+        "message": f"Cleared chat history and {cleared_count} cached responses for {patient_id}"
+    }
+
 @app.post("/chat/text")
 @app.post("/api/chat/text")
 async def text_chat(request: ChatRequest):

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   View,
@@ -16,8 +16,10 @@ import {
   Dimensions,
   Image,
   Easing,
-  Linking, // Import Linking
+  Linking,
+  Keyboard, // Import Keyboard for handling keyboard events
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Ionicons,
   MaterialCommunityIcons,
@@ -31,22 +33,24 @@ import * as Haptics from "expo-haptics";
 import Markdown from "react-native-markdown-display";
 
 // 👇 [NEW] Import Speech Library
-import * as Speech from 'expo-speech';
+import * as Speech from "expo-speech";
 import { CHATBOT_URL } from "../api/axiosConfig";
 
 // Use centralized URL from axiosConfig
 const BACKEND_URL = CHATBOT_URL;
 
-
 // Custom base64 decode for React Native (atob polyfill)
 const base64Decode = (str) => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-  let output = '';
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+  let output = "";
 
-  str = String(str).replace(/=+$/, '');
+  str = String(str).replace(/=+$/, "");
 
   if (str.length % 4 === 1) {
-    throw new Error("'atob' failed: The string to be decoded is not correctly encoded.");
+    throw new Error(
+      "'atob' failed: The string to be decoded is not correctly encoded."
+    );
   }
 
   for (
@@ -66,9 +70,9 @@ const base64Decode = (str) => {
     for (let i = 0; i < output.length; i++) {
       bytes.push(output.charCodeAt(i));
     }
-    
+
     // Decode UTF-8
-    let result = '';
+    let result = "";
     let i = 0;
     while (i < bytes.length) {
       const c = bytes[i];
@@ -79,7 +83,9 @@ const base64Decode = (str) => {
         result += String.fromCharCode(((c & 31) << 6) | (bytes[i + 1] & 63));
         i += 2;
       } else {
-        result += String.fromCharCode(((c & 15) << 12) | ((bytes[i + 1] & 63) << 6) | (bytes[i + 2] & 63));
+        result += String.fromCharCode(
+          ((c & 15) << 12) | ((bytes[i + 1] & 63) << 6) | (bytes[i + 2] & 63)
+        );
         i += 3;
       }
     }
@@ -89,7 +95,6 @@ const base64Decode = (str) => {
     return output;
   }
 };
-
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -115,31 +120,136 @@ const COLORS = {
 
 const ChatbotScreen = ({ route, navigation }) => {
   const { userID, userName } = route.params || {}; // Validate params exist
+
+  // Chat storage key unique to each user
+  const CHAT_STORAGE_KEY = `chat_messages_${userID || "guest"}`;
+
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Default welcome message
+  const welcomeMessage = {
+    id: "1",
+    text: "Hello! 👋 I'm your **Nephro-AI** assistant. I'm here to help you with kidney health.",
+    sender: "bot",
+    timestamp: new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  };
+
+  // Load messages from AsyncStorage on mount
+  useEffect(() => {
+    const loadMessages = async () => {
+      try {
+        const savedMessages = await AsyncStorage.getItem(CHAT_STORAGE_KEY);
+        if (savedMessages) {
+          const parsedMessages = JSON.parse(savedMessages);
+          setMessages(parsedMessages);
+          console.log(
+            `📥 Loaded ${parsedMessages.length} messages from storage`
+          );
+        } else {
+          // First time - show welcome message
+          setMessages([welcomeMessage]);
+        }
+      } catch (error) {
+        console.error("Error loading chat messages:", error);
+        setMessages([welcomeMessage]);
+      } finally {
+        setIsInitialized(true);
+      }
+    };
+    loadMessages();
+  }, [userID]);
+
+  // Save messages to AsyncStorage whenever they change
+  useEffect(() => {
+    const saveMessages = async () => {
+      if (isInitialized && messages.length > 0) {
+        try {
+          await AsyncStorage.setItem(
+            CHAT_STORAGE_KEY,
+            JSON.stringify(messages)
+          );
+          console.log(`💾 Saved ${messages.length} messages to storage`);
+        } catch (error) {
+          console.error("Error saving chat messages:", error);
+        }
+      }
+    };
+    saveMessages();
+  }, [messages, isInitialized]);
+
   // Debug log - Run only once on mount
   useEffect(() => {
     console.log("Chatbot Initialized for:", { userID, userName });
   }, []);
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([
-    {
-      id: "1",
-      text: "Hello! 👋 I'm your **Nephro-AI** assistant. I'm here to help you with kidney health.",
-      sender: "bot",
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    },
-  ]);
+
+  // Clear chat history function
+  const clearChatHistory = useCallback(() => {
+    Alert.alert(
+      "Clear Chat",
+      "Are you sure you want to clear all chat messages?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // Clear local storage
+              await AsyncStorage.removeItem(CHAT_STORAGE_KEY);
+              setMessages([welcomeMessage]);
+
+              // Clear backend cache for this patient (prevents stale cached responses)
+              try {
+                await axios.post(`${BACKEND_URL}/chat/clear`, {
+                  text: "clear",
+                  patient_id: userID || "default_patient",
+                });
+                console.log("🗑️ Chat history & backend cache cleared");
+              } catch (backendError) {
+                console.warn(
+                  "Backend cache clear failed (non-critical):",
+                  backendError.message
+                );
+              }
+            } catch (error) {
+              console.error("Error clearing chat:", error);
+            }
+          },
+        },
+      ]
+    );
+  }, [CHAT_STORAGE_KEY, welcomeMessage, userID]);
+
+  // Keyboard listener to scroll to end when keyboard opens
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      () => {
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+    };
+  }, []);
+
   const [recording, setRecording] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   // Replaced loadingText string with loadingStep object and loadingType
-  const [loadingStep, setLoadingStep] = useState({ 
-    text: "Processing...", 
-    icon: "dots-horizontal" 
+  const [loadingStep, setLoadingStep] = useState({
+    text: "Processing...",
+    icon: "dots-horizontal",
   });
-  const [loadingType, setLoadingType] = useState('text'); // 'audio' or 'text'
+  const [loadingType, setLoadingType] = useState("text"); // 'audio' or 'text'
   const [sound, setSound] = useState(null);
   const [metering, setMetering] = useState(-160);
   const [inputFocused, setInputFocused] = useState(false);
@@ -176,15 +286,15 @@ const ChatbotScreen = ({ route, navigation }) => {
 
     // Clean text before speaking (Remove * and # visually for the speech engine)
     // Also remove [MAPS: ...] tag
-    const cleanText = text.replace(/[*#]/g, '').replace(/\[MAPS:.*?\]/g, '');
+    const cleanText = text.replace(/[*#]/g, "").replace(/\[MAPS:.*?\]/g, "");
 
     const isSinhala = /[\u0D80-\u0DFF]/.test(text);
 
     const options = {
-      language: isSinhala ? 'si-LK' : 'en-US',
+      language: isSinhala ? "si-LK" : "en-US",
       pitch: 1.0,
       // 👇 CHANGED: Increased from 0.75 to 0.9 (Faster but clear)
-      rate: isSinhala ? 0.9 : 1.0, 
+      rate: isSinhala ? 0.9 : 1.0,
     };
 
     console.log(`🗣️ Speaking in ${isSinhala ? "SINHALA" : "ENGLISH"}...`);
@@ -219,28 +329,28 @@ const ChatbotScreen = ({ route, navigation }) => {
     if (isLoading) {
       // 🎙️ Sequence for Voice Input
       const audioSteps = [
-        { text: "Listening to audio...", icon: "ear-hearing" },    // Ear Icon
-        { text: "Translating Sinhala...", icon: "translate" },     // Translate Icon
-        { text: "Analyzing symptoms...", icon: "brain" },          // Brain Icon
-        { text: "Checking safety...", icon: "shield-check" },      // Shield Icon
-        { text: "Formulating advice...", icon: "doctor" }          // Doctor Icon
+        { text: "Listening to audio...", icon: "ear-hearing" }, // Ear Icon
+        { text: "Translating Sinhala...", icon: "translate" }, // Translate Icon
+        { text: "Analyzing symptoms...", icon: "brain" }, // Brain Icon
+        { text: "Checking safety...", icon: "shield-check" }, // Shield Icon
+        { text: "Formulating advice...", icon: "doctor" }, // Doctor Icon
       ];
 
       // ⌨️ Sequence for Text Input
       const textSteps = [
-        { text: "Reading message...", icon: "email-open" },        // Email/Read Icon
-        { text: "Analyzing symptoms...", icon: "brain" },          // Brain Icon
-        { text: "Consulting database...", icon: "database-search"},// Database Icon
-        { text: "Checking safety...", icon: "shield-check" },      // Shield Icon
-        { text: "Typing response...", icon: "keyboard" }           // Keyboard Icon
+        { text: "Reading message...", icon: "email-open" }, // Email/Read Icon
+        { text: "Analyzing symptoms...", icon: "brain" }, // Brain Icon
+        { text: "Consulting database...", icon: "database-search" }, // Database Icon
+        { text: "Checking safety...", icon: "shield-check" }, // Shield Icon
+        { text: "Typing response...", icon: "keyboard" }, // Keyboard Icon
       ];
 
       // 2. Select the correct list based on input type
-      const steps = loadingType === 'audio' ? audioSteps : textSteps;
+      const steps = loadingType === "audio" ? audioSteps : textSteps;
 
       let i = 0;
       setLoadingStep(steps[0]); // Start immediately
-      
+
       interval = setInterval(() => {
         i = (i + 1) % steps.length; // Loop through steps
         setLoadingStep(steps[i]);
@@ -306,7 +416,7 @@ const ChatbotScreen = ({ route, navigation }) => {
         await sound.unloadAsync();
         setSound(null);
       }
-      
+
       // Stop any current speaking when recording starts
       Speech.stop();
 
@@ -347,7 +457,7 @@ const ChatbotScreen = ({ route, navigation }) => {
   // 4. API Logic: Upload Audio (UPDATED for Client-Side TTS)
   const sendAudioToBackend = async (uri) => {
     setIsLoading(true);
-    setLoadingType('audio'); // Set type for animation
+    setLoadingType("audio"); // Set type for animation
     setIsTyping(true);
 
     const formData = new FormData();
@@ -375,17 +485,17 @@ const ChatbotScreen = ({ route, navigation }) => {
     try {
       console.log("Uploading audio to:", `${BACKEND_URL}/chat/audio`);
       console.log("Patient ID:", userID || "default_patient");
-      
+
       // Create an AbortController for timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
-      
+
       const response = await fetch(`${BACKEND_URL}/chat/audio`, {
-        method: 'POST',
+        method: "POST",
         body: formData,
         signal: controller.signal,
       });
-      
+
       clearTimeout(timeoutId);
 
       if (!response.ok) {
@@ -395,7 +505,7 @@ const ChatbotScreen = ({ route, navigation }) => {
       // Read headers for the text response
       const b64ResponseText = response.headers.get("x-response-b64");
       const b64Sources = response.headers.get("x-sources-b64");
-      
+
       let responseText = "Audio Response";
       let sourcesText = "";
 
@@ -462,10 +572,10 @@ const ChatbotScreen = ({ route, navigation }) => {
     if (!text.trim()) return;
 
     if (!textToSend) setMessage(""); // Clear input if typed
-    
+
     // 🛑 REMOVE or COMMENT OUT this line (Don't speak when user is typing)
-    // Speech.stop(); 
-    
+    // Speech.stop();
+
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     setMessages((prev) => [
@@ -481,7 +591,7 @@ const ChatbotScreen = ({ route, navigation }) => {
       },
     ]);
     setIsLoading(true);
-    setLoadingType('text'); // Set type for animation
+    setLoadingType("text"); // Set type for animation
     setIsTyping(true);
 
     try {
@@ -489,11 +599,11 @@ const ChatbotScreen = ({ route, navigation }) => {
         text: text,
         patient_id: userID || "default_patient",
       });
-      
+
       const botReply = res.data.response;
 
       // 🛑 COMMENT OUT THIS LINE (This stops Auto-Play for Text)
-      // speakResponse(botReply); 
+      // speakResponse(botReply);
 
       setMessages((prev) => [
         ...prev,
@@ -575,36 +685,45 @@ const ChatbotScreen = ({ route, navigation }) => {
                 {(() => {
                   const mapTagMatch = item.text.match(/\[MAPS: (.*?)\]/);
                   const locationQuery = mapTagMatch ? mapTagMatch[1] : null;
-                  const displayText = item.text.replace(/\[MAPS:.*?\]/g, '').trim();
+                  const displayText = item.text
+                    .replace(/\[MAPS:.*?\]/g, "")
+                    .trim();
 
                   return (
                     <>
                       <Markdown style={markdownStyles}>{displayText}</Markdown>
-                      
+
                       {/* Navigate Button */}
                       {locationQuery && (
-                         <TouchableOpacity
-                           style={{
-                             marginTop: 10,
-                             backgroundColor: COLORS.accentLight,
-                             paddingVertical: 10,
-                             paddingHorizontal: 12,
-                             borderRadius: 8,
-                             flexDirection: 'row',
-                             alignItems: 'center',
-                             borderWidth: 1,
-                             borderColor: COLORS.accent
-                           }}
-                           onPress={() => {
-                             const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationQuery)}`;
-                             Linking.openURL(url);
-                           }}
-                         >
-                           <Ionicons name="map" size={20} color={COLORS.accent} style={{ marginRight: 8 }} />
-                           <Text style={{ color: COLORS.accent, fontWeight: '600' }}>
-                             Navigate to {locationQuery}
-                           </Text>
-                         </TouchableOpacity>
+                        <TouchableOpacity
+                          style={{
+                            marginTop: 10,
+                            backgroundColor: COLORS.accentLight,
+                            paddingVertical: 10,
+                            paddingHorizontal: 12,
+                            borderRadius: 8,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            borderWidth: 1,
+                            borderColor: COLORS.accent,
+                          }}
+                          onPress={() => {
+                            const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationQuery)}`;
+                            Linking.openURL(url);
+                          }}
+                        >
+                          <Ionicons
+                            name="map"
+                            size={20}
+                            color={COLORS.accent}
+                            style={{ marginRight: 8 }}
+                          />
+                          <Text
+                            style={{ color: COLORS.accent, fontWeight: "600" }}
+                          >
+                            Navigate to {locationQuery}
+                          </Text>
+                        </TouchableOpacity>
                       )}
 
                       {/* 👇 [UPDATED] Universal "Read Aloud" Button for ALL bot messages */}
@@ -623,7 +742,6 @@ const ChatbotScreen = ({ route, navigation }) => {
                     </>
                   );
                 })()}
-
               </View>
             )}
 
@@ -682,210 +800,230 @@ const ChatbotScreen = ({ route, navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.card} />
 
-      {/* Enhanced Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="arrow-back" size={24} color={COLORS.textDark} />
-        </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <View style={styles.headerIconContainer}>
-            <Ionicons name="medical" size={22} color={COLORS.white} />
-            <View style={styles.onlineIndicator} />
-          </View>
-          <View>
-            <Text style={styles.headerTitle}>Nephro-AI</Text>
-            <View style={styles.statusRow}>
-              <View style={styles.statusDot} />
-              <Text style={styles.headerSubtitle}>Online • Ready to help</Text>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 30}
+      >
+        {/* Enhanced Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={24} color={COLORS.textDark} />
+          </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <View style={styles.headerIconContainer}>
+              <Ionicons name="medical" size={22} color={COLORS.white} />
+              <View style={styles.onlineIndicator} />
+            </View>
+            <View>
+              <Text style={styles.headerTitle}>Nephro-AI</Text>
+              <View style={styles.statusRow}>
+                <View style={styles.statusDot} />
+                <Text style={styles.headerSubtitle}>
+                  Online • Ready to help
+                </Text>
+              </View>
             </View>
           </View>
+          <TouchableOpacity
+            style={styles.headerAction}
+            activeOpacity={0.7}
+            onPress={clearChatHistory}
+          >
+            <Ionicons name="trash-outline" size={22} color={COLORS.textLight} />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.headerAction} activeOpacity={0.7}>
-          <Ionicons
-            name="ellipsis-vertical"
-            size={22}
-            color={COLORS.textLight}
-          />
-        </TouchableOpacity>
-      </View>
 
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.messagesList}
-        onContentSizeChange={() =>
-          flatListRef.current?.scrollToEnd({ animated: true })
-        }
-        ListHeaderComponent={messages.length <= 1 ? <WelcomeTips /> : null}
-        ListFooterComponent={
-          isTyping ? (
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "flex-start",
-                marginBottom: 12,
-                paddingHorizontal: 4,
-              }}
-            >
-              <View style={styles.avatarContainer}>
-                <Ionicons name="medical" size={18} color="white" />
-              </View>
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.messagesList}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: true })
+          }
+          onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+          ListHeaderComponent={messages.length <= 1 ? <WelcomeTips /> : null}
+          ListFooterComponent={
+            isTyping ? (
               <View
-                style={[
-                  styles.messageBubble,
-                  styles.botBubble,
-                  styles.typingBubble,
-                ]}
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-start",
+                  marginBottom: 12,
+                  paddingHorizontal: 4,
+                }}
               >
+                <View style={styles.avatarContainer}>
+                  <Ionicons name="medical" size={18} color="white" />
+                </View>
+                <View
+                  style={[
+                    styles.messageBubble,
+                    styles.botBubble,
+                    styles.typingBubble,
+                  ]}
+                >
                   {/* Dynamic Loading Status */}
                   <View style={styles.loadingContainer}>
-                    <MaterialCommunityIcons 
-                      name={loadingStep.icon} 
-                      size={34} 
-                      color={COLORS.primary} 
-                      style={{ marginBottom: 0 }} 
+                    <MaterialCommunityIcons
+                      name={loadingStep.icon}
+                      size={34}
+                      color={COLORS.primary}
+                      style={{ marginBottom: 0 }}
                     />
                     <Text style={styles.loadingText}>{loadingStep.text}</Text>
                   </View>
+                </View>
               </View>
-            </View>
-          ) : null
-        }
-      />
+            ) : null
+          }
+        />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        {/* Quick Suggestion Chips */}
-        <View style={styles.suggestionsContainer}>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={suggestions}
-            renderItem={({ item }) => (
+        <View>
+          {/* Quick Suggestion Chips */}
+          <View style={styles.suggestionsContainer}>
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              data={suggestions}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[styles.chip, { borderColor: item.color }]}
+                  onPress={async () => {
+                    await Haptics.impactAsync(
+                      Haptics.ImpactFeedbackStyle.Light
+                    );
+                    sendTextMessage(item.text);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name={item.icon}
+                    size={16}
+                    color={item.color}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text style={[styles.chipText, { color: item.color }]}>
+                    {item.text}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item.text}
+              contentContainerStyle={{ paddingHorizontal: 16 }}
+            />
+          </View>
+
+          <View
+            style={[
+              styles.inputContainer,
+              { paddingBottom: Platform.OS === "ios" ? 24 : 12 },
+            ]}
+          >
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                placeholder="Ask about your health..."
+                value={message}
+                onChangeText={setMessage}
+                placeholderTextColor={COLORS.textLighter}
+                multiline
+                maxLength={500}
+              />
+              {message.length > 0 && (
+                <Text style={styles.charCount}>{message.length}/500</Text>
+              )}
+            </View>
+
+            {message.length > 0 ? (
               <TouchableOpacity
-                style={[styles.chip, { borderColor: item.color }]}
-                onPress={async () => {
-                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  sendTextMessage(item.text);
-                }}
+                onPress={() => sendTextMessage()}
+                style={styles.sendButton}
                 activeOpacity={0.7}
               >
+                <Ionicons name="send" size={22} color="white" />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPressIn={startRecording}
+                onPressOut={stopRecording}
+                style={[styles.micButton, isRecording && styles.micActive]}
+                activeOpacity={0.8}
+              >
                 <Ionicons
-                  name={item.icon}
-                  size={16}
-                  color={item.color}
-                  style={{ marginRight: 6 }}
+                  name={isRecording ? "mic" : "mic-outline"}
+                  size={26}
+                  color="white"
                 />
-                <Text style={[styles.chipText, { color: item.color }]}>
-                  {item.text}
-                </Text>
               </TouchableOpacity>
             )}
-            keyExtractor={(item) => item.text}
-            contentContainerStyle={{ paddingHorizontal: 16 }}
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={styles.input}
-              placeholder="Ask about your health..."
-              value={message}
-              onChangeText={setMessage}
-              placeholderTextColor={COLORS.textLighter}
-              multiline
-              maxLength={500}
-            />
-            {message.length > 0 && (
-              <Text style={styles.charCount}>{message.length}/500</Text>
-            )}
           </View>
 
-          {message.length > 0 ? (
-            <TouchableOpacity
-              onPress={() => sendTextMessage()}
-              style={styles.sendButton}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="send" size={22} color="white" />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              onPressIn={startRecording}
-              onPressOut={stopRecording}
-              style={[styles.micButton, isRecording && styles.micActive]}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name={isRecording ? "mic" : "mic-outline"}
-                size={26}
-                color="white"
-              />
-            </TouchableOpacity>
+          {/* Enhanced Recording Overlay */}
+          {isRecording && (
+            <View style={styles.recordingOverlay}>
+              <View style={styles.recordingCard}>
+                <View style={styles.recordingIconContainer}>
+                  <View style={styles.recordingPulse} />
+                  <Ionicons name="mic" size={52} color={COLORS.danger} />
+                </View>
+                <Text style={styles.recordingTitle}>🎤 Listening...</Text>
+                <Text style={styles.recordingSubtitle}>
+                  Speak clearly about your health
+                </Text>
+
+                <View style={styles.meterTrack}>
+                  <View
+                    style={[
+                      styles.meterFill,
+                      {
+                        width: `${Math.min(
+                          100,
+                          Math.max(5, (metering + 160) / 1.0)
+                        )}%`,
+                        backgroundColor:
+                          metering > -30 ? COLORS.accent : COLORS.danger,
+                      },
+                    ]}
+                  />
+                </View>
+                <View style={styles.volumeFeedback}>
+                  <Ionicons
+                    name={
+                      metering > -30
+                        ? "checkmark-circle"
+                        : "alert-circle-outline"
+                    }
+                    size={16}
+                    color={metering > -30 ? COLORS.accent : COLORS.warning}
+                  />
+                  <Text
+                    style={[
+                      styles.recordingHint,
+                      {
+                        color: metering > -30 ? COLORS.accent : COLORS.warning,
+                      },
+                    ]}
+                  >
+                    {metering > -30 ? "Perfect Volume ✓" : "Speak a bit louder"}
+                  </Text>
+                </View>
+
+                <Text style={styles.releaseHint}>Release to send</Text>
+              </View>
+            </View>
           )}
         </View>
-
-        {/* Enhanced Recording Overlay */}
-        {isRecording && (
-          <View style={styles.recordingOverlay}>
-            <View style={styles.recordingCard}>
-              <View style={styles.recordingIconContainer}>
-                <View style={styles.recordingPulse} />
-                <Ionicons name="mic" size={52} color={COLORS.danger} />
-              </View>
-              <Text style={styles.recordingTitle}>🎤 Listening...</Text>
-              <Text style={styles.recordingSubtitle}>
-                Speak clearly about your health
-              </Text>
-
-              <View style={styles.meterTrack}>
-                <View
-                  style={[
-                    styles.meterFill,
-                    {
-                      width: `${Math.min(
-                        100,
-                        Math.max(5, (metering + 160) / 1.0)
-                      )}%`,
-                      backgroundColor:
-                        metering > -30 ? COLORS.accent : COLORS.danger,
-                    },
-                  ]}
-                />
-              </View>
-              <View style={styles.volumeFeedback}>
-                <Ionicons
-                  name={
-                    metering > -30 ? "checkmark-circle" : "alert-circle-outline"
-                  }
-                  size={16}
-                  color={metering > -30 ? COLORS.accent : COLORS.warning}
-                />
-                <Text
-                  style={[
-                    styles.recordingHint,
-                    { color: metering > -30 ? COLORS.accent : COLORS.warning },
-                  ]}
-                >
-                  {metering > -30 ? "Perfect Volume ✓" : "Speak a bit louder"}
-                </Text>
-              </View>
-
-              <Text style={styles.releaseHint}>Release to send</Text>
-            </View>
-          </View>
-        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -1393,16 +1531,16 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   loadingContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginVertical: 4,
-    flexDirection: 'row',
-    gap: 10
+    flexDirection: "row",
+    gap: 10,
   },
   loadingText: {
     color: COLORS.textMedium,
     fontSize: 14,
-    fontWeight: '600',
-    fontStyle: 'italic'
+    fontWeight: "600",
+    fontStyle: "italic",
   },
 });
 
