@@ -105,12 +105,88 @@ class RAGEngine:
             Log.step("⚡", "CACHE HIT", f"Returning cached {target_lang.upper()} response")
             return self.cache[cache_key]
 
-        # 3. BRIDGE LAYER (Translation)
+        # 3. BRIDGE LAYER (Hybrid Smart Route + MedDict Integration)
+        # ============================================================
+        # NEW ARCHITECTURE:
+        # - Step 1: Always extract MedDict hints (fast, local)
+        # - Step 2: Try Sinhala NLU with LaBSE (zero-shot, local)
+        # - Step 3: If confidence high → Use NLU + MedDict (fast path)
+        # - Step 4: If confidence low → Fallback to LLM API (smart path)
+        # ============================================================
         english_query = query
+        translation_method = "none"  # Track which method was used
+        t_translation_start = time.time()
+        
         if target_lang == 'si':
-            Log.step("🔄", "NLU BRIDGE: Translating Input...")
-            english_query = self.llm.translate_to_english(query, chat_history) 
-            Log.step("  ", "Translation Result", f"'{english_query}'")
+            Log.step("🔄", "NLU BRIDGE: Processing Sinhala (Hybrid Mode)...")
+            
+            # STEP 1: ALWAYS extract dictionary hints (fast operation, ~5ms)
+            dict_hints_raw = self.llm._get_dictionary_hints(query)
+            if dict_hints_raw:
+                Log.step("📖", "MedDict Hit", f"{{ {dict_hints_raw[:80]}{'...' if len(dict_hints_raw) > 80 else ''} }}")
+            
+            # STEP 2: Try Sinhala NLU with LaBSE (zero-shot intent detection, ~300ms)
+            si_analysis = self.llm.sinhala_nlu.analyze_query(query)
+            nlu_confidence = si_analysis['confidence']
+            nlu_intent = si_analysis['detected_intent']
+            
+            Log.step("🧠", "Sinhala NLU (LaBSE)", 
+                    f"Intent: {nlu_intent} | Confidence: {nlu_confidence:.2%}")
+            
+            # STEP 3: Decision based on confidence threshold
+            if nlu_confidence > 0.6:
+                # ============ FAST PATH: NLU + MedDict ============
+                translation_method = "sinhala_nlu"
+                Log.step("⚡", "FAST PATH", "Using Sinhala NLU + MedDict (no API call)")
+                
+                # Start with NLU's translated query
+                english_query = si_analysis['translated_query']
+                
+                # Extract entities from NLU
+                nlu_entities = si_analysis.get('entities', {})
+                entity_terms = []
+                for category, terms in nlu_entities.items():
+                    entity_terms.extend(terms)
+                
+                # Enrich with MedDict entities (parse the hints string)
+                meddict_terms = []
+                if dict_hints_raw:
+                    for hint in dict_hints_raw.split(','):
+                        if '=' in hint:
+                            try:
+                                parts = hint.strip().split('=')
+                                if len(parts) == 2:
+                                    en_term = parts[1].strip().strip("'\"")
+                                    if en_term and en_term not in meddict_terms:
+                                        meddict_terms.append(en_term)
+                            except:
+                                pass
+                
+                # Build enhanced query: Intent + MedDict terms + NLU entities
+                query_parts = [nlu_intent.replace('_', ' ')]
+                query_parts.extend(meddict_terms[:5])  # Limit to top 5 MedDict terms
+                query_parts.extend(entity_terms[:3])    # Add NLU entities
+                
+                # Construct final English query
+                english_query = ' '.join(query_parts)
+                
+                # Clean up duplicates and format
+                english_query = ' '.join(dict.fromkeys(english_query.split()))
+                
+                Log.step("  ", "Built Query", f"'{english_query}'")
+                
+            else:
+                # ============ SMART PATH: LLM Fallback ============
+                translation_method = "llm_api"
+                Log.step("🧠", "SMART PATH", f"NLU confidence too low ({nlu_confidence:.2%}), using LLM API...")
+                english_query = self.llm.translate_to_english(query, chat_history)
+                Log.step("  ", "LLM Translation", f"'{english_query}'")
+        
+        # Calculate translation time (only for Sinhala queries)
+        t_translation_end = time.time()
+        translation_time = t_translation_end - t_translation_start if target_lang == 'si' else 0
+        if target_lang == 'si':
+            Log.step("⏱️", "Translation Time", f"{translation_time:.2f}s ({translation_method})")
 
         # 3.5 [NEW] CONTEXT REWRITER
         # Rewrite query to be standalone (e.g. "it" -> "kidney disease")
@@ -180,7 +256,10 @@ class RAGEngine:
             "source_documents": context_documents[:3],
             "source_metadata": source_metadata[:3],
             "nlu_analysis": search_results.get("nlu_analysis", {}),
-            "target_lang": target_lang # <--- PASS THIS TO SERVER.PY FOR TTS
+            "target_lang": target_lang,
+            # NEW: Hybrid Smart Route metrics (for thesis/evaluation)
+            "translation_method": translation_method if target_lang == 'si' else "none",
+            "translation_time": translation_time if target_lang == 'si' else 0
         }
         
         self.cache[cache_key] = response_payload
@@ -189,10 +268,34 @@ class RAGEngine:
 
 if __name__ == "__main__":
     rag = RAGEngine()
-    # Test English
-    print("--- Test 1 (English) ---")
-    rag.process_query("I want to know about kidney pain")
     
-    # Test Singlish
-    print("\n--- Test 2 (Singlish) ---")
-    rag.process_query("Mata bada ridenawa")
+    print("=" * 70)
+    print("🧪 TESTING HYBRID SMART ROUTE + MEDDICT INTEGRATION")
+    print("=" * 70)
+    
+    # Test 1: English (no translation needed)
+    print("\n--- Test 1 (English) - No Translation ---")
+    result1 = rag.process_query("I want to know about kidney pain")
+    print(f"Translation Method: {result1.get('translation_method', 'none')}")
+    
+    # Test 2: Singlish with clear intent (should use FAST PATH: NLU + MedDict)
+    print("\n--- Test 2 (Singlish) - Expected: FAST PATH (NLU + MedDict) ---")
+    result2 = rag.process_query("Mata kesel kanna puluwanda?")
+    print(f"Translation Method: {result2.get('translation_method')}")
+    print(f"Translation Time: {result2.get('translation_time', 0):.3f}s")
+    
+    # Test 3: Complex Singlish (might use SMART PATH: LLM fallback)
+    print("\n--- Test 3 (Complex Singlish) - May use SMART PATH (LLM) ---")
+    result3 = rag.process_query("Mage creatinine wadi wela, mokada karanne?")
+    print(f"Translation Method: {result3.get('translation_method')}")
+    print(f"Translation Time: {result3.get('translation_time', 0):.3f}s")
+    
+    # Test 4: Pure Sinhala Unicode
+    print("\n--- Test 4 (Pure Sinhala) - Testing Unicode handling ---")
+    result4 = rag.process_query("මට කෙසල් කන්න පුළුවන්ද?")
+    print(f"Translation Method: {result4.get('translation_method')}")
+    print(f"Translation Time: {result4.get('translation_time', 0):.3f}s")
+    
+    print("\n" + "=" * 70)
+    print("✅ HYBRID SMART ROUTE TEST COMPLETE")
+    print("=" * 70)
