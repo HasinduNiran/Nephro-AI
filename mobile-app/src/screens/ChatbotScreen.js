@@ -16,7 +16,8 @@ import {
   Dimensions,
   Image,
   Easing,
-  Linking, // Import Linking
+  Linking,
+  Keyboard, // Import Keyboard for handling keyboard events
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -209,6 +210,22 @@ const ChatbotScreen = ({ route, navigation }) => {
       ]
     );
   }, [CHAT_STORAGE_KEY, welcomeMessage]);
+
+  // Keyboard listener to scroll to end when keyboard opens
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => {
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+    };
+  }, []);
 
   const [recording, setRecording] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -769,10 +786,15 @@ const ChatbotScreen = ({ route, navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.card} />
 
-      {/* Enhanced Header */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 30}
+      >
+        {/* Enhanced Header */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -809,8 +831,13 @@ const ChatbotScreen = ({ route, navigation }) => {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.messagesList}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
         onContentSizeChange={() =>
           flatListRef.current?.scrollToEnd({ animated: true })
+        }
+        onLayout={() =>
+          flatListRef.current?.scrollToEnd({ animated: false })
         }
         ListHeaderComponent={messages.length <= 1 ? <WelcomeTips /> : null}
         ListFooterComponent={
@@ -849,9 +876,7 @@ const ChatbotScreen = ({ route, navigation }) => {
         }
       />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
+      <View>
         {/* Quick Suggestion Chips */}
         <View style={styles.suggestionsContainer}>
           <FlatList
@@ -883,7 +908,7 @@ const ChatbotScreen = ({ route, navigation }) => {
           />
         </View>
 
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, { paddingBottom: Platform.OS === 'ios' ? 24 : 12 }]}>
           <View style={styles.inputWrapper}>
             <TextInput
               style={styles.input}
@@ -973,6 +998,7 @@ const ChatbotScreen = ({ route, navigation }) => {
             </View>
           </View>
         )}
+      </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
