@@ -1,6 +1,6 @@
 """
 LLM Engine for Nephro-AI
-Handles communication with OpenRouter/OpenAI API to generate responses.
+Handles communication with OpenRouter API to generate responses.
 Implements the 'Sandwich Architecture' for Low-Resource Languages.
 """
 
@@ -8,6 +8,7 @@ import sys
 import json
 import requests
 import re
+import os
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -20,19 +21,20 @@ from utils.logger import ConsoleLogger as Log
 
 class LLMEngine:
     def __init__(self):
-        """Initialize LLM Engine with config"""
+        """Initialize LLM Engine with OpenRouter API"""
         self.api_key = config.OPENROUTER_API_KEY
         self.api_url = "https://openrouter.ai/api/v1/chat/completions"
         
-        # RESEARCH NOTE: 'flash' models are critical for the <2s latency requirement
-        self.model = "openai/gpt-4o-mini" 
-        # If you want to test the heavy model, use: "openai/gpt-4o" 
+        # RESEARCH NOTE: Using Gemini 2.5 Flash through OpenRouter
+        self.model = "google/gemini-2.5-flash"
         
         # Initialize Sinhala NLU
         self.sinhala_nlu = SinhalaNLUEngine()
         
         if not self.api_key:
             print("⚠️ Warning: OPENROUTER_API_KEY not found in config.")
+        else:
+            print(f"✅ Initialized OpenRouter with model: {self.model}")
             
         # Cache Setup
         self.cache_path = config.DATA_DIR / "translation_cache.json"
@@ -224,43 +226,56 @@ class LLMEngine:
         
         Log.step("🧠", "REWRITER: Contextualizing...", f"History: {len(short_history)} turns")
 
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "HTTP-Referer": "https://github.com/Nephro-AI",
-            "Content-Type": "application/json"
-        }
-        
+        # 🚨 FIX: STRICTER PROMPT to stop "As Nephro-AI" hallucinations
         prompt = (
-            "Given the chat history and the latest user question, "
-            "rewrite the question to be a standalone sentence that explicitly contains the context.\n"
-            "Do NOT answer the question. Just rewrite it.\n"
-            "If the question is already standalone, return it as is.\n\n"
+            "You are a query rewriting engine. Your job is to combine the Chat History and the Latest Question "
+            "into a single, standalone question that is clear and specific.\n\n"
+            
+            "RULES:\n"
+            "1. Output ONLY the rewritten question. Do NOT add introductions like 'Here is the question' or 'As Nephro-AI'.\n"
+            "2. If the question is already clear, output it exactly as is.\n"
+            "3. Do NOT answer the question.\n"
+            "4. Do NOT introduce yourself.\n\n"
+            
             f"Chat History:\n{history_text}\n\n"
             f"Latest Question: {query}\n\n"
             "Standalone Question:"
         )
 
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "https://github.com/Nephro-AI",
+            "Content-Type": "application/json"
+        }
+
         try:
             payload = {
-                "model": "openai/gpt-3.5-turbo", # Fast & Cheap for rewriting
+                "model": self.model,
                 "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.3
+                "temperature": 0.1,  # Reduce temp to stop creativity
+                "max_tokens": 256
             }
             
-            response = requests.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers=headers,
-                json=payload,
-                timeout=5
-            )
-
+            response = requests.post(self.api_url, headers=headers, json=payload, timeout=10)
+            
             if response.status_code == 200:
                 rewritten = response.json()['choices'][0]['message']['content'].strip()
+                
+                # 🛡️ Safety Check: If it generated a long monologue, revert to original
+                if len(rewritten) > len(query) * 4:
+                    Log.warning(f"Rewriter Hallucination detected. Reverting to original.")
+                    return query
+                
+                # 🛡️ Safety Check: If it starts with "As Nephro-AI" or similar, revert
+                if rewritten.lower().startswith(("as nephro", "i am", "hello", "hi ")):
+                    Log.warning(f"Rewriter introduced itself. Reverting to original.")
+                    return query
+                    
                 Log.step("  ", "Rewrite Result", f"'{query}' -> '{rewritten}'")
                 return rewritten
             else:
-                 Log.error(f"Rewriter API Error: {response.status_code}")
-                 return query
+                Log.error(f"Rewriter API Error: {response.status_code}")
+                return query
                  
         except Exception as e:
             Log.error(f"Rewriter Exception: {e}")
@@ -289,12 +304,6 @@ class LLMEngine:
             # Log.step("ℹ️", "MedDict Miss", "No specific medical terms found.")
             system_hint_str = ""
 
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "HTTP-Referer": "https://github.com/Nephro-AI",
-            "Content-Type": "application/json"
-        }
-
         # 🚨 THE FIX: Specific Context + Food Examples + Dictionary Injection
         system_prompt = (
             "You are a medical translator for a Nephrology Chatbot. "
@@ -316,20 +325,29 @@ class LLMEngine:
             "   - Input: 'Kos kanna hondada?'\n"
             "   - Output: 'Is it okay to eat Jackfruit?'\n\n"
 
-            "Now translate the following input:"
+            f"CONTEXT: {context_str}\n\n"
+            f"Now translate the following input:\nUSER INPUT: {text}"
         )
 
-        payload = {
-            "model": "openai/gpt-4o-mini",
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"CONTEXT: {context_str}\n\nUSER INPUT: {text}"}
-            ],
-            "temperature": 0.1  # Keep it strictly logical
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "https://github.com/Nephro-AI",
+            "Content-Type": "application/json"
         }
 
         try:
-            response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=10)
+            payload = {
+                "model": self.model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": text}
+                ],
+                "temperature": 0.1,  # Keep it strictly logical
+                "max_tokens": 256
+            }
+            
+            response = requests.post(self.api_url, headers=headers, json=payload, timeout=15)
+            
             if response.status_code == 200:
                 translation = response.json()['choices'][0]['message']['content'].strip()
                 # Remove any quotes or extra explanations
@@ -357,8 +375,10 @@ class LLMEngine:
             "අසමත්": "පාලනය නොකළ",
             "Uncontrolled": "පාලනය නොකළ",
             "අවාසනාවන්තයි": "කණගාටුයි",
-            "#": "",
-            "*": ""
+            "දොස්තර": "Doctor",
+            "සායනය": "Clinic එක",
+            "මැදුරු රෝගය": "Diabetes"
+            # Note: Removed "#" and "*" to preserve markdown formatting
         })
         
         # 3. Apply Replacements
@@ -380,26 +400,47 @@ class LLMEngine:
     def translate_to_sinhala_fallback(self, text: str) -> str:
         """
         [STYLE LAYER] Translates medical advice to Natural Spoken Sinhala (Katha Wahara).
-        Uses 'Restructuring' instead of literal translation to sound like a local doctor.
+        NOW INJECTS GLOSSARY HINTS to prevent hallucinations (e.g. Stomach -> Back).
         """
         print(f"⚠️ Style: Transforming to Natural Spoken Sinhala...")
 
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "HTTP-Referer": "https://github.com/Nephro-AI",
-            "Content-Type": "application/json"
-        }
+        # 1. GENERATE HINTS FROM YOUR GLOSSARY
+        # Scan the English text for keys in your english_to_sinhala.json
+        hints = []
+        text_lower = text.lower()
+        # Sort keys by length so "Stomach Pain" matches before "Pain"
+        sorted_keys = sorted(self.gen_glossary.keys(), key=len, reverse=True)
         
-        # 🚨 UPDATED PROMPT: TEACHING THE "PERFECT" STYLE
+        for key in sorted_keys:
+            # Skip metadata
+            if key.startswith("//") or key.startswith("__"):
+                continue
+            if key.lower() in text_lower:
+                val = self.gen_glossary[key]
+                if val:  # Only add if there's a non-empty translation
+                    hints.append(f"'{key}' -> '{val}'")
+                # Stop if we have too many hints to avoid token overflow
+                if len(hints) > 15:
+                    break
+        
+        hint_str = ", ".join(hints) if hints else "(No specific terms detected)"
+        print(f"   💡 Style Hints: {{ {hint_str} }}")
+        
+        # 2. UPDATED PROMPT WITH HINTS
         system_prompt = (
-            "You are a compassionate Sri Lankan friend giving medical advice. "
-            "Do NOT translate literally. Rewrite the text into **CASUAL SPOKEN SINHALA (Katha Wahara)**.\n\n"
+            "You are a compassionate Sri Lankan medical assistant. "
+            "Rewrite the input into **CASUAL SPOKEN SINHALA (Katha Wahara)**.\n\n"
+            
+            "🔥 CRITICAL VOCABULARY RULES (YOU MUST USE THESE EXACT TERMS):\n"
+            f"   {hint_str}\n\n"
             
             "🔥 STYLE RULES:\n"
             "1. **Opener:** Start with 'ඔයාගේ තත්ත්වයත් එක්ක බලද්දී...' (Considering your condition...).\n"
-            "2. **Tone:** Use warm words like 'පුළුවන් නම්' (If possible), 'වගේ දේවල්' (Things like).\n"
-            "3. **Code-Mixing:** Keep English medical terms (Dietitian, Kiwi) in brackets or plain English.\n"
-            "4. **Formatting:** Use Bullet points for lists.\n\n"
+            "2. **Empathy:** Translate 'I'm sorry to hear' as 'ඒක අහන්න ලැබීමත් කණගාටුයි'.\n"
+            "3. **Anatomy:** Do NOT use 'පිටුපස' (Back) for 'Stomach'. Use 'බඩේ' for stomach.\n"
+            "4. **Tone:** Use warm words like 'පුළුවන් නම්' (If possible), 'වගේ දේවල්' (Things like).\n"
+            "5. **Code-Mixing:** Keep English medical terms (Dietitian, Kiwi) in brackets or plain English.\n"
+            "6. **Formatting:** Use Bullet points for lists.\n\n"
 
             "💡 GOLDEN EXAMPLE (MIMIC THIS EXACTLY):\n"
             "--------------------------------------------------\n"
@@ -417,20 +458,29 @@ class LLMEngine:
             "   තව මොනවා හරි දැනගන්න ඕන නම් අපෙන් අහන්න!'\n"
             "--------------------------------------------------\n\n"
 
-            "Now, rewrite the following input using this exact natural style:"
+            "Now, rewrite the following input using this exact natural style:\n\n"
+            f"{text}"
         )
-        
-        payload = {
-            "model": "openai/gpt-4o-mini",  # Flash model is fine if prompt is good
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": text}
-            ],
-            "temperature": 0.3 # Low temp to stick to the example pattern
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "https://github.com/Nephro-AI",
+            "Content-Type": "application/json"
         }
         
         try:
-            response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
+            payload = {
+                "model": self.model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": text}
+                ],
+                "temperature": 0.2,  # Even lower to force adherence to hints
+                "max_tokens": 2048
+            }
+            
+            response = requests.post(self.api_url, headers=headers, json=payload, timeout=30)
+            
             if response.status_code == 200:
                 translation = response.json()['choices'][0]['message']['content'].strip()
                 
@@ -440,6 +490,10 @@ class LLMEngine:
                 translation = translation.replace("සායනය", "Clinic එක")
                 translation = translation.replace("දියවැඩියාව", "Sugar")
                 translation = translation.replace("අවදානම", "Risk එක")
+                
+                # 🚨 THE FIX: Apply the full glossary from english_to_sinhala.json
+                # This catches LLM mistakes like "මැදුරු රෝගය" (Mosquito Disease) for Diabetes
+                translation = self.enforce_spoken_sinhala(translation)
                 
                 print(f"✅ Natural Output: {translation}") 
                 return translation
@@ -530,13 +584,20 @@ class LLMEngine:
         payload = {
             "model": self.model,
             "messages": messages, 
-            "temperature": 0.7
+            "temperature": 0.7,
+            # 🚨 FIX: INCREASE MAX TOKENS to prevent "Here's..." cutoff
+            "max_tokens": 2048
         }
 
         try:
-            response = requests.post(self.api_url, headers=headers, data=json.dumps(payload), timeout=30)
+            response = requests.post(self.api_url, headers=headers, json=payload, timeout=30)
             if response.status_code == 200:
                 english_response = response.json()['choices'][0]['message']['content'].strip()
+                
+                # 🛡️ Safety Check: If response is incomplete (ends mid-sentence), log warning
+                if english_response and english_response[-1] not in '.!?")\'\u0d9a\u0d85\u0d8b':
+                    print(f"⚠️ Warning: Response may be truncated: ...{english_response[-50:]}")
+                
                 print(f"✅ Brain Output: {english_response}")
                 return english_response
             else:
