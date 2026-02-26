@@ -5,21 +5,26 @@ import hashlib
 import base64
 import asyncio
 import re  # <--- NEW IMPORT FOR CLEANING TEXT
+import wave
+import io
 from pathlib import Path
-import aiofiles  
+import aiofiles
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import edge_tts
-from pydub import AudioSegment 
+from pydub import AudioSegment
+from google import genai
+from google.genai import types
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.chatbot.rag_engine import RAGEngine
 from src.chatbot.patient_input import PatientInputHandler
+from src.chatbot.config import GOOGLE_API_KEY, GOOGLE_TTS_VOICE
 from src.utils.logger import ConsoleLogger as Log
 
 app = FastAPI(title="Nephro-AI Context-Aware Chatbot API")
@@ -34,6 +39,9 @@ class ChatRequest(BaseModel):
     text: str
     patient_id: str = "default_patient"
 
+class TTSRequest(BaseModel):
+    text: str
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -44,13 +52,25 @@ app.add_middleware(
 # -----------------------------------------------------------------------------
 # GLOBAL ENGINES
 # -----------------------------------------------------------------------------
-SESSIONS = {} 
+SESSIONS = {}
 
 Log.section("NEPHRO-AI SERVER STARTUP")
 try:
     Log.step("⚙️", "Initializing AI Engines...")
     rag_engine = RAGEngine()
     stt_engine = PatientInputHandler(model_size="small")
+
+    # Initialize Gemini TTS Client
+    gemini_client = None
+    if GOOGLE_API_KEY:
+        try:
+            gemini_client = genai.Client(api_key=GOOGLE_API_KEY)
+            Log.success("Gemini TTS Client Initialized (Sinhala Voice: Kore)")
+        except Exception as e:
+            Log.warning(f"Gemini TTS client failed to initialize: {e}")
+    else:
+        Log.warning("GOOGLE_API_KEY not set - Gemini TTS disabled, using Edge-TTS fallback")
+
     Log.success("All Engines Loaded Successfully")
     print("-" * 60)
 except Exception as e:
@@ -84,42 +104,106 @@ def clean_text_for_tts(text: str) -> str:
 
 async def generate_tts_file(text: str) -> Path:
     """
-    Pure EdgeTTS Generator (No External GPU required)
+    Hybrid TTS Generator:
+    - Sinhala: Gemini TTS (Kore voice) with Edge-TTS fallback
+    - English: Edge-TTS (AriaNeural)
     """
-    # 0. CLEAN THE TEXT (Fixes 'Tharuwa' issue)
+    # 0. Clean the text
     clean_text = clean_text_for_tts(text)
 
-    # 1. Detect Language (Explicit Log)
+    # 1. Detect Language
     is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in text)
-    
-    print(f"🔊 TTS REQUEST: Length={len(clean_text)} chars | Detected={'SINHALA' if is_sinhala else 'ENGLISH'}")
+    engine_label = "Gemini" if is_sinhala else "Edge"
 
-    # 2. Check Cache
-    file_hash = hashlib.md5(f"{clean_text}_Edge".encode()).hexdigest()
+    print(f"🔊 TTS REQUEST: Length={len(clean_text)} chars | Detected={'SINHALA' if is_sinhala else 'ENGLISH'} | Engine={engine_label}")
+
+    # 2. Check Cache (prefix hash with engine name for isolation)
+    file_hash = hashlib.md5(f"{clean_text}_{engine_label}".encode()).hexdigest()
     output_path = Path("tts_cache") / f"{file_hash}.mp3"
-    
+
     if output_path.exists():
-        print(f"   ↳ ⚡ Serving Cached Audio")
+        print(f"   ↳ ⚡ Serving Cached Audio ({engine_label})")
         return output_path
 
-    # 3. Select Voice
+    # 3. Generate Audio
     if is_sinhala:
-        voice = "si-LK-ThiliniNeural"
+        # Try Gemini TTS first
+        success = False
+        if gemini_client:
+            loop = asyncio.get_event_loop()
+            success = await loop.run_in_executor(None, _generate_gemini_tts, clean_text, output_path)
+
+        if not success:
+            # Fallback to Edge-TTS for Sinhala
+            print("   ↳ Falling back to Edge-TTS for Sinhala")
+            voice = "si-LK-ThiliniNeural"
+            try:
+                communicate = edge_tts.Communicate(clean_text, voice)
+                await communicate.save(str(output_path))
+                print(f"   ✅ Edge-TTS fallback successful")
+            except Exception as e:
+                print(f"   ❌ Edge-TTS fallback also failed: {e}")
+                with open(output_path, 'wb') as f:
+                    f.write(b'')
     else:
+        # English: Edge-TTS
         voice = "en-US-AriaNeural"
-        
-    print(f"   ↳ Generating new audio using voice: [{voice}]")
-    
-    try:
-        # Send CLEAN text to TTS
-        communicate = edge_tts.Communicate(clean_text, voice)
-        await communicate.save(str(output_path))
-        print(f"   ✅ TTS Generation Successful")
-    except Exception as e:
-        print(f"   ❌ TTS FAILED: {e}")
-        with open(output_path, 'wb') as f: f.write(b'')
-            
+        print(f"   ↳ Generating with Edge-TTS voice: [{voice}]")
+        try:
+            communicate = edge_tts.Communicate(clean_text, voice)
+            await communicate.save(str(output_path))
+            print(f"   ✅ TTS Generation Successful")
+        except Exception as e:
+            print(f"   ❌ TTS FAILED: {e}")
+            with open(output_path, 'wb') as f:
+                f.write(b'')
+
     return output_path
+
+
+def _generate_gemini_tts(text: str, output_path: Path) -> bool:
+    """
+    Generate TTS audio using Gemini API (synchronous, runs in thread pool).
+    Outputs PCM -> WAV in memory -> MP3 via pydub.
+    Returns True on success, False on failure.
+    """
+    try:
+        response = gemini_client.models.generate_content(
+            model="gemini-2.5-flash-preview-tts",
+            contents=text,
+            config=types.GenerateContentConfig(
+                response_modalities=["AUDIO"],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name=GOOGLE_TTS_VOICE,
+                        )
+                    )
+                ),
+            ),
+        )
+
+        pcm_data = response.candidates[0].content.parts[0].inline_data.data
+
+        # Write PCM data to a WAV buffer in memory
+        wav_buffer = io.BytesIO()
+        with wave.open(wav_buffer, "wb") as wf:
+            wf.setnchannels(1)
+            wf.setsampwidth(2)       # 16-bit
+            wf.setframerate(24000)   # 24kHz
+            wf.writeframes(pcm_data)
+        wav_buffer.seek(0)
+
+        # Convert WAV to MP3 using pydub
+        audio_segment = AudioSegment.from_wav(wav_buffer)
+        audio_segment.export(str(output_path), format="mp3")
+
+        print(f"   ✅ Gemini TTS generation successful (voice: {GOOGLE_TTS_VOICE})")
+        return True
+
+    except Exception as e:
+        print(f"   ❌ Gemini TTS failed: {e}")
+        return False
 
 # -----------------------------------------------------------------------------
 # ENDPOINTS
@@ -145,6 +229,35 @@ async def login(request: LoginRequest):
 @app.get("/")
 def health_check():
     return {"status": "active"}
+
+# --- TTS ENDPOINT (Gemini TTS for Sinhala, Edge-TTS for English) ---
+@app.post("/chat/tts")
+@app.post("/api/chat/tts")
+async def text_to_speech(request: TTSRequest):
+    """Generate TTS audio for given text. Returns MP3 audio file."""
+    if not request.text or not request.text.strip():
+        raise HTTPException(status_code=400, detail="Text is required")
+
+    Log.step("🔊", "TTS REQUEST", f"Length: {len(request.text)} chars")
+
+    try:
+        output_audio_path = await generate_tts_file(request.text)
+
+        if output_audio_path.stat().st_size == 0:
+            raise HTTPException(status_code=500, detail="TTS generation failed")
+
+        return FileResponse(
+            output_audio_path,
+            media_type="audio/mpeg",
+            headers={
+                "Content-Disposition": "attachment; filename=tts_output.mp3"
+            }
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ TTS endpoint error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # --- CLEAR CACHE ENDPOINT ---
 @app.post("/chat/clear")
@@ -259,7 +372,7 @@ async def audio_chat(
                 user_history = user_history[-10:]
             SESSIONS[patient_id] = user_history # Save back to global dict
 
-        # 5. Generate TTS (Pure EdgeTTS)
+        # 5. Generate TTS (Gemini for Sinhala, Edge-TTS for English)
         output_audio_path = await generate_tts_file(response_text)
         
         safe_transcription = base64.b64encode(transcribed_text.encode('utf-8')).decode('ascii')

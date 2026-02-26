@@ -49,7 +49,7 @@ const base64Decode = (str) => {
 
   if (str.length % 4 === 1) {
     throw new Error(
-      "'atob' failed: The string to be decoded is not correctly encoded."
+      "'atob' failed: The string to be decoded is not correctly encoded.",
     );
   }
 
@@ -84,7 +84,7 @@ const base64Decode = (str) => {
         i += 2;
       } else {
         result += String.fromCharCode(
-          ((c & 15) << 12) | ((bytes[i + 1] & 63) << 6) | (bytes[i + 2] & 63)
+          ((c & 15) << 12) | ((bytes[i + 1] & 63) << 6) | (bytes[i + 2] & 63),
         );
         i += 3;
       }
@@ -148,7 +148,7 @@ const ChatbotScreen = ({ route, navigation }) => {
           const parsedMessages = JSON.parse(savedMessages);
           setMessages(parsedMessages);
           console.log(
-            `📥 Loaded ${parsedMessages.length} messages from storage`
+            `📥 Loaded ${parsedMessages.length} messages from storage`,
           );
         } else {
           // First time - show welcome message
@@ -171,7 +171,7 @@ const ChatbotScreen = ({ route, navigation }) => {
         try {
           await AsyncStorage.setItem(
             CHAT_STORAGE_KEY,
-            JSON.stringify(messages)
+            JSON.stringify(messages),
           );
           console.log(`💾 Saved ${messages.length} messages to storage`);
         } catch (error) {
@@ -213,7 +213,7 @@ const ChatbotScreen = ({ route, navigation }) => {
               } catch (backendError) {
                 console.warn(
                   "Backend cache clear failed (non-critical):",
-                  backendError.message
+                  backendError.message,
                 );
               }
             } catch (error) {
@@ -221,7 +221,7 @@ const ChatbotScreen = ({ route, navigation }) => {
             }
           },
         },
-      ]
+      ],
     );
   }, [CHAT_STORAGE_KEY, welcomeMessage, userID]);
 
@@ -233,7 +233,7 @@ const ChatbotScreen = ({ route, navigation }) => {
         setTimeout(() => {
           flatListRef.current?.scrollToEnd({ animated: true });
         }, 100);
-      }
+      },
     );
 
     return () => {
@@ -254,6 +254,9 @@ const ChatbotScreen = ({ route, navigation }) => {
   const [metering, setMetering] = useState(-160);
   const [inputFocused, setInputFocused] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [isTTSLoading, setIsTTSLoading] = useState(false);
+  const [currentlyPlayingId, setCurrentlyPlayingId] = useState(null);
+  const soundRef = useRef(null);
   const flatListRef = useRef();
 
   // Animation values
@@ -279,26 +282,121 @@ const ChatbotScreen = ({ route, navigation }) => {
     link: { color: COLORS.primary },
   };
 
-  // 👇 [NEW] The Magic TTS Function
-  const speakResponse = (text) => {
-    Speech.stop();
+  // Server-side TTS playback (Gemini TTS for Sinhala, expo-speech for English)
+  const playServerTTS = async (text, messageId) => {
+    // If something is currently playing, stop it
+    if (soundRef.current) {
+      try {
+        await soundRef.current.stopAsync();
+        await soundRef.current.unloadAsync();
+      } catch (e) {
+        /* ignore cleanup errors */
+      }
+      soundRef.current = null;
+      setCurrentlyPlayingId(null);
+    }
+
+    // If user tapped the same message that was playing, just stop (toggle off)
+    if (currentlyPlayingId === messageId) {
+      return;
+    }
+
     if (!text) return;
 
-    // Clean text before speaking (Remove * and # visually for the speech engine)
-    // Also remove [MAPS: ...] tag
     const cleanText = text.replace(/[*#]/g, "").replace(/\[MAPS:.*?\]/g, "");
-
     const isSinhala = /[\u0D80-\u0DFF]/.test(text);
 
-    const options = {
-      language: isSinhala ? "si-LK" : "en-US",
-      pitch: 1.0,
-      // 👇 CHANGED: Increased from 0.75 to 0.9 (Faster but clear)
-      rate: isSinhala ? 0.9 : 1.0,
-    };
+    // For English, use local expo-speech (fast, good quality)
+    if (!isSinhala) {
+      Speech.stop();
+      Speech.speak(cleanText, {
+        language: "en-US",
+        pitch: 1.0,
+        rate: 1.0,
+      });
+      return;
+    }
 
-    console.log(`🗣️ Speaking in ${isSinhala ? "SINHALA" : "ENGLISH"}...`);
-    Speech.speak(cleanText, options);
+    // For Sinhala, call the server /chat/tts endpoint (Gemini TTS)
+    setIsTTSLoading(true);
+    setCurrentlyPlayingId(messageId);
+
+    try {
+      // Reconfigure Audio mode for playback
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
+      });
+
+      const response = await fetch(`${BACKEND_URL}/chat/tts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`TTS server error: ${response.status}`);
+      }
+
+      // Download the audio blob
+      const audioBlob = await response.blob();
+      const reader = new FileReader();
+
+      const base64Audio = await new Promise((resolve, reject) => {
+        reader.onloadend = () => {
+          const base64 = reader.result.split(",")[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(audioBlob);
+      });
+
+      // Write audio to a temp file
+      const fileUri = FileSystem.cacheDirectory + `tts_${messageId}.mp3`;
+      await FileSystem.writeAsStringAsync(fileUri, base64Audio, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Play with expo-av
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        { uri: fileUri },
+        { shouldPlay: true },
+      );
+
+      soundRef.current = newSound;
+
+      // Listen for playback completion
+      newSound.setOnPlaybackStatusUpdate((status) => {
+        if (status.didJustFinish) {
+          setCurrentlyPlayingId(null);
+          soundRef.current = null;
+          FileSystem.deleteAsync(fileUri, { idempotent: true }).catch(() => {});
+          // Restore audio mode for recording
+          Audio.setAudioModeAsync({
+            allowsRecordingIOS: true,
+            playsInSilentModeIOS: true,
+            staysActiveInBackground: false,
+            shouldDuckAndroid: true,
+            playThroughEarpieceAndroid: false,
+          }).catch(() => {});
+        }
+      });
+    } catch (error) {
+      console.error("Server TTS error:", error);
+      // Fallback to local Speech for Sinhala
+      Speech.stop();
+      Speech.speak(cleanText, {
+        language: "si-LK",
+        pitch: 1.0,
+        rate: 0.9,
+      });
+      setCurrentlyPlayingId(null);
+    } finally {
+      setIsTTSLoading(false);
+    }
   };
 
   // Pulse animation for recording
@@ -316,7 +414,7 @@ const ChatbotScreen = ({ route, navigation }) => {
             duration: 500,
             useNativeDriver: true,
           }),
-        ])
+        ]),
       ).start();
     } else {
       pulseAnim.setValue(1);
@@ -366,7 +464,7 @@ const ChatbotScreen = ({ route, navigation }) => {
       if (status !== "granted") {
         Alert.alert(
           "Permission Denied",
-          "Microphone access is required for voice chat."
+          "Microphone access is required for voice chat.",
         );
       }
       await Audio.setAudioModeAsync({
@@ -377,6 +475,16 @@ const ChatbotScreen = ({ route, navigation }) => {
         playThroughEarpieceAndroid: false,
       });
     })();
+  }, []);
+
+  // Cleanup sound on component unmount
+  useEffect(() => {
+    return () => {
+      if (soundRef.current) {
+        soundRef.current.unloadAsync().catch(() => {});
+      }
+      Speech.stop();
+    };
   }, []);
 
   // Typing indicator animation
@@ -396,7 +504,7 @@ const ChatbotScreen = ({ route, navigation }) => {
             easing: Easing.ease,
             useNativeDriver: true,
           }),
-        ])
+        ]),
       ).start();
     } else {
       typingDots.setValue(0);
@@ -420,12 +528,24 @@ const ChatbotScreen = ({ route, navigation }) => {
       // Stop any current speaking when recording starts
       Speech.stop();
 
+      // Also stop any server TTS playback
+      if (soundRef.current) {
+        try {
+          await soundRef.current.stopAsync();
+          await soundRef.current.unloadAsync();
+        } catch (e) {
+          /* ignore */
+        }
+        soundRef.current = null;
+        setCurrentlyPlayingId(null);
+      }
+
       console.log("Starting recording..");
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
       const { recording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY,
-        (status) => updateMetering(status)
+        (status) => updateMetering(status),
       );
 
       await recording.setProgressUpdateInterval(100);
@@ -523,8 +643,73 @@ const ChatbotScreen = ({ route, navigation }) => {
         if (b64Sources) sourcesText = b64Sources;
       }
 
-      // 👇 [UPDATED] Ignore server audio file. Speak text directly on phone.
-      speakResponse(responseText);
+      // Play server-generated audio (Gemini TTS for Sinhala, expo-speech for English)
+      const isSinhala = /[\u0D80-\u0DFF]/.test(responseText);
+      if (isSinhala) {
+        try {
+          await Audio.setAudioModeAsync({
+            allowsRecordingIOS: false,
+            playsInSilentModeIOS: true,
+            staysActiveInBackground: false,
+            shouldDuckAndroid: true,
+            playThroughEarpieceAndroid: false,
+          });
+
+          const audioBlob = await response.blob();
+          const reader = new FileReader();
+          const base64Audio = await new Promise((resolve, reject) => {
+            reader.onloadend = () => resolve(reader.result.split(",")[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(audioBlob);
+          });
+
+          const fileUri =
+            FileSystem.cacheDirectory + `voice_response_${Date.now()}.mp3`;
+          await FileSystem.writeAsStringAsync(fileUri, base64Audio, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+
+          const { sound: newSound } = await Audio.Sound.createAsync(
+            { uri: fileUri },
+            { shouldPlay: true },
+          );
+
+          newSound.setOnPlaybackStatusUpdate((status) => {
+            if (status.didJustFinish) {
+              newSound.unloadAsync();
+              FileSystem.deleteAsync(fileUri, { idempotent: true }).catch(
+                () => {},
+              );
+              Audio.setAudioModeAsync({
+                allowsRecordingIOS: true,
+                playsInSilentModeIOS: true,
+                staysActiveInBackground: false,
+                shouldDuckAndroid: true,
+                playThroughEarpieceAndroid: false,
+              }).catch(() => {});
+            }
+          });
+        } catch (audioError) {
+          console.error(
+            "Audio playback failed, falling back to Speech:",
+            audioError,
+          );
+          Speech.speak(responseText.replace(/[*#]/g, ""), {
+            language: "si-LK",
+            rate: 0.9,
+          });
+        }
+      } else {
+        // English: use local Speech (fast, good quality)
+        const cleanText = responseText
+          .replace(/[*#]/g, "")
+          .replace(/\[MAPS:.*?\]/g, "");
+        Speech.speak(cleanText, {
+          language: "en-US",
+          pitch: 1.0,
+          rate: 1.0,
+        });
+      }
 
       setMessages((prev) => [
         ...prev,
@@ -533,7 +718,6 @@ const ChatbotScreen = ({ route, navigation }) => {
           text: responseText,
           sender: "bot",
           sources: sourcesText,
-          // audioUri removed - we use native TTS
           timestamp: new Date().toLocaleTimeString("en-US", {
             hour: "2-digit",
             minute: "2-digit",
@@ -544,7 +728,7 @@ const ChatbotScreen = ({ route, navigation }) => {
       console.error("Upload error:", error);
       Alert.alert(
         "Error",
-        "Could not connect to chatbot server. Please check your connection."
+        "Could not connect to chatbot server. Please check your connection.",
       );
 
       setMessages((prev) => [
@@ -726,18 +910,55 @@ const ChatbotScreen = ({ route, navigation }) => {
                         </TouchableOpacity>
                       )}
 
-                      {/* 👇 [UPDATED] Universal "Read Aloud" Button for ALL bot messages */}
+                      {/* Read Aloud Button (Gemini TTS for Sinhala, expo-speech for English) */}
                       <TouchableOpacity
-                        style={styles.audioButton}
-                        onPress={() => speakResponse(item.text)}
+                        style={[
+                          styles.audioButton,
+                          currentlyPlayingId === item.id && {
+                            backgroundColor: COLORS.primary,
+                            borderColor: COLORS.primaryDark,
+                          },
+                        ]}
+                        onPress={() => playServerTTS(item.text, item.id)}
                         activeOpacity={0.7}
+                        disabled={
+                          isTTSLoading && currentlyPlayingId !== item.id
+                        }
                       >
-                        <Ionicons
-                          name="volume-high"
-                          size={24}
-                          color={COLORS.primary}
-                        />
-                        <Text style={styles.audioText}>Read Aloud</Text>
+                        {isTTSLoading && currentlyPlayingId === item.id ? (
+                          <ActivityIndicator
+                            size="small"
+                            color={COLORS.white}
+                          />
+                        ) : (
+                          <Ionicons
+                            name={
+                              currentlyPlayingId === item.id
+                                ? "stop"
+                                : "volume-high"
+                            }
+                            size={24}
+                            color={
+                              currentlyPlayingId === item.id
+                                ? COLORS.white
+                                : COLORS.primary
+                            }
+                          />
+                        )}
+                        <Text
+                          style={[
+                            styles.audioText,
+                            currentlyPlayingId === item.id && {
+                              color: COLORS.white,
+                            },
+                          ]}
+                        >
+                          {isTTSLoading && currentlyPlayingId === item.id
+                            ? "Loading..."
+                            : currentlyPlayingId === item.id
+                              ? "Stop"
+                              : "Read Aloud"}
+                        </Text>
                       </TouchableOpacity>
                     </>
                   );
@@ -902,7 +1123,7 @@ const ChatbotScreen = ({ route, navigation }) => {
                   style={[styles.chip, { borderColor: item.color }]}
                   onPress={async () => {
                     await Haptics.impactAsync(
-                      Haptics.ImpactFeedbackStyle.Light
+                      Haptics.ImpactFeedbackStyle.Light,
                     );
                     sendTextMessage(item.text);
                   }}
@@ -989,7 +1210,7 @@ const ChatbotScreen = ({ route, navigation }) => {
                       {
                         width: `${Math.min(
                           100,
-                          Math.max(5, (metering + 160) / 1.0)
+                          Math.max(5, (metering + 160) / 1.0),
                         )}%`,
                         backgroundColor:
                           metering > -30 ? COLORS.accent : COLORS.danger,
