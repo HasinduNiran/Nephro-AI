@@ -205,7 +205,19 @@ class VectorDBPreparator:
             # Add section if present (with length limit)
             if chunk_meta.get('section'):
                 metadata['section'] = chunk_meta['section'][:100]
-            
+
+            # Pass through structural metadata from Docling/header chunking
+            if chunk_meta.get('section_path'):
+                metadata['section_path'] = chunk_meta['section_path'][:200]
+            if chunk_meta.get('header_level') is not None:
+                metadata['header_level'] = chunk_meta['header_level']
+            if chunk_meta.get('extraction_method'):
+                metadata['extraction_method'] = chunk_meta['extraction_method']
+            if chunk_meta.get('chunking_method'):
+                metadata['chunking_method'] = chunk_meta['chunking_method']
+            if chunk_meta.get('sub_chunk_index') is not None:
+                metadata['sub_chunk_index'] = chunk_meta['sub_chunk_index']
+
             metadatas.append(metadata)
             
             # 3. Generate unique ID: {base_name}_{chunk_id}

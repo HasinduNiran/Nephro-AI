@@ -40,11 +40,34 @@ DB_METADATA = {
     "content_types": ["recommendation", "evidence", "definition", "reference", "general", "dietary"]
 }
 
-# Processing Settings
+# Processing Settings (Legacy fixed-size chunking)
 CHUNK_SETTINGS = {
     "min_words": 50,
     "max_words": 600,
     "overlap_sentences": 2
+}
+
+# Docling PDF Extraction Settings (Layout-Aware Parsing)
+DOCLING_SETTINGS = {
+    "enabled": True,          # Use Docling as primary extractor
+    "ocr_enabled": False,     # Enable OCR for scanned PDFs (slower)
+    "table_mode": "markdown", # How to represent tables
+}
+
+# Markdown Structural Chunking Settings
+MARKDOWN_CHUNK_SETTINGS = {
+    "split_headers": ["#", "##", "###", "####"],
+    "max_section_words": 300,
+    "min_section_words": 30,
+    "preserve_header_in_chunk": True,
+}
+
+# Semantic Sub-Chunking Settings
+SEMANTIC_CHUNK_SETTINGS = {
+    "enabled": True,
+    "similarity_threshold": 0.75,
+    "min_chunk_sentences": 2,
+    "max_chunk_words": 300,
 }
 
 # Medical Entities
@@ -439,6 +462,18 @@ def get_content_types():
 def get_ckd_abbreviations():
     """Get CKD medical abbreviations dictionary"""
     return CKD_ABBREVIATIONS.copy()
+
+def get_docling_config():
+    """Get Docling PDF extraction configuration"""
+    return DOCLING_SETTINGS.copy()
+
+def get_markdown_chunk_config():
+    """Get Markdown structural chunking configuration"""
+    return MARKDOWN_CHUNK_SETTINGS.copy()
+
+def get_semantic_chunk_config():
+    """Get semantic sub-chunking configuration"""
+    return SEMANTIC_CHUNK_SETTINGS.copy()
 
 def get_reverse_abbreviations():
     """Get reverse mapping (full term -> abbreviation)"""
