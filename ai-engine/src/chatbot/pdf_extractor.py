@@ -302,107 +302,110 @@ class PDFKnowledgeExtractor:
 
         return combined_text
 
-    def clean_markdown_text(self, text: str) -> str:
+    def clean_text(self, text: str) -> str:
         """
-        Clean Markdown text while preserving structural characters (#, |, -, *).
-        Used when extraction_format is 'markdown' (Docling output).
+        Unified, line-aware cleaner for ALL extraction paths.
+
+        Works safely on both Docling Markdown (structured headers, tables) and
+        pdfplumber/TXT plaintext (no Markdown syntax). In the plaintext case no
+        lines start with '#' or '|', so every line falls into the body-text
+        branch and receives the same safe operations.
+
+        The chunker routing in process() remains separate:
+          extraction_format == 'markdown'  → chunk_text_by_headers()
+          extraction_format == 'plaintext' → chunk_text()  (fixed-size)
+        This prevents pdfplumber output (no headers) from being sent to
+        chunk_text_by_headers(), which would treat the whole document as one
+        giant section and crash semantic_sub_chunk() with a Payload Too Large error.
+
+        Applies cleaning operations per line category to prevent destructive
+        regex from silently corrupting Markdown tables, headers, or clinical
+        values such as "eGFR = 60" or "Stage 3 [see Table 2]".
+
+        Line categories:
+            header  — starts with '#'               → whitespace normalisation only
+            table   — starts with '|'               → whitespace normalisation only
+            list    — starts with '- ','* ','+','N.'→ URL removal + punct dedup
+            body    — everything else               → all safe operations
+
+        NOTE: Abbreviation expansion is intentionally NOT applied to ingested text.
+        Expansion preserves source fidelity and happens only at query time inside
+        the NLU engine.
         """
-        print("\n Cleaning Markdown text...")
+        print("\n Cleaning text (unified line-aware cleaner)...")
 
-        # NOTE: Abbreviation expansion is intentionally NOT applied to ingested text.
-        # Expanding at ingest mutates source fidelity (the LLM would cite inflated terms
-        # instead of natural abbreviations) and inflates chunk sizes. Expansion happens
-        # only at query time inside the NLU engine.
+        URL_RE           = re.compile(r'https?://[^\s]+')
+        HYPHEN_LB_RE     = re.compile(r'(\w+)-\s*\n\s*(\w+)')
+        DOT_LEADER_RE    = re.compile(r'\.{3,}')
+        REPEATED_PUNCT_RE = re.compile(r'([!?])\1+')
+        LONE_PAGENUM_RE  = re.compile(r'^\d{1,4}$')
+        LIST_ITEM_RE     = re.compile(r'^\s*(?:[-*+]|\d+\.)\s')
 
-        # Remove page numbers
-        text = re.sub(r'\n\s*\d+\s*\n', '\n', text)
-        text = re.sub(r'Page \d+', '', text, flags=re.IGNORECASE)
+        # --- Pass 1: fix soft hyphens split across line-breaks (full-string op;
+        #     must run before splitting into lines because the newline is part of it)
+        text = HYPHEN_LB_RE.sub(r'\1\2', text)
 
-        # Fix hyphenated words split across lines
-        text = re.sub(r'(\w+)-\s*\n\s*(\w+)', r'\1\2', text)
+        # --- Normalise smart/curly quotes and dashes (safe on all content types)
+        text = (
+            text
+            .replace('\u201c', '"').replace('\u201d', '"')   # curly double quotes
+            .replace('\u2018', "'").replace('\u2019', "'")   # curly single quotes
+            .replace('\u2013', '-').replace('\u2014', '--')  # en-dash / em-dash
+        )
 
-        # Remove multiple periods (TOC artifacts)
-        text = re.sub(r'\.{3,}', '', text)
-
-        # Remove URLs but keep DOIs
-        text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
-
-        # Normalize smart quotes
-        text = text.replace('\u201c', '"').replace('\u201d', '"')
-        text = text.replace('\u2018', "'").replace('\u2019', "'")
-
-        # Remove excessive punctuation
-        text = re.sub(r'([!?])\1+', r'\1', text)
-
-        # Normalize multiple blank lines to double newline (preserve structure)
-        text = re.sub(r'\n{3,}', '\n\n', text)
-
-        # Normalize spaces within lines (but preserve newlines)
+        # --- Pass 2: line-by-line processing
         lines = text.split('\n')
         cleaned_lines = []
         for line in lines:
-            line = re.sub(r'[ \t]+', ' ', line).strip()
+            stripped = line.strip()
+
+            # Drop lines that are purely a bare page number (1–4 digits, nothing else).
+            # This replaces the risky full-string r'\n\s*\d+\s*\n' regex that could
+            # silently delete lab values or list items that happen to sit on their own line.
+            if LONE_PAGENUM_RE.match(stripped):
+                continue
+
+            is_header = stripped.startswith('#')
+            is_table  = stripped.startswith('|')
+            is_list   = bool(LIST_ITEM_RE.match(stripped))
+
+            if is_header or is_table:
+                # Structural lines: only collapse internal horizontal whitespace.
+                # Never touch '=', '[', ']', '|' or any clinical symbol.
+                line = re.sub(r'[ \t]+', ' ', line).strip()
+
+            elif is_list:
+                # List items: remove URLs and deduplicate punctuation;
+                # preserve all structural characters.
+                line = URL_RE.sub('', line)
+                line = REPEATED_PUNCT_RE.sub(r'\1', line)
+                line = re.sub(r'[ \t]+', ' ', line).strip()
+
+            else:
+                # Body text: apply all safe operations.
+                # 'Page N' is unambiguous here (inline, not a standalone number)
+                # so it is safe to strip on body lines only.
+                line = re.sub(r'Page\s+\d+', '', line, flags=re.IGNORECASE)
+                line = DOT_LEADER_RE.sub('', line)      # strip TOC dot leaders
+                line = URL_RE.sub('', line)
+                line = REPEATED_PUNCT_RE.sub(r'\1', line)
+                line = re.sub(r'[ \t]+', ' ', line).strip()
+
             cleaned_lines.append(line)
+
+        # --- Pass 3: collapse excess blank lines (preserve single blank separators)
         text = '\n'.join(cleaned_lines)
-
-        self.metadata['cleaned_text_length'] = len(text)
-        print(f" Cleaned Markdown text: {len(text)} characters")
-
-        return text
-
-    def clean_text(self, text: str) -> str:
-
-        # Route to Markdown-safe cleaning if extraction was via Docling
-        if self.extraction_format == 'markdown':
-            return self.clean_markdown_text(text)
-
-        print("\n Cleaning text...")
-
-        # NOTE: Abbreviation expansion is intentionally NOT applied to ingested text.
-        # See clean_markdown_text() comment for rationale.
-
-        # Remove excessive whitespace (multiple spaces, tabs, newlines -> single space)
-        text = re.sub(r'\s+', ' ', text)
-
-        # Remove page numbers (common patterns in PDFs)
-        text = re.sub(r'\n\s*\d+\s*\n', '\n', text)  # Standalone page numbers
-        text = re.sub(r'Page \d+', '', text, flags=re.IGNORECASE)  # "Page N" format
-
-        # Fix hyphenated words split across line breaks (e.g., "treat- ment" -> "treatment")
-        text = re.sub(r'(\w+)-\s+(\w+)', r'\1\2', text)
-
-        # Remove multiple periods (often from table of contents: "Section 1.2.....45")
-        text = re.sub(r'\.{3,}', '', text)
-
-        # Remove URLs but keep DOIs (for academic references)
-        text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
-
-        # Normalize smart quotes to regular quotes
-        text = text.replace('\u201c', '"').replace('\u201d', '"')  # Curly double quotes
-        text = text.replace('\u2018', "'").replace('\u2019', "'")  # Curly single quotes
-
-        # Remove excessive punctuation (e.g., "!!!" -> "!", "???" -> "?")
-        text = re.sub(r'([!?])\1+', r'\1', text)
-
-        # Fix spacing around punctuation
-        text = re.sub(r'\s+([.,!?;:])', r'\1', text)      # Remove space before punctuation
-        text = re.sub(r'([.,!?;:])\s*', r'\1 ', text)     # Ensure space after punctuation
-
-        # Remove special characters BUT preserve important medical symbols
-        # Keep: %, +/-, >=, <=, degree, micro, alpha, beta, gamma, delta
-        text = re.sub(r'[^\w\s.,!?;:()\-\u00b1\u2265\u2264\u00b0\u03bc\u03b1\u03b2\u03b3\u03b4%/]', '', text)
-
-        # Final whitespace normalization
-        text = re.sub(r'\s+', ' ', text)
+        text = re.sub(r'\n{3,}', '\n\n', text)
         text = text.strip()
 
-        # Store cleaned text length for statistics
         self.metadata['cleaned_text_length'] = len(text)
         print(f" Cleaned text: {len(text)} characters")
 
         return text
 
     # expand_abbreviations() removed from the ingestion path.
+    # clean_text() removed: all extraction paths now set extraction_format='markdown'
+    # and route through clean_markdown_text() for unified, line-aware cleaning.
     # Abbreviation expansion is query-time only (see NLUEngine._expand_abbreviations).
     # This preserves source text fidelity, prevents false-positive expansions on
     # medical shorthand like "N/A" or "Vitamin K", and eliminates O(N*M) regex overhead
@@ -973,6 +976,9 @@ class PDFKnowledgeExtractor:
             return None
 
         # Step 2: Clean text
+        # Both extraction formats route through the same line-aware clean_text().
+        # The chunker routing in Step 4 stays separate to prevent unstructured
+        # plaintext from entering chunk_text_by_headers().
         cleaned_text = self.clean_text(raw_text)
 
         # Step 3: Extract metadata
