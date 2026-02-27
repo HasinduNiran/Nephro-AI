@@ -401,17 +401,14 @@ class CKDNLUEngine:
         return entities
 
     def _expand_abbreviations(self, text: str) -> str:
-        """Expand medical abbreviations"""
-        expanded_text = text
-        # Sort by length to handle overlapping abbreviations
-        sorted_abbrevs = sorted(self.abbreviations.items(), key=lambda x: len(x[0]), reverse=True)
-        
-        for abbrev, full_term in sorted_abbrevs:
-            # Use word boundaries
-            pattern = r'\b' + re.escape(abbrev.lower()) + r'\b'
-            expanded_text = re.sub(pattern, full_term, expanded_text, flags=re.IGNORECASE)
-            
-        return expanded_text
+        """Expand medical abbreviations in a user query.
+
+        Delegates to config.expand_abbreviations() which uses a single pre-compiled
+        alternation regex (case-sensitive, O(N)). Case-sensitivity prevents false
+        positives such as Na->sodium in "N/A" or K->potassium in "Vitamin K".
+        """
+        from chatbot import config as _cfg
+        return _cfg.expand_abbreviations(text)
 
     def _extract_lab_values(self, doc) -> List[Dict]:
         """Extract lab values with units"""

@@ -362,6 +362,16 @@ if SINHALA_MED_DICT_PATH.exists():
 # Reverse mapping for expansion (full term -> abbreviation)
 CKD_REVERSE_ABBREVIATIONS = {v: k for k, v in CKD_ABBREVIATIONS.items()}
 
+# Compiled alternation regex for O(N) single-pass expansion.
+# Built once at module load; longest keys first so ACEI is tried before ACE.
+# Case-SENSITIVE: prevents Na->sodium corrupting "N/A" and K->potassium
+# corrupting "Vitamin K" or bullet points starting with "k.".
+import re as _re
+_sorted_abbrev_keys = sorted(CKD_ABBREVIATIONS.keys(), key=len, reverse=True)
+_ABBREV_PATTERN = _re.compile(
+    r'\b(' + '|'.join(_re.escape(k) for k in _sorted_abbrev_keys) + r')\b'
+)
+
 
 # Content Type Classifications
 CONTENT_TYPE_KEYWORDS = {
@@ -484,30 +494,24 @@ def get_reverse_abbreviations():
 
 def expand_abbreviations(text: str) -> str:
     """
-    Expand medical abbreviations in text to full terms.
-    
+    Expand medical abbreviations in text to full terms using a single O(N) compiled
+    alternation regex (case-sensitive). Case-sensitivity is intentional: it prevents
+    false positives such as Na->sodium corrupting "N/A" (not applicable), or
+    K->potassium corrupting "Vitamin K" or bullet points starting with "k.".
+
     Args:
         text: Input text containing abbreviations
-        
+
     Returns:
         Text with abbreviations expanded
-        
+
     Example:
         >>> expand_abbreviations("Patient has elevated BP and low eGFR")
         "Patient has elevated blood pressure and low estimated glomerular filtration rate"
+        >>> expand_abbreviations("N/A — Vitamin K was not tested")
+        "N/A — Vitamin K was not tested"  # unchanged — no false positives
     """
-    import re
-    expanded_text = text
-    
-    # Sort by length (longest first) to avoid partial replacements
-    sorted_abbrevs = sorted(CKD_ABBREVIATIONS.items(), key=lambda x: len(x[0]), reverse=True)
-    
-    for abbrev, full_term in sorted_abbrevs:
-        # Use word boundaries to match whole words only
-        pattern = r'\b' + re.escape(abbrev) + r'\b'
-        expanded_text = re.sub(pattern, full_term, expanded_text, flags=re.IGNORECASE)
-    
-    return expanded_text
+    return _ABBREV_PATTERN.sub(lambda m: CKD_ABBREVIATIONS[m.group(0)], text)
 
 # Ensure directories exist
 def ensure_directories():
