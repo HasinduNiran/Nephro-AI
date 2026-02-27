@@ -12,6 +12,8 @@ from tkinter import filedialog
 import concurrent.futures
 import time
 import io
+import tempfile
+from tqdm import tqdm
 from google import genai
 
 # Add parent directory to path for config import
@@ -29,8 +31,9 @@ from nltk.tokenize import sent_tokenize  # Split text into sentences
 
 # Docling import guard (optional dependency for layout-aware parsing)
 try:
-    from docling.document_converter import DocumentConverter
-    from docling.datamodel.pipeline_options import PipelineOptions
+    from docling.document_converter import DocumentConverter, PdfFormatOption
+    from docling.datamodel.pipeline_options import PdfPipelineOptions
+    from docling.datamodel.base_models import InputFormat
     DOCLING_AVAILABLE = True
 except ImportError:
     DOCLING_AVAILABLE = False
@@ -108,63 +111,223 @@ class PDFKnowledgeExtractor:
         """
         Extract text from PDF using Docling for layout-aware Markdown output.
 
+        When *dynamic_ocr* is enabled (default), the pipeline:
+          1. Pre-scans every page with pdfplumber (~0.1s/page) to classify
+             pages as native-text vs scanned-image.
+          2. Groups consecutive same-type pages into **contiguous blocks**,
+             preserving the document's original narrative order.
+          3. Processes each block with the correct Docling mode
+             (fast no-OCR for native blocks, slow OCR for scanned blocks).
+          4. Joins all block Markdown strings in original page order so
+             headers, tables, and paragraphs stay exactly where the medical
+             authors intended them.
+
+        Falls back to a single Docling pass when dynamic_ocr is disabled.
+
         Returns:
             Markdown string with headers, tables, and structure preserved,
             or empty string on failure.
         """
         if not DOCLING_AVAILABLE:
-            print("   Docling not installed, skipping Markdown extraction")
+            print("   [DOCLING] ✗ Not installed — skipping Markdown extraction")
             return ""
 
         if not self.docling_config.get('enabled', True):
-            print("   Docling disabled in config, skipping")
+            print("   [DOCLING] ✗ Disabled in config — skipping")
             return ""
 
-        print("   Trying Docling layout-aware extraction...")
+        ocr_enabled    = self.docling_config.get('ocr_enabled', False)
+        dynamic_ocr    = self.docling_config.get('dynamic_ocr', True) and ocr_enabled
+        timeout_native = self.docling_config.get('timeout_seconds_native', 120)
+        timeout_ocr    = self.docling_config.get('timeout_seconds_ocr', 300)
+        timeout_single = self.docling_config.get('timeout_seconds', 300)
 
-        ocr_enabled = self.docling_config.get('ocr_enabled', False)
-        timeout_seconds = self.docling_config.get('timeout_seconds', 60)
+        tmp_paths: List[str] = []   # every temp PDF created; cleaned up in finally
 
         try:
-            pipeline_options = PipelineOptions(do_ocr=ocr_enabled)
-            converter = DocumentConverter(pipeline_options=pipeline_options)
+            # ── Dynamic OCR Routing (Contiguous Block) ───────────────────
+            if dynamic_ocr:
+                print("   [DOCLING] Mode: Dynamic OCR Routing (contiguous block)")
+                blocks = self._prescan_pages()
+                total  = sum(len(b['pages']) for b in blocks)
+                n_nat  = sum(len(b['pages']) for b in blocks if b['type'] == 'native')
+                n_scan = sum(len(b['pages']) for b in blocks if b['type'] == 'scanned')
+                self.metadata['total_pages']   = total
+                self.metadata['native_pages']  = n_nat
+                self.metadata['scanned_pages'] = n_scan
 
-            # Wrap the blocking call in a strict timeout so a bad PDF can't hang the pipeline
-            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-                future = executor.submit(converter.convert, self.pdf_path)
+                print(f"   [PRESCAN] {total} pages → {n_nat} native (digital) | "
+                      f"{n_scan} scanned (image) | {len(blocks)} block(s)")
+
+                # Fast path: entire document is one type — skip temp-PDF overhead
+                if len(blocks) == 1 and blocks[0]['type'] == 'native':
+                    print("   [DOCLING] ⚡ All pages native — single fast pass (OCR OFF)")
+                    markdown_text = self._docling_convert(
+                        self.pdf_path, ocr=False, timeout=timeout_native)
+
+                elif len(blocks) == 1 and blocks[0]['type'] == 'scanned':
+                    print("   [DOCLING] ⚡ All pages scanned — single OCR pass (OCR ON)")
+                    markdown_text = self._docling_convert(
+                        self.pdf_path, ocr=True, timeout=timeout_ocr)
+
+                else:
+                    # Mixed document: process each contiguous block in document order
+                    print("   [DOCLING] Mixed document — processing blocks in page order:")
+                    md_parts: List[str] = []
+                    for i, block in enumerate(blocks, 1):
+                        pages   = block['pages']
+                        is_ocr  = block['type'] == 'scanned'
+                        timeout = timeout_ocr if is_ocr else timeout_native
+                        mode    = "OCR ON " if is_ocr else "OCR OFF"
+                        page_range = (f"{pages[0]+1}-{pages[-1]+1}"
+                                      if len(pages) > 1 else str(pages[0]+1))
+
+                        print(f"     Block {i}/{len(blocks)}: pages {page_range} "
+                              f"[{block['type'].upper()}, {len(pages)} pg, {mode}]")
+
+                        tmp = self._extract_page_subset(pages)
+                        tmp_paths.append(tmp)
+
+                        md = self._docling_convert(tmp, ocr=is_ocr, timeout=timeout)
+                        if md.strip():
+                            md_parts.append(md)
+                            print(f"       ✓ {len(md):,} chars extracted")
+                        else:
+                            print(f"       ✗ No text returned for this block")
+
+                    markdown_text = "\n\n".join(md_parts)
+
+                self.metadata['extraction_method'] = 'docling_dynamic_ocr'
+
+            # ── Single-pass fallback (dynamic_ocr disabled) ──────────────
+            else:
+                label = 'ON' if ocr_enabled else 'OFF'
+                print(f"   [DOCLING] Mode: Single-pass (OCR {label})")
+                markdown_text = self._docling_convert(
+                    self.pdf_path, ocr=ocr_enabled, timeout=timeout_single)
+                self.metadata['extraction_method'] = 'docling'
                 try:
-                    result = future.result(timeout=timeout_seconds)
-                except concurrent.futures.TimeoutError:
-                    print(f"   Docling timed out after {timeout_seconds}s — falling back to pdfplumber")
-                    raise RuntimeError(f"Docling conversion timed out after {timeout_seconds} seconds")
+                    with open(self.pdf_path, 'rb') as f:
+                        self.metadata['total_pages'] = len(PyPDF2.PdfReader(f).pages)
+                except Exception:
+                    self.metadata['total_pages'] = 'N/A'
 
-            markdown_text = result.document.export_to_markdown()
-
+            # ── Validate combined output ─────────────────────────────────
             if not markdown_text or len(markdown_text.strip()) < 100:
-                print("   Docling returned insufficient text, skipping")
+                print("   [DOCLING] ✗ Returned insufficient text (< 100 chars) — will fallback")
                 return ""
 
-            # Replace opaque ![Image]() placeholders with VLM-generated captions
-            markdown_text = self._caption_images_in_markdown(result, markdown_text)
-
-            # Set metadata
-            self.metadata['extraction_method'] = 'docling'
             self.metadata['raw_text_length'] = len(markdown_text)
-
-            # Estimate page count from the PDF using PyPDF2 (Docling doesn't expose it directly)
-            try:
-                with open(self.pdf_path, 'rb') as f:
-                    reader = PyPDF2.PdfReader(f)
-                    self.metadata['total_pages'] = len(reader.pages)
-            except Exception:
-                self.metadata['total_pages'] = 'N/A'
-
-            print(f"   Docling extracted {len(markdown_text)} characters as Markdown")
+            print(f"   [DOCLING] ✓ Extraction complete — {len(markdown_text):,} chars "
+                  f"(method: {self.metadata['extraction_method']})")
             return markdown_text
 
         except Exception as e:
-            print(f"   Docling extraction failed: {e}")
+            print(f"   [DOCLING] ✗ Extraction failed: {e}")
             return ""
+
+        finally:
+            for tmp in tmp_paths:
+                try:
+                    os.unlink(tmp)
+                except OSError:
+                    pass
+
+    # ── Dynamic OCR helper methods ────────────────────────────────────────
+
+    def _prescan_pages(self) -> List[Dict]:
+        """
+        Lightning-fast pre-scan using pdfplumber to classify every page as
+        'native' (has a text layer) or 'scanned' (image-only / near-empty),
+        then groups consecutive same-type pages into contiguous blocks so
+        document order is perfectly preserved after the split-convert-merge cycle.
+
+        Returns:
+            List of block dicts in original page order, each containing:
+                'type'  : 'native' | 'scanned'
+                'pages' : list[int]  – consecutive 0-based page indices
+
+            Example for a 10-page PDF where pages 4-5 are scanned:
+            [
+                {'type': 'native',  'pages': [0, 1, 2, 3]},
+                {'type': 'scanned', 'pages': [4, 5]},
+                {'type': 'native',  'pages': [6, 7, 8, 9]},
+            ]
+        """
+        threshold = self.docling_config.get('ocr_char_threshold', 100)
+        blocks: List[Dict] = []
+
+        try:
+            with pdfplumber.open(self.pdf_path) as pdf:
+                total_pages = len(pdf.pages)
+                print(f"   [PRESCAN] Scanning {total_pages} pages for text layer...", flush=True)
+                for idx, page in enumerate(tqdm(pdf.pages, desc="   [PRESCAN]", unit="pg", total=total_pages)):
+                    text  = page.extract_text() or ""
+                    ptype = 'native' if len(text.strip()) >= threshold else 'scanned'
+
+                    # Extend current block if same type, otherwise start a new block
+                    if blocks and blocks[-1]['type'] == ptype:
+                        blocks[-1]['pages'].append(idx)
+                    else:
+                        blocks.append({'type': ptype, 'pages': [idx]})
+
+        except Exception as e:
+            print(f"   Pre-scan failed ({e}), treating all pages as scanned")
+            try:
+                with open(self.pdf_path, 'rb') as f:
+                    total = len(PyPDF2.PdfReader(f).pages)
+            except Exception:
+                total = 0
+            blocks = [{'type': 'scanned', 'pages': list(range(total))}]
+
+        return blocks
+
+    def _extract_page_subset(self, page_indices: List[int]) -> str:
+        """
+        Write a temporary PDF containing only the given 0-based page indices.
+        Returns the temp file path. Caller is responsible for cleanup via os.unlink.
+        """
+        with open(self.pdf_path, 'rb') as fh:
+            reader = PyPDF2.PdfReader(fh)
+            writer = PyPDF2.PdfWriter()
+            for idx in page_indices:
+                writer.add_page(reader.pages[idx])
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+            writer.write(tmp)
+            tmp.close()
+        return tmp.name
+
+    def _docling_convert(self, pdf_path: str, ocr: bool, timeout: int) -> str:
+        """
+        Run Docling on *pdf_path* with or without OCR, respecting *timeout* seconds.
+        Calls VLM image captioning only on the OCR pass (where image placeholders appear).
+        Returns Markdown string, or empty string on failure/timeout.
+        """
+        pipeline_options = PdfPipelineOptions(do_ocr=ocr)
+        converter = DocumentConverter(
+            format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)}
+        )
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(converter.convert, pdf_path)
+            try:
+                result = future.result(timeout=timeout)
+            except concurrent.futures.TimeoutError:
+                label = "OCR" if ocr else "native"
+                print(f"       ✗ [DOCLING] {label} pass TIMED OUT after {timeout}s")
+                return ""
+            except Exception as e:
+                label = "OCR" if ocr else "native"
+                print(f"       ✗ [DOCLING] {label} pass ERROR: {e}")
+                return ""
+
+        md = result.document.export_to_markdown() or ""
+
+        # VLM captioning only on the OCR pass — that's where image placeholders live
+        if ocr and md:
+            md = self._caption_images_in_markdown(result, md)
+
+        return md
 
     def _caption_images_in_markdown(self, docling_result, markdown_text: str) -> str:
         """
@@ -238,72 +401,98 @@ class PDFKnowledgeExtractor:
 
     def extract_text(self) -> str:
 
-        print(f" Extracting text from: {self.pdf_path}")
+        print(f"\n{'='*60}")
+        print(f" [EXTRACT] Starting extraction")
+        print(f" [EXTRACT] File: {self.pdf_path}")
+        print(f"{'='*60}")
 
-        # Handle plain text files directly
+        # ── Plain text files ─────────────────────────────────────────
         if self.pdf_path.lower().endswith('.txt'):
+            print(" [EXTRACT] Method: plaintext file (direct read)")
             try:
                 with open(self.pdf_path, 'r', encoding='utf-8') as f:
                     text = f.read()
                 self.metadata['total_pages'] = 1
                 self.metadata['raw_text_length'] = len(text)
                 self.metadata['extraction_method'] = 'plaintext_file'
-                print(f" Extracted {len(text)} characters from text file")
+                print(f" [EXTRACT] ✓ SUCCESS — {len(text):,} chars (plaintext_file)")
                 return text
             except Exception as e:
-                print(f" Failed to read text file: {e}")
+                print(f" [EXTRACT] ✗ FAILED to read text file: {e}")
                 return ""
 
-        # Try Docling first for PDF files (layout-aware Markdown extraction)
+        # ── PDF: try Docling first ────────────────────────────────────
         if self.pdf_path.lower().endswith('.pdf'):
+            print(" [EXTRACT] Method attempt 1/3: Docling (layout-aware Markdown)")
             markdown_text = self.extract_text_as_markdown()
             if markdown_text:
                 self.extraction_format = 'markdown'
+                print(f" [EXTRACT] ✓ SUCCESS via Docling — "
+                      f"{len(markdown_text):,} chars (format: Markdown)")
                 return markdown_text
+            else:
+                print(" [EXTRACT] ✗ Docling returned no text — falling back to pdfplumber")
 
-        # Fallback: Process PDF files with pdfplumber/PyPDF2 (legacy plaintext)
+        # ── Fallback 1: pdfplumber ────────────────────────────────────
+        print(" [EXTRACT] Method attempt 2/3: pdfplumber (plaintext fallback)")
         self.metadata['extraction_method'] = 'pdfplumber'
-        full_text = []  # Collect text from all pages
+        full_text = []
 
-        # Method 1: Try pdfplumber (primary method - better for complex layouts)
         try:
             with pdfplumber.open(self.pdf_path) as pdf:
                 self.metadata['total_pages'] = len(pdf.pages)
-                print(f"   Total pages: {self.metadata['total_pages']}")
+                print(f"   [pdfplumber] {self.metadata['total_pages']} pages detected")
 
-                # Extract text from each page
                 for i, page in enumerate(pdf.pages, 1):
                     text = page.extract_text()
-                    if text:  # Only add if text was successfully extracted
+                    if text:
                         full_text.append(text)
-
-                    # Progress indicator for large documents
                     if i % 10 == 0:
-                        print(f"   Processed {i}/{self.metadata['total_pages']} pages...")
+                        print(f"   [pdfplumber] Scanned {i}/{self.metadata['total_pages']} pages...")
+
+            chars = sum(len(t) for t in full_text)
+            if chars == 0:
+                print("   [pdfplumber] ✗ Extracted 0 chars (likely image-only PDF) — falling back to PyPDF2")
+            else:
+                print(f"   [pdfplumber] ✓ Extracted {chars:,} chars from "
+                      f"{len(full_text)}/{self.metadata['total_pages']} pages")
 
         except Exception as e:
-            print(f"   pdfplumber failed: {e}")
-            print("   Trying PyPDF2...")
+            print(f"   [pdfplumber] ✗ FAILED: {e} — falling back to PyPDF2")
             self.metadata['extraction_method'] = 'pypdf2'
 
-            # Fallback to PyPDF2 (simpler but sometimes more reliable)
+            # ── Fallback 2: PyPDF2 ────────────────────────────────────
+            print(" [EXTRACT] Method attempt 3/3: PyPDF2 (last-resort fallback)")
             try:
                 with open(self.pdf_path, 'rb') as file:
                     pdf_reader = PyPDF2.PdfReader(file)
                     self.metadata['total_pages'] = len(pdf_reader.pages)
+                    print(f"   [PyPDF2] {self.metadata['total_pages']} pages detected")
 
-                    # Extract text from all pages
                     for page in pdf_reader.pages:
                         text = page.extract_text()
                         if text:
                             full_text.append(text)
+
+                    chars = sum(len(t) for t in full_text)
+                    if chars == 0:
+                        print("   [PyPDF2] ✗ Extracted 0 chars — all fallbacks exhausted")
+                    else:
+                        print(f"   [PyPDF2] ✓ Extracted {chars:,} chars")
+
             except Exception as e2:
-                print(f" PyPDF2 also failed: {e2}")
-                return ""  # Both methods failed
+                print(f"   [PyPDF2] ✗ FAILED: {e2}")
+                print(" [EXTRACT] ✗ ALL METHODS FAILED — returning empty")
+                return ""
 
         combined_text = "\n".join(full_text)
         self.metadata['raw_text_length'] = len(combined_text)
-        print(f" Extracted {len(combined_text)} characters")
+
+        if len(combined_text) == 0:
+            print(f" [EXTRACT] ✗ FAILED — 0 chars extracted by all methods")
+        else:
+            print(f" [EXTRACT] ✓ SUCCESS via {self.metadata['extraction_method']} — "
+                  f"{len(combined_text):,} chars (format: plaintext)")
 
         return combined_text
 
