@@ -8,7 +8,10 @@ from typing import List, Dict, Tuple
 from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog
-import logging
+import concurrent.futures
+import time
+import io
+from google import genai
 
 # Add parent directory to path for config import
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -424,45 +427,122 @@ class PDFKnowledgeExtractor:
             'extraction_method': self.metadata.get('extraction_method', 'unknown')
         }
 
-        # Auto-detect language from first 1000 characters
+        # ── Step 0: Read native PDF metadata ────────────────────────────
+        # Almost every PDF carries an invisible /Info dictionary with Title,
+        # Author, CreationDate, etc.  PyPDF2 exposes it through reader.metadata.
+        # We try this FIRST and let heuristic extraction fill gaps only.
+        native_title = None
+        native_author = None
+        native_year = None
+
+        try:
+            with open(self.pdf_path, 'rb') as f:
+                reader = PyPDF2.PdfReader(f)
+                pdf_meta = reader.metadata or {}
+
+                raw_title = pdf_meta.get('/Title') or pdf_meta.get('title') or ''
+                if isinstance(raw_title, str) and len(raw_title.strip()) > 5:
+                    native_title = raw_title.strip()
+
+                raw_author = pdf_meta.get('/Author') or pdf_meta.get('author') or ''
+                if isinstance(raw_author, str) and len(raw_author.strip()) > 1:
+                    native_author = raw_author.strip()
+
+                # /CreationDate is typically "D:20240315..." or "2024-03-15"
+                raw_date = str(pdf_meta.get('/CreationDate') or pdf_meta.get('creationdate') or '')
+                date_year_match = re.search(r'((?:19|20)\d{2})', raw_date)
+                if date_year_match:
+                    native_year = date_year_match.group(1)
+        except Exception:
+            pass  # PDF metadata is optional; continue with heuristics
+
+        # ── Step 1: Language detection ──────────────────────────────────
         try:
             sample = text[:1000] if len(text) > 1000 else text
             metadata['language'] = detect(sample)
-        except:
+        except Exception:
             pass  # Keep default if detection fails
 
-        # Extract title: Look for first substantial line (not too short, not too long)
-        lines = text.split('\n')[:20]  # Check first 20 lines
-        for line in lines:
-            # Strip Markdown header markers for title extraction
-            clean_line = re.sub(r'^#+\s*', '', line).strip()
-            if len(clean_line) > 20 and len(clean_line) < 200:  # Reasonable title length
-                metadata['title'] = clean_line
+        # ── Step 2: Title extraction ────────────────────────────────────
+        # Priority: native PDF /Title  →  first Markdown H1  →  first
+        # substantial line that doesn't look like boilerplate.
+        TITLE_NOISE = re.compile(
+            r'copyright|all rights reserved|doi:|http|www\.|issn|'
+            r'volume \d|issue \d|published by|downloaded from|'
+            r'^\s*page\s+\d|table of contents',
+            re.IGNORECASE
+        )
+
+        if native_title and not TITLE_NOISE.search(native_title):
+            metadata['title'] = native_title
+        else:
+            # Try Markdown H1 first (Docling output starts with # Title)
+            h1_match = re.search(r'^#\s+(.{10,200})', text, re.MULTILINE)
+            if h1_match and not TITLE_NOISE.search(h1_match.group(1)):
+                metadata['title'] = h1_match.group(1).strip()
+            else:
+                # Fallback: scan the first 20 lines for a clean candidate
+                for line in text.split('\n')[:20]:
+                    clean_line = re.sub(r'^#+\s*', '', line).strip()
+                    if 20 < len(clean_line) < 200 and not TITLE_NOISE.search(clean_line):
+                        metadata['title'] = clean_line
+                        break
+
+        # ── Step 3: Author ──────────────────────────────────────────────
+        if native_author:
+            metadata['author'] = native_author
+
+        # ── Step 4: Publication year ────────────────────────────────────
+        # Priority: native /CreationDate  →  explicit textual patterns
+        # such as "Published 2024", "(2023)", "© 2022"  →  bare 4-digit
+        # year in first 1500 chars (with validation range 1990–2030).
+        if native_year:
+            metadata['year'] = native_year
+        else:
+            # Try explicit contextual patterns first — much safer than bare digits
+            contextual_year = re.search(
+                r'(?:published|updated|revised|copyright|©|\()\s*((?:19|20)\d{2})',
+                text[:2000],
+                re.IGNORECASE
+            )
+            if contextual_year:
+                metadata['year'] = contextual_year.group(1)
+            else:
+                # Bare 4-digit fallback, but validate it looks like an actual year
+                bare_year = re.search(r'\b((?:19|20)\d{2})\b', text[:1500])
+                if bare_year:
+                    yr = int(bare_year.group(1))
+                    if 1990 <= yr <= 2030:
+                        metadata['year'] = str(yr)
+
+        # ── Step 5: Organization detection ──────────────────────────────
+        header_text = text[:3000]
+        ORGS = {
+            'KDIGO': ('KDIGO', 'Clinical Practice Guideline'),
+            'KDOQI': ('KDOQI', 'Clinical Practice Guideline'),
+            'NKF':   ('NKF',   'Clinical Practice Guideline'),
+            'ERA':   ('ERA',   'Clinical Practice Guideline'),
+            'ISN':   ('ISN',   'Clinical Practice Guideline'),
+            'ADA':   ('ADA',   'Clinical Practice Guideline'),
+            'AHA':   ('AHA',   'Clinical Practice Guideline'),
+            'WHO':   ('WHO',   'Clinical Practice Guideline'),
+        }
+        for tag, (org_name, gtype) in ORGS.items():
+            if tag in header_text:
+                metadata['organization'] = org_name
+                metadata['guideline_type'] = gtype
                 break
 
-        # Look for KDIGO-specific information (or other organizations)
-        if 'KDIGO' in text[:2000]:  # Check in document header
-            metadata['organization'] = 'KDIGO'
-            metadata['guideline_type'] = 'Clinical Practice Guideline'
-
-        # Extract publication year (4-digit year starting with 20XX)
-        year_match = re.search(r'20\d{2}', text[:1000])
-        if year_match:
-            metadata['year'] = year_match.group()
-
-        # Identify medical keywords present in document (for categorization)
+        # ── Step 6: Keyword extraction ──────────────────────────────────
         keywords = []
         keyword_patterns = [
             r'chronic kidney disease', r'CKD', r'GFR', r'dialysis',
             r'kidney function', r'renal', r'nephrology', r'KDIGO',
             r'proteinuria', r'albuminuria', r'eGFR'
         ]
-
-        # Search for each keyword in first 5000 characters
         for pattern in keyword_patterns:
             if re.search(pattern, text[:5000], re.IGNORECASE):
                 keywords.append(pattern)
-
         metadata['keywords'] = keywords
 
         print(f" Metadata extracted: {metadata.get('title', 'Unknown')[:50]}...")
