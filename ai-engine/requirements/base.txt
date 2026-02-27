@@ -1,0 +1,18 @@
+# ============================================================
+# base.txt — Foundational dependencies shared across all layers
+# Install: pip install -r requirements/base.txt
+# ============================================================
+
+# Environment & Configuration
+python-dotenv>=1.0.0
+
+# Numerics & Data
+numpy>=1.24.3,<2.0.0
+pandas>=2.0.3
+
+# HTTP
+requests>=2.31.0
+
+# Utilities
+tqdm>=4.66.1
+langdetect>=1.0.9

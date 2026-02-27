@@ -1,0 +1,19 @@
+# ============================================================
+# api.txt — FastAPI server layer dependencies
+# Extends: chatbot.txt
+# Install: pip install -r requirements/api.txt
+# ============================================================
+
+-r chatbot.txt
+
+# ── API Framework ─────────────────────────────────────────────
+fastapi
+uvicorn[standard]
+python-multipart
+aiofiles
+
+# ── Audio Processing (server-side) ───────────────────────────
+pydub
+
+# ── Gradio Integration ────────────────────────────────────────
+gradio_client

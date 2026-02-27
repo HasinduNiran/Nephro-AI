@@ -1,0 +1,46 @@
+# ============================================================
+# chatbot.txt — Chatbot component dependencies
+# Extends: base.txt
+# Install: pip install -r requirements/chatbot.txt
+# ============================================================
+
+-r base.txt
+
+# ── Vector Database ──────────────────────────────────────────
+chromadb>=0.4.18
+
+# ── PDF Extraction ───────────────────────────────────────────
+pdfplumber>=0.10.0
+PyPDF2>=3.0.0
+
+# ── NLP & Medical NLU ────────────────────────────────────────
+spacy>=3.7.2
+nltk>=3.8.1
+lxml>=4.9.3
+beautifulsoup4>=4.12.2
+scispacy>=0.5.4
+negspacy>=1.0.4
+# en_ner_bc5cdr_md model — install separately via:
+#   pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_ner_bc5cdr_md-0.5.4.tar.gz
+
+# ── Semantic Search & Embeddings ─────────────────────────────
+sentence-transformers>=2.2.2
+
+# ── LLM Providers ────────────────────────────────────────────
+google-genai
+groq>=1.0.0
+
+# ── Speech-to-Text (Whisper) ──────────────────────────────────
+faster-whisper>=1.0.0
+
+# ── Deep Learning (audio/ML backbone) ────────────────────────
+torch
+torchaudio
+
+# ── Audio I/O & VAD ──────────────────────────────────────────
+sounddevice
+soundfile>=0.13.0
+pygame
+
+# ── Text-to-Speech ───────────────────────────────────────────
+edge-tts>=6.1.9

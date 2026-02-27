@@ -50,9 +50,13 @@ CHUNK_SETTINGS = {
 # Docling PDF Extraction Settings (Layout-Aware Parsing)
 DOCLING_SETTINGS = {
     "enabled": True,                # Use Docling as primary extractor
-    "ocr_enabled": False,           # Enable OCR for scanned PDFs (requires docling[ocr])
+    "ocr_enabled": True,            # Enable OCR for scanned PDFs (requires docling[ocr])
+    "dynamic_ocr": True,            # Pre-scan pages & only OCR scanned ones (Hybrid OCR Routing)
+    "ocr_char_threshold": 100,      # Pages with fewer extracted chars are classified as scanned
     "table_mode": "markdown",       # How to represent tables
-    "timeout_seconds": 60,          # Hard timeout for converter.convert() call
+    "timeout_seconds_native": 120,  # Timeout for native (no-OCR) Docling pass
+    "timeout_seconds_ocr": 300,     # Timeout for OCR Docling pass (heavier)
+    "timeout_seconds": 300,         # Legacy single-pass timeout fallback
     "vlm_image_captioning": True,   # Replace ![Image]() placeholders with VLM captions
     "vlm_model": "gemini-2.5-flash", # Vision model used for image captioning
 }
