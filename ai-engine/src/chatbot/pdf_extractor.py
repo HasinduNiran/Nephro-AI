@@ -65,7 +65,6 @@ class PDFKnowledgeExtractor:
         # Load configuration settings
         self.medical_entities = config.get_medical_entities()
         self.content_type_keywords = config.get_content_types()
-        self.ckd_abbreviations = config.get_ckd_abbreviations()
         self.chunk_settings = config.get_chunk_config()
         self.docling_config = config.get_docling_config()
         self.markdown_chunk_config = config.get_markdown_chunk_config()
@@ -310,9 +309,10 @@ class PDFKnowledgeExtractor:
         """
         print("\n Cleaning Markdown text...")
 
-        # Expand medical abbreviations
-        print("   Expanding medical abbreviations...")
-        text = self.expand_abbreviations(text)
+        # NOTE: Abbreviation expansion is intentionally NOT applied to ingested text.
+        # Expanding at ingest mutates source fidelity (the LLM would cite inflated terms
+        # instead of natural abbreviations) and inflates chunk sizes. Expansion happens
+        # only at query time inside the NLU engine.
 
         # Remove page numbers
         text = re.sub(r'\n\s*\d+\s*\n', '\n', text)
@@ -358,9 +358,8 @@ class PDFKnowledgeExtractor:
 
         print("\n Cleaning text...")
 
-        # Step 1: Expand medical abbreviations to full terms
-        print("   Expanding medical abbreviations...")
-        text = self.expand_abbreviations(text)
+        # NOTE: Abbreviation expansion is intentionally NOT applied to ingested text.
+        # See clean_markdown_text() comment for rationale.
 
         # Remove excessive whitespace (multiple spaces, tabs, newlines -> single space)
         text = re.sub(r'\s+', ' ', text)
@@ -403,39 +402,11 @@ class PDFKnowledgeExtractor:
 
         return text
 
-    def expand_abbreviations(self, text: str) -> str:
-        """
-        Expand medical abbreviations using CKD_ABBREVIATIONS from config.
-
-        Args:
-            text: Input text containing abbreviations
-
-        Returns:
-            Text with abbreviations expanded to full terms
-        """
-        expanded_text = text
-
-        # Sort by length (longest first) to avoid partial replacements
-        # E.g., "ACEI" before "ACE" to prevent "ACEI" -> "angiotensin converting enzyme inhibitorI"
-        sorted_abbrevs = sorted(
-            self.ckd_abbreviations.items(),
-            key=lambda x: len(x[0]),
-            reverse=True
-        )
-
-        expansion_count = 0
-        for abbrev, full_term in sorted_abbrevs:
-            # Use word boundaries to match whole words only
-            pattern = r'\b' + re.escape(abbrev) + r'\b'
-            matches = len(re.findall(pattern, expanded_text, flags=re.IGNORECASE))
-            if matches > 0:
-                expanded_text = re.sub(pattern, full_term, expanded_text, flags=re.IGNORECASE)
-                expansion_count += matches
-
-        if expansion_count > 0:
-            print(f"   Expanded {expansion_count} medical abbreviations")
-
-        return expanded_text
+    # expand_abbreviations() removed from the ingestion path.
+    # Abbreviation expansion is query-time only (see NLUEngine._expand_abbreviations).
+    # This preserves source text fidelity, prevents false-positive expansions on
+    # medical shorthand like "N/A" or "Vitamin K", and eliminates O(N*M) regex overhead
+    # during vectordb ingestion.
 
     def extract_metadata_from_content(self, text: str) -> Dict:
 
