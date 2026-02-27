@@ -9,7 +9,8 @@ pdfplumber>=0.10.0
 PyPDF2>=3.0.0
 
 # Layout-Aware PDF Parsing (IBM Docling)
-docling>=2.0.0
+# docling[ocr] pulls in EasyOCR transitively when ocr_enabled=True
+docling[ocr]>=2.0.0
 
 # NLU (Natural Language Understanding)
 spacy>=3.7.2
