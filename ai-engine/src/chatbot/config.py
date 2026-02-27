@@ -139,6 +139,28 @@ MEDICAL_ENTITIES = [
     "albumin-creatinine ratio", "ACR"
 ]
 
+# Broad clinical domain signals used as a fallback in is_useful_content().
+# A chunk that misses every MEDICAL_ENTITIES term but contains any of these
+# passes the domain-relevance gate. This prevents valid content from being
+# dropped just because a new or uncommon term was not added to MEDICAL_ENTITIES.
+# These are deliberately generic lab/clinical vocabulary that would not appear
+# in non-medical documents (parking notices, administrative text, etc.).
+DOMAIN_ANCHOR_TERMS = [
+    # Units of measurement used exclusively in clinical lab reports
+    "mmol/l", "mmol/dl", "mg/dl", "mg/l", "mg/kg",
+    "ml/min", "ml/min/1.73", "meq/l", "iu/l", "u/l",
+    "g/dl", "g/l", "ng/ml", "pg/ml", "nmol/l", "pmol/l",
+    # Clinical specimen / procedure vocabulary
+    "serum", "plasma", "urine", "urinary", "biopsy",
+    "urinalysis", "haematuria", "haematology",
+    # Anatomical structures specific to renal medicine
+    "glomerulus", "glomeruli", "tubule", "nephron",
+    "collecting duct", "renal cortex", "renal medulla",
+    # Lab panel keywords
+    "creatinine clearance", "urine output", "fluid balance",
+    "acid-base", "electrolyte", "metabolic panel",
+]
+
 # CKD Medical Abbreviations & Synonyms
 CKD_ABBREVIATIONS = {
     # Common Medical Abbreviations
@@ -467,6 +489,10 @@ def get_chunk_config():
 def get_medical_entities():
     """Get list of medical entities to detect"""
     return MEDICAL_ENTITIES.copy()
+
+def get_domain_anchor_terms():
+    """Get broad clinical domain signals used as a fallback domain-relevance gate"""
+    return [t.lower() for t in DOMAIN_ANCHOR_TERMS]
 
 def get_content_types():
     """Get content type classification keywords"""

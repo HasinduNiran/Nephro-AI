@@ -67,6 +67,7 @@ class PDFKnowledgeExtractor:
 
         # Load configuration settings
         self.medical_entities = config.get_medical_entities()
+        self.domain_anchor_terms = config.get_domain_anchor_terms()
         self.content_type_keywords = config.get_content_types()
         self.chunk_settings = config.get_chunk_config()
         self.docling_config = config.get_docling_config()
@@ -551,44 +552,69 @@ class PDFKnowledgeExtractor:
 
     def is_useful_content(self, text: str) -> bool:
 
+        # --- Structural classification ---
+        # Count lines beginning with '|' to detect Markdown tables (Docling output).
+        # Three or more such lines reliably indicates a real table, not a stray pipe.
+        lines = text.split('\n')
+        table_line_count = sum(1 for ln in lines if ln.strip().startswith('|'))
+        is_md_table = table_line_count >= 3
 
-        # Filter 1: Too short to be meaningful
-        if len(text.split()) < 20:
+        # Filter 1: Too short to be meaningful.
+        # Markdown tables are fully exempt — a 2-row lab-value table may have very
+        # few words by .split() but contains critical structured clinical data.
+        # All other chunks require at least 8 words (minimum for a complete clinical
+        # statement, e.g. "Target blood pressure is < 130/80 mmHg.").
+        if not is_md_table and len(text.split()) < 8:
             return False
 
-        # Filter 2: Mostly numbers (likely a table, figure, or numbered list)
-        words = text.split()
-        number_ratio = sum(1 for w in words if w.replace('.', '').isdigit()) / len(words)
-        if number_ratio > 0.5:  # More than 50% numbers
-            return False
-
-        # Filter 3: Common non-content section headers and artifacts
-        skip_patterns = [
-            r'^table of contents',      # TOC pages
-            r'^references\s*$',          # Reference sections
-            r'^bibliography\s*$',        # Bibliography pages
-            r'^index\s*$',               # Index pages
-            r'^appendix\s+[a-z]',        # Appendix sections
-            r'^\d+\s*$',                 # Standalone page numbers
-            r'^figure \d+',              # Figure captions
-            r'^table \d+',               # Table captions
-        ]
-
-        # Strip Markdown header markers before checking patterns
-        text_for_check = re.sub(r'^#+\s*', '', text).strip()
-        text_lower = text_for_check.lower()
-        for pattern in skip_patterns:
-            if re.match(pattern, text_lower):
+        # Filter 2: Mostly numbers → likely a bare figure or numeric artifact.
+        # Markdown tables are fully exempt: lab-value comparison tables produced by
+        # Docling are intentionally number-heavy and are the highest-value chunks
+        # in this pipeline. Applying a number-ratio threshold to them would silently
+        # delete Stage 3 vs. Stage 4 eGFR / potassium / calcium comparison tables.
+        if not is_md_table:
+            words = text.split()
+            # Strip trailing punctuation before testing (catches "60." "4.5," etc.)
+            number_ratio = sum(
+                1 for w in words
+                if w.strip('.,;:)(%').replace('.', '').replace(',', '').isdigit()
+            ) / len(words)
+            if number_ratio > 0.5:
                 return False
 
-        # Filter 4: Must contain medical/kidney-related terminology
-        # This ensures we keep domain-relevant content
-        # Use comprehensive list from config instead of hardcoded terms
+        # Filter 3: Common non-content section headers and structural artifacts.
+        # '^table \d+' is tightened to '^table \d+\s*$' (standalone caption only)
+        # to avoid matching prose like "Table 4 summarises dietary limits...".
+        # The entire check is bypassed for Markdown tables because they start with
+        # '|', not a word, so none of these patterns could match anyway.
+        if not is_md_table:
+            skip_patterns = [
+                r'^table of contents',   # TOC pages
+                r'^references\s*$',      # Reference sections
+                r'^bibliography\s*$',    # Bibliography pages
+                r'^index\s*$',           # Index pages
+                r'^appendix\s+[a-z]',   # Appendix sections
+                r'^\d+\s*$',            # Standalone page numbers
+                r'^figure \d+',         # Figure captions
+                r'^table \d+\s*$',      # Standalone table captions only (tightened)
+            ]
+            # Strip Markdown header markers before matching
+            text_for_check = re.sub(r'^#+\s*', '', text).strip()
+            text_lower = text_for_check.lower()
+            for pattern in skip_patterns:
+                if re.match(pattern, text_lower):
+                    return False
+
+        # Filter 4: Domain-relevance gate.
+        # Primary check: any of the 120+ specific MEDICAL_ENTITIES terms.
+        # Fallback check: any of the 20 broad DOMAIN_ANCHOR_TERMS (clinical lab
+        # vocabulary like "mmol/l", "serum", "glomerulus").  A chunk that fails the
+        # specific list but passes the broad list is kept — this prevents dropping
+        # valid clinical content just because a term was not in MEDICAL_ENTITIES.
         text_lower = text.lower()
-        has_medical_term = any(
-            entity.lower() in text_lower
-            for entity in self.medical_entities
-        )
+        has_medical_term = any(entity.lower() in text_lower for entity in self.medical_entities)
+        if not has_medical_term:
+            has_medical_term = any(term in text_lower for term in self.domain_anchor_terms)
 
         return has_medical_term
 
@@ -965,37 +991,37 @@ class PDFKnowledgeExtractor:
             if 'sub_chunk_index' in chunk:
                 chunk['metadata']['sub_chunk_index'] = chunk['sub_chunk_index']
 
-            # Classify content type using enhanced keyword matching from config
+            # ── Content type classification (multi-label) ───────────────
+            # Medical text is rarely one category. "We recommend a low-sodium
+            # diet based on clinical trials" is recommendation + dietary +
+            # evidence.  Store ALL matching categories as a comma-separated
+            # string so ChromaDB can accept it (flat schema: str/int/float/bool
+            # only — lists crash the insert).
             text = chunk['text']
             text_lower = text.lower()
-            content_type = 'general'  # Default
-            max_matches = 0
+            matched_types = []
 
-            # Check each content type and count keyword matches
             for ctype, keywords in self.content_type_keywords.items():
                 matches = sum(1 for keyword in keywords if keyword.lower() in text_lower)
-                if matches > max_matches:
-                    max_matches = matches
-                    content_type = ctype
+                if matches > 0:
+                    matched_types.append(ctype)
 
-            chunk['metadata']['content_type'] = content_type
-            chunk['metadata']['content_type_confidence'] = max_matches
+            # Comma-separated multi-label string; falls back to "general"
+            chunk['metadata']['content_type'] = ', '.join(matched_types) if matched_types else 'general'
 
-            # Detect medical entities using comprehensive list from config
+            # ── Medical entity detection ────────────────────────────────
             medical_entities = []
-            text_lower = text.lower()
 
-            # Check each medical entity from config
             for entity in self.medical_entities:
-                # Use word boundaries for accurate matching
                 pattern = r'\b' + re.escape(entity.lower()) + r'\b'
                 if re.search(pattern, text_lower):
                     medical_entities.append(entity)
 
-            # Remove duplicates and limit to top 10 for cleaner metadata
+            # Deduplicate, cap at 10, and flatten to a comma-separated string
+            # so ChromaDB's flat metadata schema doesn't crash on a Python list.
             medical_entities = list(dict.fromkeys(medical_entities))[:10]
 
-            chunk['metadata']['medical_entities'] = medical_entities
+            chunk['metadata']['medical_entities'] = ', '.join(medical_entities) if medical_entities else ''
             chunk['metadata']['entity_count'] = len(medical_entities)
 
             # Clean up temporary keys from chunk dict (they live in metadata now)
