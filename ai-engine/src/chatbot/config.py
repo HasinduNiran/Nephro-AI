@@ -49,9 +49,12 @@ CHUNK_SETTINGS = {
 
 # Docling PDF Extraction Settings (Layout-Aware Parsing)
 DOCLING_SETTINGS = {
-    "enabled": True,          # Use Docling as primary extractor
-    "ocr_enabled": False,     # Enable OCR for scanned PDFs (slower)
-    "table_mode": "markdown", # How to represent tables
+    "enabled": True,                # Use Docling as primary extractor
+    "ocr_enabled": False,           # Enable OCR for scanned PDFs (requires docling[ocr])
+    "table_mode": "markdown",       # How to represent tables
+    "timeout_seconds": 60,          # Hard timeout for converter.convert() call
+    "vlm_image_captioning": True,   # Replace ![Image]() placeholders with VLM captions
+    "vlm_model": "gemini-2.5-flash", # Vision model used for image captioning
 }
 
 # Markdown Structural Chunking Settings
