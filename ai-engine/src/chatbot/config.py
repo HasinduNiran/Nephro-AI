@@ -53,6 +53,7 @@ DOCLING_SETTINGS = {
     "ocr_enabled": True,            # Enable OCR for scanned PDFs (requires docling[ocr])
     "dynamic_ocr": True,            # Pre-scan pages & only OCR scanned ones (Hybrid OCR Routing)
     "ocr_char_threshold": 100,      # Pages with fewer extracted chars are classified as scanned
+    "max_block_pages": 20,          # Max pages per Docling batch — prevents RAM/VRAM OOM crashes
     "table_mode": "markdown",       # How to represent tables
     "timeout_seconds_native": 120,  # Timeout for native (no-OCR) Docling pass
     "timeout_seconds_ocr": 300,     # Timeout for OCR Docling pass (heavier)
