@@ -6,7 +6,7 @@
   "wakugadu": "Kidney",
   "wakugaduwa": "Kidney",
   "වකුගඩු": "Kidney",
-  
+
   "liver": "Liver",
   "akmawa": "Liver",
   "අක්මාව": "Liver",
@@ -31,17 +31,17 @@
   "cretinine": "Creatinine",
   "creatinin": "Creatinine",
   "ක්‍රියැටිනින්": "Creatinine",
-  
+
   "egfr": "eGFR",
   "gfr": "eGFR",
   "filtration rate": "eGFR",
   "ඊජීඑෆ්ආර්": "eGFR",
-  
+
   "potassium": "Potassium",
   "pottasium": "Potassium",
   "kalium": "Potassium",
   "පොටෑසියම්": "Potassium",
-  
+
   "sodium": "Sodium",
   "lunu": "Sodium",
   "soodiyam": "Sodium",
@@ -52,7 +52,7 @@
   "protin": "Protein",
   "sudada": "Protein",
   "ප්‍රෝටීන්": "Protein",
-  
+
   "sugar": "Glucose",
   "seeni": "Glucose",
   "සීනි": "Glucose",
@@ -61,14 +61,14 @@
   "diabetes": "Diabetes",
   "diyawadiyawa": "Diabetes",
   "දියවැඩියාව": "Diabetes",
-  
+
   "pressure": "Hypertension",
   "bp": "Hypertension",
   "high blood pressure": "Hypertension",
   "pidanaya": "Hypertension",
   "le pidanaya": "Hypertension",
   "පීඩනය": "Hypertension",
-  
+
   "dialysis": "Dialysis",
   "blood wash": "Dialysis",
   "le sudda kirima": "Dialysis",
@@ -91,17 +91,17 @@
   "කැක්කුම": "Pain",
   "රිදෙනවා": "Pain",
   "වේදනාව": "Pain",
-  
+
   "vomiting": "Vomiting",
   "wamane": "Vomiting",
   "wamane yanawa": "Vomiting",
   "වමනය": "Vomiting",
-  
+
   "dizzy": "Dizziness",
   "karakawilla": "Dizziness",
   "karekill": "Dizziness",
   "කැරකැවිල්ල": "Dizziness",
-  
+
   "fatigue": "Fatigue",
   "mahansiyi": "Fatigue",
   "pana na": "Fatigue",
@@ -114,19 +114,19 @@
   "sudu bath": "Rice",
   "rathu bath": "Rice",
   "බත්": "Rice",
-  
+
   "bread": "Bread",
   "paan": "Bread",
   "thiringu": "Bread",
   "පාන්": "Bread",
-  
+
   "banana": "Banana",
   "kesel": "Banana",
   "anamalu": "Banana",
   "kolekuttu": "Banana",
   "ambun": "Banana",
   "කෙසල්": "Banana",
-  
+
   "coconut": "Coconut",
   "pol": "Coconut",
   "thambili": "Coconut",
@@ -139,21 +139,21 @@
   "kos": "Jackfruit",
   "jackfruit": "Jackfruit",
   "waraka": "Ripe Jackfruit",
-  
+
   "dhal": "Lentils",
   "parippu": "Lentils",
   "පරිප්පු": "Lentils",
-  
+
   "fish": "Fish",
   "malu": "Fish",
   "maalu": "Fish",
   "මාළු": "Fish",
-  
+
   "chicken": "Chicken",
   "kukul mas": "Chicken",
   "kukulo": "Chicken",
   "කුකුල් මස්": "Chicken",
-  
+
   "water": "Water",
   "wathura": "Water",
   "watura": "Water",
@@ -204,7 +204,7 @@
   "kidny": "Kidney",
   "වකුගඩු": "Kidney",
   "වකුගඩුව": "Kidney",
-  
+
   "liver": "Liver",
   "akmawa": "Liver",
   "akma": "Liver",
@@ -528,7 +528,7 @@
   "xray": "X-Ray",
   "scan": "Scan",
   "ultra sound": "Ultrasound",
-  
+
   "losartan": "Losartan",
   "enalapril": "Enalapril",
   "captopril": "Captopril",
@@ -545,7 +545,7 @@
   "vidda": "Injection",
   "insuline": "Insulin",
   "insuliin": "Insulin",
-  
+
   "// --- 6. SYMPTOMS (Detailed) ---": "",
   "pain": "Pain",
   "kakkuma": "Pain",
@@ -553,12 +553,12 @@
   "dodana": "Ache",
   "davilla": "Burning Sensation",
   "daana": "Burning",
-  
+
   "vomiting": "Vomiting",
   "wamane": "Vomiting",
   "okkara": "Nausea",
   "bada dangalanawa": "Nausea/Stomach Upset",
-  
+
   "swelling": "Edema",
   "idimila": "Swelling",
   "idimuma": "Swelling",
@@ -568,13 +568,13 @@
   "hama": "Skin",
   "kaha pata": "Yellow Color (Jaundice)",
   "sudu pata": "Pale (Anemia)",
-  
+
   "breathing": "Breathing",
   "husma": "Breathing",
   "husma ganna amaru": "Shortness of Breath",
   "papuwe amaruwa": "Chest Pain",
   "panna": "Jump/Palpitation",
-  
+
   "urine trouble": "Urinary Issue",
   "keti keti yanawa": "Frequent Urination",
   "yanna amarui": "Dysuria (Hard to urinate)",
@@ -582,18 +582,18 @@
   "le yanawa": "Hematuria (Blood in urine)",
   "pene": "Foam",
   "pena": "Foam (Foamy Urine)",
-  
+
   "itching": "Itching",
   "kasanawa": "Itching",
   "kasilla": "Itchiness",
   "thuwala": "Wound",
   "vekililla": "Rashes",
-  
+
   "sleep": "Sleep",
   "ninda": "Sleep",
   "ninda yanne na": "Insomnia",
   "idi": "Sleep",
-  
+
   "appetite": "Appetite",
   "kanna ba": "Loss of Appetite",
   "kama epa": "Loss of Appetite",
@@ -646,7 +646,7 @@
   "baha": "Cannot / Not allowed",
   "kamak nadda": "Is it okay?",
   "awulak nadda": "Is it okay (No problem)?",
-  
+
   "// --- 9. TIME & FREQUENCY ---": "",
   "ada": "Today",
   "heta": "Tomorrow",
@@ -681,7 +681,6 @@
   "patient": "Patient",
   "leda": "Patient",
 
-
   "// --- SRI LANKAN SPECIALTIES ---": "",
   "aappa": "Hoppers",
   "appa": "Hoppers",
@@ -709,7 +708,7 @@
   "tea bun": "Tea Bun",
   "maalu paan": "Fish Bun",
   "kimbula banis": "Crocodile Bun (Sugar Bun)",
-  
+
   "// --- VEGETABLES (EXPANDED) ---": "",
   "dambala": "Winged Bean",
   "mekaral": "Long Beans",
@@ -730,7 +729,7 @@
   "kankun": "Water Spinach",
   "sarana": "Horse Purslane",
   "kathurumurunga": "Agati Leaves",
-  
+
   "// --- MEAT & FISH TYPES ---": "",
   "balaya": "Skipjack Tuna",
   "kelawalla": "Yellowfin Tuna",
@@ -793,7 +792,7 @@
   "katta": "Mouth",
   "kata": "Mouth",
   "diwa": "Tongue",
-  
+
   "// --- SPECIFIC SENSATIONS ---": "",
   "dawillai": "Burning Sensation",
   "dawanawa": "Burning",
@@ -838,7 +837,7 @@
   "raata": "At Night",
   "nithara": "Frequently",
 
-"// --- TIME & DURATION ---": "",
+  "// --- TIME & DURATION ---": "",
   "ada": "Today",
   "heta": "Tomorrow",
   "iye": "Yesterday",
@@ -851,7 +850,7 @@
   "kalin": "Before / Earlier",
   "pahu giya": "Past / Last",
   "labana": "Next",
-  
+
   "udeta": "In the Morning",
   "ude": "Morning",
   "dawal": "Daytime / Lunchtime",
@@ -861,13 +860,13 @@
   "ra": "Night",
   "raata": "At Night",
   "re": "Night",
-  
+
   "sathiya": "Week",
   "mase": "Month",
   "masayak": "One Month",
   "awurudda": "Year",
   "awurudu": "Years",
-  
+
   "hamadama": "Everyday",
   "nithara": "Often / Frequently",
   "hamathissema": "Always",
@@ -913,7 +912,7 @@
   "samanya": "Normal / Average",
   "uparima": "Maximum",
   "awama": "Minimum",
-  
+
   "kilo": "Kilogram",
   "gram": "Gram",
   "lita": "Liter",
@@ -1446,7 +1445,7 @@
   "idunu": "Ripe",
   "baga": "Half",
   "bage": "Half",
-  
+
   "// --- TASTE PROFILES ---": "",
   "lunu": "Salty",
   "lunu rasa": "Salty Taste",
@@ -1467,7 +1466,7 @@
   "badapu": "Fried",
   "karawala": "Dried Fish",
   "salaya": "Sardines",
-  
+
   "le": "Blood",
   "lee": "Blood",
   "le yanawa": "Bleeding / Hematuria",
@@ -1917,7 +1916,38 @@
   "thel": "Oil",
   "thel wadi": "Oily / Greasy",
   "kiri": "Milk",
-  "piti": "Flour / Powder / Starch"
+  "piti": "Flour / Powder / Starch",
 
+  "// --- SRI LANKAN NEPHROTOXINS ---": "",
+  "kamaranga": "Star fruit (Highly Nephrotoxic)",
+  "kamaranka": "Star fruit (Highly Nephrotoxic)",
+  "bilin": "Bilimbi (High Oxalate)",
+  "bilimbi": "Bilimbi (High Oxalate)",
+  "maduruthala": "Holy Basil (Can affect Potassium)",
+  "madurutala": "Holy Basil (Can affect Potassium)",
+  "arista": "Ayurvedic Fermented Tonic (Contains Alcohol/High Potassium)",
+  "arishta": "Ayurvedic Fermented Tonic (Contains Alcohol/High Potassium)",
+
+  "// --- DIALYSIS & VASCULAR ACCESS SLANG ---": "",
+  "bata": "Catheter / Tube",
+  "batae": "Catheter",
+  "bate": "Catheter",
+  "athata dapu bata": "AV Fistula (Arm)",
+  "athata bata": "AV Fistula (Arm)",
+  "karanpatta": "Neck Catheter (Permcath)",
+  "karanpata": "Neck Catheter (Permcath)",
+  "kadala thiyenne": "Broken / Failed (Fistula)",
+  "kadala thiyana": "Broken / Failed (Fistula)",
+
+  "// --- CKD STAGE & SEVERITY SLANG ---": "",
+  "anthima adiyara": "End-Stage Renal Disease (ESRD)",
+  "antima adiyara": "End-Stage Renal Disease (ESRD)",
+  "ESRD": "End-Stage Renal Disease (ESRD)",
+  "wakugadu narak wela": "Kidney Failure",
+  "wakugadu narak": "Kidney Failure",
+  "wash karanna": "To undergo Dialysis",
+  "wash karannawa": "To undergo Dialysis",
+  "wash kala": "Underwent Dialysis",
+  "diya wela": "Melted / Severe Atrophy (Kidney)",
+  "diya una": "Melted / Severe Atrophy (Kidney)"
 }
-
