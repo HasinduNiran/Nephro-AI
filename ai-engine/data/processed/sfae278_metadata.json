@@ -1,20 +1,30 @@
 {
   "total_pages": 15,
+  "native_pages": 15,
+  "scanned_pages": 0,
+  "extraction_method": "pdfplumber",
   "raw_text_length": 83656,
-  "cleaned_text_length": 85967,
+  "cleaned_text_length": 78869,
   "source_file": "sfae278.pdf",
-  "extraction_date": "2025-12-31T14:52:22.923355",
+  "extraction_date": "2026-02-28T22:33:58.835539",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Guidelines for the management of hypertension in CKD patients: where do we stand in 2024?",
+  "author": "Theodorakopoulou Marieta, Ortiz Alberto, Fernandez-Fernandez Beatriz, Kanbay Mehmet, Minutolo Roberto, Sarafidis Pantelis A.",
   "year": "2024",
+  "organization": "KDIGO",
+  "guideline_type": "Clinical Practice Guideline",
   "keywords": [
     "chronic kidney disease",
     "CKD",
+    "GFR",
     "renal",
     "nephrology",
-    "albuminuria"
+    "KDIGO",
+    "albuminuria",
+    "eGFR"
   ],
-  "total_chunks": 23,
-  "avg_chunk_size": 577.1304347826087,
-  "processing_date": "2025-12-31T14:52:23.233394"
+  "total_chunks": 22,
+  "avg_chunk_size": 568.0,
+  "processing_date": "2026-02-28T22:33:59.376923"
 }

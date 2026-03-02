@@ -1,15 +1,20 @@
 {
   "total_pages": 15,
-  "raw_text_length": 19614,
-  "cleaned_text_length": 19380,
+  "native_pages": 14,
+  "scanned_pages": 1,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 19891,
+  "cleaned_text_length": 19658,
   "source_file": "About Living Donation-Patient Brochure_11_24.pdf",
-  "extraction_date": "2025-11-18T15:15:49.402997",
+  "extraction_date": "2026-03-02T12:13:23.042743",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "About Living Kidney Donation",
+  "year": "2024",
   "keywords": [
     "dialysis"
   ],
-  "total_chunks": 6,
-  "avg_chunk_size": 564.1666666666666,
-  "processing_date": "2025-11-18T15:15:49.477462"
+  "total_chunks": 14,
+  "avg_chunk_size": 133.64285714285714,
+  "processing_date": "2026-03-02T12:13:23.168074"
 }

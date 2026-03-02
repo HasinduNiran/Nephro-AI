@@ -1,15 +1,20 @@
 {
   "total_pages": 2,
-  "raw_text_length": 10344,
-  "cleaned_text_length": 10597,
+  "native_pages": 2,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 10504,
+  "cleaned_text_length": 10504,
   "source_file": "blood_pressure_medication_should_not_be_routinely.96943.pdf",
-  "extraction_date": "2025-12-31T14:50:10.320389",
+  "extraction_date": "2026-02-28T21:31:00.232986",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Thomson",
+  "year": "2020",
   "keywords": [
     "nephrology"
   ],
-  "total_chunks": 3,
-  "avg_chunk_size": 411.6666666666667,
-  "processing_date": "2025-12-31T14:50:10.364674"
+  "total_chunks": 0,
+  "avg_chunk_size": 0,
+  "processing_date": "2026-02-28T21:31:06.442739"
 }

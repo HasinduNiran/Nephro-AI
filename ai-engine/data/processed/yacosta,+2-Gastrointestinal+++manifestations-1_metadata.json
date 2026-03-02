@@ -1,0 +1,23 @@
+{
+  "total_pages": 10,
+  "native_pages": 10,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 34568,
+  "cleaned_text_length": 32193,
+  "source_file": "yacosta,+2-Gastrointestinal+++manifestations-1.pdf",
+  "extraction_date": "2026-02-28T20:17:29.682154",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "Investigación original Original Research",
+  "year": "2017",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "dialysis",
+    "renal"
+  ],
+  "total_chunks": 6,
+  "avg_chunk_size": 116.33333333333333,
+  "processing_date": "2026-02-28T20:17:42.837304"
+}

@@ -1,20 +1,29 @@
 {
   "total_pages": 87,
-  "raw_text_length": 389531,
-  "cleaned_text_length": 419994,
+  "native_pages": 87,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 460922,
+  "cleaned_text_length": 417552,
   "source_file": "1-s2.0-S0085253820312709-main.pdf",
-  "extraction_date": "2025-12-31T14:50:59.099082",
+  "extraction_date": "2026-03-02T11:51:56.464204",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "KDIGO 2021 Clinical Practice Guideline for the Management of Blood Pressure in Chronic Kidney&nbsp;Disease",
+  "author": "Kidney Disease: Improving Global Outcomes (KDIGO) Blood Pressure Work Group",
   "year": "2021",
+  "organization": "KDIGO",
+  "guideline_type": "Clinical Practice Guideline",
   "keywords": [
     "chronic kidney disease",
     "CKD",
     "dialysis",
     "nephrology",
+    "KDIGO",
+    "proteinuria",
     "albuminuria"
   ],
-  "total_chunks": 85,
-  "avg_chunk_size": 581.3294117647059,
-  "processing_date": "2025-12-31T14:51:00.500683"
+  "total_chunks": 127,
+  "avg_chunk_size": 102.11811023622047,
+  "processing_date": "2026-03-02T11:55:41.863869"
 }

@@ -1,15 +1,20 @@
 {
   "total_pages": 47,
-  "raw_text_length": 265741,
-  "cleaned_text_length": 273837,
+  "native_pages": 47,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 307268,
+  "cleaned_text_length": 282720,
   "source_file": "chobanian-et-al-2003-seventh-report-of-the-joint-national-committee-on-prevention-detection-evaluation-and-treatment-of.pdf",
-  "extraction_date": "2025-12-31T14:43:03.700427",
+  "extraction_date": "2026-02-28T22:24:29.564760",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Seventh Report of the Joint National Committee on Prevention, Detection, Evaluation, and Treatment of High Blood Pressure",
+  "year": "2003",
   "keywords": [
     "chronic kidney disease"
   ],
-  "total_chunks": 50,
-  "avg_chunk_size": 587.26,
-  "processing_date": "2025-12-31T14:43:04.654333"
+  "total_chunks": 58,
+  "avg_chunk_size": 154.98275862068965,
+  "processing_date": "2026-02-28T22:26:20.231797"
 }

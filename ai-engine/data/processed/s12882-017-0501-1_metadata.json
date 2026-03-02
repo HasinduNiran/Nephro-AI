@@ -1,17 +1,22 @@
 {
   "total_pages": 11,
-  "raw_text_length": 50132,
-  "cleaned_text_length": 51743,
+  "native_pages": 11,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 59163,
+  "cleaned_text_length": 53043,
   "source_file": "s12882-017-0501-1.pdf",
-  "extraction_date": "2025-12-31T14:20:14.067257",
+  "extraction_date": "2026-02-28T22:16:09.402603",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Effect of tolvaptan on renal water and sodium excretion and blood pressure during nitric oxide inhibition: a dose-response study in healthy subjects",
+  "author": "Safa Al Therwani",
   "year": "2017",
   "keywords": [
     "renal",
     "nephrology"
   ],
-  "total_chunks": 11,
-  "avg_chunk_size": 548.1818181818181,
-  "processing_date": "2025-12-31T14:20:14.261721"
+  "total_chunks": 24,
+  "avg_chunk_size": 95.08333333333333,
+  "processing_date": "2026-02-28T22:16:25.111052"
 }

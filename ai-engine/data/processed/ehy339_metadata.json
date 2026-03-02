@@ -1,14 +1,21 @@
 {
   "total_pages": 98,
-  "raw_text_length": 540280,
-  "cleaned_text_length": 545386,
+  "native_pages": 98,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 583062,
+  "cleaned_text_length": 513508,
   "source_file": "ehy339.pdf",
-  "extraction_date": "2025-12-31T14:20:03.033242",
+  "extraction_date": "2026-03-01T00:13:26.238296",
   "document_type": "medical_guideline",
   "language": "en",
-  "year": "2018",
-  "keywords": [],
+  "title": "OP-EHEA180345 3021..3118",
+  "year": "2019",
+  "keywords": [
+    "CKD",
+    "renal"
+  ],
   "total_chunks": 85,
-  "avg_chunk_size": 591.5058823529412,
-  "processing_date": "2025-12-31T14:20:04.887804"
+  "avg_chunk_size": 153.5529411764706,
+  "processing_date": "2026-03-01T00:18:22.658593"
 }

@@ -1,19 +1,24 @@
 {
   "total_pages": 5,
-  "raw_text_length": 17112,
-  "cleaned_text_length": 18178,
+  "native_pages": 5,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 17642,
+  "cleaned_text_length": 17463,
   "source_file": "10.1177_23743735241256464.pdf",
-  "extraction_date": "2025-12-31T14:50:31.011347",
+  "extraction_date": "2026-02-28T23:25:43.582144",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "JPX1256464 1..5",
   "year": "2024",
   "keywords": [
     "chronic kidney disease",
     "CKD",
+    "kidney function",
     "renal",
     "albuminuria"
   ],
-  "total_chunks": 4,
-  "avg_chunk_size": 540.5,
-  "processing_date": "2025-12-31T14:50:31.155612"
+  "total_chunks": 6,
+  "avg_chunk_size": 118.83333333333333,
+  "processing_date": "2026-02-28T23:25:48.364623"
 }

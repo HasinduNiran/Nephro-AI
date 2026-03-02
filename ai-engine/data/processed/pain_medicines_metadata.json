@@ -1,16 +1,25 @@
 {
   "total_pages": 12,
-  "raw_text_length": 11047,
-  "cleaned_text_length": 11471,
+  "native_pages": 11,
+  "scanned_pages": 1,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 11920,
+  "cleaned_text_length": 11124,
   "source_file": "pain_medicines.pdf",
-  "extraction_date": "2025-11-18T15:17:45.170408",
+  "extraction_date": "2026-02-28T23:26:23.536044",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "AND YOUR KIDNEYS What You Need to Know",
+  "year": "2015",
+  "organization": "KDOQI",
+  "guideline_type": "Clinical Practice Guideline",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
+    "GFR",
     "kidney function"
   ],
-  "total_chunks": 4,
-  "avg_chunk_size": 499.0,
-  "processing_date": "2025-11-18T15:17:45.284749"
+  "total_chunks": 7,
+  "avg_chunk_size": 136.0,
+  "processing_date": "2026-02-28T23:26:25.396215"
 }

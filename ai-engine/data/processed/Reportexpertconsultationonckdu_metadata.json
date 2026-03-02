@@ -1,18 +1,25 @@
 {
   "total_pages": 48,
-  "raw_text_length": 61104,
-  "cleaned_text_length": 61754,
+  "native_pages": 42,
+  "scanned_pages": 6,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 78963,
+  "cleaned_text_length": 64792,
   "source_file": "Reportexpertconsultationonckdu.pdf",
-  "extraction_date": "2025-11-18T15:17:55.630937",
+  "extraction_date": "2026-03-01T00:04:13.565165",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "International Expert Consultation on Chronic Kidney Disease of Unknown Etiology",
   "year": "2016",
+  "organization": "WHO",
+  "guideline_type": "Clinical Practice Guideline",
   "keywords": [
     "chronic kidney disease",
     "CKD",
-    "renal"
+    "renal",
+    "KDIGO"
   ],
-  "total_chunks": 16,
-  "avg_chunk_size": 574.25,
-  "processing_date": "2025-11-18T15:17:55.931557"
+  "total_chunks": 30,
+  "avg_chunk_size": 178.16666666666666,
+  "processing_date": "2026-03-01T00:04:31.077696"
 }

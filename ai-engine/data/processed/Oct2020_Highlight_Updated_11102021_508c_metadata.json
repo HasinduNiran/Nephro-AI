@@ -1,0 +1,27 @@
+{
+  "total_pages": 7,
+  "native_pages": 7,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 16096,
+  "cleaned_text_length": 16069,
+  "source_file": "Oct2020_Highlight_Updated_11102021_508c.pdf",
+  "extraction_date": "2026-02-28T21:43:16.004540",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "Data Highlight NO.20 October 2020 Updated September 2021",
+  "author": "Centers for Medicare & Medicaid Services",
+  "year": "2021",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "GFR",
+    "dialysis",
+    "kidney function",
+    "renal",
+    "eGFR"
+  ],
+  "total_chunks": 12,
+  "avg_chunk_size": 105.33333333333333,
+  "processing_date": "2026-02-28T21:43:21.661797"
+}

@@ -1,16 +1,25 @@
 {
   "total_pages": 5,
-  "raw_text_length": 25111,
-  "cleaned_text_length": 25947,
+  "native_pages": 5,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 10023,
+  "cleaned_text_length": 9160,
   "source_file": "WEB_Chronic-Kidney-Disease_ENG_January-7.pdf",
-  "extraction_date": "2025-11-21T14:30:12.533257",
+  "extraction_date": "2026-02-28T22:20:02.694566",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Chronic Kidney Disease",
+  "author": "Kidney Foundation of Canada",
+  "year": "2020",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
+    "GFR",
+    "dialysis",
     "kidney function"
   ],
-  "total_chunks": 7,
-  "avg_chunk_size": 573.0,
-  "processing_date": "2025-11-21T14:30:12.647725"
+  "total_chunks": 8,
+  "avg_chunk_size": 120.5,
+  "processing_date": "2026-02-28T22:20:04.517732"
 }

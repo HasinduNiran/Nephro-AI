@@ -1,0 +1,26 @@
+{
+  "total_pages": 9,
+  "native_pages": 9,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 14463,
+  "cleaned_text_length": 14384,
+  "source_file": "Chronic Kidney Disease (CKD) Everything you need to know.pdf",
+  "extraction_date": "2026-02-28T20:16:55.575265",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "Chronic Kidney Disease (CKD): everything you need to know",
+  "author": "sidebots",
+  "year": "2024",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "GFR",
+    "kidney function",
+    "renal",
+    "eGFR"
+  ],
+  "total_chunks": 22,
+  "avg_chunk_size": 104.5,
+  "processing_date": "2026-02-28T20:16:55.982204"
+}

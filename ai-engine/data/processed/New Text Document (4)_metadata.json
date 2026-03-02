@@ -1,20 +1,24 @@
 {
   "total_pages": 1,
   "raw_text_length": 54716,
-  "cleaned_text_length": 59638,
+  "extraction_method": "plaintext_file",
+  "cleaned_text_length": 54320,
   "source_file": "New Text Document (4).txt",
-  "extraction_date": "2025-12-31T14:52:06.601761",
+  "extraction_date": "2026-02-28T15:23:58.977199",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Original Contribution",
   "year": "2007",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
+    "GFR",
     "dialysis",
     "kidney function",
     "renal",
     "albuminuria"
   ],
-  "total_chunks": 16,
-  "avg_chunk_size": 564.9375,
-  "processing_date": "2025-12-31T14:52:06.828957"
+  "total_chunks": 14,
+  "avg_chunk_size": 564.0,
+  "processing_date": "2026-02-28T15:23:59.168274"
 }

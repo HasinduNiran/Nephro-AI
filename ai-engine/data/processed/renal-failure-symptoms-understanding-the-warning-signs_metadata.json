@@ -1,11 +1,16 @@
 {
   "total_pages": 3,
-  "raw_text_length": 9272,
-  "cleaned_text_length": 9352,
+  "native_pages": 3,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 9652,
+  "cleaned_text_length": 9277,
   "source_file": "renal-failure-symptoms-understanding-the-warning-signs.pdf",
-  "extraction_date": "2025-11-21T14:30:07.403388",
+  "extraction_date": "2026-02-28T20:13:24.502921",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Polymeric Particulates to Improve Oral Bioavailability of Peptide Drugs",
+  "author": "María José Blanco-Príeto",
   "year": "2024",
   "keywords": [
     "dialysis",
@@ -14,7 +19,7 @@
     "nephrology",
     "proteinuria"
   ],
-  "total_chunks": 3,
-  "avg_chunk_size": 450.6666666666667,
-  "processing_date": "2025-11-21T14:30:07.452841"
+  "total_chunks": 24,
+  "avg_chunk_size": 54.458333333333336,
+  "processing_date": "2026-02-28T20:13:24.576427"
 }

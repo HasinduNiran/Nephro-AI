@@ -1,16 +1,24 @@
 {
   "total_pages": 16,
-  "raw_text_length": 11857,
-  "cleaned_text_length": 13163,
+  "native_pages": 15,
+  "scanned_pages": 1,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 14323,
+  "cleaned_text_length": 11692,
   "source_file": "gfr_a_key_to_understanding.pdf",
-  "extraction_date": "2025-11-18T15:16:02.209016",
+  "extraction_date": "2026-02-28T23:59:23.938877",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Estimated Glomerular Filtration Rate (eGFR)",
+  "year": "2022",
   "keywords": [
     "chronic kidney disease",
-    "kidney function"
+    "CKD",
+    "GFR",
+    "kidney function",
+    "eGFR"
   ],
-  "total_chunks": 4,
-  "avg_chunk_size": 536.75,
-  "processing_date": "2025-11-18T15:16:02.262822"
+  "total_chunks": 15,
+  "avg_chunk_size": 110.53333333333333,
+  "processing_date": "2026-02-28T23:59:24.038376"
 }

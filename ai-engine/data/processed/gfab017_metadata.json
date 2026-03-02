@@ -1,20 +1,27 @@
 {
   "total_pages": 8,
-  "raw_text_length": 37311,
-  "cleaned_text_length": 39567,
+  "native_pages": 8,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 41681,
+  "cleaned_text_length": 39303,
   "source_file": "gfab017.pdf",
-  "extraction_date": "2025-12-31T14:19:33.477081",
+  "extraction_date": "2026-02-28T21:39:08.804798",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "OP-NDTJ210017 1..8",
+  "year": "2021",
   "keywords": [
     "chronic kidney disease",
     "CKD",
+    "GFR",
     "dialysis",
     "renal",
     "nephrology",
-    "proteinuria"
+    "proteinuria",
+    "eGFR"
   ],
-  "total_chunks": 7,
-  "avg_chunk_size": 594.1428571428571,
-  "processing_date": "2025-12-31T14:19:33.612167"
+  "total_chunks": 13,
+  "avg_chunk_size": 75.76923076923077,
+  "processing_date": "2026-02-28T21:39:23.641201"
 }

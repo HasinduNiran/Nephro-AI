@@ -1,11 +1,17 @@
 {
   "total_pages": 26,
-  "raw_text_length": 82571,
-  "cleaned_text_length": 86354,
+  "native_pages": 26,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 97704,
+  "cleaned_text_length": 93405,
   "source_file": "e554aa91d426eee7edf579315638edf64d3f.pdf",
-  "extraction_date": "2025-12-31T14:48:14.772187",
+  "extraction_date": "2026-02-28T21:26:07.745336",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Nutritional Status Evaluation and Intervention in Chronic Kidney Disease Patients: Practical Approach",
+  "author": "Donghyuk Kang, Sojung Youn, Ji Won Min and Eun Jeong Ko",
+  "year": "2025",
   "keywords": [
     "chronic kidney disease",
     "CKD",
@@ -14,7 +20,7 @@
     "renal",
     "nephrology"
   ],
-  "total_chunks": 11,
-  "avg_chunk_size": 556.5454545454545,
-  "processing_date": "2025-12-31T14:48:15.068296"
+  "total_chunks": 33,
+  "avg_chunk_size": 102.87878787878788,
+  "processing_date": "2026-02-28T21:26:44.133023"
 }

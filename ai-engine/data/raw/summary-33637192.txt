@@ -1,0 +1,4 @@
+1: Kidney Disease: Improving Global Outcomes (KDIGO) Blood Pressure Work Group.
+KDIGO 2021 Clinical Practice Guideline for the Management of Blood Pressure in
+Chronic Kidney Disease. Kidney Int. 2021 Mar;99(3S):S1-S87. doi:
+10.1016/j.kint.2020.11.003. PMID: 33637192.

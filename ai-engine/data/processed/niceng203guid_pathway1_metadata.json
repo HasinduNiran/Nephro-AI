@@ -1,19 +1,25 @@
 {
   "total_pages": 7,
-  "raw_text_length": 8197,
-  "cleaned_text_length": 8283,
+  "native_pages": 7,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 7065,
+  "cleaned_text_length": 7001,
   "source_file": "niceng203guid_pathway1.pdf",
-  "extraction_date": "2025-12-31T14:53:20.824003",
+  "extraction_date": "2026-02-28T20:13:15.240855",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Chronic kidney disease overview",
+  "author": "National Institute for Health and Care Excellence (NICE)",
   "year": "2021",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
     "GFR",
     "renal",
     "eGFR"
   ],
-  "total_chunks": 2,
-  "avg_chunk_size": 570.0,
-  "processing_date": "2025-12-31T14:53:20.861197"
+  "total_chunks": 10,
+  "avg_chunk_size": 101.3,
+  "processing_date": "2026-02-28T20:13:15.311536"
 }

@@ -1,19 +1,30 @@
 {
   "total_pages": 6,
-  "raw_text_length": 23872,
-  "cleaned_text_length": 27993,
+  "native_pages": 6,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 24746,
+  "cleaned_text_length": 23731,
   "source_file": "chronic-kidney-disease_2.pdf",
-  "extraction_date": "2025-12-31T14:22:46.948519",
+  "extraction_date": "2026-02-28T20:32:01.725358",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "MACB CKD Task Force updated recommendations for reporting estimated glomerular filtration rate and albuminuria in adults",
+  "author": "Sthaneshwar P",
   "year": "2024",
+  "organization": "KDIGO",
+  "guideline_type": "Clinical Practice Guideline",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
+    "GFR",
     "kidney function",
+    "KDIGO",
     "proteinuria",
-    "albuminuria"
+    "albuminuria",
+    "eGFR"
   ],
-  "total_chunks": 7,
-  "avg_chunk_size": 566.2857142857143,
-  "processing_date": "2025-12-31T14:22:47.049212"
+  "total_chunks": 13,
+  "avg_chunk_size": 91.46153846153847,
+  "processing_date": "2026-02-28T20:32:10.946342"
 }

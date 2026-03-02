@@ -1,19 +1,22 @@
 {
   "total_pages": 10,
-  "raw_text_length": 47543,
-  "cleaned_text_length": 49771,
+  "native_pages": 10,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 58560,
+  "cleaned_text_length": 52954,
   "source_file": "c3c3c7a683d3d739499c83c2d7b1fbd2a1e0.pdf",
-  "extraction_date": "2025-12-31T14:48:10.990845",
+  "extraction_date": "2026-02-28T20:30:15.152678",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "K360-2023-000473 310..319",
   "year": "2024",
   "keywords": [
-    "chronic kidney disease",
     "CKD",
     "dialysis",
     "nephrology"
   ],
-  "total_chunks": 9,
-  "avg_chunk_size": 559.3333333333334,
-  "processing_date": "2025-12-31T14:48:11.162346"
+  "total_chunks": 10,
+  "avg_chunk_size": 113.2,
+  "processing_date": "2026-02-28T20:30:39.659765"
 }

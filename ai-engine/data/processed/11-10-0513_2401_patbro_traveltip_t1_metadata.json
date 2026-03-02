@@ -1,16 +1,22 @@
 {
   "total_pages": 36,
-  "raw_text_length": 30347,
-  "cleaned_text_length": 30987,
+  "native_pages": 35,
+  "scanned_pages": 1,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 31216,
+  "cleaned_text_length": 30608,
   "source_file": "11-10-0513_2401_patbro_traveltip_t1.pdf",
-  "extraction_date": "2025-11-18T15:15:42.342573",
+  "extraction_date": "2026-02-28T22:19:01.729056",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Travel Tips: A Guide for People Living with",
+  "year": "2024",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
     "dialysis"
   ],
-  "total_chunks": 9,
-  "avg_chunk_size": 566.1111111111111,
-  "processing_date": "2025-11-18T15:15:42.456380"
+  "total_chunks": 45,
+  "avg_chunk_size": 86.13333333333334,
+  "processing_date": "2026-02-28T22:19:13.296260"
 }

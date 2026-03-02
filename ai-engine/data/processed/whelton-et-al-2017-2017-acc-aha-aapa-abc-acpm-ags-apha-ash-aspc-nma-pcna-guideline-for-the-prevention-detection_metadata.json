@@ -1,14 +1,20 @@
 {
   "total_pages": 103,
-  "raw_text_length": 620352,
-  "cleaned_text_length": 644030,
+  "native_pages": 103,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 708344,
+  "cleaned_text_length": 565912,
   "source_file": "whelton-et-al-2017-2017-acc-aha-aapa-abc-acpm-ags-apha-ash-aspc-nma-pcna-guideline-for-the-prevention-detection.pdf",
-  "extraction_date": "2025-12-31T14:51:41.505167",
+  "extraction_date": "2026-03-02T12:26:50.954220",
   "document_type": "medical_guideline",
   "language": "en",
-  "year": "2017",
-  "keywords": [],
-  "total_chunks": 166,
-  "avg_chunk_size": 586.6746987951807,
-  "processing_date": "2025-12-31T14:51:44.567297"
+  "title": "2017 ACC/AHA/AAPA/ABC/ACPM/AGS/APhA/ASH/ASPC/NMA/PCNA Guideline for the Prevention, Detection, Evaluation, and Management of High Blood Pressure in Adults: A Report of the American College of Cardiology/American Heart Association Task Force on Clinical Practice Guidelines",
+  "year": "2018",
+  "keywords": [
+    "renal"
+  ],
+  "total_chunks": 150,
+  "avg_chunk_size": 154.11333333333334,
+  "processing_date": "2026-03-02T12:31:32.080870"
 }

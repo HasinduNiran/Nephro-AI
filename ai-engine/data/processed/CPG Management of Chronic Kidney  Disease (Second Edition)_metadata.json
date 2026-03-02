@@ -1,0 +1,23 @@
+{
+  "total_pages": 68,
+  "native_pages": 65,
+  "scanned_pages": 3,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 124733,
+  "cleaned_text_length": 101068,
+  "source_file": "CPG Management of Chronic Kidney  Disease (Second Edition).pdf",
+  "extraction_date": "2026-02-28T23:36:05.968226",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "CLINICAL PRACTICE GUIDELINES",
+  "year": "2018",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "renal",
+    "proteinuria"
+  ],
+  "total_chunks": 77,
+  "avg_chunk_size": 117.94805194805195,
+  "processing_date": "2026-02-28T23:36:32.500475"
+}

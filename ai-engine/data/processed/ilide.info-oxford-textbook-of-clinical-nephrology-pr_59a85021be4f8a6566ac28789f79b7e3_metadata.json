@@ -6,7 +6,7 @@
   "raw_text_length": 1855,
   "cleaned_text_length": 1840,
   "source_file": "ilide.info-oxford-textbook-of-clinical-nephrology-pr_59a85021be4f8a6566ac28789f79b7e3.pdf",
-  "extraction_date": "2026-02-28T04:01:27.321963",
+  "extraction_date": "2026-02-28T15:19:51.017581",
   "document_type": "medical_guideline",
   "language": "en",
   "title": "Oxford Textbook of Clinical Nephrology",
@@ -17,5 +17,5 @@
   ],
   "total_chunks": 1,
   "avg_chunk_size": 238.0,
-  "processing_date": "2026-02-28T04:01:27.811824"
+  "processing_date": "2026-02-28T15:19:51.529492"
 }

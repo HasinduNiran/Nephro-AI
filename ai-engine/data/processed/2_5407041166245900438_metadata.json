@@ -1,18 +1,24 @@
 {
   "total_pages": 4,
-  "raw_text_length": 16244,
-  "cleaned_text_length": 16485,
+  "native_pages": 4,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 16727,
+  "cleaned_text_length": 16074,
   "source_file": "2_5407041166245900438.pdf",
-  "extraction_date": "2025-12-31T14:53:30.300778",
+  "extraction_date": "2026-02-28T21:42:12.739076",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "International Journal of Medical Science and Clinical Research Studies",
+  "author": "DR.Ahmed Saker 2O11",
   "year": "2023",
   "keywords": [
+    "GFR",
     "dialysis",
     "kidney function",
     "renal"
   ],
-  "total_chunks": 5,
-  "avg_chunk_size": 506.6,
-  "processing_date": "2025-12-31T14:53:30.372904"
+  "total_chunks": 11,
+  "avg_chunk_size": 111.18181818181819,
+  "processing_date": "2026-02-28T21:42:20.447120"
 }

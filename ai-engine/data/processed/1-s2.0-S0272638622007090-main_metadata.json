@@ -1,18 +1,26 @@
 {
   "total_pages": 11,
-  "raw_text_length": 47424,
-  "cleaned_text_length": 51271,
+  "native_pages": 11,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 55350,
+  "cleaned_text_length": 50852,
   "source_file": "1-s2.0-S0272638622007090-main.pdf",
-  "extraction_date": "2025-12-31T14:19:31.422573",
+  "extraction_date": "2026-02-28T22:35:50.633898",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Dipping Status, Ambulatory Blood Pressure Control, Cardiovascular Disease, and Kidney Disease Progression: A Multicenter Cohort Study of CKD",
+  "author": "Silvio Borrelli",
+  "year": "2022",
   "keywords": [
     "chronic kidney disease",
     "CKD",
+    "GFR",
     "dialysis",
-    "nephrology"
+    "nephrology",
+    "eGFR"
   ],
-  "total_chunks": 12,
-  "avg_chunk_size": 559.0,
-  "processing_date": "2025-12-31T14:19:31.600923"
+  "total_chunks": 10,
+  "avg_chunk_size": 148.6,
+  "processing_date": "2026-02-28T22:36:06.019040"
 }

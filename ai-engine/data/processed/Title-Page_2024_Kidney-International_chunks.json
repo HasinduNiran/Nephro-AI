@@ -1,31 +1,35 @@
 [
   {
     "chunk_id": 0,
-    "text": "Kidney Disease: Improving Global Outcomes 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease Publication of the supplement was sponsored by Kidney Disease: Improving Global Outcomes (Kidney Disease: Improving Global Outcomes). This article is published as part of a supplement sponsored by Kidney Disease: Improving Global Outcomes (Kidney Disease: Improving Global Outcomes). Theopinionsorviewsexpressedinthissupplementarethoseoftheauthorsanddonotnecessarily reflect the opinions or recommendations of the International Society of Nephrology or Elsevier. Practitioners and researchers must always rely on their own experience and knowledge in evaluating and usinganyinformation, methods, compounds, orexperimentsdescribedherein. Because ofrapidadvancesin themedicalsciences, inparticular, independentverificationofdiagnosesanddrugdosagesshouldbemade. To the fullest extent of the law, no responsibility is assumed by the publisher, Kidney Disease: Improving Global Outcomes (Kidney Disease: Improving Global Outcomes), nor the International Society of Nephrology for any injury and/or damage to personsorpropertyasamatterofproductsliability, negligenceorotherwise, orfromanyuseoroperationof any methods, products, instructions or ideas contained in the material herein. Official Journal of the International Society of Nephrology Elsevier",
-    "word_count": 153,
-    "char_count": 1381,
+    "text": "## KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease\nPublication of the supplement was sponsored by Kidney Disease: Improving Global Outcomes (KDIGO).\n\nThis article is published as part of a supplement sponsored by Kidney Disease: Improving Global Outcomes (KDIGO). The opinions or views expressed in this supplement are those of the authors and do not necessarily re /uniFB02 ect the opinions or recommendations of the International Society of Nephrology or Elsevier.\n\nPractitioners and researchers must always rely on their own experience and knowledge in evaluating and using any information, methods, compounds, or experiments described herein. Because of rapid advances in the medical sciences, in particular, independent veri /uniFB01 cation of diagnoses and drug dosages should be made.\n\nTo the fullest extent of the law, no responsibility is assumed by the publisher, Kidney Disease: Improving Global Outcomes (KDIGO), nor the International Society of Nephrology for any injury and/or damage to persons or property as a matter of products liability, negligence or otherwise, or from any use or operation of any methods, products, instructions or ideas contained in the material herein.\n\n<!-- image -->\n\nOf /uniFB01 cial Journal of the International Society of Nephrology",
+    "word_count": 198,
+    "char_count": 1327,
     "sentence_count": 7,
     "metadata": {
       "source_file": "Title-Page_2024_Kidney-International.pdf",
-      "extraction_date": "2025-12-31T14:55:30.697144",
+      "extraction_date": "2026-02-28T15:23:58.306253",
       "document_type": "medical_guideline",
       "language": "en",
+      "extraction_method": "docling_dynamic_ocr",
+      "title": "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease",
       "year": "2024",
+      "organization": "KDIGO",
+      "guideline_type": "Clinical Practice Guideline",
       "keywords": [
         "chronic kidney disease",
-        "nephrology"
+        "nephrology",
+        "KDIGO"
       ],
       "chunk_index": 0,
       "total_chunks": 1,
       "position": "1/1",
-      "section": "Kidney Disease:",
-      "content_type": "recommendation",
-      "content_type_confidence": 3,
-      "medical_entities": [
-        "chronic kidney disease",
-        "guideline"
-      ],
-      "entity_count": 2
+      "section_path": "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease",
+      "section": "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease",
+      "header_level": 2,
+      "chunking_method": "structural",
+      "content_type": "recommendation, evidence, dietary, treatment, monitoring",
+      "medical_entities": "chronic kidney disease, KDIGO, guideline",
+      "entity_count": 3
     }
   }
 ]

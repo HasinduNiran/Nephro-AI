@@ -1459,19 +1459,27 @@ def main():
 
             # Check if processing was successful
             if output_file:
+                method = extractor.metadata.get('extraction_method', 'unknown')
                 results.append({
-                    'input': file_path,
-                    'output': output_file,
-                    'status': 'success',
-                    'method': extractor.metadata.get('extraction_method', 'unknown')
+                    'input':        file_path,
+                    'output':       output_file,
+                    'status':       'success',
+                    'method':       method,
+                    'chunks':       len(extractor.chunks),
+                    'pages':        extractor.metadata.get('total_pages', '?'),
+                    'native_pages': extractor.metadata.get('native_pages', '?'),
+                    'scanned_pages':extractor.metadata.get('scanned_pages', '?'),
+                    'chars':        extractor.metadata.get('raw_text_length', 0),
+                    'format':       extractor.extraction_format,
                 })
                 successful += 1
                 print(f"\n File {idx}/{len(file_paths)} processed successfully!")
             else:
                 results.append({
-                    'input': file_path,
+                    'input':  file_path,
                     'output': None,
-                    'status': 'failed'
+                    'status': 'failed',
+                    'method': extractor.metadata.get('extraction_method', 'unknown'),
                 })
                 failed += 1
                 print(f"\n File {idx}/{len(file_paths)} failed to process!")
@@ -1488,32 +1496,82 @@ def main():
             failed += 1
 
     # Step 4: Print comprehensive summary report
+    # ── Method counters ───────────────────────────────────────────────────────
+    method_counts = {}
+    for r in results:
+        m = r.get('method', 'unknown')
+        method_counts[m] = method_counts.get(m, 0) + 1
+
+    # Friendly labels for each extraction method
+    METHOD_LABELS = {
+        'docling_dynamic_ocr': 'Docling  (dynamic OCR routing)',
+        'docling':             'Docling  (single-pass)',
+        'pdfplumber':          'pdfplumber  (fallback 1)',
+        'pypdf2':              'PyPDF2      (fallback 2)',
+        'plaintext_file':      'Plaintext   (direct read)',
+        'unknown':             'Unknown',
+    }
+
     print("\n" + "=" * 70)
     print(" BATCH PROCESSING COMPLETE!")
     print("=" * 70)
-    print(f"Total files: {len(file_paths)}")
-    print(f" Successful: {successful}")
-    print(f" Failed: {failed}")
-    print(f" Output directory: {OUTPUT_DIR}")
-    print("\n Results:")
+    print(f"  Total files  : {len(file_paths)}")
+    print(f"  ✓ Successful : {successful}")
+    print(f"  ✗ Failed     : {failed}")
+    print(f"  Output dir   : {OUTPUT_DIR}")
 
-    # List each file with its status
+    print("\n  ── Extraction method breakdown ──────────────────────────────")
+    for method, count in sorted(method_counts.items()):
+        label = METHOD_LABELS.get(method, method)
+        bar   = '█' * count
+        mark  = '✓' if 'docling' in method else ('⚠' if 'pdfplumber' in method else '✗')
+        print(f"  {mark}  {label:<38s}  {bar}  ({count})")
+
+    print("\n  ── Per-file results ─────────────────────────────────────────")
     for i, result in enumerate(results, 1):
-        status_icon = "OK" if result['status'] == 'success' else "FAIL"
         filename = os.path.basename(result['input'])
-        method = result.get('method', '')
-        method_str = f" [{method}]" if method else ""
-        print(f"   {i}. {status_icon} {filename}{method_str}")
+        status   = result['status']
 
-        # Show output file for successful processing
-        if result['status'] == 'success':
-            print(f"      -> {os.path.basename(result['output'])}")
-        # Show error message for failed processing
-        elif result.get('error'):
-            print(f"      -> Error: {result['error']}")
+        if status == 'success':
+            method  = result.get('method', 'unknown')
+            label   = METHOD_LABELS.get(method, method)
+            chunks  = result.get('chunks', '?')
+            pages   = result.get('pages', '?')
+            chars   = result.get('chars', 0)
+            native  = result.get('native_pages', '?')
+            scanned = result.get('scanned_pages', '?')
+            fmt     = result.get('format', '?')
 
-    print("=" * 70)
-    print("\n Next Steps:")
+            # Docling health check
+            if 'docling' in method:
+                if chars and chunks and int(chunks) > 0:
+                    docling_status = '✓ Docling OK'
+                elif chars == 0:
+                    docling_status = '⚠ Docling returned 0 chars'
+                else:
+                    docling_status = '⚠ Docling produced 0 chunks'
+            else:
+                docling_status = '⚠ Docling failed — used fallback'
+
+            print(f"\n  {i}. ✓ {filename}")
+            print(f"       Method    : {label}")
+            print(f"       Docling   : {docling_status}")
+            print(f"       Pages     : {pages}  (native={native}, scanned={scanned})")
+            print(f"       Chars     : {chars:,}" if isinstance(chars, int) else f"       Chars     : {chars}")
+            print(f"       Chunks    : {chunks}")
+            print(f"       Format    : {fmt}")
+            print(f"       Output    : {os.path.basename(result['output'])}")
+
+        else:
+            method = result.get('method', '?')
+            error  = result.get('error', 'pipeline returned None')
+            print(f"\n  {i}. ✗ {filename}")
+            print(f"       Status    : FAILED")
+            print(f"       Last method tried: {method}")
+            print(f"       Error     : {error}")
+
+    print("\n" + "=" * 70)
+    print(" Next Steps:")
     print("   1. Run 'python scripts/prepare_vectordb.py' to filter and prepare chunks")
     print("   2. Run 'python scripts/build_vectordb.py' to create vector database")
     print("   3. Run 'python scripts/query_vectordb.py' to query the database")

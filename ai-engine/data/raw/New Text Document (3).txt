@@ -1,0 +1,211 @@
+Management of patients with CKD
+Frequency of monitoring
+Blood pressure (hypertension) management
+Renin-angiotensin system (RAS) inhibitors
+Sodium-glucose co-transporter-2 (SGLT2) inhibitors
+Non-steroidal mineralocorticoid antagonists (Finerenone)
+Cardiovascular risk reduction
+Deteriorating renal function
+Referral to specialists
+Coding of CKD in primary care
+All patients with CKD should be coded in their primary care electronic health records. This should preferably use the complete CKD classification system, which is regularly updated to reflect the most recent eGFR and uACR result (see diagnosis of CKD) (see CKD staging). Improved coding of patients with CKD should support pathways that ensure regular review and monitoring of patients on the CKD register and may also enhance safe prescribing through automated decision support alerts.
+
+A new diagnosis of CKD should always be discussed with the patient (and/or their carers), taking into account the severity of the condition, likely cause and associated risk. Ideally, this discussion should be supported by high quality patient information resources, tailored to patient needs.
+
+Frequency of monitoring
+The recommended minimum frequency of monitoring for patients with or at risk of CKD is set out in the most recent NICE guidance as below (Table). This may be tailored to individual patients depending on some of the following factors:
+
+The underlying cause of CKD
+The rate of decline in eGFR or increase in ACR (but be aware that CKD progression is often non-linear)
+Other risk factors, including heart failure, diabetes and hypertension
+Changes to treatment (such as RAASi, NSAIDs and diuretics)
+Intercurrent illness (for example acute kidney injury)
+Whether they have chosen conservative management of CKD.
+Table: Minimum number of monitoring checks (eGFRcreatinine) per year for adults, children and young people with or at risk of chronic kidney disease
+
+ 	ACR category A1: normal to mildly increased (less than 3 mg/mmol)	ACR category A2: moderately increased (3 to 30 mg/mmol)	ACR category A3: severely increased (over 30 mg/mmol)
+GFR category G1: normal and high (90 ml/min/1.73m² or over)	0 to 1	1	1 or more
+GFR category G2: mild reduction related to normal range for a young adult (60 to 89 ml/min/1.73m²)	0 to 1	1	1 or more
+GFR category G3a: mild to moderate reduction (45 to 59 ml/min/1.73m²)	1	1	2
+GFR category G3b: moderate to severe reduction (30 to 44 ml/min/1.73m²)	1 to 2	2	2 or more
+GFR category G4: severe reduction (15 to 29 ml/min/1.73m²)	2	2	3
+GFR category G5: kidney failure (under 15 ml/min/1.73m²)	4	4 or more	4 or more
+ 
+
+A CKD review should include assessment of:
+
+ 
+
+Trends in eGFR decline (see deteriorating renal function)
+Level of proteinuria (see proteinuria)
+Kidney failure risk equation (see KFRE)
+Blood pressure (see BP management)
+Optimisation of glycaemic control for patients with diabetic kidney disease
+Suitability for RAS inhibitors (see RAS inhibitors)
+Suitability for SGLT-2 inhibitor (see SGLT-2 inhibitor)
+Suitability for Finerenone (see Non-steroidal mineralocortoid antagonists)
+Cardiovascular risk assessment and prescription of lipid lowering therapy (see cardiovascular risk reduction)
+Patient Education
+Blood Pressure (Hypertension) Management
+Multiple trials have shown the benefits of blood pressure control in patients with renal disease. These benefits include slowing the progression of CKD and reducing cardiovascular outcomes and mortality.
+
+Patients with diabetic kidney disease or significant proteinuria (ACR>30 mg/mmol) particularly benefit from pharmacological blockade of the renin-angiotensin system with ACE (angiotensin converting enzyme) inhibitors or ARBs (angiotensin receptor blockers) to control their blood pressure (see the RAS inhibitor section).
+
+Targets
+
+These apply to all stages of CKD.
+
+ACR<70 mg/mmol or PCR<100 mg/mmol: Target blood pressure <140/90
+ACR>70 mg/mmol or PCR>100 mg/mmol OR CKD and diabetes: Target blood pressure <130/80
+Referral criteria
+
+Patients with poorly controlled BP despite the use of 4 agents should be referred to a specialist for further evaluation (see the referral to specialists section)
+
+Dietary advice
+
+All patients with CKD should be advised to minimise dietary salt. This will improve blood pressure control, fluid retention and can also slow down progression of their CKD.
+
+Renin-angiotensin- system (RAS) inhibitors
+RAS inhibitors include ACE inhibitors or ARBs.
+
+Consider ACE inhibitors or ARBs in all patients with CKD and:
+
+Urinary ACR>70 mg/mmol (non-diabetics)
+Urine ACR>30 mg/mmol and hypertension (non-diabetics)
+Diabetes and ACR>3 mg/mmol
+Exercise caution with, and potentially avoid the use of, RAS inhibitors in the following situations:
+
+Patients with pre-treatment potassium of >5 mmol/L
+Previous deterioration in renal function with these agents
+Known renovascular disease (this is not an absolute contraindication)
+Patients at high risk of pre-renal AKI (e.g. high output stomas, poor oral fluid intake)
+Patients co-prescribed NSAIDs
+Starting and monitoring therapy with ACE inhibitors or ARBs
+NICE guidance recommendation is to check serum creatinine and potassium:
+
+Before starting therapy
+1-2 weeks after initiation or dose increment
+For patients with an eGFR of 30 ml/min/1.73m² or more and a normal potassium it is unclear if the risk of structured retesting and the delayed optimisation of therapy outweighs the optimisation of therapy.
+
+The practice of the authors with patients who have a potassium of 5 mmol/l or more and where an ACE inhibitor or ARB is clearly indicated is to ensure that the patients are fully counselled about hyperkalaemia and dietary information is provided and other therapy options discussed (e.g. potassium binding resins, commencing SGLT2i).
+
+If creatinine rises >30% or GFR fall >25% repeat tests, stop drug and consider other causes e.g. volume depletion, NSAID use. If no other explanation, consider investigations for renal artery stenosis.
+
+If creatinine rises by <30% or eGFR falls by <25% (creatinine) repeat tests in further 1-2 weeks, then action as above if criteria for drug cessation are met. Do not routinely stop or modify the RAS inhibitor if lesser changes in renal function are observed – provided any lesser rises are stable.
+
+If K is 6-6.4 mmol/l in a patient on a RAS inhibitor consider repeating to ensure not spurious (e.g. delayed separation), stop drugs that may be contributing, (e.g. NSAIDs, potassium-retaining diuretics, trimethoprim) and enquire about diet (especially ‘LoSalt’ which is potassium chloride). If potassium is
+
+Modest stable hyperkalaemia (5.5-5.9 mmol/l) may be preferable to discontinuing a valuable therapy. This situation is most frequently encountered in patients with diabetes and those with heart failure in whom high potassium levels are a more frequent finding and the evidence base in favour of RAAS blockade is very strong. There are a number of strategies which may be employed to lower potassium in patients with a potassium of 6-6.4 mmol/l to facilitate the continued prescription of the RAS inhibition where there is a strong clinical indication. In selected patients such strategies may include dietary potassium restriction, the addition of sodium bicarbonate, a diuretic, and/or introduction of potassium binders. Please see UKKA hyperkalaemia clinical practice guidelines for further information.
+
+The evidence for stopping ACE inhibitors or ARBs at times of high risk for acute kidney injury is not clear and the decision should be individualised based on considerations such as the haemodynamic status. For patients with progressive CKD the evidence indicates that ACE inhibitor or ARB should be continued until kidney replacement therapy is commenced.
+
+Dual prescription of ACE inhibitors and ARBs should not be offered. Please see MHRA guidance on this topic.
+
+Information for patients
+Blood pressure control is critically important in preventing further kidney deterioration in many patients with CKD and for protecting against damage to heart and arteries. Some of the drugs used can affect kidney function and additional monitoring may be required.
+
+Sodium-glucose co-transporter-2 (SGLT2) inhibitors
+Sodium-glucose co-transporter-2 (SGLT-2) inhibitors were initially developed to treat hyperglycaemia in people with type 2 diabetes mellitus (DM). Results from large placebo-controlled clinical outcome trials have shifted the focus to SGLT-2 inhibition's potential to manage cardio-renal risk rather than hyperglycaemia. In people with type 2 DM at high risk of atherosclerotic cardiovascular disease, SGLT-2 inhibition reduces cardiovascular risk, particularly from heart failure.
+
+In people with chronic kidney disease (CKD), the CREDENCE, DAPA-CKD and EMPA-KIDNEY trials have demonstrated SGLT-2 inhibition's particular efficacy at also reducing risk of kidney disease progression in people with type 2 DM as well as in patients with albuminuric CKD due to other causes. In patients with CKD SGLT-2 inhibitors have additionally been shown to reduce risk of serious adverse cardiovascular events, hospitalisations with heart failure and all-cause mortality.
+
+The effectiveness of SGLT-2 inhibitors at glucose lowering diminishes as the kidney function falls; however, the relative effects of SGLT-2 inhibition on kidney disease progression and cardiovascular risk appear preserved in people with type 2 DM and CKD, at least within the range of kidney function represented in the reported trials (down to eGFR 15 mLs/min).
+
+Recommendations for starting SGLT2 inhibitors
+The UK Kidney Association Clinical Practice Guideline: Sodium-Glucose Co-transporter-2 (SGLT-2) Inhibition in Adults with Kidney Disease includes the following recommendations and suggestions for when to start SGLT2 inhibitors in people with CKD:♦
+
+For people with type 2 DM:
+
+We recommend initiating SGLT-2 inhibition in people with chronic kidney disease and type 2 diabetes, irrespective of primary kidney disease,* for any of the following 4 clinical scenarios:
+
+a) eGFR of 20-45 mL/min/1.73m²
+b) eGFR of >45 mL/min/1.73m² and a urinary albumin-to-creatinine ratio (uACR) of ≥25 mg/mmol†
+c) Symptomatic heart failure, irrespective of ejection fraction
+d) Established coronary disease
+We suggest initiating SGLT-2 inhibition to modify cardiovascular risk and slow rate of kidney function decline in people with an eGFR 45-60 mL/min/1.73m² and a uACR of <25 mg/mmol, recognising effects on glycaemic control will be limited.
+
+We suggest clinicians consider initiating SGLT-2 inhibition in people with an eGFR below 20 mL/min/1.73m² to slow progression of kidney disease.
+
+ 
+
+For patients without DM:
+
+ 
+
+We recommend initiating SGLT-2 inhibition in people with chronic kidney disease, irrespective of primary kidney disease,* for any of the following clinical scenarios:
+
+a) eGFR of ≥20 mL/min/1.73m² and a urinary albumin-to-creatinine ratio (uACR) of ≥25 mg/mmol†
+b) Symptomatic heart failure, irrespective of ejection fraction
+We recommend initiating SGLT-2 inhibition to slow rate of kidney function decline in people with an eGFR of 20-45 ml/min/1.73m2 and a uACR of 25 mg/mmol.†
+
+We suggest clinicians consider initiating SGLT-2 inhibition in people with an eGFR below 20 mL/min/1.73m2 to slow progression of kidney disease.
+
+♦ Key: Green: Recommendations with Grade 1 evidence (“we recommend” statements); Yellow: Recommendations with Grade 2 evidence (“we suggest” statements). Further details on grading can be found in Section 1, Table 1.2 of the UK Kidney Association Clinical Practice Guideline: Sodium-Glucose Co-transporter-2 (SGLT-2) Inhibition in Adults with Kidney Disease. * excludes people with polycystic kidney disease, type 1 diabetes, or a kidney transplant † urinary protein-to-creatinine ratio of 35 mg/mmol can be considered equivalent
+
+For more information, click here for the UKKA clinical practice guidelines on SGLT2 inhibitors.
+
+ 
+
+Non-steroidal mineralocorticoid antagonists
+ 
+
+Finerenone is a selective non-steroidal mineralocorticoid antagonist that has been shown to reduce the risk of progressive CKD in patients with diabetic kidney disease. It is recommended by NICE as add on therapy to current standard of care (RAS inhibitors and SGLT-2 inhibitors) for patients with diabetes, albuminuria and CKD stages 3 and 4 (down to eGFR 25 mLs/min). It is important to monitor for hyperkalaemia whilst on this treatment. Please see further guidance on this topic from the in the UKKA and Association of British Clinical Diabetologists (ABCD) consensus statement.
+
+Cardiovascular risk reduction
+CKD significantly increases the risks of both fatal and non-fatal cardiovascular events. At the population level these increased risks can be observed even in patients with low levels of proteinuria and preserved renal function. The risks increase with declining renal function and worsening proteinuria. Standard cardiovascular risk prediction tools, such as Framingham tables and Qrisk scores, significantly underestimate the risks of cardiovascular disease in patients with CKD.
+
+These observations reinforce the importance of trying to control the modifiable cardiovascular risk factors in patients with CKD. Such approaches may include:
+
+General measures
+Smoking cessation
+Weight loss
+Regular aerobic exercise
+Limiting salt intake
+Control of hypertension
+To a maximum of 140/90 or 130/80 according to absence/presence of proteinuria or diabetes (see the blood pressure (hypertension) management section)
+Lipid lowering therapies
+Offer Atorvastatin 20 mg for the primary prevention of cardiovascular disease in all patients with CKD, irrespective of their serum lipid levels.
+Increase the dose if there is 40% reduction in non-HDL cholesterol and eGFR is > 30 ml/min/1.73m2, particularly for secondary prevention of cardiovascular disease.
+Prescription of anti-proteinuric drugs
+Both RAS inhibitors and SGLT2 inhibitors in eligible patients have been shown to reduce patient risk of serious adverse cardiovascular events.
+
+Information for patients
+Patients with CKD are more likely to develop heart disease or other diseases of the blood vessels such as strokes than they are kidney failure. A number of things can be done to minimise these risks including lifestyle changes and medications.
+
+Deteriorating renal function
+If a patient is newly discovered to have a high creatinine it is important to establish if it represents acute kidney injury (AKI) or CKD. A patient cannot be labelled as having CKD unless you know that the renal function is stable or in steady state. On finding an elevated serum creatinine in the absence of previous creatinine results, assuming the patient is well and there are no worrying clinical or biochemical features (especially potassium), recheck the serum creatinine within 7-14 days to determine the rate of change.
+
+Acute kidney injury - Management of AKI is outside the scope of this guideline but declining renal function over hours to days needs urgent assessment. Sometimes the cause is immediately apparent (e.g. bladder outflow obstruction or drugs) and quickly remediable. If not, urgent hospital assessment is almost always required. Refer to the UKKA AKI clinical practice guidelines for further information.
+
+Once a patient has been identified as having CKD it is important to determine the rate of progression. To determine the rate of progression, obtain a minimum of 3 GFR estimations over a period of not less than 90 days.
+
+Consider referral to renal services if patients have rapidly progressive CKD as these patients are at increased risk of progression to end-stage kidney disease. NICE defines accelerated CKD progression as:
+
+A sustained decrease in GFR of 25% or more AND a change in GFR category (i.e. CKD "G" stage) within 12 months
+OR
+
+A sustained decrease in GFR of ≤ 15 ml/min/1.73m2 within 12 months
+Slower rates of CKD deterioration may need specialist assessment, particularly if:
+
+5-year KFRE >5% (see KFRE)
+High levels of proteinuria (ACR >70 mg/mmol in non-diabetic patients)
+Diagnostic uncertainty regarding the aetiology of the CKD
+There are symptoms suggestive of systemic disease
+Associated biochemical abnormalities, e.g. hyperkalaemia, hypocalcaemia
+Progressive anaemia
+Worsening fluid overload
+Information for patients
+Most patients who are newly discovered to have poor kidney function have an old problem which is changing slowly. It is important to identify those patients whose kidney function is changing more quickly. In many cases, changes to the medicines or other simple changes will be enough to put things right, although some patients may need further investigations and specialist treatment.
+
+Referral to a specialist
+Referral to a specialist should be considered and discussed with patients, taking into account their frailty and wishes for the following group of patients:
+
+a 5-year risk of needing renal replacement therapy of greater than 5% (measured using the 4-variable Kidney Failure Risk Equation) (see KFRE)
+an ACR of 70 mg/mmol or more, unless known to be caused by diabetes and already appropriately treated
+an ACR of more than 30 mg/mmol (ACR category A3), together with haematuria
+a sustained decrease in eGFR of 25% or more and a change in eGFR category within 12 months
+a sustained decrease in eGFR of 15 ml/min/1.73 m2 or more per year
+hypertension that remains poorly controlled (above the person's individual target) despite the use of at least 4 antihypertensive medicines at therapeutic doses
+known or suspected rare or genetic causes of CKD
+suspected renal artery stenosis
+ 

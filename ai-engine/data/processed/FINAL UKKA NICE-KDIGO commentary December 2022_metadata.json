@@ -1,17 +1,26 @@
 {
   "total_pages": 16,
-  "raw_text_length": 39666,
-  "cleaned_text_length": 41753,
+  "native_pages": 16,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 37751,
+  "cleaned_text_length": 36792,
   "source_file": "FINAL UKKA NICE-KDIGO commentary December 2022.pdf",
-  "extraction_date": "2025-12-31T14:53:15.967608",
+  "extraction_date": "2026-02-28T21:44:03.564147",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Final version: December 2022",
+  "author": "Siobhan Klaus (UKKA)",
   "year": "2022",
+  "organization": "KDIGO",
+  "guideline_type": "Clinical Practice Guideline",
   "keywords": [
     "chronic kidney disease",
-    "renal"
+    "CKD",
+    "renal",
+    "KDIGO"
   ],
-  "total_chunks": 11,
-  "avg_chunk_size": 557.6363636363636,
-  "processing_date": "2025-12-31T14:53:16.122369"
+  "total_chunks": 12,
+  "avg_chunk_size": 61.916666666666664,
+  "processing_date": "2026-02-28T21:44:14.789337"
 }

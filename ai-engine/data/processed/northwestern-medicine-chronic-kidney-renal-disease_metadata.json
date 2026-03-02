@@ -1,0 +1,23 @@
+{
+  "total_pages": 7,
+  "native_pages": 7,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 15314,
+  "cleaned_text_length": 15312,
+  "source_file": "northwestern-medicine-chronic-kidney-renal-disease.pdf",
+  "extraction_date": "2026-02-28T20:31:39.781958",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "Chronic Kidney Disease",
+  "year": "2022",
+  "keywords": [
+    "chronic kidney disease",
+    "GFR",
+    "kidney function",
+    "renal"
+  ],
+  "total_chunks": 20,
+  "avg_chunk_size": 99.2,
+  "processing_date": "2026-02-28T20:31:44.095612"
+}

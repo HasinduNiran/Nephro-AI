@@ -1,20 +1,24 @@
 {
   "total_pages": 1,
   "raw_text_length": 98051,
-  "cleaned_text_length": 106133,
+  "extraction_method": "plaintext_file",
+  "cleaned_text_length": 98038,
   "source_file": "New Text Document (2).txt",
-  "extraction_date": "2025-12-31T14:52:08.103561",
+  "extraction_date": "2026-02-28T15:27:01.608385",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Effects of Nondipping Blood Pressure Changes: A Nephrologist Prospect",
   "year": "2023",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
+    "GFR",
     "kidney function",
     "renal",
     "nephrology",
     "proteinuria"
   ],
-  "total_chunks": 27,
-  "avg_chunk_size": 577.8888888888889,
-  "processing_date": "2025-12-31T14:52:08.540676"
+  "total_chunks": 25,
+  "avg_chunk_size": 575.04,
+  "processing_date": "2026-02-28T15:27:01.946684"
 }

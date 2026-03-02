@@ -1,16 +1,22 @@
 {
   "total_pages": 20,
-  "raw_text_length": 16858,
-  "cleaned_text_length": 16990,
+  "native_pages": 18,
+  "scanned_pages": 2,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 16650,
+  "cleaned_text_length": 16644,
   "source_file": "working_with_kidney_disease.pdf",
-  "extraction_date": "2025-11-18T15:18:10.097508",
+  "extraction_date": "2026-02-28T20:20:07.961582",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "WORKING WITH CHRONIC KIDNEY DISEASE",
+  "year": "2013",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
     "dialysis"
   ],
-  "total_chunks": 5,
-  "avg_chunk_size": 581.8,
-  "processing_date": "2025-11-18T15:18:10.229699"
+  "total_chunks": 10,
+  "avg_chunk_size": 149.9,
+  "processing_date": "2026-02-28T20:20:08.057211"
 }

@@ -1,17 +1,23 @@
 {
   "total_pages": 28,
-  "raw_text_length": 24066,
-  "cleaned_text_length": 24224,
+  "native_pages": 27,
+  "scanned_pages": 1,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 24504,
+  "cleaned_text_length": 24177,
   "source_file": "441-9378_2305_patbro_dialysisandyou_t2.pdf",
-  "extraction_date": "2025-11-18T15:15:43.744327",
+  "extraction_date": "2026-02-28T23:57:28.890873",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "What you need to know",
+  "year": "2023",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
     "dialysis",
     "kidney function"
   ],
-  "total_chunks": 7,
-  "avg_chunk_size": 576.8571428571429,
-  "processing_date": "2025-11-18T15:15:43.844834"
+  "total_chunks": 33,
+  "avg_chunk_size": 118.42424242424242,
+  "processing_date": "2026-02-28T23:57:29.108055"
 }

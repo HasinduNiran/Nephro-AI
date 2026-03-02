@@ -1,20 +1,24 @@
 {
   "total_pages": 25,
-  "raw_text_length": 168231,
-  "cleaned_text_length": 172917,
+  "native_pages": 25,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 202886,
+  "cleaned_text_length": 188442,
   "source_file": "ESPEN-guideline-on-clinical-nutrition-in-hospitalized-patients-with-acute-or-chronic-kidney-disease.pdf",
-  "extraction_date": "2025-12-31T14:49:17.485261",
+  "extraction_date": "2026-02-28T23:24:35.208591",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "ESPEN guideline on clinical nutrition in hospitalized patients with acute or chronic kidney disease",
+  "author": "Enrico Fiaccadori",
   "year": "2021",
   "keywords": [
     "chronic kidney disease",
     "CKD",
-    "dialysis",
     "renal",
     "nephrology"
   ],
-  "total_chunks": 26,
-  "avg_chunk_size": 583.7307692307693,
-  "processing_date": "2025-12-31T14:49:18.030362"
+  "total_chunks": 89,
+  "avg_chunk_size": 83.3932584269663,
+  "processing_date": "2026-02-28T23:25:30.383361"
 }
