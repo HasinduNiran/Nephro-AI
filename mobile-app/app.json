@@ -15,6 +15,16 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "plugins": [
+      [
+        "react-native-health-connect",
+        {
+          "requestPermissions": [
+            "android.permission.health.READ_BLOOD_PRESSURE"
+          ]
+        }
+      ]
+    ],
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,

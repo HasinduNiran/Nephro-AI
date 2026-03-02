@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,54 +7,59 @@ import {
   Alert,
   ActivityIndicator,
   TouchableOpacity,
+  Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  initialize,
+  requestPermission,
+  readRecords,
+  getSdkStatus,
+  SdkAvailabilityStatus,
+} from "react-native-health-connect";
 import CustomInput from "../components/CustomInput";
 import CustomButton from "../components/CustomButton";
 import axios from "../api/axiosConfig";
 
 const RiskPredictionScreen = ({ navigation, route }) => {
-  // Get userId from route params or use a default for testing
   const userId = route?.params?.userId || "test-user-id";
 
   const [bpSystolic, setBpSystolic] = useState("");
   const [bpDiastolic, setBpDiastolic] = useState("");
   const [age, setAge] = useState("");
-  const [gender, setGender] = useState("Male"); // Male or Female
-  const [hba1cLevel, setHba1cLevel] = useState(""); // HbA1c level (%)
+  const [gender, setGender] = useState("Male");
+  const [hba1cLevel, setHba1cLevel] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [riskLevel, setRiskLevel] = useState(null);
   const [riskScore, setRiskScore] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
 
-  // Fetch user data on component mount
+  // Health Connect state
+  const [hcAvailable, setHcAvailable] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState(null);
+
+  // Load user data
   useEffect(() => {
     const loadUserData = async () => {
       try {
         const userDataString = await AsyncStorage.getItem("userData");
         if (userDataString) {
           const userData = JSON.parse(userDataString);
-
-          // Set gender from user data
-          if (userData.gender) {
-            setGender(userData.gender);
-          }
-
-          // Calculate age from birthday
+          if (userData.gender) setGender(userData.gender);
           if (userData.birthday) {
             const birthDate = new Date(userData.birthday);
             const today = new Date();
-            let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+            let calculatedAge =
+              today.getFullYear() - birthDate.getFullYear();
             const monthDiff = today.getMonth() - birthDate.getMonth();
-
             if (
               monthDiff < 0 ||
               (monthDiff === 0 && today.getDate() < birthDate.getDate())
             ) {
               calculatedAge--;
             }
-
             setAge(calculatedAge.toString());
           }
         }
@@ -62,9 +67,135 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         console.error("Error loading user data:", error);
       }
     };
-
     loadUserData();
   }, []);
+
+  // Check Health Connect availability on mount
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+
+    const checkHealthConnect = async () => {
+      try {
+        const status = await getSdkStatus();
+        if (status === SdkAvailabilityStatus.SDK_AVAILABLE) {
+          setHcAvailable(true);
+          const initialized = await initialize();
+          if (!initialized) {
+            console.warn("Health Connect failed to initialize");
+            setHcAvailable(false);
+          }
+        } else if (
+          status ===
+          SdkAvailabilityStatus.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED
+        ) {
+          console.log("Health Connect needs update");
+        } else {
+          console.log("Health Connect not available on this device");
+        }
+      } catch (error) {
+        console.error("Health Connect check error:", error);
+        setHcAvailable(false);
+      }
+    };
+    checkHealthConnect();
+  }, []);
+
+  // Sync BP from Health Connect (Galaxy Watch via Samsung Health)
+  const syncBloodPressure = useCallback(async () => {
+    if (!hcAvailable) {
+      Alert.alert(
+        "Health Connect Unavailable",
+        "Health Connect is not installed or not available on this device. " +
+          "Please install it from the Google Play Store and ensure your " +
+          "Galaxy Watch data is syncing via Samsung Health.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      // Request permission
+      const granted = await requestPermission([
+        { accessType: "read", recordType: "BloodPressure" },
+      ]);
+
+      const bpPermission = granted.find(
+        (p) => p.recordType === "BloodPressure"
+      );
+      if (!bpPermission || bpPermission.accessType !== "read") {
+        Alert.alert(
+          "Permission Denied",
+          "Blood Pressure read permission is required to sync data from " +
+            "your Galaxy Watch. Please grant the permission in Health Connect settings.",
+          [{ text: "OK" }]
+        );
+        return;
+      }
+
+      // Read the last 7 days of BP records
+      const now = new Date();
+      const sevenDaysAgo = new Date(now);
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const result = await readRecords("BloodPressure", {
+        timeRangeFilter: {
+          operator: "between",
+          startTime: sevenDaysAgo.toISOString(),
+          endTime: now.toISOString(),
+        },
+      });
+
+      if (!result || result.length === 0) {
+        Alert.alert(
+          "No Data Found",
+          "No Blood Pressure records found in the last 7 days. " +
+            "Make sure your Galaxy Watch is syncing BP data through " +
+            "Samsung Health to Health Connect.",
+          [{ text: "OK" }]
+        );
+        return;
+      }
+
+      // Get the most recent record
+      const latestRecord = result[result.length - 1];
+      const systolic = latestRecord.systolic?.inMillimetersOfMercury;
+      const diastolic = latestRecord.diastolic?.inMillimetersOfMercury;
+
+      if (systolic == null || diastolic == null) {
+        Alert.alert("Error", "Could not read BP values from the record.");
+        return;
+      }
+
+      // Auto-fill the input fields
+      setBpSystolic(Math.round(systolic).toString());
+      setBpDiastolic(Math.round(diastolic).toString());
+
+      const recordTime = latestRecord.time
+        ? new Date(latestRecord.time).toLocaleString()
+        : "Unknown";
+      setLastSyncTime(recordTime);
+
+      Alert.alert(
+        "Synced Successfully",
+        `Latest BP: ${Math.round(systolic)}/${Math.round(diastolic)} mmHg\n` +
+          `Recorded: ${recordTime}\n\n` +
+          `Source: ${latestRecord.metadata?.dataOrigin || "Health Connect"}`,
+        [{ text: "OK" }]
+      );
+    } catch (error) {
+      console.error("Health Connect sync error:", error);
+      Alert.alert(
+        "Sync Failed",
+        "Failed to read Blood Pressure data from Health Connect. " +
+          "Error: " +
+          error.message,
+        [{ text: "OK" }]
+      );
+    } finally {
+      setSyncing(false);
+    }
+  }, [hcAvailable]);
 
   // Validation ranges for inputs
   const VALIDATION_RANGES = {
@@ -76,7 +207,6 @@ const RiskPredictionScreen = ({ navigation, route }) => {
   const validateInput = (value, field) => {
     const range = VALIDATION_RANGES[field];
     const numValue = parseFloat(value);
-
     if (isNaN(numValue)) {
       return { valid: false, message: `${range.label} must be a valid number` };
     }
@@ -103,22 +233,16 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       );
       return;
     }
-
-    // Validate Systolic BP
     const systolicValidation = validateInput(bpSystolic, "bpSystolic");
     if (!systolicValidation.valid) {
       Alert.alert("Invalid Input", systolicValidation.message);
       return;
     }
-
-    // Validate Diastolic BP
     const diastolicValidation = validateInput(bpDiastolic, "bpDiastolic");
     if (!diastolicValidation.valid) {
       Alert.alert("Invalid Input", diastolicValidation.message);
       return;
     }
-
-    // Validate that Systolic > Diastolic
     if (parseFloat(bpSystolic) <= parseFloat(bpDiastolic)) {
       Alert.alert(
         "Invalid Input",
@@ -126,8 +250,6 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       );
       return;
     }
-
-    // Validate HbA1c Level (if provided)
     if (hba1cLevel) {
       const hba1cValidation = validateInput(hba1cLevel, "hba1cLevel");
       if (!hba1cValidation.valid) {
@@ -148,16 +270,10 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         age,
         gender,
       };
-
-      // If HbA1c level is provided, use it
-      if (hba1cLevel) {
-        requestData.hba1c_level = hba1cLevel;
-      }
+      if (hba1cLevel) requestData.hba1c_level = hba1cLevel;
 
       const response = await axios.post("/predict", requestData);
-
       setRiskLevel(response.data.risk_level);
-      // Use risk_score from backend
       const score =
         response.data.risk_score ||
         calculateRiskScore(response.data.risk_level);
@@ -170,7 +286,6 @@ const RiskPredictionScreen = ({ navigation, route }) => {
     }
   };
 
-  // Calculate a numeric risk score based on risk level if not provided by backend
   const calculateRiskScore = (level) => {
     const lowerLevel = level?.toLowerCase() || "";
     if (lowerLevel.includes("low")) return 33;
@@ -184,9 +299,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       Alert.alert("Error", "Please predict risk first before saving.");
       return;
     }
-
     setSaving(true);
-
     try {
       const response = await axios.post("/risk-history/save", {
         userId,
@@ -200,13 +313,10 @@ const RiskPredictionScreen = ({ navigation, route }) => {
           hba1cLevel: hba1cLevel ? parseFloat(hba1cLevel) : null,
         },
       });
-
       setIsSaved(true);
-
       const message = response.data.isUpdate
         ? "Your risk record for this month has been updated!"
         : "Your risk record has been saved for this month!";
-
       Alert.alert("Success", message, [
         { text: "OK" },
         {
@@ -248,6 +358,45 @@ const RiskPredictionScreen = ({ navigation, route }) => {
           <Text style={styles.readOnlyValue}>{age || "Not set"} years</Text>
         </View>
       </View>
+
+      {/* Health Connect Sync Section */}
+      {Platform.OS === "android" && (
+        <View style={styles.syncCard}>
+          <Text style={styles.syncTitle}>Galaxy Watch BP Sync</Text>
+          <Text style={styles.syncDescription}>
+            Auto-fill Blood Pressure from your Galaxy Watch via Health Connect
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.syncButton,
+              !hcAvailable && styles.syncButtonDisabled,
+            ]}
+            onPress={syncBloodPressure}
+            disabled={syncing}
+          >
+            {syncing ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.syncButtonText}>
+                {hcAvailable
+                  ? "Sync from Health Connect"
+                  : "Health Connect Not Available"}
+              </Text>
+            )}
+          </TouchableOpacity>
+          {lastSyncTime && (
+            <Text style={styles.syncTimestamp}>
+              Last synced: {lastSyncTime}
+            </Text>
+          )}
+          {!hcAvailable && (
+            <Text style={styles.syncHint}>
+              Install Health Connect from Play Store and sync your Galaxy Watch
+              via Samsung Health
+            </Text>
+          )}
+        </View>
+      )}
 
       <CustomInput
         placeholder="Systolic BP (mmHg) *Required"
@@ -294,14 +443,16 @@ const RiskPredictionScreen = ({ navigation, route }) => {
             <View style={styles.scoreContainer}>
               <Text style={styles.scoreLabel}>Risk Score:</Text>
               <Text
-                style={[styles.scoreValue, { color: getRiskColor(riskLevel) }]}
+                style={[
+                  styles.scoreValue,
+                  { color: getRiskColor(riskLevel) },
+                ]}
               >
                 {riskScore.toFixed(0)}
               </Text>
             </View>
           )}
 
-          {/* Save Button */}
           <TouchableOpacity
             style={[
               styles.saveButton,
@@ -314,13 +465,11 @@ const RiskPredictionScreen = ({ navigation, route }) => {
             {saving ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <>
-                <Text style={styles.saveButtonText}>
-                  {isSaved
-                    ? "✓ Saved for This Month"
-                    : "💾 Save Monthly Record"}
-                </Text>
-              </>
+              <Text style={styles.saveButtonText}>
+                {isSaved
+                  ? "✓ Saved for This Month"
+                  : "💾 Save Monthly Record"}
+              </Text>
             )}
           </TouchableOpacity>
 
@@ -332,7 +481,6 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         </View>
       )}
 
-      {/* View History Button */}
       <TouchableOpacity
         style={styles.historyButton}
         onPress={() => navigation.navigate("RiskHistory", { userId })}
@@ -342,7 +490,6 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         </Text>
       </TouchableOpacity>
 
-      {/* Info Card */}
       <View style={styles.infoCard}>
         <Text style={styles.infoTitle}>💡 About the Prediction</Text>
         <Text style={styles.infoText}>
@@ -402,41 +549,51 @@ const styles = StyleSheet.create({
     color: "#333",
     fontWeight: "500",
   },
-  genderContainer: {
+  syncCard: {
     width: "100%",
-    marginBottom: 15,
+    backgroundColor: "#EBF4FF",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#B3D4FC",
   },
-  genderLabel: {
+  syncTitle: {
     fontSize: 16,
-    color: "#333",
-    marginBottom: 10,
-    fontWeight: "500",
+    fontWeight: "bold",
+    color: "#1A56DB",
+    marginBottom: 4,
   },
-  genderButtons: {
-    flexDirection: "row",
-    gap: 10,
+  syncDescription: {
+    fontSize: 13,
+    color: "#555",
+    marginBottom: 12,
   },
-  genderButton: {
-    flex: 1,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
+  syncButton: {
+    backgroundColor: "#1A56DB",
+    paddingVertical: 12,
     borderRadius: 8,
-    borderWidth: 2,
-    borderColor: "#E5E5E5",
-    backgroundColor: "#FFF",
     alignItems: "center",
   },
-  genderButtonActive: {
-    borderColor: "#4A90E2",
-    backgroundColor: "#EBF4FF",
+  syncButtonDisabled: {
+    backgroundColor: "#A0AEC0",
   },
-  genderButtonText: {
-    fontSize: 16,
-    color: "#666",
+  syncButtonText: {
+    color: "#fff",
+    fontSize: 15,
     fontWeight: "600",
   },
-  genderButtonTextActive: {
-    color: "#4A90E2",
+  syncTimestamp: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 8,
+    textAlign: "center",
+  },
+  syncHint: {
+    fontSize: 12,
+    color: "#E53E3E",
+    marginTop: 8,
+    textAlign: "center",
   },
   resultContainer: {
     marginTop: 30,
