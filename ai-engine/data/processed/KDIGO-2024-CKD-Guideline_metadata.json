@@ -1,0 +1,29 @@
+{
+  "total_pages": 199,
+  "native_pages": 199,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 1011661,
+  "cleaned_text_length": 877177,
+  "source_file": "KDIGO-2024-CKD-Guideline.pdf",
+  "extraction_date": "2026-03-02T14:25:13.371201",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "S U P P L E M E N T T O",
+  "year": "2024",
+  "organization": "KDIGO",
+  "guideline_type": "Clinical Practice Guideline",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "GFR",
+    "nephrology",
+    "KDIGO",
+    "proteinuria",
+    "albuminuria",
+    "eGFR"
+  ],
+  "total_chunks": 273,
+  "avg_chunk_size": 107.02197802197803,
+  "processing_date": "2026-03-02T14:30:41.397415"
+}

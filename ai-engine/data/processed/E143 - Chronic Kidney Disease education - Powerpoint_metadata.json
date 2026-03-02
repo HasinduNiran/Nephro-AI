@@ -1,0 +1,22 @@
+{
+  "total_pages": 82,
+  "native_pages": 74,
+  "scanned_pages": 8,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 32773,
+  "cleaned_text_length": 29479,
+  "source_file": "E143 - Chronic Kidney Disease education - Powerpoint.pdf",
+  "extraction_date": "2026-03-02T13:49:21.391831",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "Early detection and management of chronic kidney disease",
+  "year": "2024",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "nephrology"
+  ],
+  "total_chunks": 55,
+  "avg_chunk_size": 74.72727272727273,
+  "processing_date": "2026-03-02T13:49:22.257246"
+}

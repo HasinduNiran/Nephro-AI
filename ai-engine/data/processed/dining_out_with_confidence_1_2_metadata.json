@@ -1,0 +1,24 @@
+{
+  "total_pages": 28,
+  "native_pages": 27,
+  "scanned_pages": 1,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 37491,
+  "cleaned_text_length": 27843,
+  "source_file": "dining_out_with_confidence_1_2.pdf",
+  "extraction_date": "2026-03-02T13:56:44.433300",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "A Guide for People with Kidney Disease",
+  "year": "2022",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "GFR",
+    "kidney function",
+    "eGFR"
+  ],
+  "total_chunks": 23,
+  "avg_chunk_size": 164.0,
+  "processing_date": "2026-03-02T13:56:53.797943"
+}

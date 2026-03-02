@@ -1,0 +1,25 @@
+{
+  "total_pages": 19,
+  "native_pages": 18,
+  "scanned_pages": 1,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 29605,
+  "cleaned_text_length": 28841,
+  "source_file": "choosing_a_treatment.pdf",
+  "extraction_date": "2026-03-02T14:09:07.415893",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "Choosing a Treatment for Kidney Failure",
+  "year": "2022",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "GFR",
+    "dialysis",
+    "kidney function",
+    "eGFR"
+  ],
+  "total_chunks": 46,
+  "avg_chunk_size": 106.47826086956522,
+  "processing_date": "2026-03-02T14:09:07.702451"
+}
