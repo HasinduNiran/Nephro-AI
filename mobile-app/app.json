@@ -15,13 +15,18 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.nephroai.mobile"
     },
     "android": {
       "package": "com.nephroai.mobile",
+      "permissions": [
+        "android.permission.health.READ_BLOOD_PRESSURE"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./images/Nephro-logo.png",
         "backgroundColor": "#ffffff"
@@ -30,6 +35,18 @@
     },
     "web": {
       "favicon": "./images/Nephro-logo.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26,
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34
+          }
+        }
+      ]
+    ]
   }
 }
