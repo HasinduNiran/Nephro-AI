@@ -1,18 +1,26 @@
 {
   "total_pages": 81,
-  "raw_text_length": 40127,
-  "cleaned_text_length": 47492,
+  "native_pages": 77,
+  "scanned_pages": 4,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 42441,
+  "cleaned_text_length": 36496,
   "source_file": "Presentation-CKD-Diabetes-CVD-1.5-hr-v0325-v1.0-002.pdf",
-  "extraction_date": "2025-12-31T14:51:49.758553",
+  "extraction_date": "2026-03-02T09:58:57.877657",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "New information &  recommendations  for managing  Diabetic Kidney Disease",
+  "author": "John Saunders (Sydney LHD)",
+  "year": "2025",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
+    "dialysis",
     "kidney function",
     "renal",
     "nephrology"
   ],
-  "total_chunks": 12,
-  "avg_chunk_size": 580.1666666666666,
-  "processing_date": "2025-12-31T14:51:49.977746"
+  "total_chunks": 67,
+  "avg_chunk_size": 74.55223880597015,
+  "processing_date": "2026-03-02T09:59:01.135908"
 }

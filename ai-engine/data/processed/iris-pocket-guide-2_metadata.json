@@ -1,0 +1,22 @@
+{
+  "total_pages": 4,
+  "native_pages": 4,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 7245,
+  "cleaned_text_length": 5185,
+  "source_file": "iris-pocket-guide-2.pdf",
+  "extraction_date": "2026-02-28T20:29:03.266776",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "Diagnosing, Staging, and Treating Chronic Kidney Disease in Dogs and Cats",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "renal",
+    "proteinuria"
+  ],
+  "total_chunks": 9,
+  "avg_chunk_size": 51.55555555555556,
+  "processing_date": "2026-02-28T20:29:04.792161"
+}

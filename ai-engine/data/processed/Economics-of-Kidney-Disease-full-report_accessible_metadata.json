@@ -1,18 +1,25 @@
 {
   "total_pages": 116,
-  "raw_text_length": 228838,
-  "cleaned_text_length": 239410,
+  "native_pages": 116,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 251678,
+  "cleaned_text_length": 228623,
   "source_file": "Economics-of-Kidney-Disease-full-report_accessible.pdf",
-  "extraction_date": "2025-11-21T14:29:42.432042",
+  "extraction_date": "2026-02-28T23:43:56.791813",
   "document_type": "medical_guideline",
   "language": "en",
-  "year": "2033",
+  "title": "Kidney disease: A UK public health emergency",
+  "year": "2024",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
+    "GFR",
     "dialysis",
-    "albuminuria"
+    "albuminuria",
+    "eGFR"
   ],
-  "total_chunks": 58,
-  "avg_chunk_size": 578.7758620689655,
-  "processing_date": "2025-11-21T14:29:43.221572"
+  "total_chunks": 83,
+  "avg_chunk_size": 137.78313253012047,
+  "processing_date": "2026-02-28T23:45:03.548082"
 }

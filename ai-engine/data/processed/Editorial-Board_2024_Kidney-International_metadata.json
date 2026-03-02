@@ -1,19 +1,23 @@
 {
   "total_pages": 1,
-  "raw_text_length": 5515,
-  "cleaned_text_length": 5870,
+  "native_pages": 1,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 6272,
+  "cleaned_text_length": 6272,
   "source_file": "Editorial-Board_2024_Kidney-International.pdf",
-  "extraction_date": "2025-12-31T14:53:30.639307",
+  "extraction_date": "2026-02-28T20:03:41.650784",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Editorial Board",
+  "year": "2024",
   "keywords": [
-    "chronic kidney disease",
     "CKD",
     "dialysis",
     "renal",
     "nephrology"
   ],
-  "total_chunks": 1,
-  "avg_chunk_size": 545.0,
-  "processing_date": "2025-12-31T14:53:30.667595"
+  "total_chunks": 3,
+  "avg_chunk_size": 230.33333333333334,
+  "processing_date": "2026-02-28T20:03:41.699393"
 }

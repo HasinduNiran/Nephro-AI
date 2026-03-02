@@ -1,17 +1,25 @@
 {
   "total_pages": 28,
-  "raw_text_length": 24143,
-  "cleaned_text_length": 24778,
+  "native_pages": 27,
+  "scanned_pages": 1,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 25337,
+  "cleaned_text_length": 23442,
   "source_file": "hemodialysis_0.pdf",
-  "extraction_date": "2025-11-18T15:16:03.457279",
+  "extraction_date": "2026-03-02T11:37:17.670919",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "What you need to know",
+  "year": "2023",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
+    "GFR",
     "dialysis",
-    "kidney function"
+    "kidney function",
+    "eGFR"
   ],
-  "total_chunks": 8,
-  "avg_chunk_size": 549.125,
-  "processing_date": "2025-11-18T15:16:03.557362"
+  "total_chunks": 24,
+  "avg_chunk_size": 120.91666666666667,
+  "processing_date": "2026-03-02T11:37:30.238548"
 }

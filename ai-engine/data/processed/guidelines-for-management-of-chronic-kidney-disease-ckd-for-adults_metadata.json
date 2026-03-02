@@ -1,20 +1,24 @@
 {
   "total_pages": 11,
-  "raw_text_length": 22984,
-  "cleaned_text_length": 27519,
+  "native_pages": 11,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 64555,
+  "cleaned_text_length": 37467,
   "source_file": "guidelines-for-management-of-chronic-kidney-disease-ckd-for-adults.pdf",
-  "extraction_date": "2025-12-31T14:53:20.260664",
+  "extraction_date": "2026-02-28T22:37:02.822878",
   "document_type": "medical_guideline",
   "language": "en",
-  "year": "2024",
+  "title": "Guidelines for the Management of Chronic Kidney Disease (CKD) for Adults",
+  "author": "TERRY, Tara (NHS WEST YORKSHIRE ICB - 15F)",
+  "year": "2025",
   "keywords": [
     "chronic kidney disease",
-    "dialysis",
-    "renal",
-    "proteinuria",
-    "albuminuria"
+    "CKD",
+    "GFR",
+    "eGFR"
   ],
-  "total_chunks": 7,
-  "avg_chunk_size": 554.2857142857143,
-  "processing_date": "2025-12-31T14:53:20.392801"
+  "total_chunks": 18,
+  "avg_chunk_size": 133.55555555555554,
+  "processing_date": "2026-02-28T22:37:09.285273"
 }

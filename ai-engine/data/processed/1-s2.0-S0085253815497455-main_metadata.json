@@ -1,19 +1,24 @@
 {
   "total_pages": 5,
-  "raw_text_length": 23588,
-  "cleaned_text_length": 24233,
+  "native_pages": 5,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 27669,
+  "cleaned_text_length": 25488,
   "source_file": "1-s2.0-S0085253815497455-main.pdf",
-  "extraction_date": "2025-12-31T14:21:29.870198",
+  "extraction_date": "2026-02-28T20:03:20.238432",
   "document_type": "medical_guideline",
   "language": "en",
-  "year": "2004",
+  "title": "Nocturnal blood pressure is elevated with natriuresis and proteinuria as renal function deteriorates in nephropathy",
+  "author": "Michio Fukuda",
+  "year": "2010",
   "keywords": [
+    "GFR",
     "renal",
-    "nephrology",
     "proteinuria",
     "albuminuria"
   ],
-  "total_chunks": 4,
-  "avg_chunk_size": 576.75,
-  "processing_date": "2025-12-31T14:21:29.959995"
+  "total_chunks": 13,
+  "avg_chunk_size": 54.61538461538461,
+  "processing_date": "2026-02-28T20:03:31.298202"
 }

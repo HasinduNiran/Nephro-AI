@@ -1,16 +1,22 @@
 {
   "total_pages": 20,
-  "raw_text_length": 15781,
-  "cleaned_text_length": 15731,
+  "native_pages": 20,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 13469,
+  "cleaned_text_length": 13450,
   "source_file": "furenalpre-courseworkbook.pdf",
-  "extraction_date": "2025-12-31T14:22:31.608845",
+  "extraction_date": "2026-02-28T22:30:52.500603",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Renal Physiology",
+  "author": "user",
   "year": "2016",
   "keywords": [
+    "GFR",
     "renal"
   ],
-  "total_chunks": 5,
-  "avg_chunk_size": 462.4,
-  "processing_date": "2025-12-31T14:22:31.672269"
+  "total_chunks": 15,
+  "avg_chunk_size": 92.8,
+  "processing_date": "2026-02-28T22:30:54.777740"
 }

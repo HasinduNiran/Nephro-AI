@@ -1,16 +1,21 @@
 {
   "total_pages": 28,
-  "raw_text_length": 22381,
-  "cleaned_text_length": 22950,
+  "native_pages": 27,
+  "scanned_pages": 1,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 23533,
+  "cleaned_text_length": 22630,
   "source_file": "peritoneal_dialysis.pdf",
-  "extraction_date": "2025-11-18T15:17:47.351817",
+  "extraction_date": "2026-03-02T11:38:51.338846",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "What you need to know",
+  "year": "2023",
   "keywords": [
     "dialysis",
     "kidney function"
   ],
-  "total_chunks": 8,
-  "avg_chunk_size": 516.625,
-  "processing_date": "2025-11-18T15:17:47.501049"
+  "total_chunks": 29,
+  "avg_chunk_size": 110.55172413793103,
+  "processing_date": "2026-03-02T11:39:03.228344"
 }

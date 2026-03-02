@@ -1,20 +1,29 @@
 {
   "total_pages": 8,
-  "raw_text_length": 23417,
-  "cleaned_text_length": 27805,
+  "native_pages": 8,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 24378,
+  "cleaned_text_length": 23445,
   "source_file": "urine-albumin.pdf",
-  "extraction_date": "2025-12-31T14:22:45.472381",
+  "extraction_date": "2026-02-28T21:37:11.702885",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "A national audit of estimated glomerular filtration rate and proteinuria and the MACD CKD task force recommendations",
+  "author": "Sthaneshwar P",
   "year": "2021",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
+    "GFR",
     "kidney function",
     "renal",
+    "KDIGO",
     "proteinuria",
-    "albuminuria"
+    "albuminuria",
+    "eGFR"
   ],
-  "total_chunks": 7,
-  "avg_chunk_size": 571.5714285714286,
-  "processing_date": "2025-12-31T14:22:45.581362"
+  "total_chunks": 17,
+  "avg_chunk_size": 106.94117647058823,
+  "processing_date": "2026-02-28T21:37:19.051842"
 }

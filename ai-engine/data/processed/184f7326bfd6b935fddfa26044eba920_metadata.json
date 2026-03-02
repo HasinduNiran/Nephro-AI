@@ -1,11 +1,15 @@
 {
   "total_pages": 4,
-  "raw_text_length": 20709,
-  "cleaned_text_length": 21007,
+  "native_pages": 4,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 26221,
+  "cleaned_text_length": 23555,
   "source_file": "184f7326bfd6b935fddfa26044eba920.pdf",
-  "extraction_date": "2025-12-31T14:53:18.305289",
+  "extraction_date": "2026-02-28T23:16:49.312367",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "- 1 National Institute for Health and Care Excellence, Manchester M1 4BD, UK",
   "year": "2021",
   "keywords": [
     "chronic kidney disease",
@@ -14,7 +18,7 @@
     "renal",
     "eGFR"
   ],
-  "total_chunks": 2,
-  "avg_chunk_size": 473.0,
-  "processing_date": "2025-12-31T14:53:18.390624"
+  "total_chunks": 14,
+  "avg_chunk_size": 148.92857142857142,
+  "processing_date": "2026-02-28T23:16:55.515200"
 }

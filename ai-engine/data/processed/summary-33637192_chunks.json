@@ -1,28 +1,29 @@
 [
   {
     "chunk_id": 0,
-    "text": "1: Kidney Disease: Improving Global Outcomes (Kidney Disease: Improving Global Outcomes) Blood Hypertension Work Group. Kidney Disease: Improving Global Outcomes 2021 Clinical Practice Guideline for the Management of Blood Hypertension in Chronic Kidney Disease. Kidney Int. 2021 Mar; 99(3S): S1-S87. doi: 10. 1016/j. kint. 2020. 11. 003. PMID: 33637192.",
-    "word_count": 49,
-    "char_count": 354,
-    "sentence_count": 11,
+    "text": "1: Kidney Disease: Improving Global Outcomes (KDIGO) Blood Pressure Work Group. KDIGO 2021 Clinical Practice Guideline for the Management of Blood Pressure in\nChronic Kidney Disease. Kidney Int. 2021 Mar;99(3S):S1-S87. doi:\n10.1016/j.kint.2020.11.003. PMID: 33637192.",
+    "word_count": 34,
+    "char_count": 267,
+    "sentence_count": 6,
     "metadata": {
       "source_file": "summary-33637192.txt",
-      "extraction_date": "2025-12-31T14:52:24.272225",
+      "extraction_date": "2026-02-28T15:17:11.467470",
       "document_type": "medical_guideline",
       "language": "en",
+      "extraction_method": "plaintext_file",
+      "title": "1: Kidney Disease: Improving Global Outcomes (KDIGO) Blood Pressure Work Group.",
       "year": "2021",
+      "organization": "KDIGO",
+      "guideline_type": "Clinical Practice Guideline",
       "keywords": [
-        "chronic kidney disease"
+        "KDIGO"
       ],
       "chunk_index": 0,
       "total_chunks": 1,
       "position": "1/1",
+      "chunking_method": "legacy_fixed_size",
       "content_type": "recommendation",
-      "content_type_confidence": 1,
-      "medical_entities": [
-        "chronic kidney disease",
-        "guideline"
-      ],
+      "medical_entities": "KDIGO, guideline",
       "entity_count": 2
     }
   }

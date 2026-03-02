@@ -1,18 +1,25 @@
 {
   "total_pages": 10,
-  "raw_text_length": 45497,
-  "cleaned_text_length": 48155,
+  "native_pages": 10,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 55017,
+  "cleaned_text_length": 43633,
   "source_file": "NEJMoa041031.pdf",
-  "extraction_date": "2025-12-31T14:51:59.435734",
+  "extraction_date": "2026-02-28T15:28:20.953134",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Chronic Kidney Disease and the Risks of Death, Cardiovascular Events, and Hospitalization",
+  "author": "rwaring",
+  "year": "2004",
   "keywords": [
     "chronic kidney disease",
+    "GFR",
     "dialysis",
     "kidney function",
     "renal"
   ],
-  "total_chunks": 13,
-  "avg_chunk_size": 559.2307692307693,
-  "processing_date": "2025-12-31T14:51:59.609153"
+  "total_chunks": 16,
+  "avg_chunk_size": 156.75,
+  "processing_date": "2026-02-28T15:28:35.722650"
 }

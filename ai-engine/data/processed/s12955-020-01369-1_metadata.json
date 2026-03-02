@@ -1,17 +1,24 @@
 {
   "total_pages": 9,
-  "raw_text_length": 42839,
-  "cleaned_text_length": 44116,
+  "native_pages": 9,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 57479,
+  "cleaned_text_length": 46952,
   "source_file": "s12955-020-01369-1.pdf",
-  "extraction_date": "2025-11-18T15:18:05.023596",
+  "extraction_date": "2026-02-28T20:34:11.752582",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Health related quality of life in chronic kidney disease; a descriptive study in a rural Sri Lankan community affected by chronic kidney disease",
+  "author": "Sameera Senanayake",
   "year": "2020",
+  "organization": "WHO",
+  "guideline_type": "Clinical Practice Guideline",
   "keywords": [
     "chronic kidney disease",
     "CKD"
   ],
-  "total_chunks": 9,
-  "avg_chunk_size": 575.6666666666666,
-  "processing_date": "2025-11-18T15:18:05.251258"
+  "total_chunks": 13,
+  "avg_chunk_size": 123.3076923076923,
+  "processing_date": "2026-02-28T20:34:29.532372"
 }

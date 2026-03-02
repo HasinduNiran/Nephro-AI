@@ -1,17 +1,22 @@
 {
   "total_pages": 3,
-  "raw_text_length": 6324,
-  "cleaned_text_length": 6421,
+  "native_pages": 3,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 6551,
+  "cleaned_text_length": 6551,
   "source_file": "KHA-Factsheet-Blood-Pressure-and-CKD-2022.pdf",
-  "extraction_date": "2025-12-31T14:52:06.027548",
+  "extraction_date": "2026-02-28T22:19:38.715269",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Blood pressure and chronic kidney disease",
+  "year": "2022",
   "keywords": [
     "chronic kidney disease",
     "kidney function",
     "albuminuria"
   ],
-  "total_chunks": 2,
-  "avg_chunk_size": 515.5,
-  "processing_date": "2025-12-31T14:52:06.058860"
+  "total_chunks": 10,
+  "avg_chunk_size": 101.2,
+  "processing_date": "2026-02-28T22:19:38.766783"
 }

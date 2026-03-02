@@ -1,0 +1,282 @@
+[
+  {
+    "chunk_id": 0,
+    "text": "<!-- image -->\n## Diagnosing, Staging, and Treating Chronic Kidney Disease in Dogs and Cats\nChronic kidney disease (CKD) is diagnosed based on evaluation of all available clinical and diagnostic information in a stable patient. Following diagnosis of CKD, the IRIS Board recommends using serum creatinine or SDMA (ideally both) to stage CKD with substaging based on assessment of arterial blood pressure and proteinuria.\n\n<!-- image -->",
+    "word_count": 67,
+    "char_count": 436,
+    "sentence_count": 3,
+    "metadata": {
+      "source_file": "iris-pocket-guide-2.pdf",
+      "extraction_date": "2026-02-28T20:29:03.266776",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "extraction_method": "docling_dynamic_ocr",
+      "title": "Diagnosing, Staging, and Treating Chronic Kidney Disease in Dogs and Cats",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "renal",
+        "proteinuria"
+      ],
+      "chunk_index": 0,
+      "total_chunks": 9,
+      "position": "1/9",
+      "section_path": "Diagnosing, Staging, and Treating Chronic Kidney Disease in Dogs and Cats",
+      "section": "Diagnosing, Staging, and Treating Chronic Kidney Disease in Dogs and Cats",
+      "header_level": 2,
+      "chunking_method": "structural",
+      "content_type": "recommendation, reference, dietary, monitoring",
+      "medical_entities": "CKD, chronic kidney disease, proteinuria, creatinine, serum creatinine",
+      "entity_count": 5
+    }
+  },
+  {
+    "chunk_id": 1,
+    "text": "## Step 1: Diagnose CKD\nClinical signs and physical examination findings worsen with increasing severity of kidney disease\n## Clinical presentation\nConsider age, sex, breed predispositions, and relevant historical information, including medication history, toxin/toxicant exposure, and diet.\n\nCan be subclinical in early stage CKD. Signs may include polyuria, polydipsia, weight loss, decreased appetite, lethargy, dehydration, vomiting, and bad breath.",
+    "word_count": 59,
+    "char_count": 453,
+    "sentence_count": 3,
+    "metadata": {
+      "source_file": "iris-pocket-guide-2.pdf",
+      "extraction_date": "2026-02-28T20:29:03.266776",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "extraction_method": "docling_dynamic_ocr",
+      "title": "Diagnosing, Staging, and Treating Chronic Kidney Disease in Dogs and Cats",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "renal",
+        "proteinuria"
+      ],
+      "chunk_index": 1,
+      "total_chunks": 9,
+      "position": "2/9",
+      "section_path": "Clinical presentation",
+      "section": "Clinical presentation",
+      "header_level": 2,
+      "chunking_method": "structural",
+      "content_type": "evidence, dietary, treatment",
+      "medical_entities": "CKD, diet",
+      "entity_count": 2
+    }
+  },
+  {
+    "chunk_id": 2,
+    "text": "## To diagnose Stage 1 and early Stage 2 CKD\n## One or more of these diagnostic findings:\n<!-- image -->\n\n<!-- image -->\n## Persistent increased SDMA* &gt;14 µg/dL",
+    "word_count": 30,
+    "char_count": 163,
+    "sentence_count": 1,
+    "metadata": {
+      "source_file": "iris-pocket-guide-2.pdf",
+      "extraction_date": "2026-02-28T20:29:03.266776",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "extraction_method": "docling_dynamic_ocr",
+      "title": "Diagnosing, Staging, and Treating Chronic Kidney Disease in Dogs and Cats",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "renal",
+        "proteinuria"
+      ],
+      "chunk_index": 2,
+      "total_chunks": 9,
+      "position": "3/9",
+      "section_path": "Persistent increased SDMA* &gt;14 µg/dL",
+      "section": "Persistent increased SDMA* &gt;14 µg/dL",
+      "header_level": 2,
+      "chunking_method": "structural",
+      "content_type": "evidence",
+      "medical_entities": "CKD, stage 1, stage 2",
+      "entity_count": 3
+    }
+  },
+  {
+    "chunk_id": 3,
+    "text": "## Abnormal kidney imaging\n<!-- image -->\n\n<!-- image -->\n## Persistent renal proteinuria\nUPC &gt;0.5 in dogs; UPC &gt;0.4 in cats\n\n<!-- image -->\n## Physical examination findings\nCan be normal in early stage CKD. Findings may include palpable kidney abnormalities, evidence of weight loss, dehydration, pale mucous membranes, uremic ulcers, evidence of hypertension, i.e., retinal hemorrhages/detachment.",
+    "word_count": 58,
+    "char_count": 405,
+    "sentence_count": 2,
+    "metadata": {
+      "source_file": "iris-pocket-guide-2.pdf",
+      "extraction_date": "2026-02-28T20:29:03.266776",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "extraction_method": "docling_dynamic_ocr",
+      "title": "Diagnosing, Staging, and Treating Chronic Kidney Disease in Dogs and Cats",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "renal",
+        "proteinuria"
+      ],
+      "chunk_index": 3,
+      "total_chunks": 9,
+      "position": "4/9",
+      "section_path": "Physical examination findings",
+      "section": "Physical examination findings",
+      "header_level": 2,
+      "chunking_method": "structural",
+      "content_type": "evidence, dietary",
+      "medical_entities": "CKD, proteinuria",
+      "entity_count": 2
+    }
+  },
+  {
+    "chunk_id": 4,
+    "text": "## To diagnose more advanced CKD (late Stage 2-4)\nOR\n\n<!-- image -->\n\nSee www.iris-kidney.com for more detailed staging, therapeutic, and management guidelines.\n\n† Note that some cats can produce hypersthenuric urine in the face of renal azotemia.",
+    "word_count": 38,
+    "char_count": 247,
+    "sentence_count": 2,
+    "metadata": {
+      "source_file": "iris-pocket-guide-2.pdf",
+      "extraction_date": "2026-02-28T20:29:03.266776",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "extraction_method": "docling_dynamic_ocr",
+      "title": "Diagnosing, Staging, and Treating Chronic Kidney Disease in Dogs and Cats",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "renal",
+        "proteinuria"
+      ],
+      "chunk_index": 4,
+      "total_chunks": 9,
+      "position": "5/9",
+      "section_path": "To diagnose more advanced CKD (late Stage 2-4)",
+      "section": "To diagnose more advanced CKD (late Stage 2-4)",
+      "header_level": 2,
+      "chunking_method": "structural",
+      "content_type": "recommendation",
+      "medical_entities": "CKD, stage 2",
+      "entity_count": 2
+    }
+  },
+  {
+    "text": "<!-- image -->\n\n<!-- image -->\n\n* SDMA = IDEXX SDMA ® Test\n\n<!-- image -->\n\nSee www.iris-kidney.com for more detailed staging, therapeutic, and management guidelines.",
+    "word_count": 26,
+    "char_count": 166,
+    "sentence_count": 1,
+    "chunk_id": 5,
+    "metadata": {
+      "source_file": "iris-pocket-guide-2.pdf",
+      "extraction_date": "2026-02-28T20:29:03.266776",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "extraction_method": "docling_dynamic_ocr",
+      "title": "Diagnosing, Staging, and Treating Chronic Kidney Disease in Dogs and Cats",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "renal",
+        "proteinuria"
+      ],
+      "chunk_index": 5,
+      "total_chunks": 9,
+      "position": "6/9",
+      "section_path": "Step 2: Stage CKD",
+      "section": "Step 2: Stage CKD",
+      "header_level": 2,
+      "chunking_method": "semantic",
+      "sub_chunk_index": 0,
+      "content_type": "recommendation",
+      "medical_entities": "",
+      "entity_count": 0
+    }
+  },
+  {
+    "chunk_id": 6,
+    "text": "## Step 3: Treat CKD\n<!-- image -->\n## Stage 1\nUse nephrotoxic drugs with caution\n\nCorrect prerenal and postrenal abnormalities\n\nFresh water available at all times\n\nMonitor trends in creatinine and SDMA to document stability or progression\n\nInvestigate for and treat underlying disease and/or complications\n\nTreat hypertension if systolic blood pressure persistently &gt;160 or evidence of end-organ damage\n\nTreat persistent proteinuria with renal therapeutic diet and medication (UPC &gt;0.5 in dogs; UPC &gt;0.4 in cats)\n\nKeep phosphorus &lt;4.6 mg/dL (&lt;1.5 mmol/L)\n\nIf required, use renal therapeutic diet plus phosphate binder",
+    "word_count": 91,
+    "char_count": 633,
+    "sentence_count": 1,
+    "metadata": {
+      "source_file": "iris-pocket-guide-2.pdf",
+      "extraction_date": "2026-02-28T20:29:03.266776",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "extraction_method": "docling_dynamic_ocr",
+      "title": "Diagnosing, Staging, and Treating Chronic Kidney Disease in Dogs and Cats",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "renal",
+        "proteinuria"
+      ],
+      "chunk_index": 6,
+      "total_chunks": 9,
+      "position": "7/9",
+      "section_path": "Stage 1",
+      "section": "Stage 1",
+      "header_level": 2,
+      "chunking_method": "structural",
+      "content_type": "evidence, dietary, treatment, monitoring",
+      "medical_entities": "CKD, proteinuria, creatinine, phosphate, phosphorus, diet, stage 1",
+      "entity_count": 7
+    }
+  },
+  {
+    "chunk_id": 7,
+    "text": "## Treatment recommendations\n<!-- image -->\n\n<!-- image -->\n## Stage 2\nSame as Stage 1\n\nRenal therapeutic diet\n\nTreat hypokalemia in cats\n\n<!-- image -->\n## Stage 3\nSame as Stage 2\n\nKeep phosphorus &lt;5.0 mg/dL (&lt;1.6 mmol/L)\n\nTreat metabolic acidosis\n\nConsider treatment of anemia\n\nTreat vomiting, inappetence, and nausea\n\nIncreased enteral or subcutaneous fluids may be required to maintain hydration\n\nConsider calcitriol therapy in dogs\n\n<!-- image -->",
+    "word_count": 70,
+    "char_count": 458,
+    "sentence_count": 1,
+    "metadata": {
+      "source_file": "iris-pocket-guide-2.pdf",
+      "extraction_date": "2026-02-28T20:29:03.266776",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "extraction_method": "docling_dynamic_ocr",
+      "title": "Diagnosing, Staging, and Treating Chronic Kidney Disease in Dogs and Cats",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "renal",
+        "proteinuria"
+      ],
+      "chunk_index": 7,
+      "total_chunks": 9,
+      "position": "8/9",
+      "section_path": "Stage 3",
+      "section": "Stage 3",
+      "header_level": 2,
+      "chunking_method": "structural",
+      "content_type": "recommendation, dietary, treatment",
+      "medical_entities": "phosphorus, calcitriol, diet, anemia, hypokalemia, acidosis, metabolic acidosis, stage 1, stage 2, stage 3",
+      "entity_count": 10
+    }
+  },
+  {
+    "chunk_id": 8,
+    "text": "## Stage 4\nSame as Stage 3\n\nKeep phosphorus &lt;6.0 mg/dL (&lt;1.9 mmol/L)\n\nConsider feeding tube for nutritional and hydration support and ease of medicating",
+    "word_count": 25,
+    "char_count": 158,
+    "sentence_count": 1,
+    "metadata": {
+      "source_file": "iris-pocket-guide-2.pdf",
+      "extraction_date": "2026-02-28T20:29:03.266776",
+      "document_type": "medical_guideline",
+      "language": "en",
+      "extraction_method": "docling_dynamic_ocr",
+      "title": "Diagnosing, Staging, and Treating Chronic Kidney Disease in Dogs and Cats",
+      "keywords": [
+        "chronic kidney disease",
+        "CKD",
+        "renal",
+        "proteinuria"
+      ],
+      "chunk_index": 8,
+      "total_chunks": 9,
+      "position": "9/9",
+      "section_path": "Stage 4",
+      "section": "Stage 4",
+      "header_level": 0,
+      "chunking_method": "structural_remainder",
+      "content_type": "dietary",
+      "medical_entities": "phosphorus, stage 3, stage 4",
+      "entity_count": 3
+    }
+  }
+]

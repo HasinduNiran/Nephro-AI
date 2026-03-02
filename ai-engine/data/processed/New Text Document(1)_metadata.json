@@ -1,14 +1,16 @@
 {
   "total_pages": 1,
   "raw_text_length": 2695,
-  "cleaned_text_length": 2845,
+  "extraction_method": "plaintext_file",
+  "cleaned_text_length": 2635,
   "source_file": "New Text Document(1).txt",
-  "extraction_date": "2025-12-31T14:50:10.393633",
+  "extraction_date": "2026-02-28T15:17:56.143322",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "BP measurement techniques: Clinical review and update",
   "year": "2022",
   "keywords": [],
   "total_chunks": 1,
-  "avg_chunk_size": 393.0,
-  "processing_date": "2025-12-31T14:50:10.411293"
+  "avg_chunk_size": 371.0,
+  "processing_date": "2026-02-28T15:17:56.660487"
 }

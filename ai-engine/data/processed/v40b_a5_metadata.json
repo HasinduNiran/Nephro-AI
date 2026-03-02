@@ -1,18 +1,24 @@
 {
   "total_pages": 6,
-  "raw_text_length": 23800,
-  "cleaned_text_length": 24567,
+  "native_pages": 6,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 26202,
+  "cleaned_text_length": 23884,
   "source_file": "v40b_a5.pdf",
-  "extraction_date": "2025-12-31T14:23:27.241386",
+  "extraction_date": "2026-02-28T20:07:24.483553",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Strengthening Chronic Kidney Disease Knowledge",
+  "year": "2016",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
     "dialysis",
     "renal",
     "nephrology"
   ],
-  "total_chunks": 7,
-  "avg_chunk_size": 552.0,
-  "processing_date": "2025-12-31T14:23:27.355884"
+  "total_chunks": 10,
+  "avg_chunk_size": 82.0,
+  "processing_date": "2026-02-28T20:07:34.246358"
 }

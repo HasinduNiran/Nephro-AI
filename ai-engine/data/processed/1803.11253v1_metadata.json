@@ -1,19 +1,25 @@
 {
   "total_pages": 11,
-  "raw_text_length": 39798,
-  "cleaned_text_length": 41612,
+  "native_pages": 11,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 39788,
+  "cleaned_text_length": 39041,
   "source_file": "1803.11253v1.pdf",
-  "extraction_date": "2025-11-18T15:15:48.156559",
+  "extraction_date": "2026-02-28T22:29:27.015939",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Paper Template",
+  "author": "Rakesh",
   "year": "2018",
   "keywords": [
     "chronic kidney disease",
     "CKD",
+    "GFR",
     "renal",
     "nephrology"
   ],
-  "total_chunks": 12,
-  "avg_chunk_size": 567.6666666666666,
-  "processing_date": "2025-11-18T15:15:48.306086"
+  "total_chunks": 28,
+  "avg_chunk_size": 123.39285714285714,
+  "processing_date": "2026-02-28T22:29:34.879849"
 }

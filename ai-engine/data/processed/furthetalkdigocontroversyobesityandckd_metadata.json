@@ -1,19 +1,26 @@
 {
   "total_pages": 67,
-  "raw_text_length": 116696,
-  "cleaned_text_length": 124922,
+  "native_pages": 65,
+  "scanned_pages": 2,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 143492,
+  "cleaned_text_length": 127069,
   "source_file": "furthetalkdigocontroversyobesityandckd.pdf",
-  "extraction_date": "2025-12-31T14:50:08.887835",
+  "extraction_date": "2026-03-02T12:16:43.125105",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "The relationship between obesity and chronic kidney disease: Conclusions from a Kidney Disease: Improving Global Outcomes (KDIGO) Controversies Conference",
+  "author": "Susan L. Furth",
   "year": "2025",
+  "organization": "KDIGO",
+  "guideline_type": "Clinical Practice Guideline",
   "keywords": [
     "chronic kidney disease",
     "renal",
     "nephrology",
     "KDIGO"
   ],
-  "total_chunks": 35,
-  "avg_chunk_size": 554.9428571428572,
-  "processing_date": "2025-12-31T14:50:09.315013"
+  "total_chunks": 16,
+  "avg_chunk_size": 152.5,
+  "processing_date": "2026-03-02T12:17:33.791267"
 }

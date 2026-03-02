@@ -1,15 +1,21 @@
 {
   "total_pages": 10,
-  "raw_text_length": 26814,
-  "cleaned_text_length": 26736,
+  "native_pages": 10,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 27498,
+  "cleaned_text_length": 27160,
   "source_file": "#13 Renal System Lect Notes.pdf",
-  "extraction_date": "2025-12-31T14:22:25.276044",
+  "extraction_date": "2026-02-28T22:13:05.364216",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Anatomy Lecture Notes Section 6: The Renal (Urinary) System",
+  "author": "Ian Moore",
+  "year": "2024",
   "keywords": [
     "renal"
   ],
-  "total_chunks": 7,
-  "avg_chunk_size": 557.0,
-  "processing_date": "2025-12-31T14:22:25.398336"
+  "total_chunks": 20,
+  "avg_chunk_size": 130.7,
+  "processing_date": "2026-02-28T22:13:09.961384"
 }

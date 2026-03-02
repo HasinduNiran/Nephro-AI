@@ -1,16 +1,21 @@
 {
   "total_pages": 13,
-  "raw_text_length": 38037,
-  "cleaned_text_length": 38406,
+  "native_pages": 13,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 38466,
+  "cleaned_text_length": 37005,
   "source_file": "26_-_Renal_Physiology_andthophysiology_in_ITU.pdf",
-  "extraction_date": "2025-12-31T14:20:21.015941",
+  "extraction_date": "2026-02-28T20:31:15.075956",
   "document_type": "medical_guideline",
   "language": "en",
-  "year": "2004",
+  "title": "26_-_CP_-_Renal_physiology_and_pathophysiology",
+  "year": "2007",
   "keywords": [
+    "GFR",
     "renal"
   ],
-  "total_chunks": 10,
-  "avg_chunk_size": 568.4,
-  "processing_date": "2025-12-31T14:20:21.200856"
+  "total_chunks": 31,
+  "avg_chunk_size": 112.3225806451613,
+  "processing_date": "2026-02-28T20:31:22.413411"
 }

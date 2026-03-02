@@ -1,11 +1,16 @@
 {
   "total_pages": 9,
+  "native_pages": 9,
+  "scanned_pages": 0,
+  "extraction_method": "pdfplumber",
   "raw_text_length": 31620,
-  "cleaned_text_length": 33870,
+  "cleaned_text_length": 31400,
   "source_file": "s12882-020-02151-7 (1).pdf",
-  "extraction_date": "2025-12-31T14:47:57.900452",
+  "extraction_date": "2026-02-28T23:21:04.886316",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "The impact of hypertension on chronic kidney disease and end-stage renal disease is greater in men than women: a systematic review and meta-analysis",
+  "author": "Misghina Weldegiorgis",
   "year": "2020",
   "keywords": [
     "chronic kidney disease",
@@ -15,7 +20,7 @@
     "nephrology",
     "albuminuria"
   ],
-  "total_chunks": 7,
-  "avg_chunk_size": 525.1428571428571,
-  "processing_date": "2025-12-31T14:47:58.037917"
+  "total_chunks": 5,
+  "avg_chunk_size": 551.8,
+  "processing_date": "2026-02-28T23:21:05.018754"
 }

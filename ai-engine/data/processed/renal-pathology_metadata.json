@@ -1,15 +1,22 @@
 {
   "total_pages": 73,
-  "raw_text_length": 23898,
-  "cleaned_text_length": 24261,
+  "native_pages": 58,
+  "scanned_pages": 15,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 24954,
+  "cleaned_text_length": 24952,
   "source_file": "renal-pathology.pdf",
-  "extraction_date": "2025-12-31T14:20:16.046620",
+  "extraction_date": "2026-03-01T00:23:01.481867",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "GENERAL PATHOLOGY OF THE KIDNEY",
+  "year": "2022",
+  "organization": "ERA",
+  "guideline_type": "Clinical Practice Guideline",
   "keywords": [
     "renal"
   ],
-  "total_chunks": 7,
-  "avg_chunk_size": 490.85714285714283,
-  "processing_date": "2025-12-31T14:20:16.122387"
+  "total_chunks": 44,
+  "avg_chunk_size": 77.43181818181819,
+  "processing_date": "2026-03-01T00:23:01.604575"
 }

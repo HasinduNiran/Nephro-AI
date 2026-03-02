@@ -1,13 +1,20 @@
 {
   "total_pages": 10,
-  "raw_text_length": 50181,
-  "cleaned_text_length": 50808,
+  "native_pages": 10,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 62284,
+  "cleaned_text_length": 49769,
   "source_file": "J of Clinical Hypertension - 2008 - Pickering - Call to Action on Use and Reimbursement for Home Blood Pressure Monitoring .pdf",
-  "extraction_date": "2025-12-31T14:20:11.300625",
+  "extraction_date": "2026-02-28T20:18:52.977044",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Call to Action on Use and Reimbursement for Home Blood Pressure Monitoring: Executive Summary A Joint Scientific Statement From the American Heart Association, American Society of Hypertension, and Preventive Cardiovascular Nurses Association",
+  "year": "2008",
+  "organization": "AHA",
+  "guideline_type": "Clinical Practice Guideline",
   "keywords": [],
-  "total_chunks": 14,
-  "avg_chunk_size": 569.4285714285714,
-  "processing_date": "2025-12-31T14:20:11.498696"
+  "total_chunks": 22,
+  "avg_chunk_size": 118.63636363636364,
+  "processing_date": "2026-02-28T20:19:04.399506"
 }

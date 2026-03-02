@@ -1,16 +1,20 @@
 {
   "total_pages": 1,
   "raw_text_length": 3151,
-  "cleaned_text_length": 3210,
+  "extraction_method": "plaintext_file",
+  "cleaned_text_length": 3151,
   "source_file": "New Text Document.txt",
-  "extraction_date": "2025-12-31T14:52:13.704186",
+  "extraction_date": "2026-02-28T15:17:56.672852",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "High Blood Pressure and Chronic Kidney Disease",
+  "year": "2017",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
     "kidney function"
   ],
   "total_chunks": 1,
-  "avg_chunk_size": 517.0,
-  "processing_date": "2025-12-31T14:52:13.722402"
+  "avg_chunk_size": 537.0,
+  "processing_date": "2026-02-28T15:17:56.686729"
 }

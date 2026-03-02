@@ -1,0 +1,25 @@
+{
+  "total_pages": 31,
+  "native_pages": 28,
+  "scanned_pages": 3,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 15203,
+  "cleaned_text_length": 12423,
+  "source_file": "slowing-the-progression-of-chronic-kidney-disease.pdf",
+  "extraction_date": "2026-02-28T22:15:09.527113",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "Slowing the Progression of Chronic Kidney Disease",
+  "author": "Randolph Chen",
+  "year": "2018",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "GFR",
+    "dialysis",
+    "kidney function"
+  ],
+  "total_chunks": 27,
+  "avg_chunk_size": 75.88888888888889,
+  "processing_date": "2026-02-28T22:15:09.658213"
+}

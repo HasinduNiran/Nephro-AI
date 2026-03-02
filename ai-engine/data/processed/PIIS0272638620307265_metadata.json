@@ -1,18 +1,25 @@
 {
   "total_pages": 109,
-  "raw_text_length": 543077,
-  "cleaned_text_length": 570009,
+  "native_pages": 109,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 590156,
+  "cleaned_text_length": 564491,
   "source_file": "PIIS0272638620307265.pdf",
-  "extraction_date": "2025-12-31T14:49:07.685415",
+  "extraction_date": "2026-03-02T10:14:58.570605",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "KDOQI Clinical Practice Guideline for Nutrition in CKD: 2020 Update",
+  "author": "T. Alp Ikizler",
   "year": "2020",
+  "organization": "KDOQI",
+  "guideline_type": "Clinical Practice Guideline",
   "keywords": [
     "chronic kidney disease",
     "CKD",
     "dialysis"
   ],
-  "total_chunks": 128,
-  "avg_chunk_size": 585.7421875,
-  "processing_date": "2025-12-31T14:49:09.655878"
+  "total_chunks": 295,
+  "avg_chunk_size": 108.47796610169492,
+  "processing_date": "2026-03-02T10:19:31.490759"
 }

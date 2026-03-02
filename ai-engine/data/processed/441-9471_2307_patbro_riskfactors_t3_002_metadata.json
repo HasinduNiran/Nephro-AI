@@ -1,17 +1,23 @@
 {
   "total_pages": 28,
-  "raw_text_length": 21457,
-  "cleaned_text_length": 22637,
+  "native_pages": 26,
+  "scanned_pages": 2,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 22269,
+  "cleaned_text_length": 21738,
   "source_file": "441-9471_2307_patbro_riskfactors_t3_002.pdf",
-  "extraction_date": "2025-11-18T15:15:44.899086",
+  "extraction_date": "2026-02-28T21:41:47.171264",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Chronic Kidney Disease",
+  "year": "2023",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
     "dialysis",
     "kidney function"
   ],
-  "total_chunks": 7,
-  "avg_chunk_size": 559.4285714285714,
-  "processing_date": "2025-11-18T15:15:44.978470"
+  "total_chunks": 25,
+  "avg_chunk_size": 97.0,
+  "processing_date": "2026-02-28T21:41:59.035814"
 }

@@ -1,18 +1,27 @@
 {
   "total_pages": 10,
-  "raw_text_length": 55943,
-  "cleaned_text_length": 60380,
+  "native_pages": 10,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 59312,
+  "cleaned_text_length": 54244,
   "source_file": "A_commentary_from_the_European_Renal_Best_Practice.pdf",
-  "extraction_date": "2025-12-31T14:49:52.698841",
+  "extraction_date": "2026-02-28T22:17:12.323698",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease in Children and Adults: a commentary from the European Renal Best Practice (ERBP)",
+  "author": "Iatridi Fotini, Carrero Juan Jesus, Gall Emilie Cornec-Le, Kanbay Mehmet, Luyckx Valerie, Shroff Rukshana, Ferro Charles J.",
   "year": "2025",
+  "organization": "KDIGO",
+  "guideline_type": "Clinical Practice Guideline",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
     "renal",
-    "nephrology"
+    "nephrology",
+    "KDIGO"
   ],
-  "total_chunks": 16,
-  "avg_chunk_size": 563.75,
-  "processing_date": "2025-12-31T14:49:52.977993"
+  "total_chunks": 28,
+  "avg_chunk_size": 120.78571428571429,
+  "processing_date": "2026-02-28T22:17:32.575154"
 }

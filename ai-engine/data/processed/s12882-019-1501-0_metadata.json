@@ -1,19 +1,23 @@
 {
   "total_pages": 11,
-  "raw_text_length": 35619,
-  "cleaned_text_length": 36973,
+  "native_pages": 11,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 40748,
+  "cleaned_text_length": 36810,
   "source_file": "s12882-019-1501-0.pdf",
-  "extraction_date": "2025-11-18T15:18:02.018816",
+  "extraction_date": "2026-03-02T10:00:10.333857",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "The incidence, prevalence and trends of Chronic Kidney Disease and Chronic Kidney Disease of uncertain aetiology (CKDu) in the North Central Province of Sri Lanka: an analysis of 30,566 patients",
+  "author": "Asanga Venura Ranasinghe",
   "year": "2019",
   "keywords": [
     "chronic kidney disease",
     "CKD",
-    "renal",
-    "nephrology"
+    "renal"
   ],
   "total_chunks": 9,
-  "avg_chunk_size": 532.3333333333334,
-  "processing_date": "2025-11-18T15:18:02.255720"
+  "avg_chunk_size": 90.77777777777777,
+  "processing_date": "2026-03-02T10:00:24.568070"
 }

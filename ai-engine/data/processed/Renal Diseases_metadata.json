@@ -1,14 +1,19 @@
 {
   "total_pages": 49,
-  "raw_text_length": 48130,
-  "cleaned_text_length": 46996,
+  "native_pages": 42,
+  "scanned_pages": 7,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 50611,
+  "cleaned_text_length": 47375,
   "source_file": "Renal Diseases.pdf",
-  "extraction_date": "2025-12-31T14:20:18.883500",
+  "extraction_date": "2026-03-02T12:33:55.926539",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "COLOUR ATLAS OF FORENSIC PATHOLOGY",
+  "author": "nikeshala herath",
   "year": "2022",
   "keywords": [],
-  "total_chunks": 9,
-  "avg_chunk_size": 583.0,
-  "processing_date": "2025-12-31T14:20:19.005662"
+  "total_chunks": 21,
+  "avg_chunk_size": 81.76190476190476,
+  "processing_date": "2026-03-02T12:34:34.284609"
 }

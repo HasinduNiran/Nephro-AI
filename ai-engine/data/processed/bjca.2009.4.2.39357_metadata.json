@@ -1,19 +1,27 @@
 {
   "total_pages": 9,
-  "raw_text_length": 40779,
-  "cleaned_text_length": 43739,
+  "native_pages": 9,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 39330,
+  "cleaned_text_length": 37684,
   "source_file": "bjca.2009.4.2.39357.pdf",
-  "extraction_date": "2025-11-21T14:29:50.730116",
+  "extraction_date": "2026-02-28T20:18:05.842443",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Chronic kidney disease stages 4–5: Patient management",
+  "author": "Fiona Murphy and Gobnait Byrne",
   "year": "2009",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
+    "GFR",
     "dialysis",
     "renal",
-    "proteinuria"
+    "proteinuria",
+    "eGFR"
   ],
-  "total_chunks": 12,
-  "avg_chunk_size": 546.75,
-  "processing_date": "2025-11-21T14:29:50.893729"
+  "total_chunks": 19,
+  "avg_chunk_size": 134.21052631578948,
+  "processing_date": "2026-02-28T20:18:17.995166"
 }

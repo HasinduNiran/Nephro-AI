@@ -23,6 +23,9 @@ langdetect>=1.0.9
 beautifulsoup4>=4.12.2
 lxml>=4.9.3
 
+# Fuzzy string matching (Sinhala NLU — Singlish phonetic tolerance)
+rapidfuzz>=3.0.0
+
 # Progress Bars & Utilities
 tqdm>=4.66.1
 

@@ -1,17 +1,25 @@
 {
   "total_pages": 8,
-  "raw_text_length": 35325,
-  "cleaned_text_length": 37696,
+  "native_pages": 8,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 43055,
+  "cleaned_text_length": 39035,
   "source_file": "s41440-018-0026-4.pdf",
-  "extraction_date": "2025-12-31T14:22:48.648874",
+  "extraction_date": "2026-02-28T21:24:46.195557",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Night-time activation of the intrarenal reninâ€“angiotensin system due to nocturnal hypertension is associated with renal arteriosclerosis in normotensive IgA nephropathy patients",
+  "author": "Naro Ohashi",
   "year": "2018",
   "keywords": [
     "chronic kidney disease",
-    "renal"
+    "CKD",
+    "GFR",
+    "renal",
+    "eGFR"
   ],
-  "total_chunks": 9,
-  "avg_chunk_size": 539.2222222222222,
-  "processing_date": "2025-12-31T14:22:48.874738"
+  "total_chunks": 15,
+  "avg_chunk_size": 153.73333333333332,
+  "processing_date": "2026-02-28T21:24:55.497997"
 }

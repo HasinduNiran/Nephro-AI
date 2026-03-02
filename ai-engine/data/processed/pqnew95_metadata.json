@@ -1,17 +1,24 @@
 {
   "total_pages": 33,
-  "raw_text_length": 204782,
-  "cleaned_text_length": 225173,
+  "native_pages": 33,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 204569,
+  "cleaned_text_length": 199741,
   "source_file": "pqnew95.pdf",
-  "extraction_date": "2025-12-31T14:49:38.632246",
+  "extraction_date": "2026-02-28T21:22:45.361509",
   "document_type": "medical_guideline",
   "language": "en",
-  "year": "2010",
+  "title": "- Chronic Kidney Disease",
+  "year": "2019",
   "keywords": [
     "chronic kidney disease",
-    "dialysis"
+    "CKD",
+    "GFR",
+    "dialysis",
+    "eGFR"
   ],
-  "total_chunks": 56,
-  "avg_chunk_size": 574.7321428571429,
-  "processing_date": "2025-12-31T14:49:39.405948"
+  "total_chunks": 138,
+  "avg_chunk_size": 89.78260869565217,
+  "processing_date": "2026-02-28T21:23:43.388417"
 }

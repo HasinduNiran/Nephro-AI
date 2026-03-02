@@ -1,15 +1,20 @@
 {
   "total_pages": 28,
-  "raw_text_length": 26598,
-  "cleaned_text_length": 25961,
+  "native_pages": 27,
+  "scanned_pages": 1,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 27818,
+  "cleaned_text_length": 26282,
   "source_file": "coping.pdf",
-  "extraction_date": "2025-11-18T15:15:56.764057",
+  "extraction_date": "2026-03-02T11:46:17.072487",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Managing kidney failure",
+  "year": "2022",
   "keywords": [
     "dialysis"
   ],
-  "total_chunks": 8,
-  "avg_chunk_size": 582.625,
-  "processing_date": "2025-11-18T15:15:56.857044"
+  "total_chunks": 22,
+  "avg_chunk_size": 154.0909090909091,
+  "processing_date": "2026-03-02T11:46:28.852479"
 }

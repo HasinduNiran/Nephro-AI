@@ -1,18 +1,27 @@
 {
   "total_pages": 5,
-  "raw_text_length": 12694,
-  "cleaned_text_length": 13667,
+  "native_pages": 5,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 12301,
+  "cleaned_text_length": 11574,
   "source_file": "the-stages-of-chronic-kidney-disease-3ihwageidf.pdf",
-  "extraction_date": "2025-11-21T14:30:02.420954",
+  "extraction_date": "2026-02-28T22:19:26.897203",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "The Stages Of Chronic Kidney Disease",
+  "author": "Saidmurodova Jamila Botirovna, Obloqulov Axmad Tilavkulovich, Raximberdiyev Rustam Abdunosirovich",
   "year": "2020",
+  "organization": "NKF",
+  "guideline_type": "Clinical Practice Guideline",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
+    "GFR",
     "kidney function",
     "renal"
   ],
-  "total_chunks": 4,
-  "avg_chunk_size": 549.75,
-  "processing_date": "2025-11-21T14:30:02.506884"
+  "total_chunks": 14,
+  "avg_chunk_size": 113.42857142857143,
+  "processing_date": "2026-02-28T22:19:28.541085"
 }

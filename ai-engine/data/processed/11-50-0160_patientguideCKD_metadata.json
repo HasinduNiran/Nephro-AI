@@ -1,17 +1,25 @@
 {
   "total_pages": 24,
-  "raw_text_length": 25692,
-  "cleaned_text_length": 26492,
+  "native_pages": 23,
+  "scanned_pages": 1,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 26091,
+  "cleaned_text_length": 25495,
   "source_file": "11-50-0160_patientguideCKD.pdf",
-  "extraction_date": "2025-12-31T14:23:30.422544",
+  "extraction_date": "2026-02-28T21:32:11.901915",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "ABOUT CHRONIC KIDNEY DISEASE: A GUIDE FOR PATIENTS",
+  "year": "2013",
+  "organization": "NKF",
+  "guideline_type": "Clinical Practice Guideline",
   "keywords": [
     "chronic kidney disease",
+    "GFR",
     "dialysis",
     "kidney function"
   ],
-  "total_chunks": 8,
-  "avg_chunk_size": 557.875,
-  "processing_date": "2025-12-31T14:23:30.521197"
+  "total_chunks": 31,
+  "avg_chunk_size": 118.45161290322581,
+  "processing_date": "2026-02-28T21:32:12.095869"
 }

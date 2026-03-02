@@ -1,18 +1,24 @@
 {
   "total_pages": 17,
-  "raw_text_length": 65977,
-  "cleaned_text_length": 69827,
+  "native_pages": 17,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 75677,
+  "cleaned_text_length": 74234,
   "source_file": "4cf36d05570495ccc36d867768444e076b22.pdf",
-  "extraction_date": "2025-12-31T14:48:18.138101",
+  "extraction_date": "2026-02-28T22:28:16.872342",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Personalized Nutrition in Chronic Kidney Disease",
+  "author": "Nishigandha Pradhan, Jennifer Kerner, Luciana A. Campos and Mirela Dobre",
+  "year": "2025",
   "keywords": [
     "chronic kidney disease",
     "CKD",
     "renal",
     "nephrology"
   ],
-  "total_chunks": 11,
-  "avg_chunk_size": 546.4545454545455,
-  "processing_date": "2025-12-31T14:48:18.462192"
+  "total_chunks": 26,
+  "avg_chunk_size": 111.92307692307692,
+  "processing_date": "2026-02-28T22:28:58.081352"
 }

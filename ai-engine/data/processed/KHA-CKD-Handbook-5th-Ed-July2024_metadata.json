@@ -1,17 +1,23 @@
 {
   "total_pages": 88,
-  "raw_text_length": 151653,
-  "cleaned_text_length": 170439,
+  "native_pages": 83,
+  "scanned_pages": 5,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 203117,
+  "cleaned_text_length": 163207,
   "source_file": "KHA-CKD-Handbook-5th-Ed-July2024.pdf",
-  "extraction_date": "2025-11-18T15:17:22.388802",
+  "extraction_date": "2026-03-02T11:44:12.601129",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Front Cover - please see seperate pdf Chronic Kidney Disease (CKD) Management in Primary Care",
+  "year": "2024",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
     "renal",
     "nephrology"
   ],
-  "total_chunks": 43,
-  "avg_chunk_size": 576.0232558139535,
-  "processing_date": "2025-11-18T15:17:23.138508"
+  "total_chunks": 169,
+  "avg_chunk_size": 91.1775147928994,
+  "processing_date": "2026-03-02T11:44:56.330076"
 }

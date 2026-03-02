@@ -1,17 +1,24 @@
 {
   "total_pages": 1,
-  "raw_text_length": 1229,
-  "cleaned_text_length": 1381,
+  "native_pages": 1,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 1328,
+  "cleaned_text_length": 1328,
   "source_file": "Title-Page_2024_Kidney-International.pdf",
-  "extraction_date": "2025-12-31T14:55:30.697144",
+  "extraction_date": "2026-02-28T15:23:58.306253",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease",
   "year": "2024",
+  "organization": "KDIGO",
+  "guideline_type": "Clinical Practice Guideline",
   "keywords": [
     "chronic kidney disease",
-    "nephrology"
+    "nephrology",
+    "KDIGO"
   ],
   "total_chunks": 1,
-  "avg_chunk_size": 153.0,
-  "processing_date": "2025-12-31T14:55:30.727229"
+  "avg_chunk_size": 198.0,
+  "processing_date": "2026-02-28T15:23:58.795611"
 }

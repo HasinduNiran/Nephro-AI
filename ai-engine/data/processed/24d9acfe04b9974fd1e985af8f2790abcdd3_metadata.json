@@ -1,11 +1,17 @@
 {
   "total_pages": 15,
-  "raw_text_length": 51160,
-  "cleaned_text_length": 54566,
+  "native_pages": 15,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 59312,
+  "cleaned_text_length": 57947,
   "source_file": "24d9acfe04b9974fd1e985af8f2790abcdd3.pdf",
-  "extraction_date": "2025-12-31T14:48:03.764654",
+  "extraction_date": "2026-02-28T23:37:20.762084",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "Nutritional Predictors of Mortality after 10 Years of Follow-Up in Patients with Chronic Kidney Disease at a Multidisciplinary Unit of Advanced Chronic Kidney Disease",
+  "author": "Guillermina Barril, Angel Nogueira, Graciela Alvarez-García, Almudena Núñez, Carmen Sánchez-González and Mar Ruperto",
+  "year": "2022",
   "keywords": [
     "chronic kidney disease",
     "CKD",
@@ -13,7 +19,7 @@
     "nephrology",
     "proteinuria"
   ],
-  "total_chunks": 9,
-  "avg_chunk_size": 552.7777777777778,
-  "processing_date": "2025-12-31T14:48:03.990995"
+  "total_chunks": 14,
+  "avg_chunk_size": 106.57142857142857,
+  "processing_date": "2026-02-28T23:37:43.603516"
 }

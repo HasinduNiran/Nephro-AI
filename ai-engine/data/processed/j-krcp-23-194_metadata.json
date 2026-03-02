@@ -1,19 +1,24 @@
 {
   "total_pages": 23,
-  "raw_text_length": 90157,
-  "cleaned_text_length": 97540,
+  "native_pages": 23,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 120694,
+  "cleaned_text_length": 87417,
   "source_file": "j-krcp-23-194.pdf",
-  "extraction_date": "2025-11-18T15:16:23.414919",
+  "extraction_date": "2026-02-28T23:30:14.906007",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "The burden of chronic kidney disease in Asia region: a review of the evidence, current challenges, and future directions",
   "year": "2025",
   "keywords": [
     "chronic kidney disease",
+    "CKD",
     "dialysis",
     "renal",
     "nephrology"
   ],
-  "total_chunks": 25,
-  "avg_chunk_size": 576.72,
-  "processing_date": "2025-11-18T15:16:23.757894"
+  "total_chunks": 30,
+  "avg_chunk_size": 122.26666666666667,
+  "processing_date": "2026-02-28T23:30:44.662285"
 }

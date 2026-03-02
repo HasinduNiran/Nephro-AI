@@ -1,15 +1,20 @@
 {
   "total_pages": 12,
-  "raw_text_length": 10740,
-  "cleaned_text_length": 10813,
+  "native_pages": 11,
+  "scanned_pages": 1,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 11810,
+  "cleaned_text_length": 10692,
   "source_file": "dialysis_patients_bill_of_rights.pdf",
-  "extraction_date": "2025-11-18T15:15:57.539931",
+  "extraction_date": "2026-02-28T20:28:32.761652",
   "document_type": "medical_guideline",
   "language": "en",
+  "title": "DIALYSIS PATIENTS' BILL OF RIGHTS AND RESPONSIBILITIES",
+  "year": "2013",
   "keywords": [
     "dialysis"
   ],
-  "total_chunks": 4,
-  "avg_chunk_size": 499.0,
-  "processing_date": "2025-11-18T15:15:57.592925"
+  "total_chunks": 11,
+  "avg_chunk_size": 81.72727272727273,
+  "processing_date": "2026-02-28T20:28:45.103469"
 }
