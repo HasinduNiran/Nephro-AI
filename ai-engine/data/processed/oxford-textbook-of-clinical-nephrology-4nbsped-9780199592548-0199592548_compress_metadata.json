@@ -1,0 +1,21 @@
+{
+  "total_pages": 3012,
+  "native_pages": 2984,
+  "scanned_pages": 28,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 17711393,
+  "cleaned_text_length": 16662677,
+  "source_file": "oxford-textbook-of-clinical-nephrology-4nbsped-9780199592548-0199592548_compress.pdf",
+  "extraction_date": "2026-03-03T15:13:57.198258",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "Oxford Textbook of Clinical Nephrology",
+  "author": "Neil N. Turner, Norbert Lameire, David J. Goldsmith, Christopher G. Winearls, Jonathan Himmelfarb, Giuseppe Remuzzi",
+  "year": "2015",
+  "keywords": [
+    "nephrology"
+  ],
+  "total_chunks": 5038,
+  "avg_chunk_size": 125.66971020246129,
+  "processing_date": "2026-03-03T16:21:31.751380"
+}
