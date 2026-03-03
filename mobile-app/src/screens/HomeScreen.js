@@ -10,11 +10,13 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
+import axios from "../api/axiosConfig";
 
 const HomeScreen = ({ navigation, route }) => {
   const userName = route.params?.userName || "User";
   const userID = route.params?.userID;
   const [userEmail, setUserEmail] = useState(route.params?.userEmail || "");
+  const [todayBP, setTodayBP] = useState(null);
 
   // Retrieve userEmail from AsyncStorage if not in route params
   useEffect(() => {
@@ -32,6 +34,28 @@ const HomeScreen = ({ navigation, route }) => {
     };
     loadUserEmail();
   }, []);
+
+  // Fetch today's BP record for the Quick View tile
+  useEffect(() => {
+    const fetchTodayBP = async () => {
+      try {
+        const uid = userID || (await AsyncStorage.getItem("userID"));
+        if (!uid) return;
+        const res = await axios.get(`/bp-records/${uid}`);
+        const records = res.data.records || [];
+        const d = new Date();
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+        const todayRecord = records.find((r) => r.date === todayStr) || null;
+        setTodayBP(todayRecord);
+      } catch (err) {
+        // silently fail — tile will show "No data for today"
+      }
+    };
+    fetchTodayBP();
+  }, [userID]);
 
   const getInitials = (name) => {
     if (!name) return "U";
@@ -57,7 +81,8 @@ const HomeScreen = ({ navigation, route }) => {
       subtitle: "Stage progression",
       icon: "trending-up",
       color: "#50E3C2", // Teal
-      onPress: () => navigation.navigate("ScanLab", { userName, userEmail, userID }),
+      onPress: () =>
+        navigation.navigate("ScanLab", { userName, userEmail, userID }),
     },
     {
       id: 3,
@@ -122,6 +147,38 @@ const HomeScreen = ({ navigation, route }) => {
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* BP Quick View Tile */}
+        <Text style={styles.sectionTitle}>Blood Pressure</Text>
+        <TouchableOpacity
+          style={styles.bpTile}
+          onPress={() =>
+            navigation.navigate("BPHistory", { userID, userName, userEmail })
+          }
+          activeOpacity={0.7}
+        >
+          <View style={styles.bpTileLeft}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#FF475720" }]}
+            >
+              <Ionicons name="heart" size={28} color="#FF4757" />
+            </View>
+            <View style={styles.bpTileTextCol}>
+              <Text style={styles.bpTileTitle}>Today's BP</Text>
+              {todayBP ? (
+                <Text style={styles.bpTileReading}>
+                  <Text style={{ color: "#FF4757" }}>{todayBP.systolic}</Text>
+                  {" / "}
+                  <Text style={{ color: "#4A90E2" }}>{todayBP.diastolic}</Text>
+                  <Text style={styles.bpTileUnit}> mmHg</Text>
+                </Text>
+              ) : (
+                <Text style={styles.bpTileNoData}>No data for today</Text>
+              )}
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -213,6 +270,50 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#8E8E93",
     fontWeight: "500",
+  },
+  bpTile: {
+    width: "100%",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  bpTileLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    flex: 1,
+  },
+  bpTileTextCol: {
+    flex: 1,
+  },
+  bpTileTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#1C1C1E",
+    marginBottom: 3,
+  },
+  bpTileReading: {
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  bpTileUnit: {
+    fontSize: 12,
+    color: "#8E8E93",
+    fontWeight: "400",
+  },
+  bpTileNoData: {
+    fontSize: 13,
+    color: "#8E8E93",
+    fontStyle: "italic",
   },
 });
 
