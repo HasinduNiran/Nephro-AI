@@ -28,9 +28,15 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/embeddings"
 
 # Google GenAI API Settings
-# Google GenAI API Settings
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-GOOGLE_TTS_VOICE = "Kore"
+GOOGLE_TTS_MODEL = "gemini-2.5-flash-preview-tts" # Optimised for low-latency single-speaker TTS
+GOOGLE_TTS_VOICE = "Aoede"                               # Clear, professional pre-built voice
+
+# NLG — Dynamic Code-Mixing & Tone Generation Engine
+NLG_DEFAULT_REGISTER = "spoken_mixed"   # Options: "pure_sinhala", "spoken_mixed"
+NLG_HINT_LIMIT = 25                     # Max glossary hints injected into LLM prompt
+TTS_PHONETIC_ENABLED = True             # Replace English terms with phonetic Singlish before TTS
+NLG_URGENCY_FLAGS_ENABLED = True        # Scan LLM output for CRITICAL_URGENCY / SYMPTOM_WARNING
 
 # Database Metadata
 DB_METADATA = {
@@ -53,7 +59,7 @@ DOCLING_SETTINGS = {
     "ocr_enabled": True,            # Enable OCR for scanned PDFs (requires docling[ocr])
     "dynamic_ocr": True,            # Pre-scan pages & only OCR scanned ones (Hybrid OCR Routing)
     "ocr_char_threshold": 100,      # Pages with fewer extracted chars are classified as scanned
-    "max_block_pages": 20,          # Max pages per Docling batch — prevents RAM/VRAM OOM crashes
+    "max_block_pages": 8,           # Max pages per Docling batch — prevents RAM/VRAM OOM crashes
     "table_mode": "markdown",       # How to represent tables
     "timeout_seconds_native": 120,  # Timeout for native (no-OCR) Docling pass
     "timeout_seconds_ocr": 300,     # Timeout for OCR Docling pass (heavier)

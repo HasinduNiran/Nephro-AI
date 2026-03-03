@@ -24,7 +24,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from src.chatbot.rag_engine import RAGEngine
 from src.chatbot.patient_input import PatientInputHandler
-from src.chatbot.config import GOOGLE_API_KEY, GOOGLE_TTS_VOICE
+from src.chatbot.config import GOOGLE_API_KEY, GOOGLE_TTS_MODEL, GOOGLE_TTS_VOICE, TTS_PHONETIC_ENABLED
+from src.chatbot.nlg_glossary import NLGGlossary
 from src.utils.logger import ConsoleLogger as Log
 
 app = FastAPI(title="Nephro-AI Context-Aware Chatbot API")
@@ -71,6 +72,10 @@ try:
     else:
         Log.warning("GOOGLE_API_KEY not set - Gemini TTS disabled, using Edge-TTS fallback")
 
+    # 🆕 NLG Glossary for TTS phonetic preprocessing
+    nlg_glossary = NLGGlossary()
+    Log.success("NLG Glossary loaded for TTS phonetic layer")
+
     Log.success("All Engines Loaded Successfully")
     print("-" * 60)
 except Exception as e:
@@ -113,6 +118,13 @@ async def generate_tts_file(text: str) -> Path:
 
     # 1. Detect Language
     is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in text)
+
+    # 1.5 🆕 TTS Phonetic Preprocessing (Angle 3: TTS Pronunciation Optimization)
+    # Replaces English medical terms embedded in Sinhala with phonetic Singlish
+    # e.g. "Pressure එක" → "pressure eka" so Gemini TTS pronounces them naturally
+    if is_sinhala and TTS_PHONETIC_ENABLED:
+        clean_text = nlg_glossary.apply_tts_phonetics(clean_text)
+        print(f"   🔤 TTS Phonetic: Applied Singlish pronunciation hints")
     engine_label = "Gemini" if is_sinhala else "Edge"
 
     print(f"🔊 TTS REQUEST: Length={len(clean_text)} chars | Detected={'SINHALA' if is_sinhala else 'ENGLISH'} | Engine={engine_label}")
@@ -169,7 +181,7 @@ def _generate_gemini_tts(text: str, output_path: Path) -> bool:
     """
     try:
         response = gemini_client.models.generate_content(
-            model="gemini-2.5-flash-preview-tts",
+            model=GOOGLE_TTS_MODEL,
             contents=text,
             config=types.GenerateContentConfig(
                 response_modalities=["AUDIO"],
@@ -198,7 +210,7 @@ def _generate_gemini_tts(text: str, output_path: Path) -> bool:
         audio_segment = AudioSegment.from_wav(wav_buffer)
         audio_segment.export(str(output_path), format="mp3")
 
-        print(f"   ✅ Gemini TTS generation successful (voice: {GOOGLE_TTS_VOICE})")
+        print(f"   ✅ Gemini TTS generation successful (model: {GOOGLE_TTS_MODEL}, voice: {GOOGLE_TTS_VOICE})")
         return True
 
     except Exception as e:

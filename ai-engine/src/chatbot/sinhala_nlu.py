@@ -55,13 +55,19 @@ from chatbot.config import MEDICAL_ENTITIES
 # 85 catches "creatinin" -> "creatinine" while rejecting false positives.
 FUZZY_THRESHOLD = 85
 
-# Sinhala / Singlish romanised suffixes, ordered longest-to-shortest so a
-# greedy strip removes the most specific form first.
-# e.g. "walata" is stripped before "ta" to prevent double-stripping.
+# Sinhala / Singlish romanised suffixes kept for the legacy _strip_sinhala_suffixes
+# method (still used as a fallback stem in the fuzzy stage).
 SINHALA_SUFFIXES = re.compile(
     r'(walata|wagen|wata|wen|wa|ta|ge|la|ka)$',
     re.IGNORECASE
 )
+
+# Suffix cluster injected directly into per-key regex patterns so a single pass
+# matches both the root and any grammatical suffix attached to it.
+# Sorted longest-to-shortest (critical — alternation is greedy left-to-right).
+# The group is optional (?:…)? so root-only forms still match.
+# Examples:  wakugadu·wala, wakugadu·wata, wakugadu·wen, pressure·wa
+_SUFFIX_CLUSTER = r'(?:walata|walin|wagen|wala|wata|wen|we|wa|tath|ta|gen|ge|yi|da|i)?'
 
 # Symptom and food buckets for entity categorisation
 SYMPTOM_TERMS = {
@@ -123,6 +129,12 @@ class SinhalaNLUEngine:
             "greeting": [
                 "Hello doctor", "Ayubowan", "Good morning", "Hi",
                 "Kohomada", "Machan",
+            ],
+            "ask_general_health": [
+                "How is my health condition?", "What is my health status?",
+                "How am I doing overall?", "Is my health good or bad?",
+                "Give me a summary of my condition",
+                "How is my kidney condition?", "What is my overall health?",
             ],
         }
 
@@ -225,9 +237,25 @@ class SinhalaNLUEngine:
         if not RAPIDFUZZ_AVAILABLE or not self._latin_keys:
             return None
 
+        # Short-word guard: words under 4 chars must be exact matches only.
+        # Prevents hallucinations like "ho" or "ada" matching inside longer words
+        # (e.g. "thattwaya" spuriously matching the key "ada").
+        if len(word) < 4:
+            return None
+
+        # Length-band filter: only compare against keys of similar length (±3
+        # chars). A 3-letter key can never legitimately score >= 85 against an
+        # 8-letter input, so excluding them prevents false positives and speeds
+        # up the search on large dictionaries.
+        min_len = max(1, len(word) - 3)
+        max_len = len(word) + 3
+        filtered_keys = [k for k in self._latin_keys if min_len <= len(k) <= max_len]
+        if not filtered_keys:
+            return None
+
         result = fuzz_process.extractOne(
             word,
-            self._latin_keys,
+            filtered_keys,
             scorer=fuzz.ratio,
             score_cutoff=FUZZY_THRESHOLD,
         )
@@ -243,51 +271,48 @@ class SinhalaNLUEngine:
         Translate a raw Sinhala / Singlish / mixed query into English tokens
         using the three-stage pipeline:
 
-          Stage 1 — Unicode exact match (longest-first, no stemming needed)
-          Stage 2 — Latin exact match after suffix stripping
-          Stage 3 — Latin fuzzy match (Levenshtein >= 85 %)
+          Stage 1 — Unicode exact match (longest-first, word-boundary regex)
+          Stage 2 — Latin whole-text regex per key with optional suffix cluster
+                    (longest-key-first, token consumption — no over-stemming)
+          Stage 3 — Latin fuzzy match (Levenshtein >= 85 %) on remaining tokens
 
         Returns the translated string. Untranslated tokens are left as-is so
         the LaBSE embedding step handles them cross-lingually.
         """
-        # Stage 1: replace Unicode Sinhala substrings (longest-first order
-        # guaranteed by _load_dictionary sorting)
+        # Stage 1: replace Unicode Sinhala words with strict word-boundary
+        # matching + token consumption so a matched key can't re-fire as a
+        # substring of a later, shorter key.
         working = text
         for si_key, en_value in self.unicode_dict.items():
-            if si_key in working:
-                working = working.replace(si_key, f" {en_value} ")
+            pattern = r'\b' + re.escape(si_key) + r'\b'
+            if re.search(pattern, working, re.UNICODE):
+                working = re.sub(pattern, f" {en_value} ", working, flags=re.UNICODE)
 
-        # Stages 2 & 3: token-level Latin processing
+        # Stage 2: per-key regex with optional suffix cluster on the whole text.
+        # latin_dict is already sorted longest-key-first by _load_dictionary, so
+        # "kahata" (Plain Tea) is evaluated before "kaha" (Yellow) — no over-stemming.
+        # Each match is consumed immediately, so a shorter key can never fire on
+        # the leftover letters of an already-matched longer word.
+        for key, en_value in self.latin_dict.items():
+            pattern = r'\b' + re.escape(key) + _SUFFIX_CLUSTER + r'\b'
+            working = re.sub(pattern, f" {en_value} ", working, flags=re.IGNORECASE)
+
+        # Stage 3: fuzzy match on any remaining un-translated Latin tokens.
+        # At this point every matched Singlish word has been replaced with its
+        # English value; only truly unknown tokens survive.
         final_tokens: List[str] = []
         for token in working.split():
             token_lower = token.lower().strip(".,!?;:'\"()")
 
-            # Stage 2a: exact match
-            if token_lower in self.latin_dict:
-                final_tokens.append(self.latin_dict[token_lower])
-                continue
-
-            # Stage 2b: suffix-strip then exact match
-            stemmed = self._strip_sinhala_suffixes(token_lower)
-            if stemmed != token_lower and stemmed in self.latin_dict:
-                final_tokens.append(self.latin_dict[stemmed])
-                continue
-
-            # Stage 3a: fuzzy on original token
+            # Skip if this token is already an English translation (a value that
+            # was injected in Stage 2 — it will already be the right word).
+            # We detect this heuristically: if it contains only ASCII letters it
+            # may still need fuzzy checking, so we let it through.
             fuzzy_hit = self._fuzzy_lookup(token_lower)
             if fuzzy_hit:
                 final_tokens.append(fuzzy_hit)
-                continue
-
-            # Stage 3b: fuzzy on stemmed token
-            if stemmed != token_lower:
-                fuzzy_hit = self._fuzzy_lookup(stemmed)
-                if fuzzy_hit:
-                    final_tokens.append(fuzzy_hit)
-                    continue
-
-            # No match — keep original (LaBSE handles cross-lingual remainder)
-            final_tokens.append(token)
+            else:
+                final_tokens.append(token)
 
         return " ".join(final_tokens)
 
@@ -334,42 +359,43 @@ class SinhalaNLUEngine:
             "symptoms": [],
         }
 
-        # Layer 1: Unicode Sinhala (longest-first order from _load_dictionary)
+        # Layer 1: Unicode Sinhala — word-boundary regex (longest-first order
+        # from _load_dictionary). Raw `in` substring check would match a short
+        # key inside a longer unrelated word.
         for si_key, en_value in self.unicode_dict.items():
-            if si_key in text:
+            pattern = r'\b' + re.escape(si_key) + r'\b'
+            if re.search(pattern, text, re.UNICODE):
                 self._categorise(en_value, entities)
 
-        # Layers 2 & 3: token-level Latin / Singlish
-        for token in text.split():
-            token_lower = token.lower().strip(".,!?;:'\"()")
+        # Layers 2 & 3: whole-text regex per key with optional suffix cluster.
+        # latin_dict is longest-key-first so "kahata" fires before "kaha".
+        # We build a consumed copy of the text so no key fires on the leftover
+        # letters of an already-matched longer word.  The original `text` is
+        # preserved for Layer 4.
+        consumed = text.lower()
+        for key, en_value in self.latin_dict.items():
+            pattern = r'\b' + re.escape(key) + _SUFFIX_CLUSTER + r'\b'
+            if re.search(pattern, consumed, re.IGNORECASE):
+                self._categorise(en_value, entities)
+                # Consume the match so shorter keys can't fire on its letters
+                consumed = re.sub(pattern, " [MATCHED] ", consumed, flags=re.IGNORECASE)
 
-            # Layer 2a: exact match
-            if token_lower in self.latin_dict:
-                self._categorise(self.latin_dict[token_lower], entities)
+        # Layer 3b: fuzzy match on tokens that survived the regex pass.
+        for token in consumed.split():
+            if token == "[MATCHED]":
                 continue
-
-            # Layer 2b: suffix-strip then exact match
-            stemmed = self._strip_sinhala_suffixes(token_lower)
-            if stemmed != token_lower and stemmed in self.latin_dict:
-                self._categorise(self.latin_dict[stemmed], entities)
-                continue
-
-            # Layer 3a: fuzzy on original token
+            token_lower = token.strip(".,!?;:'\"()")
             fuzzy_hit = self._fuzzy_lookup(token_lower)
             if fuzzy_hit:
                 self._categorise(fuzzy_hit, entities)
-                continue
 
-            # Layer 3b: fuzzy on stemmed token
-            if stemmed != token_lower:
-                fuzzy_hit = self._fuzzy_lookup(stemmed)
-                if fuzzy_hit:
-                    self._categorise(fuzzy_hit, entities)
-
-        # Layer 4: English MEDICAL_ENTITIES (Singlish code-switching)
+        # Layer 4: English MEDICAL_ENTITIES (Singlish code-switching, e.g.
+        # "Mage creatinine wadi"). Word-boundary regex prevents "GFR" matching
+        # inside longer tokens like "eGFRcal".
         text_lower = text.lower()
         for entity in MEDICAL_ENTITIES:
-            if entity.lower() in text_lower and entity not in entities["medical_terms"]:
+            pattern = r'\b' + re.escape(entity.lower()) + r'\b'
+            if re.search(pattern, text_lower) and entity not in entities["medical_terms"]:
                 entities["medical_terms"].append(entity)
 
         return entities

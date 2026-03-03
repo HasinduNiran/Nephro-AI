@@ -1,0 +1,23 @@
+{
+  "total_pages": 36,
+  "native_pages": 36,
+  "scanned_pages": 0,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 201970,
+  "cleaned_text_length": 193006,
+  "source_file": "Δείτε-Απόσπασμα-του-Βιβλίου-13.pdf",
+  "extraction_date": "2026-03-02T15:29:54.295348",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "c01-Mahi",
+  "year": "2023",
+  "organization": "ERA",
+  "guideline_type": "Clinical Practice Guideline",
+  "keywords": [
+    "kidney function",
+    "renal"
+  ],
+  "total_chunks": 73,
+  "avg_chunk_size": 69.3013698630137,
+  "processing_date": "2026-03-02T15:31:07.566394"
+}

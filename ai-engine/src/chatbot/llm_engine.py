@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from chatbot import config
 from chatbot.sinhala_nlu import SinhalaNLUEngine
+from chatbot.nlg_glossary import NLGGlossary
 from utils.logger import ConsoleLogger as Log
 
 class LLMEngine:
@@ -63,18 +64,8 @@ class LLMEngine:
         except Exception as e:
             print(f"⚠️ Warning: Could not load Sinhala Dictionary: {e}")
 
-        # 🆕 LOAD GENERATION GLOSSARY
-        self.gen_glossary = {}
-        try:
-            glossary_path = config.DATA_DIR / "english_to_sinhala.json"
-            if glossary_path.exists():
-                with open(glossary_path, "r", encoding="utf-8") as f:
-                    raw_data = json.load(f)
-                    # Filter out comments/metadata
-                    self.gen_glossary = {k: v for k, v in raw_data.items() if not k.startswith("//") and not k.startswith("__")}
-                print(f"✅ Loaded {len(self.gen_glossary)} generation rules from glossary.")
-        except Exception as e:
-            print(f"⚠️ Warning: Could not load Generation Glossary: {e}")
+        # 🆕 NLG GLOSSARY — Dynamic Code-Mixing & Tone Generation Engine
+        self.glossary = NLGGlossary(config.DATA_DIR / "english_to_sinhala.json")
 
     def _load_translations(self) -> Dict[str, str]:
         if self.cache_path.exists():
@@ -362,77 +353,70 @@ class LLMEngine:
 
     def enforce_spoken_sinhala(self, text: str) -> str:
         """
-        [SAFETY NET] Deterministically replaces words using the loaded JSON glossary.
+        [SAFETY NET] Deterministic glossary replacement using NLGGlossary.
+        Uses the 'spoken_mixed' register (code-mixed Sinhala) by default.
+        Longest-first matching prevents partial-word corruption.
         """
-        # 1. Load Dynamic Rules from JSON
-        replacements = self.gen_glossary.copy()
+        register = getattr(config, 'NLG_DEFAULT_REGISTER', 'spoken_mixed')
         
-        # 2. Add Hardcoded Structural Rules (things that aren't simple words)
-        # These are safer to keep in code as they affect grammar/formatting
-        replacements.update({
+        # Structural overrides that correct common LLM translation mistakes.
+        # These fix Sinhala→Sinhala errors (not in the English→Sinhala glossary).
+        structural_fixes = {
             "පැතිකඩ": "වර්තමාන තත්ත්වය",
             "වත්මන් පැතිකඩ": "වර්තමාන තත්ත්වය",
             "අසමත්": "පාලනය නොකළ",
-            "Uncontrolled": "පාලනය නොකළ",
             "අවාසනාවන්තයි": "කණගාටුයි",
             "දොස්තර": "Doctor",
             "සායනය": "Clinic එක",
-            "මැදුරු රෝගය": "Diabetes"
-            # Note: Removed "#" and "*" to preserve markdown formatting
-        })
+            "මැදුරු රෝගය": "Diabetes",
+        }
+        for old, new in structural_fixes.items():
+            text = text.replace(old, new)
         
-        # 3. Apply Replacements
-        # Sort by length (longest first) to prevent partial matching errors
-        # e.g. Replace "Blood Pressure" before "Pressure"
-        sorted_keys = sorted(replacements.keys(), key=len, reverse=True)
+        # Apply the full glossary (sorted longest-first inside enforce_glossary)
+        text = self.glossary.enforce_glossary(text, register)
         
-        for english_term in sorted_keys:
-            sinhala_term = replacements[english_term]
-            # Case-insensitive replacement for English terms
-            if english_term.isascii():
-                pattern = re.compile(re.escape(english_term), re.IGNORECASE)
-                text = pattern.sub(sinhala_term, text)
-            else:
-                text = text.replace(english_term, sinhala_term)
-            
         return text
 
     def translate_to_sinhala_fallback(self, text: str) -> str:
         """
-        [STYLE LAYER] Translates medical advice to Natural Spoken Sinhala (Katha Wahara).
-        NOW INJECTS GLOSSARY HINTS to prevent hallucinations (e.g. Stomach -> Back).
+        [STYLE LAYER] Translates medical advice to Natural Spoken Sinhala.
+        
+        Research-grade pipeline:
+          1. Scan English text for glossary terms → build register-aware hints
+          2. Inject hints as vocabulary constraints into the LLM prompt
+          3. LLM generates grammatically correct Sinhala with code-mixing
+          4. Deterministic safety-net pass (enforce_spoken_sinhala) catches remainders
+        
+        The LLM sees both 'spoken_mixed' and 'pure_sinhala' registers so it can
+        choose the culturally appropriate form based on sentence context.
         """
-        print(f"⚠️ Style: Transforming to Natural Spoken Sinhala...")
+        print(f"⚠️ Style: Transforming to Natural Spoken Sinhala (v2 — Code-Mixing Engine)...")
 
-        # 1. GENERATE HINTS FROM YOUR GLOSSARY
-        # Scan the English text for keys in your english_to_sinhala.json
-        hints = []
-        text_lower = text.lower()
-        # Sort keys by length so "Stomach Pain" matches before "Pain"
-        sorted_keys = sorted(self.gen_glossary.keys(), key=len, reverse=True)
+        register = getattr(config, 'NLG_DEFAULT_REGISTER', 'spoken_mixed')
+        max_hints = getattr(config, 'NLG_HINT_LIMIT', 25)
+
+        # 1. GENERATE REGISTER-AWARE HINTS via NLGGlossary
+        hint_strings, matched_entries = self.glossary.get_hints_for_text(
+            text, register=register, max_hints=max_hints
+        )
+        hint_str = "\n   ".join(hint_strings) if hint_strings else "(No specific terms detected)"
+        print(f"   💡 Style Hints ({len(hint_strings)} terms matched)")
         
-        for key in sorted_keys:
-            # Skip metadata
-            if key.startswith("//") or key.startswith("__"):
-                continue
-            if key.lower() in text_lower:
-                val = self.gen_glossary[key]
-                if val:  # Only add if there's a non-empty translation
-                    hints.append(f"'{key}' -> '{val}'")
-                # Stop if we have too many hints to avoid token overflow
-                if len(hints) > 15:
-                    break
-        
-        hint_str = ", ".join(hints) if hints else "(No specific terms detected)"
-        print(f"   💡 Style Hints: {{ {hint_str} }}")
-        
-        # 2. UPDATED PROMPT WITH HINTS
+        # 2. REGISTER-AWARE PROMPT WITH STRUCTURED HINTS
         system_prompt = (
-            "You are a compassionate Sri Lankan medical assistant. "
-            "Rewrite the input into **CASUAL SPOKEN SINHALA (Katha Wahara)**.\n\n"
+            "You are a compassionate Sri Lankan medical assistant who speaks like a real \n"
+            "doctor at a government hospital OPD. Rewrite the input into **CASUAL SPOKEN \n"
+            "SINHALA (Katha Wahara — the way real doctors talk to patients in Sri Lanka)**.\n\n"
             
-            "🔥 CRITICAL VOCABULARY RULES (YOU MUST USE THESE EXACT TERMS):\n"
+            "🔥 CRITICAL VOCABULARY CONSTRAINTS (YOU MUST USE THESE EXACT TERMS):\n"
             f"   {hint_str}\n\n"
+            
+            "🔬 CODE-MIXING REGISTER RULES:\n"
+            "   DEFAULT: Use the 'spoken_mixed' form (code-mixed with English medical terms).\n"
+            "   Sri Lankan patients understand 'Pressure එක' better than 'අධි රුධිර පීඩනය'.\n"
+            "   Keep English terms like Creatinine, eGFR, Dialysis, Biopsy, CT Scan as-is.\n"
+            "   Only use 'pure_sinhala' forms when the surrounding sentence is 100% Unicode.\n\n"
             
             "🔥 STYLE RULES:\n"
             "1. **Opener:** Start with 'ඔයාගේ තත්ත්වයත් එක්ක බලද්දී...' (Considering your condition...).\n"
@@ -475,7 +459,7 @@ class LLMEngine:
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": text}
                 ],
-                "temperature": 0.2,  # Even lower to force adherence to hints
+                "temperature": 0.2,
                 "max_tokens": 2048
             }
             
@@ -484,15 +468,8 @@ class LLMEngine:
             if response.status_code == 200:
                 translation = response.json()['choices'][0]['message']['content'].strip()
                 
-                # 🛡️ SAFETY NET: Deterministic Fixes (Your Python Rules)
-                translation = translation.replace("දොස්තර", "Doctor")
-                translation = translation.replace("රුධිර පීඩනය", "Pressure එක")
-                translation = translation.replace("සායනය", "Clinic එක")
-                translation = translation.replace("දියවැඩියාව", "Sugar")
-                translation = translation.replace("අවදානම", "Risk එක")
-                
-                # 🚨 THE FIX: Apply the full glossary from english_to_sinhala.json
-                # This catches LLM mistakes like "මැදුරු රෝගය" (Mosquito Disease) for Diabetes
+                # 🛡️ SAFETY NET: Apply full glossary deterministic sweep
+                # This catches LLM mistakes (e.g. "මැදුරු රෝගය" for Diabetes)
                 translation = self.enforce_spoken_sinhala(translation)
                 
                 print(f"✅ Natural Output: {translation}") 

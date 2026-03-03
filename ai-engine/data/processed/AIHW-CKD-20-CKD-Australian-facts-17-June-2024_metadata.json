@@ -1,0 +1,24 @@
+{
+  "total_pages": 122,
+  "native_pages": 118,
+  "scanned_pages": 4,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 248953,
+  "cleaned_text_length": 243140,
+  "source_file": "AIHW-CKD-20-CKD-Australian-facts-17-June-2024.pdf",
+  "extraction_date": "2026-03-02T17:33:54.535604",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "Chronic kidney disease: Australian facts",
+  "author": "AIHW",
+  "year": "2024",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "dialysis",
+    "kidney function"
+  ],
+  "total_chunks": 113,
+  "avg_chunk_size": 81.58407079646018,
+  "processing_date": "2026-03-02T17:35:27.832390"
+}

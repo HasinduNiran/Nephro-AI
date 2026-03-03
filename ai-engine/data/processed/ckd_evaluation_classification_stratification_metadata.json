@@ -1,0 +1,24 @@
+{
+  "total_pages": 356,
+  "native_pages": 326,
+  "scanned_pages": 30,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 851607,
+  "cleaned_text_length": 744639,
+  "source_file": "ckd_evaluation_classification_stratification.pdf",
+  "extraction_date": "2026-03-02T16:06:33.542407",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "5349$$CHFM",
+  "author": "mac20",
+  "year": "2009",
+  "organization": "NKF",
+  "guideline_type": "Clinical Practice Guideline",
+  "keywords": [
+    "chronic kidney disease",
+    "renal"
+  ],
+  "total_chunks": 348,
+  "avg_chunk_size": 110.00574712643679,
+  "processing_date": "2026-03-02T16:09:09.556547"
+}
