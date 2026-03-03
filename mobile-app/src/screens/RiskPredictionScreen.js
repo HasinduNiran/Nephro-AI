@@ -7,16 +7,8 @@ import {
   Alert,
   ActivityIndicator,
   TouchableOpacity,
-  Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  getSdkStatus,
-  initialize,
-  requestPermission,
-  readRecords,
-  SdkAvailabilityStatus,
-} from "react-native-health-connect";
 import CustomInput from "../components/CustomInput";
 import CustomButton from "../components/CustomButton";
 import axios from "../api/axiosConfig";
@@ -35,8 +27,8 @@ const RiskPredictionScreen = ({ navigation, route }) => {
   const [riskLevel, setRiskLevel] = useState(null);
   const [riskScore, setRiskScore] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
-  const [fetchingBP, setFetchingBP] = useState(false);
-  const [bpSource, setBpSource] = useState(null); // 'healthConnect' or null
+  const [bpAvgLoading, setBpAvgLoading] = useState(true);
+  const [bpAvgData, setBpAvgData] = useState(null); // { avgSystolic, avgDiastolic, recordCount }
 
   // Fetch user data on component mount
   useEffect(() => {
@@ -75,6 +67,36 @@ const RiskPredictionScreen = ({ navigation, route }) => {
 
     loadUserData();
   }, []);
+
+  // Fetch this month's BP average from saved records
+  useEffect(() => {
+    const loadMonthlyBPAvg = async () => {
+      try {
+        const uid =
+          userId !== "test-user-id"
+            ? userId
+            : await AsyncStorage.getItem("userID");
+        if (!uid) return;
+        const now = new Date();
+        const month = now.getMonth() + 1;
+        const year = now.getFullYear();
+        const res = await axios.get(
+          `/bp-records/${uid}/monthly-average?month=${month}&year=${year}`,
+        );
+        const data = res.data;
+        setBpAvgData(data);
+        if (data.recordCount > 0) {
+          setBpSystolic(String(data.avgSystolic));
+          setBpDiastolic(String(data.avgDiastolic));
+        }
+      } catch (err) {
+        console.warn("loadMonthlyBPAvg error:", err);
+      } finally {
+        setBpAvgLoading(false);
+      }
+    };
+    loadMonthlyBPAvg();
+  }, [userId]);
 
   // Fetch blood pressure from Health Connect (smartwatch / wearable)
   const fetchBPFromHealthConnect = async () => {
@@ -389,39 +411,38 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       <Text style={styles.title}>Early Risk Prediction</Text>
       <Text style={styles.subtitle}>Enter your vital signs below</Text>
 
-      {/* Health Connect - Fetch BP from Watch */}
-      {Platform.OS === "android" && (
-        <TouchableOpacity
-          style={[
-            styles.healthConnectButton,
-            fetchingBP && styles.healthConnectButtonDisabled,
-          ]}
-          onPress={fetchBPFromHealthConnect}
-          disabled={fetchingBP}
-        >
-          {fetchingBP ? (
-            <View style={styles.healthConnectButtonContent}>
-              <ActivityIndicator size="small" color="#fff" />
-              <Text style={styles.healthConnectButtonText}>
-                Fetching BP data...
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.healthConnectButtonContent}>
-              <Text style={styles.healthConnectButtonText}>
-                ⌚ Import BP from Watch (Health Connect)
-              </Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      )}
-
-      {bpSource === "healthConnect" && (
-        <View style={styles.bpSourceBadge}>
-          <Text style={styles.bpSourceText}>
-            ✓ BP imported from Health Connect
-          </Text>
+      {/* BP Monthly Average Card */}
+      {bpAvgLoading ? (
+        <View style={styles.bpAvgCard}>
+          <ActivityIndicator size="small" color="#4A90E2" />
+          <Text style={styles.bpAvgLoadingText}>Loading BP average...</Text>
         </View>
+      ) : bpAvgData?.recordCount > 0 ? (
+        <View style={styles.bpAvgCard}>
+          <Text style={styles.bpAvgLabel}>
+            📊 BP from monthly average ({bpAvgData.recordCount} reading
+            {bpAvgData.recordCount !== 1 ? "s" : ""})
+          </Text>
+          <Text style={styles.bpAvgValue}>
+            <Text style={{ color: "#FF4757" }}>{bpAvgData.avgSystolic}</Text>
+            <Text style={{ color: "#8E8E93" }}> / </Text>
+            <Text style={{ color: "#4A90E2" }}>{bpAvgData.avgDiastolic}</Text>
+            <Text style={{ color: "#8E8E93", fontSize: 13 }}> mmHg</Text>
+          </Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("BPHistory", { userId })}
+          >
+            <Text style={styles.bpAvgLink}>Manage BP data →</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={styles.bpNoDataCard}
+          onPress={() => navigation.navigate("BPHistory", { userId })}
+        >
+          <Text style={styles.bpNoDataText}>⚠️ No BP data for this month.</Text>
+          <Text style={styles.bpNoDataLink}>Add readings in BP History →</Text>
+        </TouchableOpacity>
       )}
 
       <View style={styles.readOnlyContainer}>
@@ -435,26 +456,6 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         </View>
       </View>
 
-      <CustomInput
-        placeholder="Systolic BP (mmHg) *Required"
-        value={bpSystolic}
-        setValue={(val) => {
-          setBpSystolic(val);
-          setBpSource(null);
-        }}
-        keyboardType="numeric"
-        helperText="Range: 70-250 mmHg"
-      />
-      <CustomInput
-        placeholder="Diastolic BP (mmHg) *Required"
-        value={bpDiastolic}
-        setValue={(val) => {
-          setBpDiastolic(val);
-          setBpSource(null);
-        }}
-        keyboardType="numeric"
-        helperText="Range: 40-150 mmHg"
-      />
       <CustomInput
         placeholder="HbA1c Level (%) - Optional"
         value={hba1cLevel}
@@ -538,10 +539,11 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       <View style={styles.infoCard}>
         <Text style={styles.infoTitle}>💡 About the Prediction</Text>
         <Text style={styles.infoText}>
-          {"\n\n"}Required: Systolic BP, Diastolic BP, and Age
-          {"\n"}Optional: HbA1c Level (%)
-          {"\n\n"}Both blood pressure values are important for accurate kidney
-          health assessment.
+          {"\n\n"}BP values are automatically sourced from your monthly average
+          saved in BP History.
+          {"\n\n"}Optional: HbA1c Level (%) for more accurate prediction.
+          {"\n\n"}Add or sync BP readings in BP History to keep your average up
+          to date.
           {"\n\n"}Save your prediction each month to track your kidney health
           trend over time.
         </Text>
@@ -567,7 +569,61 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: "#8E8E93",
-    marginBottom: 30,
+    marginBottom: 20,
+  },
+  bpAvgCard: {
+    width: "100%",
+    backgroundColor: "#EBF4FF",
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: "#4A90E2",
+  },
+  bpAvgLabel: {
+    fontSize: 13,
+    color: "#4A90E2",
+    fontWeight: "600",
+    marginBottom: 6,
+  },
+  bpAvgValue: {
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  bpAvgLink: {
+    fontSize: 13,
+    color: "#4A90E2",
+    fontWeight: "600",
+    textDecorationLine: "underline",
+  },
+  bpAvgLoadingText: {
+    fontSize: 14,
+    color: "#8E8E93",
+    marginTop: 8,
+    textAlign: "center",
+  },
+  bpNoDataCard: {
+    width: "100%",
+    backgroundColor: "#FFF5E6",
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: "#F5A623",
+    alignItems: "flex-start",
+  },
+  bpNoDataText: {
+    fontSize: 14,
+    color: "#F5A623",
+    fontWeight: "600",
+    marginBottom: 6,
+  },
+  bpNoDataLink: {
+    fontSize: 13,
+    color: "#F5A623",
+    fontWeight: "600",
+    textDecorationLine: "underline",
   },
   readOnlyContainer: {
     width: "100%",
@@ -733,49 +789,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#555",
     lineHeight: 20,
-  },
-  healthConnectButton: {
-    backgroundColor: "#00897B",
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    width: "100%",
-    alignItems: "center",
-    marginBottom: 10,
-    shadowColor: "#00897B",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 4,
-  },
-  healthConnectButtonDisabled: {
-    backgroundColor: "#80CBC4",
-  },
-  healthConnectButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  healthConnectButtonText: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "bold",
-  },
-  bpSourceBadge: {
-    backgroundColor: "#E8F5E9",
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: "#A5D6A7",
-    width: "100%",
-    alignItems: "center",
-  },
-  bpSourceText: {
-    color: "#2E7D32",
-    fontSize: 13,
-    fontWeight: "600",
   },
 });
 

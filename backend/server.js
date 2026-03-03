@@ -12,6 +12,7 @@ const kidneyusRoutes = require("./routes/kidneyus");
 const labRoutes = require("./routes/lab");
 const riskHistoryRoutes = require("./routes/riskHistory");
 const stageProgressionRoutes = require("./routes/stageProgression");
+const bpRoutes = require("./routes/bp");
 
 const app = express();
 
@@ -43,10 +44,10 @@ const upload = multer({
 
     const allowedTypes = /jpeg|jpg|png|bmp/;
     const extname = allowedTypes.test(
-      path.extname(file.originalname).toLowerCase()
+      path.extname(file.originalname).toLowerCase(),
     );
     const mimetype = file.mimetype.startsWith("image/");
-    
+
     // Accept if EITHER mimetype OR extension is valid
     if (mimetype || extname) {
       console.log("  ✓ File accepted");
@@ -83,6 +84,7 @@ app.use("/api/mealPlate", foodRoutes);
 app.use("/api/kidneyus", kidneyusRoutes);
 app.use("/api/lab", labRoutes);
 app.use("/api/stage-progression", stageProgressionRoutes);
+app.use("/api/bp-records", bpRoutes);
 
 // Ultrasound upload endpoint
 app.post("/api/upload-ultrasound", upload.single("ultrasound"), (req, res) => {
@@ -107,7 +109,7 @@ app.post("/api/upload-ultrasound", upload.single("ultrasound"), (req, res) => {
     "ai-engine",
     "src",
     "ckd_stage",
-    "ultrasound_scan.py"
+    "ultrasound_scan.py",
   );
 
   console.log("=== ULTRASOUND ANALYSIS START ===");
@@ -154,7 +156,7 @@ app.post("/api/upload-ultrasound", upload.single("ultrasound"), (req, res) => {
 
   pythonProcess.on("close", async (code) => {
     console.log("Python process exited with code:", code);
-    
+
     // Clean up uploaded file
     fs.unlink(imagePath, (err) => {
       if (err) console.error("Error deleting file:", err);
@@ -172,8 +174,10 @@ app.post("/api/upload-ultrasound", upload.single("ultrasound"), (req, res) => {
     try {
       // Some debug lines may come from stdout; grab the last JSON-looking line
       const lines = dataString.trim().split(/\r?\n/);
-      const jsonLine = [...lines].reverse().find((line) => line.trim().startsWith("{"));
-      
+      const jsonLine = [...lines]
+        .reverse()
+        .find((line) => line.trim().startsWith("{"));
+
       if (!jsonLine) {
         console.error("No JSON output found. Raw output:", dataString);
         return res.status(500).json({
