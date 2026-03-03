@@ -1,20 +1,24 @@
 """
-PORTION ESTIMATOR MODULE
-=========================
-Uses pre-calibrated compartment masks to automatically estimate
-food portion sizes from a meal photo.
+PORTION ESTIMATOR MODULE  –  Direct Proportion Method
+=====================================================
+Since the camera overlay locks the plate to a FIXED size and distance,
+the compartment pixel areas are CONSTANTS (measured once from empty_plate.png
+at its native 1524×1557 resolution via watershed segmentation).
 
-ALGORITHM:
-  1. Load the pre-calibrated compartment masks (from auto_calibrate.py)
-  2. For each YOLO-detected food, find which compartment it's in
-  3. Count how many pixels the food fills within that compartment
-  4. Convert fill-ratio → volume (ml) → weight (grams) using:
-       weight = (food_pixels / compartment_pixels) × compartment_volume_ml × food_density
-  
-REQUIREMENTS:
-  - plate_calibration.json  (from auto_calibrate.py)
-  - compartment_masks.npz   (from auto_calibrate.py)
-  - User photo taken with plate aligned to overlay
+ALGORITHM (simple & accurate):
+  1.  YOLO detects food items → bounding boxes
+  2.  For each food, OpenCV creates a precise colour-based food mask
+  3.  Map food mask → compartment (by pixel overlap)
+  4.  Count food pixels inside that compartment
+  5.  Direct proportion:
+          food_volume_ml = (food_pixels / compartment_pixels) × compartment_volume_ml
+  6.  Weight:
+          food_grams = food_volume_ml × food_density_g_per_ml
+
+All constants below come from:
+  • empty_plate.png  (1524×1557 RGBA)  → compartment pixel areas
+  • Physical measurement with water     → compartment volumes (ml)
+  • Food science / USDA tables          → food densities (g/ml)
 """
 
 import cv2
@@ -24,22 +28,49 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# ──────────────────────────────────────────────────────────────
-# FOOD DENSITY DATABASE (g/ml)
-# ──────────────────────────────────────────────────────────────
-# These are approximate densities for common Sri Lankan foods
-# Source: USDA + local nutritional references
+# ══════════════════════════════════════════════════════════════
+# HARDCODED CONSTANTS  (from empty_plate.png at 1524×1557)
+# ══════════════════════════════════════════════════════════════
+
+# Standard resolution — every incoming photo is resized to this
+STANDARD_W = 1524
+STANDARD_H = 1557
+
+# Compartment pixel areas (from empty_plate.png at 1524×1557)
+COMPARTMENT_PIXELS = {
+    "main_carb": 928_211,   # large section         (56.30 %)
+    "side_1":    446_945,   # rectangle section     (27.11 %)
+    "side_2":    272_929,   # small square section  (16.56 %)
+}
+
+# Centroids (for mapping YOLO bbox → compartment)
+COMPARTMENT_CENTROIDS = {
+    "main_carb": (455,  764),
+    "side_1":    (1134, 1034),
+    "side_2":    (1123, 349),
+}
+
+# Real volumes measured by filling each compartment with water
+COMPARTMENT_VOLUME_ML = {
+    "main_carb": 560,   # ml  (large section)
+    "side_1":    240,   # ml  (rectangle section)
+    "side_2":    155,   # ml  (small square section)
+}
+
+# ══════════════════════════════════════════════════════════════
+# FOOD DENSITY DATABASE  (g / ml)
+# ══════════════════════════════════════════════════════════════
 FOOD_DENSITY = {
-    # Rice & Carbs
-    "white rice":       1.10,   # cooked white rice is ~1.1 g/ml
+    # ── Rice & Carbs ──
+    "white rice":       1.10,
     "red rice":         1.08,
     "fried rice":       1.05,
     "roti":             0.85,
     "string hoppers":   0.50,
     "pittu":            0.80,
     "hoppers":          0.45,
-    
-    # Curries & Protein
+
+    # ── Curries & Protein ──
     "chicken":          0.95,
     "fish curry":       0.90,
     "dahl curry":       1.05,
@@ -47,339 +78,255 @@ FOOD_DENSITY = {
     "egg":              1.03,
     "cutlet":           0.85,
     "tempered sprats":  0.80,
-    
-    # Vegetables & Sides
-    "mallum":           0.55,
-    "mallum - gotukola":      0.55,
-    "mallum - mukunuwenna":   0.55,
-    "mallum - murunga":       0.55,
-    "mallum - kathurumurunga": 0.55,
-    "mallum - asamodagam":    0.55,
-    "beetroot":         0.85,
-    "Pol sambol":       0.75,
-    "Pol sambol - tempered":  0.75,
-    "Pol sambol - lime added": 0.75,
-    
-    # Fruits
-    "avacado":          0.60,
-    "pineapple":        0.65,
-    
-    # Default fallback
-    "_default":         0.85,
+
+    # ── Vegetables & Sides ──
+    "mallum":                   0.55,
+    "mallum - gotukola":        0.55,
+    "mallum - mukunuwenna":     0.55,
+    "mallum - murunga":         0.55,
+    "mallum - kathurumurunga":  0.55,
+    "mallum - asamodagam":      0.55,
+    "beetroot":                 0.85,
+    "Pol sambol":               0.75,
+    "Pol sambol - tempered":    0.75,
+    "Pol sambol - lime added":  0.75,
+
+    # ── Fruits ──
+    "avacado":    0.60,
+    "pineapple":  0.65,
+
+    # ── Fallback ──
+    "_default":   0.85,
 }
 
 
-class PortionEstimator:
+# ══════════════════════════════════════════════════════════════
+# COMPARTMENT MASKS  (loaded once from .npz)
+# ══════════════════════════════════════════════════════════════
+_masks = {}   # name → uint8 mask (1524×1557)
+
+def _load_masks():
+    """Load pre-computed binary masks (generated by auto_calibrate / save script)."""
+    global _masks
+    npz_path = os.path.join(BASE_DIR, "compartment_masks.npz")
+    if not os.path.exists(npz_path):
+        print("[PortionEstimator] WARNING: compartment_masks.npz not found – "
+              "run calibration first!")
+        return
+    data = np.load(npz_path)
+    for name in data.files:
+        m = data[name]
+        # Ensure standard resolution
+        if m.shape[0] != STANDARD_H or m.shape[1] != STANDARD_W:
+            m = cv2.resize(m, (STANDARD_W, STANDARD_H), interpolation=cv2.INTER_NEAREST)
+        _masks[name] = m
+    print(f"[PortionEstimator] Loaded masks: {list(_masks.keys())}")
+    for name, m in _masks.items():
+        px = int(np.count_nonzero(m))
+        vol = COMPARTMENT_VOLUME_ML.get(name, "?")
+        print(f"  {name}: {px:,} px, volume={vol} ml")
+
+_load_masks()
+
+
+# ══════════════════════════════════════════════════════════════
+# CORE FUNCTIONS
+# ══════════════════════════════════════════════════════════════
+
+def standardize_image(cv_img):
+    """Resize any incoming image to the fixed overlay resolution."""
+    h, w = cv_img.shape[:2]
+    if w != STANDARD_W or h != STANDARD_H:
+        cv_img = cv2.resize(cv_img, (STANDARD_W, STANDARD_H),
+                            interpolation=cv2.INTER_AREA)
+    return cv_img
+
+
+def create_food_mask(cv_img, x1, y1, x2, y2):
     """
-    Estimates portion sizes using calibrated compartment masks.
+    Create a precise binary food mask inside a bounding box using GrabCut.
+    Falls back to the raw bbox if GrabCut fails.
+
+    Args:
+        cv_img:  BGR image at standard resolution
+        x1–y2:  bounding box in standard-resolution coords
+    Returns:
+        uint8 mask (h, w) with 255 = food, 0 = background
     """
-    
-    def __init__(self, calibration_dir=None):
-        if calibration_dir is None:
-            calibration_dir = BASE_DIR
-        
-        self.cal_json_path = os.path.join(calibration_dir, "plate_calibration.json")
-        self.masks_npz_path = os.path.join(calibration_dir, "compartment_masks.npz")
-        
-        self.calibration = None
-        self.compartment_masks = {}
-        self.is_loaded = False
-        
-        self._load_calibration()
-    
-    def _load_calibration(self):
-        """Load calibration data and masks."""
-        if not os.path.exists(self.cal_json_path):
-            print(f"[PortionEstimator] WARNING: No calibration file found at {self.cal_json_path}")
-            print("  Run auto_calibrate.py first!")
-            return
-        
-        if not os.path.exists(self.masks_npz_path):
-            print(f"[PortionEstimator] WARNING: No masks file found at {self.masks_npz_path}")
-            return
-        
-        # Load JSON
-        with open(self.cal_json_path, "r") as f:
-            self.calibration = json.load(f)
-        
-        # Load masks
-        data = np.load(self.masks_npz_path)
-        for name in data.files:
-            self.compartment_masks[name] = data[name]
-        
-        self.is_loaded = True
-        print(f"[PortionEstimator] Loaded calibration: {list(self.compartment_masks.keys())}")
-        
-        # Print summary
-        for name, info in self.calibration["compartments"].items():
-            vol = self.calibration["volume_ml"].get(name, "?")
-            print(f"  {name}: {info['pixel_area']} px, {info['percentage_of_plate']}%, volume={vol} ml")
-    
-    def standardize_image(self, image):
-        """Resize image to match calibration standard resolution."""
-        if self.calibration is None:
-            return image
-        
-        target_w = self.calibration["standard_resolution"]["width"]
-        target_h = self.calibration["standard_resolution"]["height"]
-        
-        if image.shape[1] != target_w or image.shape[0] != target_h:
-            image = cv2.resize(image, (target_w, target_h), interpolation=cv2.INTER_AREA)
-        
-        return image
-    
-    def find_food_in_compartment(self, food_mask):
-        """
-        Given a binary mask of where a food was detected,
-        determine which compartment it belongs to.
-        Returns (compartment_name, overlap_pixels).
-        """
-        best_name = None
-        best_overlap = 0
-        
-        for name, comp_mask in self.compartment_masks.items():
-            # Ensure same size
-            if comp_mask.shape != food_mask.shape:
-                comp_mask = cv2.resize(comp_mask, (food_mask.shape[1], food_mask.shape[0]))
-            
-            overlap = cv2.bitwise_and(food_mask, comp_mask)
-            overlap_pixels = cv2.countNonZero(overlap)
-            
-            if overlap_pixels > best_overlap:
-                best_overlap = overlap_pixels
-                best_name = name
-        
-        return best_name, best_overlap
-    
-    def estimate_fill_ratio(self, food_mask, compartment_name):
-        """
-        Calculate what fraction of the compartment is filled by this food.
-        """
-        comp_mask = self.compartment_masks.get(compartment_name)
-        if comp_mask is None:
-            return 0.0
-        
-        if comp_mask.shape != food_mask.shape:
-            comp_mask = cv2.resize(comp_mask, (food_mask.shape[1], food_mask.shape[0]))
-        
-        # Pixels of food within this compartment
-        food_in_comp = cv2.bitwise_and(food_mask, comp_mask)
-        food_pixels = cv2.countNonZero(food_in_comp)
-        comp_total = cv2.countNonZero(comp_mask)
-        
-        if comp_total == 0:
-            return 0.0
-        
-        return food_pixels / comp_total
-    
-    def estimate_portion_grams(self, food_name, food_mask):
-        """
-        Main method: estimate portion weight in grams.
-        
-        Args:
-            food_name: Name of detected food (from YOLO)
-            food_mask: Binary mask (same resolution as calibration standard)
-            
-        Returns:
-            dict with portion estimation details
-        """
-        if not self.is_loaded:
-            return {
-                "food": food_name,
-                "estimated_grams": 0,
-                "error": "Calibration not loaded"
-            }
-        
-        # Find which compartment this food is in
-        compartment_name, overlap = self.find_food_in_compartment(food_mask)
-        
-        if compartment_name is None or overlap < 50:
-            return {
-                "food": food_name,
-                "estimated_grams": 0,
-                "compartment": None,
-                "error": "Food not found in any compartment"
-            }
-        
-        # Calculate fill ratio
-        fill_ratio = self.estimate_fill_ratio(food_mask, compartment_name)
-        
-        # Get compartment volume
-        volume_ml = self.calibration["volume_ml"].get(compartment_name, 200)
-        
-        # Get food density
-        density = FOOD_DENSITY.get(food_name, FOOD_DENSITY["_default"])
-        
-        # Estimate volume filled and weight
-        estimated_volume_ml = fill_ratio * volume_ml
-        estimated_grams = estimated_volume_ml * density
-        
+    h, w = cv_img.shape[:2]
+    x1, y1 = max(0, x1), max(0, y1)
+    x2, y2 = min(w, x2), min(h, y2)
+    bw, bh = x2 - x1, y2 - y1
+
+    mask = np.zeros((h, w), dtype=np.uint8)
+
+    if bw < 10 or bh < 10:
+        mask[y1:y2, x1:x2] = 255
+        return mask
+
+    try:
+        gc_mask = np.zeros((h, w), dtype=np.uint8)
+        bgd = np.zeros((1, 65), np.float64)
+        fgd = np.zeros((1, 65), np.float64)
+        cv2.grabCut(cv_img, gc_mask, (x1, y1, bw, bh),
+                    bgd, fgd, 5, cv2.GC_INIT_WITH_RECT)
+        mask = np.where((gc_mask == cv2.GC_FGD) | (gc_mask == cv2.GC_PR_FGD),
+                        255, 0).astype(np.uint8)
+    except Exception:
+        mask[y1:y2, x1:x2] = 255
+
+    return mask
+
+
+def map_food_to_compartment(food_mask):
+    """
+    Determine which compartment a food belongs to by maximum pixel overlap.
+
+    Returns:
+        (compartment_name, food_pixels_in_compartment)  or  (None, 0)
+    """
+    best_name, best_px = None, 0
+    for name, comp_mask in _masks.items():
+        overlap = cv2.bitwise_and(food_mask, comp_mask)
+        px = int(cv2.countNonZero(overlap))
+        if px > best_px:
+            best_px = px
+            best_name = name
+    return best_name, best_px
+
+
+def estimate_portion(food_name, food_mask):
+    """
+    Direct-proportion estimation for a single food item.
+
+    food_pixels / compartment_pixels  =  food_volume / compartment_volume
+    food_grams  =  food_volume × density
+
+    Args:
+        food_name:  YOLO class name (e.g. "white rice")
+        food_mask:  uint8 mask at standard resolution (255 = food)
+    Returns:
+        dict with all estimation details
+    """
+    compartment, food_pixels = map_food_to_compartment(food_mask)
+
+    if compartment is None or food_pixels < 50:
         return {
             "food": food_name,
-            "compartment": compartment_name,
-            "fill_ratio": round(fill_ratio, 3),
-            "estimated_volume_ml": round(estimated_volume_ml, 1),
-            "density_g_per_ml": density,
-            "estimated_grams": round(estimated_grams, 1),
-            "confidence": self._calculate_confidence(fill_ratio, overlap)
+            "estimated_grams": 0,
+            "compartment": None,
+            "error": "Food not matched to any compartment",
         }
-    
-    def _calculate_confidence(self, fill_ratio, overlap_pixels):
-        """
-        Heuristic confidence score (0-1) based on:
-        - Fill ratio reasonableness (0.05 - 0.95 is normal)
-        - Number of overlap pixels (more = more reliable)
-        """
-        # Fill ratio confidence
-        if 0.1 <= fill_ratio <= 0.9:
-            fill_conf = 1.0
-        elif 0.05 <= fill_ratio < 0.1 or 0.9 < fill_ratio <= 0.95:
-            fill_conf = 0.7
-        else:
-            fill_conf = 0.4
-        
-        # Overlap confidence
-        if overlap_pixels > 5000:
-            overlap_conf = 1.0
-        elif overlap_pixels > 1000:
-            overlap_conf = 0.8
-        elif overlap_pixels > 200:
-            overlap_conf = 0.6
-        else:
-            overlap_conf = 0.3
-        
-        return round((fill_conf * 0.6 + overlap_conf * 0.4), 2)
-    
-    def estimate_from_yolo_boxes(self, image, yolo_results):
-        """
-        Convenience method: takes raw YOLO results and estimates all portions.
-        
-        Args:
-            image: BGR image (will be standardized)
-            yolo_results: YOLO model results object
-            
-        Returns:
-            List of portion estimates for each detected food
-        """
-        image = self.standardize_image(image)
-        h, w = image.shape[:2]
-        
-        estimates = []
-        
-        for result in yolo_results:
-            for box in result.boxes:
-                class_id = int(box.cls[0])
-                food_name = result.names[class_id]
-                confidence = float(box.conf[0])
-                
-                # Get bounding box
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
-                
-                # Create a food mask from the bounding box
-                # For better accuracy, we can use color segmentation within the box
-                food_mask = self._create_food_mask(image, x1, y1, x2, y2)
-                
-                estimate = self.estimate_portion_grams(food_name, food_mask)
-                estimate["detection_confidence"] = round(confidence, 3)
-                estimate["bbox"] = [x1, y1, x2, y2]
-                estimates.append(estimate)
-        
-        return estimates
-    
-    def _create_food_mask(self, image, x1, y1, x2, y2):
-        """
-        Create a binary mask for the food region.
-        Uses GrabCut within the bounding box for better precision than just the box.
-        """
-        h, w = image.shape[:2]
-        mask = np.zeros((h, w), dtype=np.uint8)
-        
-        # Ensure coords are within bounds
-        x1 = max(0, x1)
-        y1 = max(0, y1)
-        x2 = min(w, x2)
-        y2 = min(h, y2)
-        
-        box_w = x2 - x1
-        box_h = y2 - y1
-        
-        if box_w < 10 or box_h < 10:
-            # Box too small, just fill it
-            mask[y1:y2, x1:x2] = 255
-            return mask
-        
-        try:
-            # Use GrabCut for precise food segmentation within the box
-            gc_mask = np.zeros((h, w), dtype=np.uint8)
-            bgd_model = np.zeros((1, 65), dtype=np.float64)
-            fgd_model = np.zeros((1, 65), dtype=np.float64)
-            
-            rect = (x1, y1, box_w, box_h)
-            cv2.grabCut(image, gc_mask, rect, bgd_model, fgd_model, 3, cv2.GC_INIT_WITH_RECT)
-            
-            # Create mask where GrabCut says foreground
-            mask = np.where(
-                (gc_mask == cv2.GC_FGD) | (gc_mask == cv2.GC_PR_FGD),
-                255, 0
-            ).astype(np.uint8)
-            
-        except Exception:
-            # Fallback: just use the bounding box
-            mask[y1:y2, x1:x2] = 255
-        
-        return mask
-    
-    def estimate_from_boxes_simple(self, image_shape, detected_foods_with_boxes):
-        """
-        Simpler version: takes food names and bounding boxes directly.
-        
-        Args:
-            image_shape: (height, width) of the standardized image
-            detected_foods_with_boxes: list of dicts with 'food', 'bbox' [x1,y1,x2,y2]
-            
-        Returns:
-            List of portion estimates
-        """
-        h, w = image_shape[:2]
-        estimates = []
-        
-        for item in detected_foods_with_boxes:
-            food_name = item["food"]
-            x1, y1, x2, y2 = item["bbox"]
-            
-            # Simple rectangular mask
-            food_mask = np.zeros((h, w), dtype=np.uint8)
-            food_mask[y1:y2, x1:x2] = 255
-            
-            estimate = self.estimate_portion_grams(food_name, food_mask)
-            estimate["bbox"] = [x1, y1, x2, y2]
-            estimates.append(estimate)
-        
-        return estimates
+
+    comp_total_px = COMPARTMENT_PIXELS[compartment]
+    comp_volume   = COMPARTMENT_VOLUME_ML[compartment]
+    density       = FOOD_DENSITY.get(food_name, FOOD_DENSITY["_default"])
+
+    # ── Direct proportion ──
+    fill_ratio       = food_pixels / comp_total_px          # 0 … 1+
+    food_volume_ml   = fill_ratio * comp_volume             # ml
+    food_grams       = food_volume_ml * density             # g
+
+    return {
+        "food":               food_name,
+        "compartment":        compartment,
+        "food_pixels":        food_pixels,
+        "compartment_pixels": comp_total_px,
+        "fill_ratio":         round(fill_ratio, 4),
+        "food_volume_ml":     round(food_volume_ml, 1),
+        "density_g_per_ml":   density,
+        "estimated_grams":    round(food_grams, 1),
+        "confidence":         _confidence(fill_ratio, food_pixels),
+    }
 
 
-# ──────────────────────────────────────────────────────────────
-# STANDALONE TEST
-# ──────────────────────────────────────────────────────────────
-if __name__ == "__main__":
-    print("=== Portion Estimator Test ===\n")
-    
-    estimator = PortionEstimator()
-    
-    if not estimator.is_loaded:
-        print("Run auto_calibrate.py first to generate calibration data!")
+def _confidence(fill_ratio, food_pixels):
+    """Simple heuristic confidence 0–1."""
+    if 0.10 <= fill_ratio <= 0.95:
+        fc = 1.0
+    elif 0.05 <= fill_ratio < 0.10 or 0.95 < fill_ratio <= 1.0:
+        fc = 0.7
     else:
-        # Simulate a food detection: rice filling ~80% of main compartment
-        cal = estimator.calibration
-        w = cal["standard_resolution"]["width"]
-        h = cal["standard_resolution"]["height"]
-        
-        # Create a test mask that covers ~80% of the main_carb compartment
-        main_mask = estimator.compartment_masks.get("main_carb")
+        fc = 0.4
+
+    if food_pixels > 5000:
+        pc = 1.0
+    elif food_pixels > 1000:
+        pc = 0.8
+    elif food_pixels > 200:
+        pc = 0.6
+    else:
+        pc = 0.3
+    return round(fc * 0.6 + pc * 0.4, 2)
+
+
+# ══════════════════════════════════════════════════════════════
+# HIGH-LEVEL API  (called by predictor.py)
+# ══════════════════════════════════════════════════════════════
+
+def estimate_all_portions(cv_img, yolo_boxes):
+    """
+    Estimate portions for every YOLO detection in one call.
+
+    Args:
+        cv_img:      BGR image (any size – will be standardised)
+        yolo_boxes:  list of dicts, each with:
+                       "food"  – class name
+                       "bbox"  – [x1, y1, x2, y2] in original image coords
+                       "confidence" – YOLO confidence
+
+    Returns:
+        list of estimation dicts (same order as yolo_boxes)
+    """
+    std_img = standardize_image(cv_img)
+    h, w = std_img.shape[:2]
+    orig_h, orig_w = cv_img.shape[:2]
+    sx, sy = w / orig_w, h / orig_h
+
+    results = []
+    for det in yolo_boxes:
+        food_name = det["food"]
+        ox1, oy1, ox2, oy2 = det["bbox"]
+
+        # Scale bbox to standard resolution
+        bx1 = int(ox1 * sx)
+        by1 = int(oy1 * sy)
+        bx2 = int(ox2 * sx)
+        by2 = int(oy2 * sy)
+
+        # Precise food mask via GrabCut
+        food_mask = create_food_mask(std_img, bx1, by1, bx2, by2)
+
+        # Direct-proportion estimation
+        est = estimate_portion(food_name, food_mask)
+        est["detection_confidence"] = det.get("confidence", 0)
+        est["bbox"] = [ox1, oy1, ox2, oy2]
+        results.append(est)
+
+    return results
+
+
+# ══════════════════════════════════════════════════════════════
+# STANDALONE TEST
+# ══════════════════════════════════════════════════════════════
+if __name__ == "__main__":
+    print("\n=== Portion Estimator – Direct Proportion Test ===\n")
+
+    if not _masks:
+        print("No masks loaded. Run calibration first!")
+    else:
+        # Simulate: rice filling ~80 % of main_carb
+        main_mask = _masks.get("main_carb")
         if main_mask is not None:
-            # Erode to simulate partial fill
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
-            partial_fill = cv2.erode(main_mask, kernel)
-            
-            result = estimator.estimate_portion_grams("white rice", partial_fill)
-            print(f"Test result: {json.dumps(result, indent=2)}")
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (20, 20))
+            partial = cv2.erode(main_mask, kernel)
+            result = estimate_portion("white rice", partial)
+            print(json.dumps(result, indent=2))
+
+        # Simulate: dahl filling ~70 % of side_1
+        s1_mask = _masks.get("side_1")
+        if s1_mask is not None:
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (25, 25))
+            partial = cv2.erode(s1_mask, kernel)
+            result = estimate_portion("dahl curry", partial)
+            print(json.dumps(result, indent=2))

@@ -29,18 +29,23 @@ except Exception as e:
     model = None
 
 # ---------------------------------------------------------
-# LOAD PORTION ESTIMATOR (if calibration exists)
+# LOAD PORTION ESTIMATOR (module-level functions)
 # ---------------------------------------------------------
 try:
-    from .portion_estimator import PortionEstimator
-    portion_estimator = PortionEstimator(BASE_DIR)
-    if not portion_estimator.is_loaded:
-        portion_estimator = None
-        print("[predictor] Portion estimator: no calibration data found")
+    from .portion_estimator import (
+        standardize_image,
+        create_food_mask,
+        estimate_portion,
+        estimate_all_portions,
+        _masks as portion_masks,
+    )
+    _portion_ready = bool(portion_masks)
+    if _portion_ready:
+        print("[predictor] Portion estimator: LOADED (direct proportion)")
     else:
-        print("[predictor] Portion estimator: LOADED")
+        print("[predictor] Portion estimator: no masks found")
 except Exception as e:
-    portion_estimator = None
+    _portion_ready = False
     print(f"[predictor] Portion estimator not available: {e}")
 
 
@@ -117,42 +122,29 @@ def predict_image_with_portions(image_bytes):
                     "fill_ratio": 0,
                 }
                 
-                # 3. Estimate portion if calibration is available
-                if portion_estimator is not None:
-                    try:
-                        # Standardize image to calibration resolution
-                        std_img = portion_estimator.standardize_image(cv_img)
-                        h, w = std_img.shape[:2]
-                        
-                        # Scale bounding box to standardized resolution
-                        orig_h, orig_w = cv_img.shape[:2]
-                        sx = w / orig_w
-                        sy = h / orig_h
-                        sx1 = int(x1 * sx)
-                        sy1 = int(y1 * sy)
-                        sx2 = int(x2 * sx)
-                        sy2 = int(y2 * sy)
-                        
-                        # Create food mask using GrabCut for precision
-                        food_mask = portion_estimator._create_food_mask(
-                            std_img, sx1, sy1, sx2, sy2
-                        )
-                        
-                        # Estimate portion
-                        estimate = portion_estimator.estimate_portion_grams(
-                            food_name, food_mask
-                        )
-                        
-                        item["estimated_grams"] = estimate.get("estimated_grams", 0)
-                        item["compartment"] = estimate.get("compartment")
-                        item["fill_ratio"] = estimate.get("fill_ratio", 0)
-                        item["estimated_volume_ml"] = estimate.get("estimated_volume_ml", 0)
-                        item["portion_confidence"] = estimate.get("confidence", 0)
-                        
-                    except Exception as pe:
-                        print(f"Portion estimation error for {food_name}: {pe}")
-                
                 detected_items.append(item)
+        
+        # 3. Estimate portions using direct proportion (if masks loaded)
+        if _portion_ready and detected_items:
+            try:
+                yolo_boxes = [
+                    {"food": d["food"], "bbox": d["bbox"], "confidence": d["confidence"]}
+                    for d in detected_items
+                ]
+                estimates = estimate_all_portions(cv_img, yolo_boxes)
+                
+                # Merge estimation results back into detected_items
+                for item, est in zip(detected_items, estimates):
+                    item["estimated_grams"]    = est.get("estimated_grams", 0)
+                    item["compartment"]        = est.get("compartment")
+                    item["fill_ratio"]         = est.get("fill_ratio", 0)
+                    item["estimated_volume_ml"] = est.get("food_volume_ml", 0)
+                    item["food_pixels"]        = est.get("food_pixels", 0)
+                    item["compartment_pixels"] = est.get("compartment_pixels", 0)
+                    item["density_g_per_ml"]   = est.get("density_g_per_ml", 0)
+                    item["portion_confidence"] = est.get("confidence", 0)
+            except Exception as pe:
+                print(f"Portion estimation error: {pe}")
         
         return detected_items
     
