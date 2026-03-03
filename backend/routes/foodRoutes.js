@@ -86,7 +86,7 @@ const getWallet = async (userId) => {
 };
 
 // ---------------------------------------------------------
-// ROUTE 1: DETECT FOODS
+// ROUTE 1: DETECT FOODS (with auto portion estimation)
 // ---------------------------------------------------------
 router.post('/detect', upload.single('image'), async (req, res) => {
     try {
@@ -95,13 +95,30 @@ router.post('/detect', upload.single('image'), async (req, res) => {
         const form = new FormData();
         form.append('image', req.file.buffer, 'meal.jpg');
 
-        // Call AI Engine
-        console.log("🔍 Sending image to AI...");
-        const aiResponse = await axios.post('http://127.0.0.1:5001/predict_meal', form, {
-            headers: { ...form.getHeaders() }
-        });
+        // Call AI Engine with portion estimation
+        console.log("🔍 Sending image to AI (with portion estimation)...");
+        let aiResponse;
+        let hasPortions = false;
+        
+        try {
+            // Try the enhanced endpoint first (with auto portions)
+            aiResponse = await axios.post('http://127.0.0.1:5001/predict_meal_with_portions', form, {
+                headers: { ...form.getHeaders() }
+            });
+            hasPortions = !!(aiResponse.data.portions && aiResponse.data.portions.length > 0);
+            console.log("✅ Got portions:", hasPortions);
+        } catch (portionErr) {
+            // Fallback to original endpoint if portion endpoint not available
+            console.log("⚠️ Portion endpoint unavailable, using basic detection");
+            const fallbackForm = new FormData();
+            fallbackForm.append('image', req.file.buffer, 'meal.jpg');
+            aiResponse = await axios.post('http://127.0.0.1:5001/predict_meal', fallbackForm, {
+                headers: { ...fallbackForm.getHeaders() }
+            });
+        }
 
         const rawDetectedNames = aiResponse.data.foods || [];
+        const portionData = aiResponse.data.portions || [];
         console.log("🔍 AI Detected (Raw):", rawDetectedNames);
 
         // --- MAP RESULTS ---
@@ -112,14 +129,27 @@ router.post('/detect', upload.single('image'), async (req, res) => {
 
             console.log(`🔹 Mapping: "${rawName}" -> "${dbKey}" | Units found: ${!!data}`);
 
-            return {
-                food: dbKey, // Send the Corrected Name to Frontend
-                // Send the custom units (e.g. ['tbsp', 'small_piece']) or default to grams
-                availableUnits: data ? Object.keys(data.units) : ['grams']
+            // Find portion data for this food
+            const portion = portionData.find(p => p.food === rawName);
+            
+            const result = {
+                food: dbKey,
+                availableUnits: data ? Object.keys(data.units) : ['grams'],
             };
+            
+            // Include auto-estimated portion if available
+            if (portion && portion.estimated_grams > 0) {
+                result.autoPortionGrams = Math.round(portion.estimated_grams);
+                result.compartment = portion.compartment;
+                result.fillRatio = portion.fill_ratio;
+                result.portionConfidence = portion.portion_confidence || 0;
+                console.log(`   📏 Auto portion: ${result.autoPortionGrams}g (${portion.compartment}, fill: ${(portion.fill_ratio * 100).toFixed(0)}%)`);
+            }
+            
+            return result;
         });
 
-        res.json({ detected: results });
+        res.json({ detected: results, hasAutoPortions: hasPortions });
 
     } catch (err) {
         console.error("AI Service Error:", err.message);

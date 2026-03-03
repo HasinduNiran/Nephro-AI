@@ -1,0 +1,43 @@
+{
+  "standard_resolution": {
+    "width": 1024,
+    "height": 1024
+  },
+  "plate_center": {
+    "x": 511,
+    "y": 510
+  },
+  "total_plate_pixels": 939821,
+  "compartments": {
+    "main_carb": {
+      "pixel_area": 398884,
+      "centroid": {
+        "x": 305,
+        "y": 508
+      },
+      "percentage_of_plate": 42.44
+    },
+    "side_1": {
+      "pixel_area": 187177,
+      "centroid": {
+        "x": 765,
+        "y": 683
+      },
+      "percentage_of_plate": 19.92
+    },
+    "side_2": {
+      "pixel_area": 116441,
+      "centroid": {
+        "x": 756,
+        "y": 233
+      },
+      "percentage_of_plate": 12.39
+    }
+  },
+  "volume_ml": {
+    "main_carb": 350,
+    "side_1": 200,
+    "side_2": 200,
+    "NOTE": "Measure your plate compartments with water and update these values!"
+  }
+}
