@@ -14,6 +14,53 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from chatbot import config
 
 
+# ── Clinical keyword clusters ──────────────────────────────────────────────
+# Flags are detected by scanning raw chunk TEXT — not the extracted entity list.
+# This is robust: immune to entity-extraction failures and handles full-phrase
+# synonyms ("chronic kidney disease" not just "ckd").
+CLINICAL_CLUSTERS = {
+    "has_ckd": [
+        "ckd", "chronic kidney disease", "kidney failure", "renal failure",
+        "chronic renal", "kidney disease", "renal disease", "nephropathy",
+        "stage 3", "stage 4", "stage 5", "end-stage renal", "esrd", "eskd",
+    ],
+    "has_gfr": [
+        "gfr", "egfr", "glomerular filtration rate", "filtration rate",
+        "creatinine clearance", "kidney function", "renal function",
+        "cystatin", "ml/min", "kdigo stage",
+    ],
+    "has_dialysis": [
+        "dialysis", "hemodialysis", "haemodialysis", "peritoneal dialysis",
+        "capd", "ccpd", "renal replacement therapy", "dialysate", "kt/v",
+        "vascular access", "arteriovenous fistula", "ultrafiltration",
+    ],
+    "has_diabetes": [
+        "diabetes", "diabetic", "insulin", "hba1c", "a1c",
+        "hyperglycemi", "type 2 diabetes", "type 1 diabetes", "t2dm", "t1dm",
+        "diabetic nephropathy", "diabetic kidney",
+    ],
+    "has_hypertension": [
+        "hypertension", "blood pressure", "antihypertensive", "systolic",
+        "diastolic", "ace inhibitor", "angiotensin", "arb",
+        "mmhg", "bp control", "high blood pressure",
+    ],
+}
+
+# ── Gold-standard clinical reference documents ────────────────────────────
+# Chunks from these sources get is_gold_standard=True for priority retrieval.
+GOLD_STANDARD_DOCS = [
+    "oxford-textbook-of-clinical-nephrology",
+    "oxford-handbook-of-nephrology",
+    "oxford handbook of clinical medicine",
+    "kdigo-2024", "kdigo_2024", "kdigo_2021", "kdigo-2021",
+    "nice-chronic-kidney-disease",
+    "chronic-kidney-disease-assessment-and-management",
+    "cpg management of chronic kidney",
+    "kha-ckd-handbook",
+    "ckd_evaluation_classification_stratification",
+]
+
+
 class VectorDBPreparator:
     
     def __init__(self, chunks_file: str, output_dir: str = None):
@@ -159,47 +206,68 @@ class VectorDBPreparator:
         
         print(f"\n Preparing {len(chunks)} chunks for ChromaDB...")
         
-        # Initialize parallel arrays for ChromaDB
-        documents = []   # Text content
-        metadatas = []   # Simple metadata dictionaries
-        ids = []         # Unique identifiers
+        documents = []
+        metadatas = []
+        ids = []
         
-        # Generate base name for IDs (e.g., "kdigo_2024_ckd_guideline")
-        # Remove '_chunks' suffix and normalize separators
         base_name = Path(self.chunks_file).stem.replace('_chunks', '').replace('-', '_').lower()
         
-        # Process each chunk
         for chunk in chunks:
             # 1. Add document text
             documents.append(chunk['text'])
             
-            # 2. Create simplified metadata (ChromaDB requires simple types)
             chunk_meta = chunk['metadata']
-            entities = chunk_meta.get('medical_entities', [])
-            entities_lower = [e.lower() for e in entities]
-            
+
+            # ── Fix entity parsing ──────────────────────────────────────────
+            # medical_entities from pdf_extractor may be a comma-separated STRING.
+            # Iterating a raw string gives individual characters, not words —
+            # e.g. 'urea, diet' → ['u','r','e','a',',',' ','d','i','e','t'].
+            # Normalise to a proper list before any use.
+            raw_entities = chunk_meta.get('medical_entities', [])
+            if isinstance(raw_entities, str):
+                entity_list = [e.strip() for e in raw_entities.split(',') if e.strip()]
+            else:
+                entity_list = list(raw_entities)
+
+            # ── Text-based clinical flag detection (fuzzy keyword clusters) ─
+            # Scan the raw chunk text directly — robust, handles synonyms and
+            # full phrases that a simple entity list would miss.
+            text_lower = chunk['text'].lower()
+            clinical_flags = {
+                flag: bool(any(kw in text_lower for kw in keywords))
+                for flag, keywords in CLINICAL_CLUSTERS.items()
+            }
+
+            # ── Gold-standard source detection ─────────────────────────────
+            source_name = chunk_meta.get('source_file', os.path.basename(self.chunks_file))
+            is_gold = bool(
+                any(gs.lower() in source_name.lower() for gs in GOLD_STANDARD_DOCS)
+            )
+
             metadata = {
                 # Basic information
-                'source': chunk_meta.get('source_file', os.path.basename(self.chunks_file)),
-                'chunk_id': chunk['chunk_id'],
-                'content_type': chunk_meta.get('content_type', 'general'),
+                'source':                  source_name,
+                'chunk_id':                chunk['chunk_id'],
+                'content_type':            chunk_meta.get('content_type', 'general'),
                 'content_type_confidence': chunk_meta.get('content_type_confidence', 0),
-                'word_count': chunk['word_count'],
-                'entity_count': chunk_meta.get('entity_count', 0),
-                
-                # Boolean flags for fast filtering
-                'has_ckd': any(e in entities_lower for e in ['ckd', 'chronic kidney disease']),
-                'has_gfr': any(e in entities_lower for e in ['gfr', 'egfr', 'glomerular filtration rate']),
-                'has_diabetes': 'diabetes' in entities_lower,
-                'has_hypertension': 'hypertension' in entities_lower,
-                'has_dialysis': 'dialysis' in entities_lower or 'hemodialysis' in entities_lower,
-                
-                # Convert list to comma-separated string (ChromaDB compatible)
-                'medical_entities': ','.join(entities[:10]),  # Limit to top 10
-                
+                'word_count':              chunk['word_count'],
+                'entity_count':            len(entity_list),
+
+                # ── Boolean clinical flags — native Python bool ─────────────
+                # Use: col.query(..., where={"has_ckd": True})
+                'has_ckd':          clinical_flags['has_ckd'],
+                'has_gfr':          clinical_flags['has_gfr'],
+                'has_diabetes':     clinical_flags['has_diabetes'],
+                'has_hypertension': clinical_flags['has_hypertension'],
+                'has_dialysis':     clinical_flags['has_dialysis'],
+                'is_gold_standard': is_gold,
+
+                # Medical entities: comma-joined string (ChromaDB compatible)
+                'medical_entities': ', '.join(entity_list[:10]),
+
                 # Document information
-                'year': str(chunk_meta.get('year', datetime.now().year)),
-                'organization': chunk_meta.get('organization', 'Unknown')
+                'year':         str(chunk_meta.get('year', datetime.now().year)),
+                'organization': chunk_meta.get('organization', 'Unknown'),
             }
             
             # Add section if present (with length limit)
@@ -219,14 +287,18 @@ class VectorDBPreparator:
                 metadata['sub_chunk_index'] = chunk_meta['sub_chunk_index']
 
             metadatas.append(metadata)
-            
-            # 3. Generate unique ID: {base_name}_{chunk_id}
             ids.append(f"{base_name}_{chunk['chunk_id']}")
         
-        print(f" Prepared {len(documents)} documents for ChromaDB")
-        print(f"   Format: documents, metadatas, ids (parallel arrays)")
+        # ── Flag coverage report ───────────────────────────────────────────
+        total = len(metadatas)
+        print(f" Prepared {total} documents for ChromaDB")
+        print(f"   Clinical flag coverage:")
+        for flag in ['has_ckd', 'has_gfr', 'has_dialysis', 'has_diabetes', 'has_hypertension']:
+            n = sum(1 for m in metadatas if m[flag])
+            print(f"     {flag:<20} {n:>4}/{total}  ({n/total*100:.0f}%)")
+        gold = sum(1 for m in metadatas if m['is_gold_standard'])
+        print(f"     is_gold_standard     {gold:>4}/{total}  ({gold/total*100:.0f}%)")
         
-        # Return ChromaDB-compatible dictionary
         return {
             'documents': documents,
             'metadatas': metadatas,
