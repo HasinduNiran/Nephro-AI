@@ -1,0 +1,25 @@
+{
+  "total_pages": 23,
+  "native_pages": 22,
+  "scanned_pages": 1,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 40552,
+  "cleaned_text_length": 36569,
+  "source_file": "planning_for_emergencies.pdf",
+  "extraction_date": "2026-03-02T16:11:51.016333",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "Planning for Emergencies",
+  "year": "2022",
+  "keywords": [
+    "chronic kidney disease",
+    "CKD",
+    "GFR",
+    "dialysis",
+    "kidney function",
+    "eGFR"
+  ],
+  "total_chunks": 34,
+  "avg_chunk_size": 114.02941176470588,
+  "processing_date": "2026-03-02T16:11:53.001688"
+}

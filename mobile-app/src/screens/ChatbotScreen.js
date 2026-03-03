@@ -341,23 +341,22 @@ const ChatbotScreen = ({ route, navigation }) => {
         throw new Error(`TTS server error: ${response.status}`);
       }
 
-      // Download the audio blob
+      // Download the audio blob and convert to base64 data URI
       const audioBlob = await response.blob();
-      const reader = new FileReader();
 
       const base64Audio = await new Promise((resolve, reject) => {
-        reader.onloadend = () => {
-          const base64 = reader.result.split(",")[1];
-          resolve(base64);
-        };
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result); // full data URI e.g. "data:audio/mpeg;base64,..."
         reader.onerror = reject;
         reader.readAsDataURL(audioBlob);
       });
 
       // Write audio to a temp file
       const fileUri = FileSystem.cacheDirectory + `tts_${messageId}.mp3`;
-      await FileSystem.writeAsStringAsync(fileUri, base64Audio, {
-        encoding: FileSystem.EncodingType.Base64,
+      // Strip the "data:audio/...;base64," prefix to get raw base64
+      const base64Data = base64Audio.split(",")[1];
+      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+        encoding: "base64",
       });
 
       // Play with expo-av
@@ -803,6 +802,8 @@ const ChatbotScreen = ({ route, navigation }) => {
             hour: "2-digit",
             minute: "2-digit",
           }),
+          // 🆕 Urgency flags from NLG engine (Angle 4: Empathy & Urgency Router)
+          urgencyFlags: res.data.urgency_flags || [],
         },
       ]);
     } catch (error) {
@@ -859,6 +860,18 @@ const ChatbotScreen = ({ route, navigation }) => {
               styles.messageBubble,
               item.sender === "user" ? styles.userBubble : styles.botBubble,
               item.isError && styles.errorBubble,
+              // 🆕 Urgency flag styling (Angle 4: Empathy & Urgency Router)
+              item.urgencyFlags?.some((f) => f.flag === "CRITICAL_URGENCY") &&
+                styles.criticalBubble,
+              item.urgencyFlags?.some(
+                (f) =>
+                  f.flag === "SYMPTOM_WARNING" ||
+                  f.flag === "NEPHROTOXIN_WARNING",
+              ) &&
+                !item.urgencyFlags?.some(
+                  (f) => f.flag === "CRITICAL_URGENCY",
+                ) &&
+                styles.warningBubble,
             ]}
           >
             {item.sender === "user" ? (
@@ -1384,6 +1397,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF5F5",
     borderColor: "#FED7D7",
     borderWidth: 1,
+  },
+
+  // 🆕 Urgency flag bubble styles (Angle 4: Empathy & Urgency Router)
+  criticalBubble: {
+    backgroundColor: "#FFF5F5",
+    borderColor: "#EE5253",
+    borderWidth: 2,
+    borderLeftWidth: 4,
+  },
+
+  warningBubble: {
+    backgroundColor: "#FFFBEB",
+    borderColor: "#F59E0B",
+    borderWidth: 1.5,
+    borderLeftWidth: 3,
   },
 
   messageText: {

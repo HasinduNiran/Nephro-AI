@@ -1,0 +1,22 @@
+{
+  "total_pages": 116,
+  "native_pages": 109,
+  "scanned_pages": 7,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 127354,
+  "cleaned_text_length": 121728,
+  "source_file": "manual-of-clinical-nephrology-first-edition_compress.pdf",
+  "extraction_date": "2026-03-02T21:28:55.368906",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "Manual of Clinical Nephrology",
+  "author": "dinesh",
+  "year": "2020",
+  "keywords": [
+    "renal",
+    "nephrology"
+  ],
+  "total_chunks": 191,
+  "avg_chunk_size": 76.09947643979058,
+  "processing_date": "2026-03-02T21:28:58.204143"
+}

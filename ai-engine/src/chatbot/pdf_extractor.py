@@ -10,6 +10,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog
 import concurrent.futures
+from document_tracker import DocumentTracker
 import time
 import io
 import tempfile
@@ -159,14 +160,24 @@ class PDFKnowledgeExtractor:
                 print(f"   [PRESCAN] {total} pages → {n_nat} native (digital) | "
                       f"{n_scan} scanned (image) | {len(blocks)} block(s)")
 
-                # Fast path: entire document is one type — skip temp-PDF overhead
-                if len(blocks) == 1 and blocks[0]['type'] == 'native':
+                # Fast path: entire document is one type AND fits in one safe batch
+                # (pages list is populated, meaning page count was successfully detected)
+                if len(blocks) == 1 and blocks[0]['type'] == 'native' and blocks[0]['pages']:
                     print("   [DOCLING] ⚡ All pages native — single fast pass (OCR OFF)")
                     markdown_text = self._docling_convert(
                         self.pdf_path, ocr=False, timeout=timeout_native)
 
-                elif len(blocks) == 1 and blocks[0]['type'] == 'scanned':
+                elif len(blocks) == 1 and blocks[0]['type'] == 'scanned' and blocks[0]['pages']:
                     print("   [DOCLING] ⚡ All pages scanned — single OCR pass (OCR ON)")
+                    markdown_text = self._docling_convert(
+                        self.pdf_path, ocr=True, timeout=timeout_ocr)
+
+                elif len(blocks) == 1 and not blocks[0]['pages']:
+                    # All page-count detection methods failed — page count is unknown.
+                    # Run Docling on the full file as the only available option.
+                    # ⚠️  This may OOM on large scanned PDFs.
+                    print("   [DOCLING] ⚠️  Page count unknown — attempting full-file OCR "
+                          "(may OOM on large scanned PDFs; reduce max_block_pages if this fails)")
                     markdown_text = self._docling_convert(
                         self.pdf_path, ocr=True, timeout=timeout_ocr)
 
@@ -289,11 +300,21 @@ class PDFKnowledgeExtractor:
 
         except Exception as e:
             print(f"   Pre-scan failed ({e}), treating all pages as scanned")
+            total = 0
             try:
                 with open(self.pdf_path, 'rb') as f:
                     total = len(PyPDF2.PdfReader(f).pages)
             except Exception:
-                total = 0
+                pass
+            # PyPDF2 failed too (e.g. `/Kids` cross-reference issue) — try pdfplumber
+            # which is much more tolerant of non-standard PDF page trees.
+            if total == 0:
+                try:
+                    with pdfplumber.open(self.pdf_path) as pdf:
+                        total = len(pdf.pages)
+                    print(f"   [PRESCAN] pdfplumber fallback: detected {total} pages")
+                except Exception as pe:
+                    print(f"   [PRESCAN] pdfplumber also failed ({pe}) — page count unknown")
             blocks = [{'type': 'scanned', 'pages': list(range(total))}]
 
         # ── Split oversized blocks to prevent OOM ──────────────────────────
@@ -1422,9 +1443,11 @@ def main():
     print()
 
     # Step 3: Process each file through the pipeline
+    tracker = DocumentTracker()  # SHA-256 deduplication tracker
     results = []       # Store processing results for each file
     successful = 0     # Count of successfully processed files
     failed = 0         # Count of failed files
+    skipped = 0        # Count of duplicate files skipped
 
     for idx, file_path in enumerate(file_paths, 1):
         print("\n" + "=" * 70)
@@ -1443,6 +1466,12 @@ def main():
         if not (file_path.lower().endswith('.pdf') or file_path.lower().endswith('.txt')):
             print(f" Error: File must be PDF or TXT: {file_path}")
             failed += 1
+            continue
+
+        # Deduplication: Skip if this exact file content was already processed
+        if tracker.is_already_processed(file_path):
+            print(f" ⏭️  SKIP: This exact file has already been processed.")
+            skipped += 1
             continue
 
         try:
@@ -1473,6 +1502,7 @@ def main():
                     'format':       extractor.extraction_format,
                 })
                 successful += 1
+                tracker.mark_as_processed(file_path, chunk_count=len(extractor.chunks))
                 print(f"\n File {idx}/{len(file_paths)} processed successfully!")
             else:
                 results.append({
@@ -1517,6 +1547,7 @@ def main():
     print("=" * 70)
     print(f"  Total files  : {len(file_paths)}")
     print(f"  ✓ Successful : {successful}")
+    print(f"  ⏭ Skipped    : {skipped}")
     print(f"  ✗ Failed     : {failed}")
     print(f"  Output dir   : {OUTPUT_DIR}")
 

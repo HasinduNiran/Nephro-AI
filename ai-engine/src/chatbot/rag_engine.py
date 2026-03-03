@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from chatbot.enhanced_query_vectordb import EnhancedVectorQuery
 from chatbot.patient_data import PatientDataManager
 from chatbot.llm_engine import LLMEngine
+from chatbot import config
 from utils.logger import ConsoleLogger as Log
 
 class RAGEngine:
@@ -251,6 +252,15 @@ class RAGEngine:
         else:
             Log.step("ℹ️", "STYLE: Skipped (English Mode)")
         
+        # 7. 🆕 URGENCY FLAG SCAN (Angle 4: Empathy & Urgency Router)
+        # Scans the ENGLISH LLM response for flagged terms (emergency, nephrotoxin, symptom)
+        urgency_flags = []
+        if getattr(config, 'NLG_URGENCY_FLAGS_ENABLED', False):
+            urgency_flags = self.llm.glossary.get_response_flags(llm_response)
+            if urgency_flags:
+                flag_names = [f['flag'] for f in urgency_flags]
+                Log.step("🚨", f"URGENCY: {len(urgency_flags)} flags detected — {flag_names}")
+        
         response_payload = {
             "response": final_response,
             "source_documents": context_documents[:3],
@@ -259,7 +269,9 @@ class RAGEngine:
             "target_lang": target_lang,
             # NEW: Hybrid Smart Route metrics (for thesis/evaluation)
             "translation_method": translation_method if target_lang == 'si' else "none",
-            "translation_time": translation_time if target_lang == 'si' else 0
+            "translation_time": translation_time if target_lang == 'si' else 0,
+            # 🆕 Urgency flags for mobile UI styling (Angle 4)
+            "urgency_flags": urgency_flags
         }
         
         self.cache[cache_key] = response_payload

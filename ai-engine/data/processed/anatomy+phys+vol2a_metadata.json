@@ -1,0 +1,19 @@
+{
+  "total_pages": 540,
+  "native_pages": 539,
+  "scanned_pages": 1,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 1610583,
+  "cleaned_text_length": 1535973,
+  "source_file": "anatomy+phys+vol2a.pdf",
+  "extraction_date": "2026-03-02T22:51:05.803467",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "Anatomy &amp; Physiology",
+  "author": "Textbook Equity",
+  "year": "2014",
+  "keywords": [],
+  "total_chunks": 237,
+  "avg_chunk_size": 254.54008438818565,
+  "processing_date": "2026-03-02T23:01:31.288828"
+}

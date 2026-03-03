@@ -1,0 +1,18 @@
+{
+  "total_pages": 31,
+  "native_pages": 0,
+  "scanned_pages": 31,
+  "extraction_method": "docling_dynamic_ocr",
+  "raw_text_length": 55226,
+  "cleaned_text_length": 36684,
+  "source_file": "8a1062a0d440dde5c9b5aa3317bb9e89.pdf",
+  "extraction_date": "2026-03-02T15:28:07.026974",
+  "document_type": "medical_guideline",
+  "language": "en",
+  "title": "*Derived from Detsky et.al 1987 JPEN 1:8-13",
+  "year": "2013",
+  "keywords": [],
+  "total_chunks": 35,
+  "avg_chunk_size": 120.91428571428571,
+  "processing_date": "2026-03-02T15:28:10.156499"
+}
