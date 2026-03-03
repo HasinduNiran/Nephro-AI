@@ -7,8 +7,16 @@ import {
   Alert,
   ActivityIndicator,
   TouchableOpacity,
+  Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  getSdkStatus,
+  initialize,
+  requestPermission,
+  readRecords,
+  SdkAvailabilityStatus,
+} from "react-native-health-connect";
 import CustomInput from "../components/CustomInput";
 import CustomButton from "../components/CustomButton";
 import axios from "../api/axiosConfig";
@@ -27,6 +35,8 @@ const RiskPredictionScreen = ({ navigation, route }) => {
   const [riskLevel, setRiskLevel] = useState(null);
   const [riskScore, setRiskScore] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [fetchingBP, setFetchingBP] = useState(false);
+  const [bpSource, setBpSource] = useState(null); // 'healthConnect' or null
 
   // Fetch user data on component mount
   useEffect(() => {
@@ -66,6 +76,147 @@ const RiskPredictionScreen = ({ navigation, route }) => {
     loadUserData();
   }, []);
 
+  // Fetch blood pressure from Health Connect (smartwatch / wearable)
+  const fetchBPFromHealthConnect = async () => {
+    if (Platform.OS !== "android") {
+      Alert.alert(
+        "Not Supported",
+        "Health Connect is only available on Android.",
+      );
+      return;
+    }
+
+    setFetchingBP(true);
+    try {
+      // Step 1: Check if Health Connect SDK is available on this device
+      let sdkStatus;
+      try {
+        sdkStatus = await getSdkStatus();
+      } catch (sdkError) {
+        console.warn("getSdkStatus failed:", sdkError);
+        Alert.alert(
+          "Health Connect Not Available",
+          "Google Health Connect is not installed on this device.\n\nPlease install it from the Play Store and make sure your smartwatch is syncing BP data.",
+        );
+        return;
+      }
+
+      // SdkAvailabilityStatus: 1 = UNAVAILABLE, 2 = UPDATE_REQUIRED, 3 = AVAILABLE
+      if (sdkStatus !== SdkAvailabilityStatus.SDK_AVAILABLE) {
+        const msg =
+          sdkStatus ===
+          SdkAvailabilityStatus.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED
+            ? "Health Connect needs to be updated. Please update it from the Play Store."
+            : "Health Connect is not available on this device. Please install it from the Play Store.";
+        Alert.alert("Health Connect", msg);
+        return;
+      }
+
+      // Step 2: Initialize the Health Connect SDK
+      let isInitialized = false;
+      try {
+        isInitialized = await initialize();
+      } catch (initError) {
+        console.warn("Health Connect initialize failed:", initError);
+        Alert.alert(
+          "Initialization Failed",
+          "Could not initialize Health Connect. Please make sure the app is installed and up to date.",
+        );
+        return;
+      }
+
+      if (!isInitialized) {
+        Alert.alert(
+          "Health Connect Unavailable",
+          "Could not initialize Health Connect. Please install or update it from the Play Store.",
+        );
+        return;
+      }
+
+      // Step 3: Request blood pressure read permission
+      let grantedPermissions;
+      try {
+        grantedPermissions = await requestPermission([
+          { accessType: "read", recordType: "BloodPressure" },
+        ]);
+      } catch (permError) {
+        console.warn("requestPermission failed:", permError);
+        Alert.alert(
+          "Permission Error",
+          "Could not request Health Connect permissions. Please check Health Connect settings.",
+        );
+        return;
+      }
+
+      if (!grantedPermissions || grantedPermissions.length === 0) {
+        Alert.alert(
+          "Permission Denied",
+          "Blood pressure read permission is required.\n\nPlease grant it in Health Connect settings.",
+        );
+        return;
+      }
+
+      // Step 4: Read BP records from the last 7 days
+      const endTime = new Date().toISOString();
+      const startTime = new Date(
+        Date.now() - 7 * 24 * 60 * 60 * 1000,
+      ).toISOString();
+
+      let result;
+      try {
+        result = await readRecords("BloodPressure", {
+          timeRangeFilter: {
+            operator: "between",
+            startTime,
+            endTime,
+          },
+        });
+      } catch (readError) {
+        console.warn("readRecords failed:", readError);
+        Alert.alert(
+          "Read Error",
+          "Could not read blood pressure data from Health Connect.\n\nError: " +
+            (readError?.message || "Unknown error"),
+        );
+        return;
+      }
+
+      if (!result || !result.records || result.records.length === 0) {
+        Alert.alert(
+          "No Data Found",
+          "No blood pressure readings found in Health Connect for the last 7 days.\n\nMake sure your smartwatch is syncing BP data to Google Health Connect.",
+        );
+        return;
+      }
+
+      // Step 5: Get the most recent reading and populate fields
+      const latestRecord = result.records[result.records.length - 1];
+      const systolic = Math.round(latestRecord.systolic.inMillimetersOfMercury);
+      const diastolic = Math.round(
+        latestRecord.diastolic.inMillimetersOfMercury,
+      );
+      const recordTime = new Date(latestRecord.time).toLocaleString();
+
+      setBpSystolic(systolic.toString());
+      setBpDiastolic(diastolic.toString());
+      setBpSource("healthConnect");
+
+      Alert.alert(
+        "⌚ BP Data Imported",
+        `Latest reading from Health Connect:\n\nSystolic: ${systolic} mmHg\nDiastolic: ${diastolic} mmHg\nRecorded: ${recordTime}\n\nTotal readings found: ${result.records.length}`,
+      );
+    } catch (error) {
+      console.error("Health Connect Error:", error);
+      Alert.alert(
+        "Error",
+        "An unexpected error occurred while accessing Health Connect.\n\nError: " +
+          (error?.message || "Unknown error"),
+      );
+    } finally {
+      setFetchingBP(false);
+    }
+  };
+
   // Validation ranges for inputs
   const VALIDATION_RANGES = {
     bpSystolic: { min: 70, max: 250, label: "Systolic BP" },
@@ -99,7 +250,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
     if (!bpSystolic || !bpDiastolic || !age) {
       Alert.alert(
         "Error",
-        "Please fill in Blood Pressure (Systolic and Diastolic) and Age"
+        "Please fill in Blood Pressure (Systolic and Diastolic) and Age",
       );
       return;
     }
@@ -122,7 +273,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
     if (parseFloat(bpSystolic) <= parseFloat(bpDiastolic)) {
       Alert.alert(
         "Invalid Input",
-        "Systolic BP must be greater than Diastolic BP"
+        "Systolic BP must be greater than Diastolic BP",
       );
       return;
     }
@@ -238,6 +389,41 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       <Text style={styles.title}>Early Risk Prediction</Text>
       <Text style={styles.subtitle}>Enter your vital signs below</Text>
 
+      {/* Health Connect - Fetch BP from Watch */}
+      {Platform.OS === "android" && (
+        <TouchableOpacity
+          style={[
+            styles.healthConnectButton,
+            fetchingBP && styles.healthConnectButtonDisabled,
+          ]}
+          onPress={fetchBPFromHealthConnect}
+          disabled={fetchingBP}
+        >
+          {fetchingBP ? (
+            <View style={styles.healthConnectButtonContent}>
+              <ActivityIndicator size="small" color="#fff" />
+              <Text style={styles.healthConnectButtonText}>
+                Fetching BP data...
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.healthConnectButtonContent}>
+              <Text style={styles.healthConnectButtonText}>
+                ⌚ Import BP from Watch (Health Connect)
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      )}
+
+      {bpSource === "healthConnect" && (
+        <View style={styles.bpSourceBadge}>
+          <Text style={styles.bpSourceText}>
+            ✓ BP imported from Health Connect
+          </Text>
+        </View>
+      )}
+
       <View style={styles.readOnlyContainer}>
         <View style={styles.readOnlyField}>
           <Text style={styles.readOnlyLabel}>Gender:</Text>
@@ -252,14 +438,20 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       <CustomInput
         placeholder="Systolic BP (mmHg) *Required"
         value={bpSystolic}
-        setValue={setBpSystolic}
+        setValue={(val) => {
+          setBpSystolic(val);
+          setBpSource(null);
+        }}
         keyboardType="numeric"
         helperText="Range: 70-250 mmHg"
       />
       <CustomInput
         placeholder="Diastolic BP (mmHg) *Required"
         value={bpDiastolic}
-        setValue={setBpDiastolic}
+        setValue={(val) => {
+          setBpDiastolic(val);
+          setBpSource(null);
+        }}
         keyboardType="numeric"
         helperText="Range: 40-150 mmHg"
       />
@@ -541,6 +733,49 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#555",
     lineHeight: 20,
+  },
+  healthConnectButton: {
+    backgroundColor: "#00897B",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 10,
+    shadowColor: "#00897B",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 4,
+  },
+  healthConnectButtonDisabled: {
+    backgroundColor: "#80CBC4",
+  },
+  healthConnectButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  healthConnectButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "bold",
+  },
+  bpSourceBadge: {
+    backgroundColor: "#E8F5E9",
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#A5D6A7",
+    width: "100%",
+    alignItems: "center",
+  },
+  bpSourceText: {
+    color: "#2E7D32",
+    fontSize: 13,
+    fontWeight: "600",
   },
 });
 

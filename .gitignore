@@ -39,6 +39,11 @@ venv.bak/
 logs/*.log
 *.log
 
+# Temp build & debug log files
+build_log*.txt
+crash_*.txt
+logcat_dump.txt
+
 # IDE
 .vscode/
 .idea/

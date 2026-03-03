@@ -7,7 +7,8 @@ import axios from "axios";
 
 // Centralized IP Configuration
 // Change this ONE IP to update both Backend (5000) and Chatbot Server (8001)
-const API_IP = "192.168.43.223";
+// Using localhost with adb reverse tcp:5000 tcp:5000 for USB-connected device
+const API_IP = "localhost";
 
 // Exported URLs for use across the app
 export const API_URL = `http://${API_IP}:5000/api`;
