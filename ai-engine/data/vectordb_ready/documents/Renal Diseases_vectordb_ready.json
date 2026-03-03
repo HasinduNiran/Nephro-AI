@@ -1,0 +1,31 @@
+{
+  "documents": [
+    "## COLOUR ATLAS OF FORENSIC PATHOLOGY\n## Renal arterial stenosis\nRenal artery stenosis is the narrowing of the renal artery. It can lead to systemic hypertension. The other complications of renal artery stenosis include chronic kidney disease and end stage renal disease. The stenosis of the artery can occur bilaterally or unilaterally and the two major causes for unilateral renal artery stenosis are atherosclerosis and fibromuscular dysplasia. Atherosclerosis of the renal artery mainly involves the proximal 2 cm of the renal artery. Risk factors for atherosclerosis include, dyslipidaemia, smoking, viral infection, immune injury and increased homocysteine level. Fibromuscular dysplasia commonly occurs in women younger than 50 years and it usually involves the middle and distal main renal artery and the intrarenal branches. When a patient presents with hypertension, the likelihood of renovascular disease being the underlying cause should be suspected. Clinically, this may be suspected by treatment resistant severe hypertension, young hypertension with a negative family history, unexplained hypokalaemia, acute and sustained rise in serum creatinine and recurrent episodes of flash pulmonary oedema. The gold standard for diagnosis of renal artery stenosis is renal arteriography.\n\nInitial treatment for renal artery stenosis is observation of the progression of the disease with accurate correction of dyslipidaemia, use of drugs that block platelet aggregation and control of hypertension."
+  ],
+  "metadatas": [
+    {
+      "source": "Renal Diseases.pdf",
+      "chunk_id": 16,
+      "content_type": "recommendation, treatment",
+      "content_type_confidence": 0,
+      "word_count": 215,
+      "entity_count": 3,
+      "has_ckd": false,
+      "has_gfr": false,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": false,
+      "medical_entities": "c,h,r,o,n,i,c, ,k,i",
+      "year": "2022",
+      "organization": "Unknown",
+      "section": "Renal arterial stenosis",
+      "section_path": "Renal arterial stenosis",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "structural"
+    }
+  ],
+  "ids": [
+    "renal diseases_16"
+  ]
+}

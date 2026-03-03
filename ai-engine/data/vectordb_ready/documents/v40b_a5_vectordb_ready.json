@@ -1,0 +1,55 @@
+{
+  "documents": [
+    "## Strengthening Chronic Kidney Disease Knowledge\nAmong Students Attending a Historically Black University\n\nNatasha W. Avery, DrPH, LMSW, CHES, Network 8, Inc., Ridgeland, MS; Sophia S. Leggett, PhD, MPH, Jackson State University, Jackson, MS; Luis A. Juncos, MD, Department of Medicine/Nephrology, University of Mississippi Medical Center, Jackson, MS\n\nChronic kidney disease (CKD) affects African Americans in a disproportionately high manner and progresses more rapidly than in other races. Lack of knowledge of CKD risk factors and progression may contribute to this disparity. The purpose of this non-random cross-sectional study was to determine the level of CKD knowledge among students attending a historically black college and university (HBCU). Men and women enrolled in healthcare administration, health education, social work, and public health courses were asked to participate in the study. The Chronic Kidney Disease Knowledge in College Students Questionnaire was utilized. A total of 270 participants from a single HBCU were included. The results demonstrate that CKD knowledge was low in this population, particularly among the younger college students. This study provides a foundation for CKD community education, and will be helpful to nephrology social workers in CKD settings and kidney organizations for specifically targeting and educating at-risk individuals.",
+    "The results of this study can assist clinic-based nephrology social workers with providing patient education about the increased risk of CKD\n\nto pass on to their family members, with a focus on younger adults, and begin conversations about early screenings and detection. Community-based social work interventions with this population should focus on educating young adults about their increased risk of CKD, based on having diabetes, hypertension, and a family member with the illness."
+  ],
+  "metadatas": [
+    {
+      "source": "v40b_a5.pdf",
+      "chunk_id": 0,
+      "content_type": "evidence, definition, treatment",
+      "content_type_confidence": 0,
+      "word_count": 198,
+      "entity_count": 2,
+      "has_ckd": false,
+      "has_gfr": false,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": false,
+      "medical_entities": "C,K,D,,, ,c,h,r,o,n",
+      "year": "2016",
+      "organization": "Unknown",
+      "section": "Strengthening Chronic Kidney Disease Knowledge",
+      "section_path": "Strengthening Chronic Kidney Disease Knowledge",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "structural"
+    },
+    {
+      "source": "v40b_a5.pdf",
+      "chunk_id": 8,
+      "content_type": "recommendation, evidence, monitoring",
+      "content_type_confidence": 0,
+      "word_count": 73,
+      "entity_count": 2,
+      "has_ckd": false,
+      "has_gfr": false,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": false,
+      "medical_entities": "C,K,D,,, ,p,a,t,i,e",
+      "year": "2016",
+      "organization": "Unknown",
+      "section": "DISCUSSION",
+      "section_path": "DISCUSSION",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "semantic",
+      "sub_chunk_index": 0
+    }
+  ],
+  "ids": [
+    "v40b_a5_0",
+    "v40b_a5_8"
+  ]
+}

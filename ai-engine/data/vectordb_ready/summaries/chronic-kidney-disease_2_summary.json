@@ -1,0 +1,23 @@
+{
+  "total_documents": 8,
+  "source_file": "chronic-kidney-disease_2_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\chronic-kidney-disease_2_chunks.json",
+  "preparation_date": "2026-03-03T15:45:41.158235",
+  "avg_word_count": 124.125,
+  "content_types": {
+    "recommendation": 2,
+    "recommendation, evidence, dietary, treatment, monitoring": 1,
+    "recommendation, definition, monitoring": 1,
+    "recommendation, evidence": 1,
+    "recommendation, reference, monitoring": 1,
+    "general": 1,
+    "recommendation, dietary, monitoring": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

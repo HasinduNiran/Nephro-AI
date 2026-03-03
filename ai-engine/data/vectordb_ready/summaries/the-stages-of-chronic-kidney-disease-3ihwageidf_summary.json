@@ -1,0 +1,25 @@
+{
+  "total_documents": 9,
+  "source_file": "the-stages-of-chronic-kidney-disease-3ihwageidf_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\the-stages-of-chronic-kidney-disease-3ihwageidf_chunks.json",
+  "preparation_date": "2026-03-03T15:45:43.079117",
+  "avg_word_count": 153.33333333333334,
+  "content_types": {
+    "definition": 1,
+    "recommendation, dietary, treatment": 1,
+    "reference": 1,
+    "recommendation, evidence, dietary": 1,
+    "recommendation, reference, dietary, treatment, monitoring": 1,
+    "evidence, dietary": 1,
+    "recommendation, definition": 1,
+    "treatment": 1,
+    "evidence, reference": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

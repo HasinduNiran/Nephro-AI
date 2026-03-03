@@ -1,0 +1,31 @@
+{
+  "documents": [
+    "## METHODOLOGY\nThis investigation included 169 untreated patients referred to our outpatient clinic for ABPM. Arterial hypertension was diagnosed according to current guidelines. 13 Exclusion criteria were antihypertensive treatment, symptoms or signs of heart failure, coronary artery disease, previous cerebrovascular events, atrial fibrillation, congenital heart disease, heart valve disease (more than mild), neoplastic disease, liver cirrhosis, kidney failure, and endocrine diseases (including type 2 diabetes mellitus).\n\nAnthropometric measures (height, weight) and laboratory analyses (level of fasting glucose, blood creatinine, total cholesterol, and triglycerides) were obtained from all of the patients included in the study. Body mass index (BMI) and body surface area (BSA) were calculated for each patient.\n\nThe study was approved by the local ethics committee, and informed consent was obtained from all participants."
+  ],
+  "metadatas": [
+    {
+      "source": "J of Clinical Hypertension - 2016 - Tadic - Masked Hypertension and Left Atrial Dysfunction  A Hidden Association.pdf",
+      "chunk_id": 0,
+      "content_type": "recommendation, evidence, treatment",
+      "content_type_confidence": 0,
+      "word_count": 125,
+      "entity_count": 4,
+      "has_ckd": false,
+      "has_gfr": false,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": false,
+      "medical_entities": "k,i,d,n,e,y, ,f,a,i",
+      "year": "2017",
+      "organization": "Unknown",
+      "section": "METHODOLOGY",
+      "section_path": "METHODOLOGY",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "structural"
+    }
+  ],
+  "ids": [
+    "j of clinical hypertension _ 2016 _ tadic _ masked hypertension and left atrial dysfunction  a hidden association_0"
+  ]
+}
