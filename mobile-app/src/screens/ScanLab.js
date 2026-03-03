@@ -39,6 +39,14 @@ const ScanLabScreen = ({ navigation, route }) => {
       color: "#50E3C2", // Teal
       onPress: () => navigation.navigate("FutureCKDStage", { userName, userEmail }),
     },
+    {
+      id: 4,
+      title: "My Progress Path",
+      subtitle: "History graph",
+      icon: "pulse",
+      color: "#EF4444", // Red
+      onPress: () => navigation.navigate("MyProgressPath", { userName, userEmail }),
+    },
   ];
 
   return (
