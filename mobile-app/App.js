@@ -24,6 +24,7 @@ import ManualLabEntryScreen from "./src/screens/ManualLabEntryScreen";
 import FutureCKDStageScreen from "./src/screens/FutureCKDStageScreen";
 import FutureCKDStageResultScreen from "./src/screens/FutureCKDStageResultScreen";
 import FutureCKDStageHistoryScreen from "./src/screens/FutureCKDStageHistoryScreen";
+import MyProgressPathScreen from "./src/screens/MyProgressPathScreen";
 
 const Stack = createStackNavigator();
 
@@ -50,6 +51,7 @@ const App = () => {
         <Stack.Screen name="FutureCKDStage" component={FutureCKDStageScreen} />
         <Stack.Screen name="FutureCKDStageResult" component={FutureCKDStageResultScreen} />
         <Stack.Screen name="FutureCKDStageHistory" component={FutureCKDStageHistoryScreen} />
+        <Stack.Screen name="MyProgressPath" component={MyProgressPathScreen} />
         <Stack.Screen 
           name="RiskHistory" 
           component={RiskHistoryScreen}

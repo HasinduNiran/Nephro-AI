@@ -3,10 +3,84 @@ const path = require("path");
 const fs = require("fs");
 const { processLabReport, calculateEGFRFromCreatinine } = require("../utils/ocrProcessor");
 const StageProgressionRecord = require("../models/StageProgressionRecord");
+const User = require("../models/User");
+
+function toGenderCode(gender) {
+  if (!gender) return null;
+  const g = String(gender).trim().toUpperCase();
+  if (g === "M" || g === "MALE") return "M";
+  if (g === "F" || g === "FEMALE") return "F";
+  return g;
+}
+
+function calculateAgeFromBirthday(birthday) {
+  if (!birthday) return null;
+  const birthDate = new Date(birthday);
+  if (Number.isNaN(birthDate.getTime())) return null;
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age -= 1;
+  }
+  return age >= 0 ? age : null;
+}
+
+function normalizeVisitDate(value) {
+  if (!value) return new Date();
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+}
+
+function stageFromEgfr(egfr) {
+  const v = parseFloat(egfr);
+  if (Number.isNaN(v)) return "2";
+  if (v >= 90) return "1";
+  if (v >= 60) return "2";
+  if (v >= 45) return "3.1";
+  if (v >= 30) return "3.2";
+  if (v >= 15) return "4";
+  return "5";
+}
+
+function extractPredictedStage(record) {
+  return (
+    record?.prediction_with_us?.predicted_stage ||
+    record?.prediction_with_us?.current_stage ||
+    record?.prediction_lab_only?.predicted_stage ||
+    record?.prediction_lab_only?.current_stage ||
+    stageFromEgfr(record?.inputs?.labs?.egfr)
+  );
+}
+
+async function resolveDemographics({ userEmail, ageInput, genderInput }) {
+  let resolvedAge = ageInput !== undefined && ageInput !== null && ageInput !== ""
+    ? parseInt(ageInput, 10)
+    : null;
+  let resolvedGender = toGenderCode(genderInput);
+
+  if ((!resolvedAge || !resolvedGender) && userEmail) {
+    const user = await User.findOne({ email: String(userEmail).toLowerCase().trim() }).lean();
+    if (user) {
+      if (!resolvedAge) {
+        resolvedAge = calculateAgeFromBirthday(user.birthday);
+      }
+      if (!resolvedGender) {
+        resolvedGender = toGenderCode(user.gender);
+      }
+    }
+  }
+
+  if (!resolvedGender) resolvedGender = "M";
+  return { age: resolvedAge, gender: resolvedGender };
+}
 
 function buildLabPointFromRecord(record) {
   const labs = record?.inputs?.labs || {};
+  const visitDate = record?.visitDate || record?.inputs?.visitDate || record?.createdAt || new Date();
   return {
+    charttime: new Date(visitDate).toISOString(),
     creatinine: labs.creatinine ?? null,
     bun: labs.bun ?? null,
     egfr: labs.egfr ?? null,
@@ -15,9 +89,52 @@ function buildLabPointFromRecord(record) {
     hemoglobin: labs.hemoglobin ?? null,
     potassium: null,
     sodium: null,
+    age: record?.inputs?.age ?? null,
     anchor_age: record?.inputs?.age ?? null,
+    gender: toGenderCode(record?.inputs?.gender) || "M",
+    ckd_stage: extractPredictedStage(record),
     urea: null,
   };
+}
+
+function applyHistoryRequirementToPrediction(prediction, priorVisitCount) {
+  if (!prediction) return prediction;
+  if ((priorVisitCount || 0) > 0) return prediction;
+
+  return {
+    ...prediction,
+    next_stage_progression: null,
+    next_stage_progression_6_month: null,
+    progression_by_stage: [],
+    progression_by_stage_6_month: [],
+    insufficient_history: true,
+    history_note: "Progression probabilities require at least one prior visit.",
+  };
+}
+
+async function resequenceSubmissionIndicesForUser(userEmail) {
+  const normalizedEmail = String(userEmail || "").toLowerCase().trim();
+  if (!normalizedEmail) return 0;
+
+  const userRecords = await StageProgressionRecord.find({ userEmail: normalizedEmail })
+    .sort({ createdAt: 1, _id: 1 })
+    .select("_id")
+    .lean();
+
+  if (!userRecords.length) return 0;
+
+  const bulkOps = userRecords.map((record, index) => ({
+    updateOne: {
+      filter: { _id: record._id },
+      update: { $set: { submissionIndex: index + 1 } },
+    },
+  }));
+
+  if (bulkOps.length) {
+    await StageProgressionRecord.bulkWrite(bulkOps);
+  }
+
+  return userRecords.length;
 }
 
 /**
@@ -87,7 +204,7 @@ function calculateEGFRIfMissing(labData, age, gender) {
  * Processes lab report image (optional if manual values provided) and ultrasound image (optional)
  */
 exports.predictStageProgressionWithImages = async (req, res) => {
-  const { name, age, gender, userEmail, creatinine, egfr, bun, albumin, hemoglobin } = req.body;
+  const { name, age, gender, visitDate, userEmail, creatinine, egfr, bun, albumin, hemoglobin } = req.body;
 
   let labReportFile = req.files?.labReport?.[0];
   let ultrasoundFile = req.files?.ultrasound?.[0];
@@ -172,9 +289,14 @@ exports.predictStageProgressionWithImages = async (req, res) => {
 
     console.log("📊 Lab data after manual override:", labData);
 
-    // Use extracted age/gender if not provided
-    const finalAge = age || labData.age;
-    const finalGender = gender || labData.gender || "M";
+    const demographics = await resolveDemographics({
+      userEmail,
+      ageInput: age || labData.age,
+      genderInput: gender || labData.gender,
+    });
+    const finalAge = demographics.age;
+    const finalGender = demographics.gender;
+    const normalizedVisitDate = normalizeVisitDate(visitDate);
 
     // Step 1.6: Calculate eGFR if still missing
     const eGFRResult = calculateEGFRIfMissing(labData, finalAge, finalGender);
@@ -207,8 +329,8 @@ exports.predictStageProgressionWithImages = async (req, res) => {
     console.log("✅ Lab data with eGFR:", enrichedLabData);
 
     // Step 2: Call prediction with lab data only (first prediction)
-    const inputDataLabOnly = {
-      lab_data: {
+    const labHistoryPoint = {
+      charttime: normalizedVisitDate.toISOString(),
         creatinine: parseFloat(enrichedLabData.creatinine),
         bun: enrichedLabData.bun ? parseFloat(enrichedLabData.bun) : null,
         egfr: parseFloat(enrichedLabData.eGFR),
@@ -217,12 +339,37 @@ exports.predictStageProgressionWithImages = async (req, res) => {
         hemoglobin: enrichedLabData.hemoglobin ? parseFloat(enrichedLabData.hemoglobin) : null,
         potassium: enrichedLabData.potassium ? parseFloat(enrichedLabData.potassium) : null,
         sodium: enrichedLabData.sodium ? parseFloat(enrichedLabData.sodium) : null,
-        anchor_age: finalAge ? parseFloat(finalAge) : null,
-      },
+      age: finalAge ? parseFloat(finalAge) : null,
+      anchor_age: finalAge ? parseFloat(finalAge) : null,
+      gender: finalGender,
+      ckd_stage: stageFromEgfr(enrichedLabData.eGFR),
+    };
+
+    const normalizedEmailForHistory = (userEmail || name || "").toLowerCase().trim();
+    let priorHistoryPoints = [];
+    if (normalizedEmailForHistory) {
+      try {
+        const priorRecords = await StageProgressionRecord.find({ userEmail: normalizedEmailForHistory })
+          .sort({ createdAt: -1 })
+          .limit(2)
+          .lean();
+        priorHistoryPoints = priorRecords.map(buildLabPointFromRecord).reverse();
+      } catch (historyErr) {
+        console.warn("Could not load prior history for upload flow:", historyErr.message);
+      }
+    }
+
+    const historyWithCurrent = [...priorHistoryPoints, labHistoryPoint].slice(-3);
+
+    const priorVisitCount = priorHistoryPoints.length;
+
+    const inputDataLabOnly = {
+      history: historyWithCurrent,
     };
 
     console.log("🔬 Running prediction with lab data only...");
-    const predictionLabOnly = await runPrediction(inputDataLabOnly);
+    const predictionLabOnlyRaw = await runPrediction(inputDataLabOnly);
+    const predictionLabOnly = applyHistoryRequirementToPrediction(predictionLabOnlyRaw, priorVisitCount);
 
     let predictionWithUS = null;
 
@@ -238,12 +385,29 @@ exports.predictStageProgressionWithImages = async (req, res) => {
           console.log("✅ Extracted ultrasound data:", ultrasoundData);
 
           const inputDataWithUS = {
-            lab_data: inputDataLabOnly.lab_data,
+            history: [
+              {
+                ...historyWithCurrent[historyWithCurrent.length - 1],
+                kidney_length: ultrasoundData.kidney_length ?? null,
+                kidney_width: ultrasoundData.kidney_width ?? null,
+                area_px: ultrasoundData.area_px ?? null,
+                length_px: ultrasoundData.length_px ?? null,
+                echogenicity_score: ultrasoundData.echogenicity ?? null,
+              },
+            ],
             ultrasound_data: ultrasoundData,
           };
 
+          if (historyWithCurrent.length > 1) {
+            inputDataWithUS.history = [
+              ...historyWithCurrent.slice(0, historyWithCurrent.length - 1),
+              inputDataWithUS.history[0],
+            ];
+          }
+
           console.log("🔬 Running prediction with lab + ultrasound data...");
-          predictionWithUS = await runPrediction(inputDataWithUS);
+          const predictionWithUSRaw = await runPrediction(inputDataWithUS);
+          predictionWithUS = applyHistoryRequirementToPrediction(predictionWithUSRaw, priorVisitCount);
         } else {
           console.warn("⚠️ Ultrasound processing returned no data");
         }
@@ -259,12 +423,16 @@ exports.predictStageProgressionWithImages = async (req, res) => {
     if (labReportFile) fs.unlink(labReportFile.path, () => {});
     if (ultrasoundFile) fs.unlink(ultrasoundFile.path, () => {});
 
+    const recordUserEmail = (normalizedEmailForHistory || "unknown").toLowerCase().trim();
+
     const recordPayload = {
-      userEmail: (userEmail || name || "unknown").toLowerCase().trim(),
+      userEmail: recordUserEmail,
       userName: name,
+      visitDate: normalizedVisitDate,
       inputs: {
-        age: age ? parseInt(age) : null,
-        gender: gender || null,
+        visitDate: normalizedVisitDate,
+        age: finalAge ? parseInt(finalAge, 10) : null,
+        gender: finalGender || null,
         labs: {
           creatinine: labData.creatinine ?? null,
           egfr: labData.eGFR ?? null,
@@ -284,11 +452,20 @@ exports.predictStageProgressionWithImages = async (req, res) => {
         source: enrichedLabData.eGFRSource,
         method: enrichedLabData.eGFRMethod,
       },
-      progression_to_next_stage: predictionWithUS?.next_stage_progression || predictionLabOnly?.next_stage_progression,
+      progression_to_next_stage: predictionWithUS?.next_stage_progression || predictionLabOnly?.next_stage_progression || null,
+      progression_to_next_stage_6_month: predictionWithUS?.next_stage_progression_6_month || predictionLabOnly?.next_stage_progression_6_month || null,
+      progression_by_stage: predictionWithUS?.progression_by_stage || predictionLabOnly?.progression_by_stage || [],
+      progression_by_stage_6_month: predictionWithUS?.progression_by_stage_6_month || predictionLabOnly?.progression_by_stage_6_month || [],
     };
 
+    let savedSubmissionIndex = null;
     try {
-      const savedRecord = await StageProgressionRecord.create(recordPayload);
+      const priorCount = await StageProgressionRecord.countDocuments({ userEmail: recordUserEmail });
+      const savedRecord = await StageProgressionRecord.create({
+        ...recordPayload,
+        submissionIndex: priorCount + 1,
+      });
+      savedSubmissionIndex = savedRecord.submissionIndex || null;
       console.log("✅ Stage progression record saved to DB with ID:", savedRecord._id);
       console.log("📧 User Email stored:", savedRecord.userEmail);
     } catch (dbErr) {
@@ -307,6 +484,12 @@ exports.predictStageProgressionWithImages = async (req, res) => {
       },
       summary_lab_only: formatProgressionSummary(predictionLabOnly, "Lab only"),
       summary_lab_and_ultrasound: formatProgressionSummary(predictionWithUS, "Lab + Ultrasound"),
+      progression_by_stage_lab_only: predictionLabOnly?.progression_by_stage || [],
+      progression_by_stage_with_us: predictionWithUS?.progression_by_stage || [],
+      progression_by_stage_6_month_lab_only: predictionLabOnly?.progression_by_stage_6_month || [],
+      progression_by_stage_6_month_with_us: predictionWithUS?.progression_by_stage_6_month || [],
+      insufficient_history: priorVisitCount === 0,
+      submissionIndex: savedSubmissionIndex,
       message: "Stage progression analysis completed successfully",
     });
   } catch (error) {
@@ -327,6 +510,8 @@ exports.predictStageProgressionWithImages = async (req, res) => {
  * Calculate probability of progressing to the next stage
  */
 function calculateNextStageProgression(currentStage, stageProbabilities) {
+  const probs = stageProbabilities || {};
+
   // Parse current stage (could be "2", "3.1", "3.2", etc.)
   const stageNum = parseFloat(currentStage);
   
@@ -346,15 +531,15 @@ function calculateNextStageProgression(currentStage, stageProbabilities) {
   if (stageNum < 3) {
     nextStage = "3";
     // Sum probabilities for all stage 3 variants
-    nextProbability = (stageProbabilities.stage_3 || 0) + 
-                      (stageProbabilities['stage_3.1'] || 0) + 
-                      (stageProbabilities['stage_3.2'] || 0);
+    nextProbability = (probs.stage_3 || 0) + 
+                      (probs['stage_3.1'] || 0) + 
+                      (probs['stage_3.2'] || 0);
   } else if (stageNum >= 3 && stageNum < 4) {
     nextStage = "4";
-    nextProbability = stageProbabilities.stage_4 || 0;
+    nextProbability = probs.stage_4 || 0;
   } else if (stageNum >= 4 && stageNum < 5) {
     nextStage = "5";
-    nextProbability = stageProbabilities.stage_5 || 0;
+    nextProbability = probs.stage_5 || 0;
   }
 
   return {
@@ -363,6 +548,99 @@ function calculateNextStageProgression(currentStage, stageProbabilities) {
     probability_percentage: (nextProbability * 100).toFixed(1),
     message: `${(nextProbability * 100).toFixed(1)}% chance of progressing to Stage ${nextStage}`
   };
+}
+
+function normalizeStageProbabilities(probabilities) {
+  const source = probabilities || {};
+  const out = {
+    stage_1: 0,
+    stage_2: 0,
+    stage_3: 0,
+    "stage_3.1": 0,
+    "stage_3.2": 0,
+    stage_4: 0,
+    stage_5: 0,
+  };
+
+  const put = (key, value) => {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return;
+    if (Object.prototype.hasOwnProperty.call(out, key)) out[key] = num;
+  };
+
+  for (const [rawKey, value] of Object.entries(source)) {
+    const key = String(rawKey).trim().toLowerCase();
+    const compact = key.replace(/\s+/g, "").replace("stage", "");
+
+    if (key === "stage_1" || key === "1" || key === "g1" || compact === "g1") put("stage_1", value);
+    else if (key === "stage_2" || key === "2" || key === "g2" || compact === "g2") put("stage_2", value);
+    else if (key === "stage_3" || key === "3" || key === "g3" || compact === "g3") put("stage_3", value);
+    else if (
+      key === "stage_3.1" || key === "3.1" || key === "3a" || key === "g3a" ||
+      compact === "3.1" || compact === "3a" || compact === "g3a"
+    ) put("stage_3.1", value);
+    else if (
+      key === "stage_3.2" || key === "3.2" || key === "3b" || key === "g3b" ||
+      compact === "3.2" || compact === "3b" || compact === "g3b"
+    ) put("stage_3.2", value);
+    else if (key === "stage_4" || key === "4" || key === "g4" || compact === "g4") put("stage_4", value);
+    else if (key === "stage_5" || key === "5" || key === "g5" || compact === "g5") put("stage_5", value);
+  }
+
+  if (out.stage_3 === 0 && (out["stage_3.1"] > 0 || out["stage_3.2"] > 0)) {
+    out.stage_3 = out["stage_3.1"] + out["stage_3.2"];
+  }
+  if (out["stage_3.1"] === 0 && out["stage_3.2"] === 0 && out.stage_3 > 0) {
+    out["stage_3.1"] = out.stage_3 * 0.5;
+    out["stage_3.2"] = out.stage_3 * 0.5;
+  }
+
+  return out;
+}
+
+function buildProgressionBreakdown(currentStage, stageProbabilities) {
+  const probs = stageProbabilities || {};
+  const order = ["1", "2", "3.1", "3.2", "4", "5"];
+  const stageKeyByLabel = {
+    "1": "stage_1",
+    "2": "stage_2",
+    "3.1": "stage_3.1",
+    "3.2": "stage_3.2",
+    "4": "stage_4",
+    "5": "stage_5",
+  };
+  const displayByLabel = {
+    "1": "G1",
+    "2": "G2",
+    "3.1": "G3a",
+    "3.2": "G3b",
+    "4": "G4",
+    "5": "G5",
+  };
+
+  const raw = String(currentStage || "2")
+    .toLowerCase()
+    .replace("stage", "")
+    .replace("g", "")
+    .trim();
+
+  let normalizedCurrent = raw;
+  if (["3", "3a", "3.0", "3.1"].includes(normalizedCurrent)) normalizedCurrent = "3.1";
+  if (["3b", "3.2"].includes(normalizedCurrent)) normalizedCurrent = "3.2";
+
+  const currentIdx = order.indexOf(normalizedCurrent);
+  const startIdx = currentIdx >= 0 ? currentIdx + 1 : 0;
+
+  return order.slice(startIdx).map((label) => {
+    const key = stageKeyByLabel[label];
+    const probability = Number(probs[key] || 0);
+    return {
+      stage: label,
+      stage_display: displayByLabel[label],
+      probability,
+      probability_percentage: Number((probability * 100).toFixed(1)),
+    };
+  });
 }
 
 function formatProgressionSummary(prediction, label) {
@@ -412,38 +690,77 @@ function runPrediction(inputData) {
     });
 
     pythonProcess.on("close", (code) => {
-      if (code !== 0) {
-        console.error("Python script error:", errorString);
-        return reject(new Error(errorString || "Prediction failed"));
-      }
-
       try {
-        const result = JSON.parse(dataString);
+        const raw = (dataString || "").trim();
+        const result = raw ? JSON.parse(raw) : null;
+
+        if (code !== 0) {
+          const detailedError = (result && result.error)
+            ? result.error
+            : (errorString || "Prediction failed");
+          console.error("Python script error:", detailedError);
+          return reject(new Error(detailedError));
+        }
+
+        if (!result) {
+          return reject(new Error(errorString || "Prediction failed: empty Python output"));
+        }
 
         if (!result.success) {
           return reject(new Error(result.error || "Prediction failed"));
         }
 
+        const nextVisitStageProbabilities = normalizeStageProbabilities(
+          result.next_visit_stage_probabilities || result.stage_probabilities
+        );
+        const sixMonthStageProbabilities = normalizeStageProbabilities(
+          result.six_month_stage_probabilities || result.stage_probabilities
+        );
+
+        const currentStage =
+          result.current_stage ||
+          result.predicted_stage ||
+          result.stage ||
+          "2";
+
         // Calculate next stage progression
         const nextStageProgression = calculateNextStageProgression(
-          result.current_stage,
-          result.stage_probabilities
+          currentStage,
+          nextVisitStageProbabilities
+        );
+        const nextStageProgression6Month = calculateNextStageProgression(
+          currentStage,
+          sixMonthStageProbabilities
+        );
+        const progressionByStage = buildProgressionBreakdown(
+          currentStage,
+          nextVisitStageProbabilities
+        );
+        const progressionByStage6Month = buildProgressionBreakdown(
+          currentStage,
+          sixMonthStageProbabilities
         );
 
         // Return prediction in standardized format
         resolve({
-          predicted_stage: result.current_stage,
-          confidence: result.confidence,
-          stage_probabilities: result.stage_probabilities,
+          predicted_stage: currentStage,
+          confidence: result.confidence ?? 0,
+          stage_probabilities: nextVisitStageProbabilities,
+          next_visit_stage_probabilities: nextVisitStageProbabilities,
+          six_month_stage_probabilities: sixMonthStageProbabilities,
+          progression_by_stage: progressionByStage,
+          progression_by_stage_6_month: progressionByStage6Month,
           progression_risk: result.overall_progression_risk,
           risk_level: result.overall_risk_level,
           used_ultrasound: result.used_ultrasound,
           egfr_value: result.egfr_value,
           next_stage_progression: nextStageProgression,
+          next_stage_progression_6_month: nextStageProgression6Month,
         });
       } catch (parseError) {
         console.error("Error parsing Python output:", parseError);
-        reject(new Error("Error parsing prediction results"));
+        const fallback = (errorString || dataString || "Error parsing prediction results").toString().trim();
+        reject(new Error(fallback || "Error parsing prediction results"));
       }
     });
 
@@ -599,7 +916,15 @@ exports.deleteStageProgressionRecord = async (req, res) => {
       return res.status(404).json({ success: false, message: "Record not found" });
     }
 
-    return res.status(200).json({ success: true, message: "Record deleted", id });
+    const remainingCount = await resequenceSubmissionIndicesForUser(deleted.userEmail);
+
+    return res.status(200).json({
+      success: true,
+      message: "Record deleted and visit numbers updated",
+      id,
+      userEmail: deleted.userEmail,
+      remainingCount,
+    });
   } catch (error) {
     console.error("Error deleting stage progression record", error);
     return res.status(500).json({ success: false, message: "Failed to delete record" });
@@ -686,7 +1011,7 @@ function processUltrasoundImage(imagePath, patientName) {
  * Accepts lab data and optional ultrasound data
  */
 exports.predictStageProgression = async (req, res) => {
-  const { lab_data, ultrasound_data, userEmail, userName } = req.body;
+  const { lab_data, ultrasound_data, userEmail, userName, age, gender, visitDate } = req.body;
 
   // Validate that at least lab_data is provided
   if (!lab_data) {
@@ -709,7 +1034,8 @@ exports.predictStageProgression = async (req, res) => {
     .limit(2)
     .lean();
 
-  const normalizeLabPoint = (p) => ({
+  const normalizeLabPoint = (p, fallbackDate, fallbackAge, fallbackGender) => ({
+    charttime: p.charttime || p.date || p.visitDate || fallbackDate.toISOString(),
     creatinine: p.creatinine !== undefined && p.creatinine !== null ? parseFloat(p.creatinine) : null,
     bun: p.bun !== undefined && p.bun !== null ? parseFloat(p.bun) : null,
     egfr:
@@ -728,17 +1054,33 @@ exports.predictStageProgression = async (req, res) => {
     hemoglobin: p.hemoglobin ? parseFloat(p.hemoglobin) : null,
     potassium: p.potassium ? parseFloat(p.potassium) : null,
     sodium: p.sodium ? parseFloat(p.sodium) : null,
-    anchor_age: p.anchor_age ? parseFloat(p.anchor_age) : p.age ? parseFloat(p.age) : null,
+    age: p.age ? parseFloat(p.age) : (fallbackAge ? parseFloat(fallbackAge) : null),
+    anchor_age: p.anchor_age ? parseFloat(p.anchor_age) : p.age ? parseFloat(p.age) : (fallbackAge ? parseFloat(fallbackAge) : null),
+    gender: toGenderCode(p.gender) || fallbackGender || "M",
+    ckd_stage: p.ckd_stage || stageFromEgfr(p.egfr ?? p.gfr),
     urea: p.urea ? parseFloat(p.urea) : null,
   });
+
+  const normalizedVisitDate = normalizeVisitDate(visitDate);
+  const demographics = await resolveDemographics({ userEmail: normalizedEmail, ageInput: age, genderInput: gender });
 
   const priorLabPoints = priorRecords.map(buildLabPointFromRecord).reverse();
 
   let currentLabPoint;
   if (Array.isArray(lab_data)) {
-    currentLabPoint = normalizeLabPoint(lab_data[lab_data.length - 1]);
+    currentLabPoint = normalizeLabPoint(
+      lab_data[lab_data.length - 1],
+      normalizedVisitDate,
+      demographics.age,
+      demographics.gender
+    );
   } else {
-    currentLabPoint = normalizeLabPoint(lab_data);
+    currentLabPoint = normalizeLabPoint(
+      lab_data,
+      normalizedVisitDate,
+      demographics.age,
+      demographics.gender
+    );
   }
 
   const egfrValue = currentLabPoint.egfr ?? currentLabPoint.gfr;
@@ -758,10 +1100,10 @@ exports.predictStageProgression = async (req, res) => {
     });
   }
 
-  const labSequence = [...priorLabPoints, currentLabPoint].slice(-3);
+  const historySequence = [...priorLabPoints, currentLabPoint].slice(-3);
 
   // Ultrasound sequence aligns in length; prior points are null
-  const ultrasoundSequence = labSequence.map(() => null);
+  const ultrasoundSequence = historySequence.map(() => null);
   if (ultrasound_data) {
     ultrasoundSequence[ultrasoundSequence.length - 1] = {
       left_kidney_length: ultrasound_data.left_kidney_length ? parseFloat(ultrasound_data.left_kidney_length) : null,
@@ -783,12 +1125,21 @@ exports.predictStageProgression = async (req, res) => {
   }
 
   const inputData = {
-    lab_data: labSequence,
+    history: historySequence,
   };
 
   // Add ultrasound data if provided
   if (ultrasound_data) {
     inputData.ultrasound_data = ultrasoundSequence;
+    const lastIndex = inputData.history.length - 1;
+    inputData.history[lastIndex] = {
+      ...inputData.history[lastIndex],
+      kidney_length: ultrasoundSequence[lastIndex]?.kidney_length ?? null,
+      kidney_width: ultrasoundSequence[lastIndex]?.kidney_width ?? null,
+      area_px: ultrasoundSequence[lastIndex]?.area_px ?? null,
+      length_px: ultrasoundSequence[lastIndex]?.length_px ?? null,
+      echogenicity_score: ultrasoundSequence[lastIndex]?.echogenicity_score ?? null,
+    };
   }
 
   // Path to Python script
@@ -843,15 +1194,40 @@ exports.predictStageProgression = async (req, res) => {
         });
       }
 
+      const nextVisitStageProbabilities = normalizeStageProbabilities(
+        result.next_visit_stage_probabilities || result.stage_probabilities
+      );
+      const sixMonthStageProbabilities = normalizeStageProbabilities(
+        result.six_month_stage_probabilities || result.stage_probabilities
+      );
+      const currentStage = result.current_stage || result.predicted_stage || "2";
+      const hasPriorHistory = priorRecords.length > 0;
+      const nextStageProgression = hasPriorHistory
+        ? calculateNextStageProgression(currentStage, nextVisitStageProbabilities)
+        : null;
+      const nextStageProgression6Month = hasPriorHistory
+        ? calculateNextStageProgression(currentStage, sixMonthStageProbabilities)
+        : null;
+      const progressionByStage = hasPriorHistory
+        ? buildProgressionBreakdown(currentStage, nextVisitStageProbabilities)
+        : [];
+      const progressionByStage6Month = hasPriorHistory
+        ? buildProgressionBreakdown(currentStage, sixMonthStageProbabilities)
+        : [];
+
+      let savedSubmissionIndex = null;
+
       // Save record with submission index
       try {
         const priorCount = await StageProgressionRecord.countDocuments({ userEmail: normalizedEmail });
-        await StageProgressionRecord.create({
+        const savedRecord = await StageProgressionRecord.create({
           userEmail: normalizedEmail,
           userName: userName || null,
+          visitDate: normalizedVisitDate,
           submissionIndex: priorCount + 1,
           inputs: {
-            age: currentLabPoint.anchor_age ? parseInt(currentLabPoint.anchor_age) : null,
+            visitDate: normalizedVisitDate,
+            age: currentLabPoint.anchor_age ? parseInt(currentLabPoint.anchor_age, 10) : null,
             gender: currentLabPoint.gender || null,
             labs: {
               creatinine: currentLabPoint.creatinine ?? null,
@@ -862,37 +1238,77 @@ exports.predictStageProgression = async (req, res) => {
             },
             uploaded: { labReport: false, ultrasound: !!ultrasound_data },
           },
-          prediction_lab_only: result.used_ultrasound ? null : result,
-          prediction_with_us: result.used_ultrasound ? result : null,
+          prediction_lab_only: result.used_ultrasound ? null : {
+            ...result,
+            stage_probabilities: nextVisitStageProbabilities,
+            next_visit_stage_probabilities: nextVisitStageProbabilities,
+            six_month_stage_probabilities: sixMonthStageProbabilities,
+            progression_by_stage: progressionByStage,
+            progression_by_stage_6_month: progressionByStage6Month,
+            next_stage_progression: nextStageProgression,
+            next_stage_progression_6_month: nextStageProgression6Month,
+          },
+          prediction_with_us: result.used_ultrasound ? {
+            ...result,
+            stage_probabilities: nextVisitStageProbabilities,
+            next_visit_stage_probabilities: nextVisitStageProbabilities,
+            six_month_stage_probabilities: sixMonthStageProbabilities,
+            progression_by_stage: progressionByStage,
+            progression_by_stage_6_month: progressionByStage6Month,
+            next_stage_progression: nextStageProgression,
+            next_stage_progression_6_month: nextStageProgression6Month,
+          } : null,
           eGFR_info: {
             value: result.egfr_value ?? null,
             source: result.used_ultrasound ? "fusion" : "lab_only",
             method: "model_input",
           },
-          progression_to_next_stage: result.progression
-            ? {
-                next_stage: result.progression.next_stage,
-                probability: result.progression.probability,
-                probability_percentage: String(result.progression.probability_percentage),
-                message: result.progression.risk_level,
-              }
-            : null,
+          progression_to_next_stage: {
+            next_stage: nextStageProgression?.next_stage || null,
+            probability: nextStageProgression?.probability ?? null,
+            probability_percentage:
+              nextStageProgression?.probability_percentage !== undefined && nextStageProgression?.probability_percentage !== null
+                ? String(nextStageProgression.probability_percentage)
+                : null,
+            message: nextStageProgression?.message || "Progression probabilities require at least one prior visit.",
+          },
+          progression_to_next_stage_6_month: {
+            next_stage: nextStageProgression6Month?.next_stage || null,
+            probability: nextStageProgression6Month?.probability ?? null,
+            probability_percentage:
+              nextStageProgression6Month?.probability_percentage !== undefined && nextStageProgression6Month?.probability_percentage !== null
+                ? String(nextStageProgression6Month.probability_percentage)
+                : null,
+            message: nextStageProgression6Month?.message || "Progression probabilities require at least one prior visit.",
+          },
+          progression_by_stage: progressionByStage,
+          progression_by_stage_6_month: progressionByStage6Month,
         });
+        savedSubmissionIndex = savedRecord?.submissionIndex || null;
       } catch (dbErr) {
         console.error("Failed to save stage progression record", dbErr.message);
       }
 
       return res.status(200).json({
         success: true,
-        current_stage: result.current_stage,
+        current_stage: currentStage,
         confidence: result.confidence,
-        stage_probabilities: result.stage_probabilities,
-        progression: result.progression,
+        stage_probabilities: nextVisitStageProbabilities,
+        next_visit_stage_probabilities: nextVisitStageProbabilities,
+        six_month_stage_probabilities: sixMonthStageProbabilities,
+        progression: nextStageProgression,
+        progression_6_month: nextStageProgression6Month,
+        progression_by_stage: progressionByStage,
+        progression_by_stage_6_month: progressionByStage6Month,
         overall_progression_risk: result.overall_progression_risk,
         overall_risk_level: result.overall_risk_level,
         used_ultrasound: result.used_ultrasound,
+        insufficient_history: !hasPriorHistory,
+        submissionIndex: savedSubmissionIndex,
         egfr_value: result.egfr_value,
-        message: `Current CKD Stage ${result.current_stage}${result.progression && result.progression.next_stage ? ` - ${result.progression.probability_percentage}% chance of progressing to Stage ${result.progression.next_stage}` : ''}`,
+        message: !hasPriorHistory
+          ? `Current CKD Stage ${currentStage} - progression probabilities will be available after at least one prior visit`
+          : `Current CKD Stage ${currentStage}${nextStageProgression && nextStageProgression.next_stage ? ` - ${nextStageProgression.probability_percentage}% chance of progressing to Stage ${nextStageProgression.next_stage}` : ''}`,
       });
     } catch (parseError) {
       console.error("Error parsing Python output:", parseError);

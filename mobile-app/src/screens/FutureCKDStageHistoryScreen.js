@@ -66,6 +66,13 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
   const [expandedId, setExpandedId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
+  const resequenceByDisplayOrder = (items) => {
+    return (items || []).map((item, index) => ({
+      ...item,
+      submissionIndex: index + 1,
+    }));
+  };
+
   const fetchHistory = useCallback(async () => {
     if (!effectiveEmail) {
       setRecords([]);
@@ -105,7 +112,7 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
     try {
       Alert.alert(
         "Delete record?",
-        `This will remove the saved prediction for this submission. ID: ${recordId}`,
+        `This will remove the saved prediction for this visit. ID: ${recordId}`,
         [
           { 
             text: "Cancel", 
@@ -149,6 +156,13 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
       console.log("Delete response data:", response.data);
       
       if (response.data?.success) {
+        setRecords((prev) => {
+          const remaining = (prev || []).filter((item, idx) => {
+            const currentId = item?._id || item?.id || `record-${idx}`;
+            return currentId !== recordId;
+          });
+          return resequenceByDisplayOrder(remaining);
+        });
         Alert.alert("Success", "Record deleted successfully");
         await fetchHistory();
       } else {
@@ -210,10 +224,25 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
     const confidenceLab = record.prediction_lab_only?.confidence;
     const egfrValue = record.eGFR_info?.value;
     const progression = record.progression_to_next_stage || record.prediction_with_us?.next_stage_progression || record.prediction_lab_only?.next_stage_progression;
+    const progression6Month =
+      record.progression_to_next_stage_6_month ||
+      record.prediction_with_us?.next_stage_progression_6_month ||
+      record.prediction_lab_only?.next_stage_progression_6_month;
+    const progressionByStage =
+      record.progression_by_stage ||
+      record.prediction_with_us?.progression_by_stage ||
+      record.prediction_lab_only?.progression_by_stage ||
+      [];
+    const progressionByStage6Month =
+      record.progression_by_stage_6_month ||
+      record.prediction_with_us?.progression_by_stage_6_month ||
+      record.prediction_lab_only?.progression_by_stage_6_month ||
+      [];
     const labs = record.inputs?.labs || {};
     const age = record.inputs?.age;
     const gender = record.inputs?.gender;
     const isExpanded = expandedId === recordId;
+    const visitNumber = idx + 1;
 
     // Prefer Lab + US prediction when present; otherwise fall back to Lab-only
     const hasUSPrediction = stageUS !== undefined && stageUS !== null;
@@ -229,7 +258,7 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
               {displayStage ? `Stage ${displayStage}` : "Result saved"}
             </Text>
             <Text style={styles.cardMeta}>
-              {formatDateTime(record.createdAt)} {record.submissionIndex ? `(Submission #${record.submissionIndex})` : ""}
+              {formatDateTime(record.visitDate || record.inputs?.visitDate || record.createdAt)} (Visit #{visitNumber})
             </Text>
             {(age || gender) ? (
               <Text style={styles.cardMeta}>
@@ -241,6 +270,11 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
             {progression?.next_stage ? (
               <Text style={[styles.cardMeta, styles.progressionHighlight]}>
                 → {(progression.probability_percentage || (progression.probability || 0) * 100).toString()}% chance to Stage {progression.next_stage}
+              </Text>
+            ) : null}
+            {progression6Month?.next_stage ? (
+              <Text style={[styles.cardMeta, styles.progressionHighlight]}>
+                (6 months) → {(progression6Month.probability_percentage || (progression6Month.probability || 0) * 100).toString()}% chance to Stage {progression6Month.next_stage}
               </Text>
             ) : null}
           </View>
@@ -314,6 +348,36 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
               {record.inputs?.age ? <Text style={styles.metaText}>Age: {record.inputs.age}</Text> : null}
               {record.inputs?.gender ? <Text style={styles.metaText}>Gender: {record.inputs.gender}</Text> : null}
             </View>
+
+            <Text style={[styles.sectionLabel, { marginTop: 12 }]}>Progression by stage</Text>
+            {progressionByStage.length ? (
+              <View style={styles.progressionList}>
+                {progressionByStage.map((item, pIdx) => (
+                  <View key={`${recordId}-prog-${pIdx}`} style={styles.progressionRow}>
+                    <Text style={styles.progressionStage}>{item.stage_display || item.stage}</Text>
+                    <Text style={styles.progressionArrow}>→</Text>
+                    <Text style={styles.progressionPercent}>{Number(item.probability_percentage || 0).toFixed(1)}%</Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.metaText}>No stage-wise progression breakdown available.</Text>
+            )}
+
+            <Text style={[styles.sectionLabel, { marginTop: 12 }]}>Progression by stage (6 months)</Text>
+            {progressionByStage6Month.length ? (
+              <View style={styles.progressionList}>
+                {progressionByStage6Month.map((item, pIdx) => (
+                  <View key={`${recordId}-prog6-${pIdx}`} style={styles.progressionRow}>
+                    <Text style={styles.progressionStage}>{item.stage_display || item.stage}</Text>
+                    <Text style={styles.progressionArrow}>→</Text>
+                    <Text style={styles.progressionPercent}>{Number(item.probability_percentage || 0).toFixed(1)}%</Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.metaText}>No 6-month stage-wise progression breakdown available.</Text>
+            )}
           </View>
         ) : null}
       </View>
@@ -622,6 +686,31 @@ const styles = StyleSheet.create({
   metaText: {
     color: "#4B5563",
     fontSize: 12,
+  },
+  progressionList: {
+    marginTop: 6,
+    gap: 6,
+  },
+  progressionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  progressionStage: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1F2937",
+    minWidth: 48,
+  },
+  progressionArrow: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "700",
+  },
+  progressionPercent: {
+    fontSize: 13,
+    color: "#111827",
+    fontWeight: "700",
   },
   emptyState: {
     marginTop: 32,
