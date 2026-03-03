@@ -1,0 +1,54 @@
+{
+  "documents": [
+    "## Label the relevant structures of nephron and associated blood supply\nFig 4\n\n<!-- image -->\n\nTortora GJ, Derrickson BH(2009). Principles of Anatomy and Physiology 12 th Ed. John Wiley &amp; Sons, New York\n\nGlomerular filtration depends on three main pressures. One pressure promotes filtration and two pressures oppose filtration.\n\nGlomerular blood hydrostatic pressure is the blood pressure in the glomerular capillary. It promotes filtration by forcing water and solutes in blood plasma through the filtration membrane.\n\nCapsular hydrostatic pressure is the hydrostatic pressure exerted against the filtration membrane by fluid already in the capsular space and renal tubular. It opposes filtration.\n\nBlood colloid osmotic pressure is due to the presence of proteins such as albumin, globulins and fibrinogen in blood plasma. This opposes filtration\n\nGlomerular filtration rate the amount of filtrate in all the renal corpuscles of both kidneys each minute is the glomerular filtration rate (GFR).\n\nWhat is the average GFR and what factors may affect the GFR?\n\nGFR is dependent on systemic blood pressure and the diameter of the afferent and efferent blood vessels\n\nThree principle mechanisms regulate these two factors auto blood pressure, hormone regulation and neural regulation\n\nDiscuss auto blood pressure and hormone regulation\n\nNeural regulation",
+    "## Fig.4\nVander AJ, Sherman J, Luciano DS(2003). Human Physiology: the Mechanisms of Body Function, 9 th Ed. McGraw-Hill Education, London\n\n<!-- image -->\n## Endocrine/Metabolic Functions\n-  Important site of gluconeogenesis (synthesis of new glucose molecule in times of stress and starvation)\n-  Secretion of erythpoietin stimulated by low oxygen (stimulates the differentiation of red blood cells)\n-  Participated in the synthesis of calcitriol (Vitamin D important in calcium metabolism)\n\nGreater Manchester Critical Care Skills Institute - All Rights Reserved"
+  ],
+  "metadatas": [
+    {
+      "source": "furenalpre-courseworkbook.pdf",
+      "chunk_id": 6,
+      "content_type": "dietary",
+      "content_type_confidence": 0,
+      "word_count": 201,
+      "entity_count": 3,
+      "has_ckd": false,
+      "has_gfr": false,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": false,
+      "medical_entities": "g,l,o,m,e,r,u,l,a,r",
+      "year": "2016",
+      "organization": "Unknown",
+      "section": "Label the relevant structures of nephron and associated blood supply",
+      "section_path": "Label the relevant structures of nephron and associated blood supply",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "structural"
+    },
+    {
+      "source": "furenalpre-courseworkbook.pdf",
+      "chunk_id": 13,
+      "content_type": "general",
+      "content_type_confidence": 0,
+      "word_count": 84,
+      "entity_count": 3,
+      "has_ckd": false,
+      "has_gfr": false,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": false,
+      "medical_entities": "c,a,l,c,i,u,m,,, ,v",
+      "year": "2016",
+      "organization": "Unknown",
+      "section": "Endocrine/Metabolic Functions",
+      "section_path": "Endocrine/Metabolic Functions",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "structural"
+    }
+  ],
+  "ids": [
+    "furenalpre_courseworkbook_6",
+    "furenalpre_courseworkbook_13"
+  ]
+}

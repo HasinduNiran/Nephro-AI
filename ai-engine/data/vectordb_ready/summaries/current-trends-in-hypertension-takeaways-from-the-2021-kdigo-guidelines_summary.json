@@ -1,0 +1,25 @@
+{
+  "total_documents": 9,
+  "source_file": "current-trends-in-hypertension-takeaways-from-the-2021-kdigo-guidelines_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\current-trends-in-hypertension-takeaways-from-the-2021-kdigo-guidelines_chunks.json",
+  "preparation_date": "2026-03-03T15:45:41.408906",
+  "avg_word_count": 137.77777777777777,
+  "content_types": {
+    "recommendation, reference": 1,
+    "recommendation, evidence": 1,
+    "evidence, definition, dietary, treatment": 1,
+    "recommendation, dietary": 1,
+    "recommendation, evidence, monitoring": 1,
+    "recommendation, evidence, dietary, treatment, monitoring": 1,
+    "recommendation, evidence, treatment": 1,
+    "recommendation, definition, treatment, monitoring": 1,
+    "recommendation, treatment, monitoring": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

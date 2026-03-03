@@ -1,0 +1,20 @@
+{
+  "total_documents": 5,
+  "source_file": "#13 Renal System Lect Notes_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\#13 Renal System Lect Notes_chunks.json",
+  "preparation_date": "2026-03-03T15:45:36.120589",
+  "avg_word_count": 150.8,
+  "content_types": {
+    "definition, dietary": 1,
+    "reference, dietary, treatment": 1,
+    "dietary": 1,
+    "general": 2
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

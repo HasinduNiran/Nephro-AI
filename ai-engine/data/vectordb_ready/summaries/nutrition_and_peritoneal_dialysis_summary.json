@@ -1,0 +1,29 @@
+{
+  "total_documents": 23,
+  "source_file": "nutrition_and_peritoneal_dialysis_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\nutrition_and_peritoneal_dialysis_chunks.json",
+  "preparation_date": "2026-03-03T15:45:42.370158",
+  "avg_word_count": 134.43478260869566,
+  "content_types": {
+    "reference, dietary": 3,
+    "dietary": 4,
+    "evidence, dietary, monitoring": 2,
+    "recommendation, dietary, treatment": 1,
+    "dietary, treatment": 2,
+    "recommendation, dietary": 2,
+    "reference, dietary, treatment": 2,
+    "recommendation, reference, dietary": 2,
+    "reference, dietary, monitoring": 1,
+    "dietary, treatment, monitoring": 1,
+    "recommendation, evidence, dietary, monitoring": 1,
+    "recommendation, dietary, monitoring": 1,
+    "recommendation, evidence, treatment": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

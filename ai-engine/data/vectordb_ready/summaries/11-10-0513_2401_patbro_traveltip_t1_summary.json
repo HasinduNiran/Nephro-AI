@@ -1,0 +1,35 @@
+{
+  "total_documents": 26,
+  "source_file": "11-10-0513_2401_patbro_traveltip_t1_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\11-10-0513_2401_patbro_traveltip_t1_chunks.json",
+  "preparation_date": "2026-03-03T15:45:36.444646",
+  "avg_word_count": 101.11538461538461,
+  "content_types": {
+    "general": 4,
+    "definition": 4,
+    "definition, treatment": 1,
+    "recommendation, evidence, definition, dietary, treatment, monitoring": 1,
+    "recommendation, evidence, treatment": 1,
+    "treatment": 2,
+    "recommendation, treatment": 1,
+    "evidence, treatment, monitoring": 1,
+    "dietary": 1,
+    "recommendation, evidence, dietary": 1,
+    "dietary, monitoring": 1,
+    "definition, dietary, treatment, monitoring": 1,
+    "recommendation, treatment, monitoring": 1,
+    "recommendation": 1,
+    "recommendation, definition, dietary, treatment, monitoring": 1,
+    "definition, dietary, treatment": 1,
+    "reference": 1,
+    "treatment, monitoring": 1,
+    "recommendation, reference, treatment": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

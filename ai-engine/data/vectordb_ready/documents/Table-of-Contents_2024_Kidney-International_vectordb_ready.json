@@ -1,0 +1,31 @@
+{
+  "documents": [
+    "<!-- image -->\n\n<!-- image -->\n\nVOL 105 | ISSUE 4S | APRIL 2024\n## KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease\nS117 KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease\n\nKidney Disease: Improving Global Outcomes (KDIGO) CKD Work Group OPEN"
+  ],
+  "metadatas": [
+    {
+      "source": "Table-of-Contents_2024_Kidney-International.pdf",
+      "chunk_id": 0,
+      "content_type": "recommendation, monitoring",
+      "content_type_confidence": 0,
+      "word_count": 54,
+      "entity_count": 4,
+      "has_ckd": false,
+      "has_gfr": false,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": false,
+      "medical_entities": "C,K,D,,, ,c,h,r,o,n",
+      "year": "2024",
+      "organization": "KDIGO",
+      "section": "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease",
+      "section_path": "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "structural"
+    }
+  ],
+  "ids": [
+    "table_of_contents_2024_kidney_international_0"
+  ]
+}

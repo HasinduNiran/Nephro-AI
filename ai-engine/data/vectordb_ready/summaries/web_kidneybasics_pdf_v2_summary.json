@@ -1,0 +1,22 @@
+{
+  "total_documents": 9,
+  "source_file": "web_kidneybasics_pdf_v2_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\web_kidneybasics_pdf_v2_chunks.json",
+  "preparation_date": "2026-03-03T15:45:43.246983",
+  "avg_word_count": 139.66666666666666,
+  "content_types": {
+    "general": 1,
+    "definition, dietary, treatment": 1,
+    "definition": 1,
+    "treatment": 2,
+    "recommendation, dietary, monitoring": 2,
+    "reference, treatment": 2
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

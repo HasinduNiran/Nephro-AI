@@ -1,0 +1,31 @@
+{
+  "total_documents": 21,
+  "source_file": "chronic-kidney-disease-in-adults-pdf-58297746373_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\chronic-kidney-disease-in-adults-pdf-58297746373_chunks.json",
+  "preparation_date": "2026-03-03T15:45:41.124846",
+  "avg_word_count": 145.9047619047619,
+  "content_types": {
+    "recommendation, definition, reference, monitoring": 4,
+    "recommendation": 2,
+    "reference": 1,
+    "recommendation, monitoring": 2,
+    "recommendation, dietary, treatment": 1,
+    "recommendation, reference, monitoring": 1,
+    "recommendation, definition, reference, dietary, treatment, monitoring": 1,
+    "reference, treatment": 2,
+    "recommendation, definition, treatment, monitoring": 1,
+    "recommendation, treatment": 1,
+    "evidence, reference, treatment, monitoring": 1,
+    "reference, dietary": 1,
+    "recommendation, evidence, definition, treatment, monitoring": 1,
+    "recommendation, definition": 1,
+    "recommendation, reference": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

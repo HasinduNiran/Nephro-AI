@@ -1,0 +1,18 @@
+{
+  "total_documents": 2,
+  "source_file": "niceng203guid_pathway1_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\niceng203guid_pathway1_chunks.json",
+  "preparation_date": "2026-03-03T15:45:42.298698",
+  "avg_word_count": 193.0,
+  "content_types": {
+    "recommendation, reference, dietary, monitoring": 1,
+    "recommendation, evidence, reference": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}
