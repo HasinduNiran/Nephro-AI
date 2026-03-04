@@ -5,7 +5,6 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "predev": "\"C:\\Users\\U S E R\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" reverse tcp:5000 tcp:5000 && \"C:\\Users\\U S E R\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" reverse tcp:8001 tcp:8001",
     "dev": "nodemon server.js"
   },
   "dependencies": {
