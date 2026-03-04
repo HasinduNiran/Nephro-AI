@@ -5,6 +5,7 @@ import hashlib
 import base64
 import asyncio
 import re  # <--- NEW IMPORT FOR CLEANING TEXT
+import struct
 import wave
 import io
 from pathlib import Path
@@ -12,7 +13,7 @@ import aiofiles
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 import edge_tts
 from pydub import AudioSegment
@@ -96,6 +97,31 @@ def cleanup_file(path: str):
             print(f"🧹 Cleaned up: {path}")
     except Exception as e:
         print(f"⚠️ Cleanup warning: {e}")
+
+def split_into_sentences(text: str) -> list:
+    """
+    Split text into TTS-sized chunks at sentence boundaries.
+    Merges fragments shorter than 15 chars into the preceding sentence.
+    """
+    # Split at sentence-ending punctuation (Sinhala \u0964 = danda, English . ! ?)
+    parts = re.split(r'(?<=[.!?\u0964\n])\s+', text.strip())
+    merged = []
+    buffer = ""
+    for part in parts:
+        part = part.strip()
+        if not part:
+            continue
+        buffer = (buffer + " " + part).strip() if buffer else part
+        if len(buffer) >= 15:  # minimum viable TTS chunk
+            merged.append(buffer)
+            buffer = ""
+    if buffer:
+        if merged:
+            merged[-1] += " " + buffer
+        else:
+            merged.append(buffer)
+    return merged if merged else [text]
+
 
 def clean_text_for_tts(text: str) -> str:
     """Removes Markdown symbols and unsupported characters."""
@@ -217,6 +243,46 @@ def _generate_gemini_tts(text: str, output_path: Path) -> bool:
         print(f"   ❌ Gemini TTS failed: {e}")
         return False
 
+def _generate_gemini_tts_bytes(text: str):
+    """
+    Generate TTS audio using Gemini API (synchronous, runs in thread pool).
+    Returns MP3 bytes on success, None on failure.
+    """
+    try:
+        response = gemini_client.models.generate_content(
+            model=GOOGLE_TTS_MODEL,
+            contents=text,
+            config=types.GenerateContentConfig(
+                response_modalities=["AUDIO"],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name=GOOGLE_TTS_VOICE,
+                        )
+                    )
+                ),
+            ),
+        )
+
+        pcm_data = response.candidates[0].content.parts[0].inline_data.data
+
+        wav_buffer = io.BytesIO()
+        with wave.open(wav_buffer, "wb") as wf:
+            wf.setnchannels(1)
+            wf.setsampwidth(2)      # 16-bit
+            wf.setframerate(24000)  # 24kHz
+            wf.writeframes(pcm_data)
+        wav_buffer.seek(0)
+
+        mp3_buffer = io.BytesIO()
+        AudioSegment.from_wav(wav_buffer).export(mp3_buffer, format="mp3")
+        return mp3_buffer.getvalue()
+
+    except Exception as e:
+        print(f"   \u274c Gemini TTS bytes failed: {e}")
+        return None
+
+
 # -----------------------------------------------------------------------------
 # ENDPOINTS
 # -----------------------------------------------------------------------------
@@ -270,6 +336,78 @@ async def text_to_speech(request: TTSRequest):
     except Exception as e:
         print(f"❌ TTS endpoint error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# --- STREAMING TTS ENDPOINT (parallel sentence-by-sentence generation) ---
+@app.post("/chat/tts/stream")
+@app.post("/api/chat/tts/stream")
+async def text_to_speech_stream(request: TTSRequest):
+    """
+    Parallel TTS: splits text into sentences, generates each in parallel,
+    returns all MP3 segments as a length-framed binary blob.
+    Frame format per segment: [4-byte big-endian uint32 length][MP3 bytes]
+    Client decodes and plays segments sequentially for faster perceived start.
+    """
+    if not request.text or not request.text.strip():
+        raise HTTPException(status_code=400, detail="Text is required")
+
+    clean_text = clean_text_for_tts(request.text)
+    is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in request.text)
+
+    if is_sinhala and TTS_PHONETIC_ENABLED:
+        clean_text = nlg_glossary.apply_tts_phonetics(clean_text)
+
+    sentences = split_into_sentences(clean_text)
+    Log.step("\U0001f50a", "PARALLEL STREAM TTS",
+             f"{len(sentences)} sentences | {'SINHALA' if is_sinhala else 'ENGLISH'}")
+
+    loop = asyncio.get_event_loop()
+
+    async def generate_sentence_bytes(idx: int, sentence: str):
+        print(f"   \u21b3 [S{idx+1}/{len(sentences)}] {sentence[:60]}...")
+        mp3_bytes = None
+        if is_sinhala and gemini_client:
+            mp3_bytes = await loop.run_in_executor(
+                None, _generate_gemini_tts_bytes, sentence
+            )
+        else:
+            voice = "si-LK-ThiliniNeural" if is_sinhala else "en-US-AriaNeural"
+            try:
+                tmp_path = Path("tts_cache") / f"stmp_{hashlib.md5(sentence.encode()).hexdigest()}.mp3"
+                communicate = edge_tts.Communicate(sentence, voice)
+                await communicate.save(str(tmp_path))
+                mp3_bytes = tmp_path.read_bytes()
+                tmp_path.unlink(missing_ok=True)
+            except Exception as e:
+                print(f"   \u274c [S{idx+1}] Edge-TTS failed: {e}")
+        if mp3_bytes:
+            print(f"   \u2705 [S{idx+1}] Ready — {len(mp3_bytes):,} bytes")
+        return mp3_bytes
+
+    # Fire all sentences in parallel
+    results = await asyncio.gather(
+        *[generate_sentence_bytes(i, s) for i, s in enumerate(sentences)]
+    )
+
+    # Pack as length-framed binary: <uint32 len><mp3 bytes> per segment
+    output = io.BytesIO()
+    valid = 0
+    for mp3_bytes in results:
+        if mp3_bytes:
+            output.write(struct.pack(">I", len(mp3_bytes)))
+            output.write(mp3_bytes)
+            valid += 1
+
+    data = output.getvalue()
+    if not data:
+        raise HTTPException(status_code=500, detail="All TTS segments failed")
+
+    print(f"   \u2705 Returning {valid}/{len(sentences)} segments — {len(data):,} bytes total")
+    return Response(
+        content=data,
+        media_type="application/octet-stream",
+        headers={"X-Segment-Count": str(valid)},
+    )
+
 
 # --- CLEAR CACHE ENDPOINT ---
 @app.post("/chat/clear")

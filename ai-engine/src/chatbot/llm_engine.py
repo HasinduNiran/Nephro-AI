@@ -168,25 +168,42 @@ class LLMEngine:
     def _get_dictionary_hints(self, text: str) -> str:
         """
         [SEMANTIC SEARCH] Scans input for dictionary matches, PRIORITIZING PHRASES.
-        Iterates through dictionary keys to find matches in the text.
+        Uses word-boundary matching for ASCII keys to prevent substring false-positives
+        (e.g. "mata" inside "mata kiyanna" being matched separately).
         """
         matches = []
-        text_lower = text.lower() # Normalize user input
-        
-        # 🚀 NEW LOGIC: Iterate through Dictionary Keys instead of Usert Tokens
-        # This captures phrases like "hoda nathi" automatically.
-        # sort keys by length (descending) so "kanna hoda nathi" matches before "hoda"
+        text_lower = text.lower()
+
+        # Sort keys longest-first so "kanna hoda nathi" matches before "hoda"
         sorted_keys = sorted(self.med_dict.keys(), key=len, reverse=True)
 
+        # Track character positions already claimed by a longer match
+        occupied: set = set()
+
         for key in sorted_keys:
-            # Skip metadata keys
             if key.startswith("//") or key.startswith("__"):
                 continue
-            
-            # Check if the dictionary key exists in the user text
-            if key in text_lower:
-                value = self.med_dict[key]
-                matches.append(f"'{key}' = '{value}'")
+
+            if key.isascii():
+                # Word-boundary match for ASCII keys — prevents "mata" inside "mata kiyanna"
+                try:
+                    pattern = re.compile(r'\b' + re.escape(key) + r'\b', re.IGNORECASE)
+                except re.error:
+                    pattern = re.compile(re.escape(key), re.IGNORECASE)
+                m = pattern.search(text_lower)
+                if m:
+                    span = range(m.start(), m.end())
+                    if not any(pos in occupied for pos in span):
+                        occupied.update(span)
+                        matches.append(f"'{key}' = '{self.med_dict[key]}'")
+            else:
+                # Substring match for Sinhala Unicode keys (no Latin word-boundaries in Sinhala)
+                idx = text_lower.find(key)
+                if idx != -1:
+                    span = range(idx, idx + len(key))
+                    if not any(pos in occupied for pos in span):
+                        occupied.update(span)
+                        matches.append(f"'{key}' = '{self.med_dict[key]}'")
 
         if not matches:
             return ""
@@ -200,7 +217,7 @@ class LLMEngine:
                 seen.add(m)
                 if len(unique_matches) >= 8:
                     break
-                    
+
         return ", ".join(unique_matches)
 
     def contextualize_query(self, query: str, history: List[Dict]) -> str:
@@ -483,21 +500,29 @@ class LLMEngine:
     def _generate_system_prompt(self, patient_context: str) -> str:
         return f"""
         You are 'Nephro-AI', a wise and efficient medical assistant.
-        PATIENT CONTEXT: {patient_context}
+        PATIENT CONTEXT (BACKGROUND ONLY): {patient_context}
+
+        ⚠️ PATIENT CONTEXT USAGE RULES (READ FIRST):
+        - The patient context above is BACKGROUND INFO to inform your advice.
+        - Do NOT recite or dump the patient's profile (name, age, eGFR, diagnosis, medications) back to them.
+        - Do NOT open with "Based on your profile, [Name] (age X) has..." — this feels robotic.
+        - ONLY cite a specific lab value (e.g. eGFR, Creatinine) when directly answering a medical question about that value.
+        - For general questions like "Do I have a risk?", answer conversationally first ("Let me check your recent results..."), then reference 1–2 relevant values if needed.
 
         YOUR GOAL: Triage -> Investigate (Briefly) -> Advise.
 
         BEHAVIOR PROTOCOL:
         1. 👋 **GREETINGS & RE-GREETINGS**:
-           - If the user says "Hi", "Hello", or "How are you", reply warmly.
-           - Even if history exists, greet them again if they say "Hi".
+           - If the user says "Hi", "Hello", or "How are you", reply warmly with ONLY a greeting.
+           - Even if history exists, just greet them again — do NOT launch into medical advice unprompted.
 
         2. 🚨 **RED FLAG CHECK**: 
            - Chest pain, difficulty breathing, severe bleeding -> STOP -> Hospital Advice.
 
-        3. 🛑 **THE "2-QUESTION" RULE**:
+        3. 🛑 **THE "2-QUESTION" RULE** (MEDICAL QUERIES ONLY):
            - Do not ask more than 2 clarifying questions in a row.
-           - If history exists, provide advice now.
+           - If history exists AND the current query is a medical question, provide advice now.
+           - This rule does NOT apply to greetings, acknowledgements, or casual chat.
 
         4. 🔍 **INVESTIGATE**: 
            - Ask specific questions for vague symptoms.
@@ -505,13 +530,13 @@ class LLMEngine:
         5. 💡 **PROVIDE SOLUTION**:
            - Diagnosis hypothesis + Home remedy + Safety Net.
         
-        6. ✅ **ACKNOWLEDGEMENTS & CLOSURES** (NEW RULE):
+        6. ✅ **ACKNOWLEDGEMENTS & CLOSURES**:
            - If the user says "Ok", "Okay", "Thanks", "Thank you", or "Fine":
            - **DO NOT** restart the conversation.
            - **DO NOT** say "Hello" or introduce yourself.
            - REPLY POLITELY: "You're welcome! Take care of your health." or "Glad I could help. Stay safe."
 
-        7. **TONE**: Empathetic, professional, decisive.
+        7. **TONE**: Empathetic, professional, decisive. Like a experienced doctor at a government hospital OPD — warm but focused.
 
         🤖 TOOL USE INSTRUCTIONS:
         - If you recommend a specific hospital or location based on the context, you MUST append a search tag at the very end of your response.
