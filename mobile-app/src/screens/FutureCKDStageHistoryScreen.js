@@ -66,11 +66,18 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
   const [expandedId, setExpandedId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
+  // Re-assign visit numbers by date after a deletion and return newest-first
   const resequenceByDisplayOrder = (items) => {
-    return (items || []).map((item, index) => ({
-      ...item,
-      submissionIndex: index + 1,
-    }));
+    if (!items?.length) return [];
+    // Sort ascending (oldest first) to assign chronological visit numbers
+    const sorted = [...items].sort((a, b) => {
+      const da = new Date(a.visitDate || a.inputs?.visitDate || a.createdAt || 0);
+      const db = new Date(b.visitDate || b.inputs?.visitDate || b.createdAt || 0);
+      return da - db;
+    });
+    const numbered = sorted.map((item, index) => ({ ...item, _visitNumber: index + 1 }));
+    // Return newest first for display
+    return [...numbered].reverse();
   };
 
   const fetchHistory = useCallback(async () => {
@@ -85,7 +92,17 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
       setError("");
       const response = await axios.get(`/stage-progression/history/${encodeURIComponent(effectiveEmail)}`);
       if (response.data?.success) {
-        setRecords(response.data.records || []);
+        const raw = response.data.records || [];
+        // Sort ascending by date so oldest record = Visit #1
+        const sorted = [...raw].sort((a, b) => {
+          const da = new Date(a.visitDate || a.inputs?.visitDate || a.createdAt || 0);
+          const db = new Date(b.visitDate || b.inputs?.visitDate || b.createdAt || 0);
+          return da - db;
+        });
+        // Stamp each record with its chronological visit number
+        const numbered = sorted.map((item, index) => ({ ...item, _visitNumber: index + 1 }));
+        // Display newest first (highest visit number at top)
+        setRecords([...numbered].reverse());
       } else {
         setRecords([]);
         setError("Failed to load history");
@@ -242,7 +259,8 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
     const age = record.inputs?.age;
     const gender = record.inputs?.gender;
     const isExpanded = expandedId === recordId;
-    const visitNumber = idx + 1;
+    // Use the chronologically-assigned visit number (oldest = 1)
+    const visitNumber = record._visitNumber ?? idx + 1;
 
     // Prefer Lab + US prediction when present; otherwise fall back to Lab-only
     const hasUSPrediction = stageUS !== undefined && stageUS !== null;
@@ -269,24 +287,22 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
             ) : null}
             {progression?.next_stage ? (
               <Text style={[styles.cardMeta, styles.progressionHighlight]}>
-                → {(progression.probability_percentage || (progression.probability || 0) * 100).toString()}% chance to Stage {progression.next_stage}
+                → {parseFloat(
+                  progression.probability_percentage ?? (progression.probability || 0) * 100
+                ).toFixed(1)}% chance to Stage {progression.next_stage}
               </Text>
             ) : null}
             {progression6Month?.next_stage ? (
               <Text style={[styles.cardMeta, styles.progressionHighlight]}>
-                (6 months) → {(progression6Month.probability_percentage || (progression6Month.probability || 0) * 100).toString()}% chance to Stage {progression6Month.next_stage}
+                (6 months) → {parseFloat(
+                  progression6Month.probability_percentage ?? (progression6Month.probability || 0) * 100
+                ).toFixed(1)}% chance to Stage {progression6Month.next_stage}
               </Text>
             ) : null}
           </View>
           <TouchableOpacity
             style={styles.deleteButton}
-            onPress={() => {
-              console.log("=== DELETE BUTTON PRESSED ===");
-              console.log("Record ID:", recordId);
-              // Temporarily bypass confirmation for testing
-              deleteRecord(recordId);
-              // confirmDelete(recordId);
-            }}
+            onPress={() => confirmDelete(recordId)}
             disabled={deletingId === recordId}
             activeOpacity={0.8}
           >
