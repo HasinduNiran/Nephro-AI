@@ -27,13 +27,14 @@ import {
 } from "@expo/vector-icons";
 
 import { Audio } from "expo-av";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy"; // SDK 54: writeAsStringAsync moved to legacy path
 import axios from "axios";
 import * as Haptics from "expo-haptics";
 import Markdown from "react-native-markdown-display";
 
 // 👇 [NEW] Import Speech Library
 import * as Speech from "expo-speech";
+import { Buffer } from "buffer"; // Reliable base64 conversion in React Native
 import { CHATBOT_URL } from "../api/axiosConfig";
 
 // Use centralized URL from axiosConfig
@@ -257,6 +258,7 @@ const ChatbotScreen = ({ route, navigation }) => {
   const [isTTSLoading, setIsTTSLoading] = useState(false);
   const [currentlyPlayingId, setCurrentlyPlayingId] = useState(null);
   const soundRef = useRef(null);
+  const fetchAbortRef = useRef(null); // AbortController for in-flight Sinhala TTS fetch
   const flatListRef = useRef();
 
   // Animation values
@@ -282,13 +284,16 @@ const ChatbotScreen = ({ route, navigation }) => {
     link: { color: COLORS.primary },
   };
 
-  // Server-side TTS playback (Gemini TTS for Sinhala, expo-speech for English)
-  const playServerTTS = async (text, messageId) => {
-    // Snapshot before any state mutations — needed for accurate toggle-off check
-    const wasPlayingId = currentlyPlayingId;
-
-    // Stop any currently playing audio (covers both English expo-speech and Sinhala expo-av)
+  // Helper: cancel in-flight Sinhala fetch and stop all audio
+  const stopAllAudio = async () => {
+    // Cancel any pending Sinhala TTS network request
+    if (fetchAbortRef.current) {
+      fetchAbortRef.current.abort();
+      fetchAbortRef.current = null;
+    }
+    // Stop English expo-speech
     Speech.stop();
+    // Stop Sinhala expo-av
     if (soundRef.current) {
       try {
         await soundRef.current.stopAsync();
@@ -297,22 +302,38 @@ const ChatbotScreen = ({ route, navigation }) => {
         /* ignore cleanup errors */
       }
       soundRef.current = null;
+    }
+  };
+
+  // Server-side TTS playback (Gemini TTS for Sinhala, expo-speech for English)
+  const playServerTTS = async (text, messageId) => {
+    // ── TOGGLE-OFF: user tapped the button that is already playing/loading ──
+    // Check this FIRST before any async work so we can abort fetches mid-flight.
+    if (currentlyPlayingId === messageId) {
+      await stopAllAudio();
       setCurrentlyPlayingId(null);
+      setIsTTSLoading(false);
+      return; // This is the pure "Stop" action — do NOT restart
     }
 
-    // If user tapped the same message that was playing, this is a Stop action — exit
-    if (wasPlayingId === messageId) {
-      setCurrentlyPlayingId(null);
-      return;
-    }
+    // ── SWITCH: something else was playing — stop it before starting new ──
+    await stopAllAudio();
+    setCurrentlyPlayingId(null);
 
     if (!text) return;
 
     const cleanText = text.replace(/[*#]/g, "").replace(/\[MAPS:.*?\]/g, "");
-    const isSinhala = /[\u0D80-\u0DFF]/.test(text);
+
+    // Sinhala detection: true if ANY Sinhala Unicode character is present
+    const sinhalaCharCount = (text.match(/[\u0D80-\u0DFF]/g) || []).length;
+    const isSinhala = sinhalaCharCount > 0;
+    console.log(
+      `[TTS] Language detection | sinhalaChars=${sinhalaCharCount} | isSinhala=${isSinhala} | engine=${isSinhala ? "GEMINI SERVER" : "LOCAL expo-speech"}`,
+    );
 
     // For English, use local expo-speech (fast, good quality)
     if (!isSinhala) {
+      console.log("[TTS] ▶ LOCAL English voice (expo-speech en-US)");
       setCurrentlyPlayingId(messageId);
       Speech.speak(cleanText, {
         language: "en-US",
@@ -326,8 +347,15 @@ const ChatbotScreen = ({ route, navigation }) => {
     }
 
     // For Sinhala, call the server /chat/tts endpoint (Gemini TTS)
+    console.log(
+      `[TTS] ▶ SERVER Gemini voice | endpoint: ${BACKEND_URL}/chat/tts`,
+    );
     setIsTTSLoading(true);
     setCurrentlyPlayingId(messageId);
+
+    // Create a fresh AbortController for this specific request
+    const abortController = new AbortController();
+    fetchAbortRef.current = abortController;
 
     try {
       // Reconfigure Audio mode for playback
@@ -339,45 +367,59 @@ const ChatbotScreen = ({ route, navigation }) => {
         playThroughEarpieceAndroid: false,
       });
 
+      console.log("[TTS] Fetching audio from server...");
       const response = await fetch(`${BACKEND_URL}/chat/tts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: text }),
+        signal: abortController.signal, // ← allows mid-flight cancellation
       });
 
+      // Fetch completed — clear the abort ref
+      if (fetchAbortRef.current === abortController) {
+        fetchAbortRef.current = null;
+      }
+
+      console.log(`[TTS] Server response: HTTP ${response.status}`);
       if (!response.ok) {
         throw new Error(`TTS server error: ${response.status}`);
       }
 
-      // Download the audio blob and convert to base64 data URI
-      const audioBlob = await response.blob();
+      // ── Reliable audio decoding via ArrayBuffer + Buffer (avoids FileReader polyfill bug) ──
+      console.log("[TTS] Reading response as ArrayBuffer...");
+      const arrayBuffer = await response.arrayBuffer();
+      console.log(
+        `[TTS] ArrayBuffer received | byteLength=${arrayBuffer.byteLength}`,
+      );
 
-      const base64Audio = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result); // full data URI e.g. "data:audio/mpeg;base64,..."
-        reader.onerror = reject;
-        reader.readAsDataURL(audioBlob);
-      });
+      if (!arrayBuffer.byteLength) {
+        throw new Error("TTS server returned empty audio data");
+      }
+
+      // Convert ArrayBuffer → base64 using the Buffer package (reliable in React Native)
+      const base64Data = Buffer.from(arrayBuffer).toString("base64");
+      console.log(`[TTS] base64 encoded | length=${base64Data.length}`);
 
       // Write audio to a temp file
       const fileUri = FileSystem.cacheDirectory + `tts_${messageId}.mp3`;
-      // Strip the "data:audio/...;base64," prefix to get raw base64
-      const base64Data = base64Audio.split(",")[1];
       await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-        encoding: FileSystem.EncodingType.Base64,
+        encoding: "base64", // string literal avoids EncodingType enum resolution bug
       });
+      console.log(`[TTS] Audio written to: ${fileUri}`);
 
       // Play with expo-av
       const { sound: newSound } = await Audio.Sound.createAsync(
         { uri: fileUri },
         { shouldPlay: true },
       );
+      console.log("[TTS] ✅ Gemini (Aoede) voice is now playing");
 
       soundRef.current = newSound;
 
       // Listen for playback completion
       newSound.setOnPlaybackStatusUpdate((status) => {
         if (status.didJustFinish) {
+          console.log("[TTS] Playback finished — cleaning up");
           setCurrentlyPlayingId(null);
           soundRef.current = null;
           FileSystem.deleteAsync(fileUri, { idempotent: true }).catch(() => {});
@@ -392,7 +434,17 @@ const ChatbotScreen = ({ route, navigation }) => {
         }
       });
     } catch (error) {
-      console.error("Server TTS error:", error);
+      // AbortError means the user intentionally stopped — exit silently
+      if (error.name === "AbortError") {
+        console.log("[TTS] Fetch aborted by user (Stop button)");
+        setCurrentlyPlayingId(null);
+        setIsTTSLoading(false);
+        return;
+      }
+      console.error(
+        `[TTS] ❌ Gemini pipeline failed | ${error.name}: ${error.message}`,
+      );
+      console.warn("[TTS] ⚠ FALLBACK → local si-LK voice (Thilini)");
       // Fallback to local Speech for Sinhala
       Speech.stop();
       Speech.speak(cleanText, {
@@ -403,6 +455,10 @@ const ChatbotScreen = ({ route, navigation }) => {
       setCurrentlyPlayingId(null);
     } finally {
       setIsTTSLoading(false);
+      // Safety-clear the abort ref if it still points to this request
+      if (fetchAbortRef.current === abortController) {
+        fetchAbortRef.current = null;
+      }
     }
   };
 
@@ -673,7 +729,7 @@ const ChatbotScreen = ({ route, navigation }) => {
           const fileUri =
             FileSystem.cacheDirectory + `voice_response_${Date.now()}.mp3`;
           await FileSystem.writeAsStringAsync(fileUri, base64Audio, {
-            encoding: FileSystem.EncodingType.Base64,
+            encoding: "base64", // string literal avoids EncodingType enum resolution bug
           });
 
           const { sound: newSound } = await Audio.Sound.createAsync(
@@ -1567,7 +1623,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     padding: 12,
-    paddingBottom: Platform.OS === "ios" ? 10 : 12,
+    paddingBottom: Platform.OS === "ios" ? 24 : 20,
     backgroundColor: COLORS.card,
     alignItems: "flex-end",
     borderTopWidth: 1,
