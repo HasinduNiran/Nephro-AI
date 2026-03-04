@@ -149,9 +149,14 @@ const MyProgressPathScreen = ({ navigation, route }) => {
       .map((record, index) => {
         const egfr = Number(record?.inputs?.labs?.egfr ?? record?.eGFR_info?.value ?? NaN);
         if (!Number.isFinite(egfr)) return null;
+        const stage =
+          record?.prediction_with_us?.predicted_stage ??
+          record?.prediction_lab_only?.predicted_stage ??
+          null;
         return {
           xLabel: formatDateShort(getRecordDate(record)),
           y: egfr,
+          stage,
           record,
         };
       })
@@ -181,7 +186,7 @@ const MyProgressPathScreen = ({ navigation, route }) => {
     return {
       points,
       predicted: Number.isFinite(predictedEgfr)
-        ? { xLabel: latestVisitLabel, y: predictedEgfr, probabilityText: nextStageProbabilityText }
+        ? { xLabel: latestVisitLabel, y: predictedEgfr, probabilityText: nextStageProbabilityText, stage: nextStage }
         : null,
       labels: points.map((p) => p.xLabel),
       latestActualEgfr: points[points.length - 1]?.y ?? null,
@@ -211,7 +216,7 @@ const MyProgressPathScreen = ({ navigation, route }) => {
       return height - padding - ((clamped - minY) / yRange) * (height - 2 * padding);
     };
 
-    const blueDots = points.map((p, i) => ({ x: toX(i), y: toY(p.y), label: p.xLabel }));
+    const blueDots = points.map((p, i) => ({ x: toX(i), y: toY(p.y), label: p.xLabel, stage: p.stage }));
     const bluePolyline = blueDots.map((p) => `${p.x},${p.y}`).join(" ");
 
     let redSegment = null;
@@ -228,6 +233,7 @@ const MyProgressPathScreen = ({ navigation, route }) => {
         probabilityText: predicted.probabilityText,
         midX: (lastBlue.x + predX) / 2,
         midY: (lastBlue.y + predY) / 2,
+        stage: predicted.stage,
       };
     }
 
@@ -297,6 +303,26 @@ const MyProgressPathScreen = ({ navigation, route }) => {
     });
   }, [records]);
 
+  const latestStageInfo = useMemo(() => {
+    if (!records.length) return null;
+    const ordered = [...records].sort((a, b) => new Date(getRecordDate(a)) - new Date(getRecordDate(b)));
+    const latest = ordered[ordered.length - 1];
+    const stage =
+      latest?.prediction_with_us?.predicted_stage ??
+      latest?.prediction_lab_only?.predicted_stage ??
+      null;
+    if (stage === null) return null;
+    const egfr = Number(latest?.inputs?.labs?.egfr ?? latest?.eGFR_info?.value ?? NaN);
+    const zone = Number.isFinite(egfr) ? getOutlookZone(egfr) : "unknown";
+    const stageColorMap = { green: "#34C759", yellow: "#F5A623", orange: "#FF9500", red: "#FF3B30", unknown: "#8E8E93" };
+    return {
+      stage,
+      color: stageColorMap[zone] || "#8E8E93",
+      egfr: Number.isFinite(egfr) ? egfr.toFixed(1) : null,
+      visitDate: formatDateOnly(getRecordDate(latest)),
+    };
+  }, [records]);
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F5F7FA" />
@@ -333,6 +359,24 @@ const MyProgressPathScreen = ({ navigation, route }) => {
         ) : (
           <View style={styles.graphCard}>
             <Text style={styles.graphTitle}>Health Trend</Text>
+
+            {latestStageInfo && (
+              <View style={styles.currentStageRow}>
+                <View style={styles.currentStageLeft}>
+                  <Ionicons name="medical" size={18} color={latestStageInfo.color} />
+                  <Text style={styles.currentStageLabel}>Current CKD Stage</Text>
+                </View>
+                <View style={styles.currentStageRight}>
+                  <View style={[styles.currentStagePill, { backgroundColor: latestStageInfo.color }]}>
+                    <Text style={styles.currentStagePillText}>Stage {latestStageInfo.stage}</Text>
+                  </View>
+                  {latestStageInfo.egfr ? (
+                    <Text style={styles.currentStageEgfr}>eGFR {latestStageInfo.egfr} mL/min</Text>
+                  ) : null}
+                  <Text style={styles.currentStageDate}>as of {latestStageInfo.visitDate}</Text>
+                </View>
+              </View>
+            )}
             <Svg width={chart.width} height={chart.height}>
               {chart.zoneBands?.map((zone, idx) => (
                 <Line
@@ -368,7 +412,21 @@ const MyProgressPathScreen = ({ navigation, route }) => {
               ) : null}
 
               {chart.blueDots.map((dot, idx) => (
-                <Circle key={`bd-${idx}`} cx={dot.x} cy={dot.y} r="4" fill="#2563EB" />
+                <React.Fragment key={`bd-${idx}`}>
+                  <Circle cx={dot.x} cy={dot.y} r="4" fill="#2563EB" />
+                  {dot.stage !== null && dot.stage !== undefined ? (
+                    <SvgText
+                      x={dot.x}
+                      y={dot.y - 9}
+                      fontSize="10"
+                      fontWeight="700"
+                      fill="#1D4ED8"
+                      textAnchor="middle"
+                    >
+                      {`S${dot.stage}`}
+                    </SvgText>
+                  ) : null}
+                </React.Fragment>
               ))}
 
               {chart.redSegment ? (
@@ -383,6 +441,18 @@ const MyProgressPathScreen = ({ navigation, route }) => {
                     strokeDasharray="6,6"
                   />
                   <Circle cx={chart.redSegment.toX} cy={chart.redSegment.toY} r="4" fill="#DC2626" />
+                  {chart.redSegment.stage ? (
+                    <SvgText
+                      x={chart.redSegment.toX}
+                      y={chart.redSegment.toY - 9}
+                      fontSize="10"
+                      fontWeight="700"
+                      fill="#B91C1C"
+                      textAnchor="middle"
+                    >
+                      {`S${chart.redSegment.stage}`}
+                    </SvgText>
+                  ) : null}
                   {chart.redSegment.probabilityText && chart.redSegment.probabilityText !== "N/A" ? (
                     <SvgText
                       x={chart.redSegment.midX + 4}
@@ -547,6 +617,53 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#111827",
     marginBottom: 8,
+  },
+  currentStageRow: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#F8FAFC",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 14,
+    gap: 8,
+  },
+  currentStageLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  currentStageLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#374151",
+  },
+  currentStageRight: {
+    alignItems: "flex-end",
+    gap: 3,
+  },
+  currentStagePill: {
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  currentStagePillText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  currentStageEgfr: {
+    fontSize: 11,
+    color: "#6B7280",
+    fontWeight: "600",
+  },
+  currentStageDate: {
+    fontSize: 11,
+    color: "#9CA3AF",
   },
   legendRow: {
     marginTop: 8,

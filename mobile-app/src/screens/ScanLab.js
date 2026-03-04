@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,12 +7,59 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import axios from "../api/axiosConfig";
+
+const STAGE_COLORS = ["#34C759", "#34C759", "#F5A623", "#F5A623", "#FF3B30", "#FF3B30"];
+
+const getStageColor = (stage) => {
+  const s = parseInt(stage, 10);
+  if (!s || s < 1) return "#8E8E93";
+  return STAGE_COLORS[Math.min(s, STAGE_COLORS.length) - 1] || "#FF3B30";
+};
 
 const ScanLabScreen = ({ navigation, route }) => {
   const userName = route.params?.userName || "User";
   const userEmail = route.params?.userEmail || "";
+
+  const [currentStage, setCurrentStage] = useState(null);
+  const [stageLoading, setStageLoading] = useState(false);
+
+  useEffect(() => {
+    if (!userEmail) return;
+    const loadLatestStage = async () => {
+      try {
+        setStageLoading(true);
+        const response = await axios.get(
+          `/stage-progression/history/${encodeURIComponent(userEmail)}`
+        );
+        if (response.data?.success) {
+          const records = response.data.records || [];
+          if (records.length > 0) {
+            // Sort by date descending to get the most recent record
+            const sorted = [...records].sort((a, b) => {
+              const da = new Date(a.visitDate || a.inputs?.visitDate || a.createdAt || 0);
+              const db = new Date(b.visitDate || b.inputs?.visitDate || b.createdAt || 0);
+              return db - da;
+            });
+            const latest = sorted[0];
+            const stage =
+              latest.prediction_with_us?.predicted_stage ??
+              latest.prediction_lab_only?.predicted_stage ??
+              null;
+            setCurrentStage(stage);
+          }
+        }
+      } catch (_err) {
+        // silently fail – stage badge simply won't show
+      } finally {
+        setStageLoading(false);
+      }
+    };
+    loadLatestStage();
+  }, [userEmail]);
   
   const features = [
     {
@@ -76,6 +123,21 @@ const ScanLabScreen = ({ navigation, route }) => {
         {userEmail ? (
           <Text style={styles.patientEmail}>{userEmail}</Text>
         ) : null}
+
+        {/* Current CKD Stage Badge */}
+        <View style={styles.stageBadgeRow}>
+          <Ionicons name="medical" size={16} color="#4B5563" />
+          <Text style={styles.stageLabel}>Current CKD Stage:</Text>
+          {stageLoading ? (
+            <ActivityIndicator size="small" color="#4A90E2" style={{ marginLeft: 8 }} />
+          ) : currentStage !== null ? (
+            <View style={[styles.stagePill, { backgroundColor: getStageColor(currentStage) }]}>
+              <Text style={styles.stagePillText}>Stage {currentStage}</Text>
+            </View>
+          ) : (
+            <Text style={styles.stageUnknown}>Not yet assessed</Text>
+          )}
+        </View>
 
         {/* Tiles Grid */}
         <View style={styles.grid}>
@@ -157,7 +219,35 @@ const styles = StyleSheet.create({
   patientEmail: {
     fontSize: 12,
     color: "#6B7280",
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  stageBadgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  stageLabel: {
+    fontSize: 13,
+    color: "#4B5563",
+    fontWeight: "600",
+    marginLeft: 4,
+  },
+  stagePill: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  stagePillText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  stageUnknown: {
+    fontSize: 13,
+    color: "#8E8E93",
+    fontStyle: "italic",
   },
   grid: {
     flexDirection: "row",
