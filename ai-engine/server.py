@@ -16,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 import edge_tts
-from pydub import AudioSegment
+from pydub import AudioSegment  # still used for STT audio normalization
 from google import genai
 from google.genai import types
 
@@ -202,7 +202,7 @@ async def generate_tts_file(text: str) -> Path:
 def _generate_gemini_tts(text: str, output_path: Path) -> bool:
     """
     Generate TTS audio using Gemini API (synchronous, runs in thread pool).
-    Outputs PCM -> WAV in memory -> MP3 via pydub.
+    Outputs PCM -> WAV directly (NO PYDUB TRANSCODING).
     Returns True on success, False on failure.
     """
     try:
@@ -223,18 +223,16 @@ def _generate_gemini_tts(text: str, output_path: Path) -> bool:
 
         pcm_data = response.candidates[0].content.parts[0].inline_data.data
 
-        # Write PCM data to a WAV buffer in memory
-        wav_buffer = io.BytesIO()
-        with wave.open(wav_buffer, "wb") as wf:
+        # Write PCM directly into a WAV file — zero transcoding
+        wav_path = output_path.with_suffix(".wav")
+        with wave.open(str(wav_path), "wb") as wf:
             wf.setnchannels(1)
             wf.setsampwidth(2)       # 16-bit
             wf.setframerate(24000)   # 24kHz
             wf.writeframes(pcm_data)
-        wav_buffer.seek(0)
 
-        # Convert WAV to MP3 using pydub
-        audio_segment = AudioSegment.from_wav(wav_buffer)
-        audio_segment.export(str(output_path), format="mp3")
+        # Move to output_path so the cache key resolves correctly
+        wav_path.replace(output_path)
 
         print(f"   ✅ Gemini TTS generation successful (model: {GOOGLE_TTS_MODEL}, voice: {GOOGLE_TTS_VOICE})")
         return True
@@ -245,8 +243,8 @@ def _generate_gemini_tts(text: str, output_path: Path) -> bool:
 
 def _generate_gemini_tts_bytes(text: str):
     """
-    Generate TTS audio using Gemini API (synchronous, runs in thread pool).
-    Returns MP3 bytes on success, None on failure.
+    Generate TTS audio using Gemini API.
+    Returns raw WAV bytes instantly (NO PYDUB TRANSCODING).
     """
     try:
         response = gemini_client.models.generate_content(
@@ -266,17 +264,15 @@ def _generate_gemini_tts_bytes(text: str):
 
         pcm_data = response.candidates[0].content.parts[0].inline_data.data
 
+        # Instantly wrap the raw PCM in a WAV header — no pydub/ffmpeg
         wav_buffer = io.BytesIO()
         with wave.open(wav_buffer, "wb") as wf:
             wf.setnchannels(1)
             wf.setsampwidth(2)      # 16-bit
             wf.setframerate(24000)  # 24kHz
             wf.writeframes(pcm_data)
-        wav_buffer.seek(0)
 
-        mp3_buffer = io.BytesIO()
-        AudioSegment.from_wav(wav_buffer).export(mp3_buffer, format="mp3")
-        return mp3_buffer.getvalue()
+        return wav_buffer.getvalue()
 
     except Exception as e:
         print(f"   \u274c Gemini TTS bytes failed: {e}")
