@@ -9,6 +9,12 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
+const getBunRiskCategory = (bunValue) => {
+  if (bunValue < 30) return "Normal";
+  if (bunValue <= 300) return "Early risk";
+  return "High risk";
+};
+
 const LabResultScreen = ({ navigation, route }) => {
   const { result } = route.params || {};
   const userName = route.params?.userName || "User";
@@ -38,7 +44,10 @@ const LabResultScreen = ({ navigation, route }) => {
     switch (status) {
       case "Normal":
         return "#50E3C2";
+      case "Early risk":
+        return "#FFB946";
       case "High":
+      case "High risk":
         return "#FF6B6B";
       case "Low":
         return "#FFB946";
@@ -147,13 +156,25 @@ const LabResultScreen = ({ navigation, route }) => {
               )}
 
               {/* BUN */}
-              {labData.bun && (
+              {typeof labData.bun === "number" && (
                 <View style={styles.labValueRow}>
                   <View style={styles.labValueContent}>
                     <Text style={styles.labValueLabel}>BUN (Blood Urea Nitrogen)</Text>
-                    <Text style={styles.labValueValue}>
-                      {labData.bun.toFixed(2)} mg/dL
-                    </Text>
+                    <View style={styles.labValueWithStatus}>
+                      <Text style={styles.labValueValue}>
+                        {labData.bun.toFixed(2)} mg/dL
+                      </Text>
+                      {(() => {
+                        const bunStatus = labData.bunRiskCategory || getBunRiskCategory(labData.bun);
+                        return (
+                          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(bunStatus) + "20" }]}>
+                            <Text style={[styles.statusText, { color: getStatusColor(bunStatus) }]}>
+                              {bunStatus}
+                            </Text>
+                          </View>
+                        );
+                      })()}
+                    </View>
                   </View>
                   <Ionicons name="fitness-outline" size={24} color="#4A90E2" />
                 </View>

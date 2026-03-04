@@ -27,6 +27,8 @@ const RiskPredictionScreen = ({ navigation, route }) => {
   const [riskLevel, setRiskLevel] = useState(null);
   const [riskScore, setRiskScore] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [bpAvgLoading, setBpAvgLoading] = useState(true);
+  const [bpAvgData, setBpAvgData] = useState(null); // { avgSystolic, avgDiastolic, recordCount }
 
   // Fetch user data on component mount
   useEffect(() => {
@@ -66,6 +68,177 @@ const RiskPredictionScreen = ({ navigation, route }) => {
     loadUserData();
   }, []);
 
+  // Fetch this month's BP average from saved records
+  useEffect(() => {
+    const loadMonthlyBPAvg = async () => {
+      try {
+        const uid =
+          userId !== "test-user-id"
+            ? userId
+            : await AsyncStorage.getItem("userID");
+        if (!uid) return;
+        const now = new Date();
+        const month = now.getMonth() + 1;
+        const year = now.getFullYear();
+        const res = await axios.get(
+          `/bp-records/${uid}/monthly-average?month=${month}&year=${year}`,
+        );
+        const data = res.data;
+        setBpAvgData(data);
+        if (data.recordCount > 0) {
+          setBpSystolic(String(data.avgSystolic));
+          setBpDiastolic(String(data.avgDiastolic));
+        }
+      } catch (err) {
+        console.warn("loadMonthlyBPAvg error:", err);
+      } finally {
+        setBpAvgLoading(false);
+      }
+    };
+    loadMonthlyBPAvg();
+  }, [userId]);
+
+  // Fetch blood pressure from Health Connect (smartwatch / wearable)
+  const fetchBPFromHealthConnect = async () => {
+    if (Platform.OS !== "android") {
+      Alert.alert(
+        "Not Supported",
+        "Health Connect is only available on Android.",
+      );
+      return;
+    }
+
+    setFetchingBP(true);
+    try {
+      // Step 1: Check if Health Connect SDK is available on this device
+      let sdkStatus;
+      try {
+        sdkStatus = await getSdkStatus();
+      } catch (sdkError) {
+        console.warn("getSdkStatus failed:", sdkError);
+        Alert.alert(
+          "Health Connect Not Available",
+          "Google Health Connect is not installed on this device.\n\nPlease install it from the Play Store and make sure your smartwatch is syncing BP data.",
+        );
+        return;
+      }
+
+      // SdkAvailabilityStatus: 1 = UNAVAILABLE, 2 = UPDATE_REQUIRED, 3 = AVAILABLE
+      if (sdkStatus !== SdkAvailabilityStatus.SDK_AVAILABLE) {
+        const msg =
+          sdkStatus ===
+          SdkAvailabilityStatus.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED
+            ? "Health Connect needs to be updated. Please update it from the Play Store."
+            : "Health Connect is not available on this device. Please install it from the Play Store.";
+        Alert.alert("Health Connect", msg);
+        return;
+      }
+
+      // Step 2: Initialize the Health Connect SDK
+      let isInitialized = false;
+      try {
+        isInitialized = await initialize();
+      } catch (initError) {
+        console.warn("Health Connect initialize failed:", initError);
+        Alert.alert(
+          "Initialization Failed",
+          "Could not initialize Health Connect. Please make sure the app is installed and up to date.",
+        );
+        return;
+      }
+
+      if (!isInitialized) {
+        Alert.alert(
+          "Health Connect Unavailable",
+          "Could not initialize Health Connect. Please install or update it from the Play Store.",
+        );
+        return;
+      }
+
+      // Step 3: Request blood pressure read permission
+      let grantedPermissions;
+      try {
+        grantedPermissions = await requestPermission([
+          { accessType: "read", recordType: "BloodPressure" },
+        ]);
+      } catch (permError) {
+        console.warn("requestPermission failed:", permError);
+        Alert.alert(
+          "Permission Error",
+          "Could not request Health Connect permissions. Please check Health Connect settings.",
+        );
+        return;
+      }
+
+      if (!grantedPermissions || grantedPermissions.length === 0) {
+        Alert.alert(
+          "Permission Denied",
+          "Blood pressure read permission is required.\n\nPlease grant it in Health Connect settings.",
+        );
+        return;
+      }
+
+      // Step 4: Read BP records from the last 7 days
+      const endTime = new Date().toISOString();
+      const startTime = new Date(
+        Date.now() - 7 * 24 * 60 * 60 * 1000,
+      ).toISOString();
+
+      let result;
+      try {
+        result = await readRecords("BloodPressure", {
+          timeRangeFilter: {
+            operator: "between",
+            startTime,
+            endTime,
+          },
+        });
+      } catch (readError) {
+        console.warn("readRecords failed:", readError);
+        Alert.alert(
+          "Read Error",
+          "Could not read blood pressure data from Health Connect.\n\nError: " +
+            (readError?.message || "Unknown error"),
+        );
+        return;
+      }
+
+      if (!result || !result.records || result.records.length === 0) {
+        Alert.alert(
+          "No Data Found",
+          "No blood pressure readings found in Health Connect for the last 7 days.\n\nMake sure your smartwatch is syncing BP data to Google Health Connect.",
+        );
+        return;
+      }
+
+      // Step 5: Get the most recent reading and populate fields
+      const latestRecord = result.records[result.records.length - 1];
+      const systolic = Math.round(latestRecord.systolic.inMillimetersOfMercury);
+      const diastolic = Math.round(
+        latestRecord.diastolic.inMillimetersOfMercury,
+      );
+      const recordTime = new Date(latestRecord.time).toLocaleString();
+
+      setBpSystolic(systolic.toString());
+      setBpDiastolic(diastolic.toString());
+      setBpSource("healthConnect");
+
+      Alert.alert(
+        "⌚ BP Data Imported",
+        `Latest reading from Health Connect:\n\nSystolic: ${systolic} mmHg\nDiastolic: ${diastolic} mmHg\nRecorded: ${recordTime}\n\nTotal readings found: ${result.records.length}`,
+      );
+    } catch (error) {
+      console.error("Health Connect Error:", error);
+      Alert.alert(
+        "Error",
+        "An unexpected error occurred while accessing Health Connect.\n\nError: " +
+          (error?.message || "Unknown error"),
+      );
+    } finally {
+      setFetchingBP(false);
+    }
+  };
+
   // Validation ranges for inputs
   const VALIDATION_RANGES = {
     bpSystolic: { min: 70, max: 250, label: "Systolic BP" },
@@ -99,7 +272,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
     if (!bpSystolic || !bpDiastolic || !age) {
       Alert.alert(
         "Error",
-        "Please fill in Blood Pressure (Systolic and Diastolic) and Age"
+        "Please fill in Blood Pressure (Systolic and Diastolic) and Age",
       );
       return;
     }
@@ -122,7 +295,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
     if (parseFloat(bpSystolic) <= parseFloat(bpDiastolic)) {
       Alert.alert(
         "Invalid Input",
-        "Systolic BP must be greater than Diastolic BP"
+        "Systolic BP must be greater than Diastolic BP",
       );
       return;
     }
@@ -238,6 +411,40 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       <Text style={styles.title}>Early Risk Prediction</Text>
       <Text style={styles.subtitle}>Enter your vital signs below</Text>
 
+      {/* BP Monthly Average Card */}
+      {bpAvgLoading ? (
+        <View style={styles.bpAvgCard}>
+          <ActivityIndicator size="small" color="#4A90E2" />
+          <Text style={styles.bpAvgLoadingText}>Loading BP average...</Text>
+        </View>
+      ) : bpAvgData?.recordCount > 0 ? (
+        <View style={styles.bpAvgCard}>
+          <Text style={styles.bpAvgLabel}>
+            📊 BP from monthly average ({bpAvgData.recordCount} reading
+            {bpAvgData.recordCount !== 1 ? "s" : ""})
+          </Text>
+          <Text style={styles.bpAvgValue}>
+            <Text style={{ color: "#FF4757" }}>{bpAvgData.avgSystolic}</Text>
+            <Text style={{ color: "#8E8E93" }}> / </Text>
+            <Text style={{ color: "#4A90E2" }}>{bpAvgData.avgDiastolic}</Text>
+            <Text style={{ color: "#8E8E93", fontSize: 13 }}> mmHg</Text>
+          </Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("BPHistory", { userId })}
+          >
+            <Text style={styles.bpAvgLink}>Manage BP data →</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={styles.bpNoDataCard}
+          onPress={() => navigation.navigate("BPHistory", { userId })}
+        >
+          <Text style={styles.bpNoDataText}>⚠️ No BP data for this month.</Text>
+          <Text style={styles.bpNoDataLink}>Add readings in BP History →</Text>
+        </TouchableOpacity>
+      )}
+
       <View style={styles.readOnlyContainer}>
         <View style={styles.readOnlyField}>
           <Text style={styles.readOnlyLabel}>Gender:</Text>
@@ -249,20 +456,6 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         </View>
       </View>
 
-      <CustomInput
-        placeholder="Systolic BP (mmHg) *Required"
-        value={bpSystolic}
-        setValue={setBpSystolic}
-        keyboardType="numeric"
-        helperText="Range: 70-250 mmHg"
-      />
-      <CustomInput
-        placeholder="Diastolic BP (mmHg) *Required"
-        value={bpDiastolic}
-        setValue={setBpDiastolic}
-        keyboardType="numeric"
-        helperText="Range: 40-150 mmHg"
-      />
       <CustomInput
         placeholder="HbA1c Level (%) - Optional"
         value={hba1cLevel}
@@ -346,10 +539,11 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       <View style={styles.infoCard}>
         <Text style={styles.infoTitle}>💡 About the Prediction</Text>
         <Text style={styles.infoText}>
-          {"\n\n"}Required: Systolic BP, Diastolic BP, and Age
-          {"\n"}Optional: HbA1c Level (%)
-          {"\n\n"}Both blood pressure values are important for accurate kidney
-          health assessment.
+          {"\n\n"}BP values are automatically sourced from your monthly average
+          saved in BP History.
+          {"\n\n"}Optional: HbA1c Level (%) for more accurate prediction.
+          {"\n\n"}Add or sync BP readings in BP History to keep your average up
+          to date.
           {"\n\n"}Save your prediction each month to track your kidney health
           trend over time.
         </Text>
@@ -375,7 +569,61 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: "#8E8E93",
-    marginBottom: 30,
+    marginBottom: 20,
+  },
+  bpAvgCard: {
+    width: "100%",
+    backgroundColor: "#EBF4FF",
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: "#4A90E2",
+  },
+  bpAvgLabel: {
+    fontSize: 13,
+    color: "#4A90E2",
+    fontWeight: "600",
+    marginBottom: 6,
+  },
+  bpAvgValue: {
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  bpAvgLink: {
+    fontSize: 13,
+    color: "#4A90E2",
+    fontWeight: "600",
+    textDecorationLine: "underline",
+  },
+  bpAvgLoadingText: {
+    fontSize: 14,
+    color: "#8E8E93",
+    marginTop: 8,
+    textAlign: "center",
+  },
+  bpNoDataCard: {
+    width: "100%",
+    backgroundColor: "#FFF5E6",
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: "#F5A623",
+    alignItems: "flex-start",
+  },
+  bpNoDataText: {
+    fontSize: 14,
+    color: "#F5A623",
+    fontWeight: "600",
+    marginBottom: 6,
+  },
+  bpNoDataLink: {
+    fontSize: 13,
+    color: "#F5A623",
+    fontWeight: "600",
+    textDecorationLine: "underline",
   },
   readOnlyContainer: {
     width: "100%",

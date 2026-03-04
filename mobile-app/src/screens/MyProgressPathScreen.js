@@ -1,0 +1,726 @@
+import React, { useCallback, useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  StatusBar,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import Svg, { Line, Polyline, Circle, Text as SvgText } from "react-native-svg";
+import axios from "../api/axiosConfig";
+
+const STAGE_TO_EGFR = {
+  "1": 95,
+  "2": 75,
+  "3": 55,
+  "3.1": 52,
+  "3.2": 37,
+  "4": 22,
+  "5": 10,
+  G1: 95,
+  G2: 75,
+  G3: 55,
+  G3A: 52,
+  G3B: 37,
+  G4: 22,
+  G5: 10,
+};
+
+const normalizeStageKey = (value) => {
+  if (!value) return null;
+  const text = String(value).trim().toUpperCase().replace("STAGE", "").replace(/\s+/g, "");
+  if (text === "3A") return "3.1";
+  if (text === "3B") return "3.2";
+  if (text === "G3A") return "3.1";
+  if (text === "G3B") return "3.2";
+  if (text.startsWith("G")) return text;
+  return text;
+};
+
+const getRecordDate = (record) => record?.visitDate || record?.inputs?.visitDate || record?.createdAt;
+
+const formatDateOnly = (isoString) => {
+  try {
+    const date = new Date(isoString);
+    return date.toLocaleDateString();
+  } catch (_e) {
+    return "-";
+  }
+};
+
+const formatDateShort = (isoString) => {
+  try {
+    const date = new Date(isoString);
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    return `${mm}/${dd}`;
+  } catch (_e) {
+    return "--/--";
+  }
+};
+
+const toPercentText = (progressionObj) => {
+  if (!progressionObj) return "N/A";
+  const pctRaw = progressionObj?.probability_percentage;
+  if (pctRaw !== undefined && pctRaw !== null && String(pctRaw).trim() !== "") {
+    const text = String(pctRaw).trim();
+    return text.includes("%") ? text : `${text}%`;
+  }
+  const prob = Number(progressionObj?.probability);
+  if (Number.isFinite(prob)) return `${(prob * 100).toFixed(1)}%`;
+  return "N/A";
+};
+
+const getOutlookZone = (egfr) => {
+  const value = Number(egfr);
+  if (!Number.isFinite(value)) return "unknown";
+  if (value >= 90) return "green";
+  if (value >= 60) return "yellow";
+  if (value >= 30) return "orange";
+  return "red";
+};
+
+const MyProgressPathScreen = ({ navigation, route }) => {
+  const [userEmail, setUserEmail] = useState(
+    route.params?.userEmail ||
+    route.params?.email ||
+    route.params?.user?.email ||
+    route.params?.user?.userEmail ||
+    ""
+  );
+  const userName = route.params?.userName || route.params?.user?.name || "User";
+
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const fetchHistory = useCallback(async () => {
+    let effectiveEmail = (userEmail || "").trim();
+    if (!effectiveEmail) {
+      const storedEmail = await AsyncStorage.getItem("userEmail");
+      effectiveEmail = (storedEmail || "").trim();
+      if (effectiveEmail) setUserEmail(effectiveEmail);
+    }
+
+    if (!effectiveEmail) {
+      setError("No user email provided");
+      setRecords([]);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+      const response = await axios.get(`/stage-progression/history/${encodeURIComponent(effectiveEmail)}`);
+      if (response.data?.success) {
+        setRecords(response.data.records || []);
+      } else {
+        setRecords([]);
+        setError("Failed to load progression history");
+      }
+    } catch (err) {
+      setError("Unable to load progression history");
+      setRecords([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [userEmail]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchHistory();
+    }, [fetchHistory])
+  );
+
+  const chartData = useMemo(() => {
+    if (!records.length) {
+      return { points: [], predicted: null, labels: [] };
+    }
+
+    const ordered = [...records].sort((a, b) => new Date(getRecordDate(a)) - new Date(getRecordDate(b)));
+
+    const points = ordered
+      .map((record, index) => {
+        const egfr = Number(record?.inputs?.labs?.egfr ?? record?.eGFR_info?.value ?? NaN);
+        if (!Number.isFinite(egfr)) return null;
+        return {
+          xLabel: formatDateShort(getRecordDate(record)),
+          y: egfr,
+          record,
+        };
+      })
+      .filter(Boolean);
+
+    if (!points.length) {
+      return { points: [], predicted: null, labels: [] };
+    }
+
+    const latest = ordered[ordered.length - 1] || {};
+    const latestVisitLabel = `V${ordered.length + 1}`;
+
+    const nextVisitProgression =
+      latest?.progression_to_next_stage ||
+      latest?.prediction_with_us?.next_stage_progression ||
+      latest?.prediction_lab_only?.next_stage_progression ||
+      null;
+    const nextStageProbabilityText = toPercentText(nextVisitProgression);
+
+    const nextStage = normalizeStageKey(
+      latest?.progression_to_next_stage?.next_stage ||
+        latest?.prediction_with_us?.next_stage_progression?.next_stage ||
+        latest?.prediction_lab_only?.next_stage_progression?.next_stage
+    );
+    const predictedEgfr = STAGE_TO_EGFR[nextStage] ?? null;
+
+    return {
+      points,
+      predicted: Number.isFinite(predictedEgfr)
+        ? { xLabel: latestVisitLabel, y: predictedEgfr, probabilityText: nextStageProbabilityText }
+        : null,
+      labels: points.map((p) => p.xLabel),
+      latestActualEgfr: points[points.length - 1]?.y ?? null,
+    };
+  }, [records]);
+
+  const chart = useMemo(() => {
+    const width = 320;
+    const height = 220;
+    const padding = 32;
+    const { points, predicted } = chartData;
+
+    if (!points.length) {
+      return { width, height, yTicks: [], bluePolyline: "", blueDots: [], redSegment: null, xLabels: [] };
+    }
+
+    const minY = 0;
+    const maxY = 100;
+    const yRange = maxY - minY;
+
+    const totalCount = points.length + (predicted ? 1 : 0);
+    const xStep = totalCount > 1 ? (width - 2 * padding) / (totalCount - 1) : 0;
+
+    const toX = (index) => padding + index * xStep;
+    const toY = (value) => {
+      const clamped = Math.max(minY, Math.min(maxY, Number(value)));
+      return height - padding - ((clamped - minY) / yRange) * (height - 2 * padding);
+    };
+
+    const blueDots = points.map((p, i) => ({ x: toX(i), y: toY(p.y), label: p.xLabel }));
+    const bluePolyline = blueDots.map((p) => `${p.x},${p.y}`).join(" ");
+
+    let redSegment = null;
+    if (predicted && points.length) {
+      const lastBlue = blueDots[blueDots.length - 1];
+      const predX = toX(points.length);
+      const predY = toY(predicted.y);
+      redSegment = {
+        fromX: lastBlue.x,
+        fromY: lastBlue.y,
+        toX: predX,
+        toY: predY,
+        label: predicted.xLabel,
+        probabilityText: predicted.probabilityText,
+        midX: (lastBlue.x + predX) / 2,
+        midY: (lastBlue.y + predY) / 2,
+      };
+    }
+
+    const yTicks = [0, 30, 60, 90, 100].map((value) => ({ y: toY(value), value }));
+
+    const xLabels = blueDots.map((p) => ({ x: p.x, text: p.label }));
+    if (redSegment) xLabels.push({ x: redSegment.toX, text: redSegment.label });
+
+    const zoneBands = [
+      { from: 90, to: 100, color: "#DCFCE7" },
+      { from: 60, to: 90, color: "#FEF9C3" },
+      { from: 30, to: 60, color: "#FFEDD5" },
+      { from: 0, to: 30, color: "#FEE2E2" },
+    ].map((zone) => ({
+      yTop: toY(zone.to),
+      yBottom: toY(zone.from),
+      color: zone.color,
+    }));
+
+    return { width, height, yTicks, bluePolyline, blueDots, redSegment, xLabels, zoneBands };
+  }, [chartData]);
+
+  const worseningDetected = useMemo(() => {
+    const current = Number(chartData.latestActualEgfr);
+    const predicted = Number(chartData?.predicted?.y);
+    if (!Number.isFinite(current) || !Number.isFinite(predicted)) return false;
+
+    const currentZone = getOutlookZone(current);
+    const predictedZone = getOutlookZone(predicted);
+    const zoneRank = { green: 4, yellow: 3, orange: 2, red: 1, unknown: 0 };
+
+    const dropsDown = predicted < current;
+    const dropsZone = zoneRank[predictedZone] < zoneRank[currentZone];
+    return dropsDown || dropsZone;
+  }, [chartData]);
+
+  const progressionRows = useMemo(() => {
+    if (!records.length) return [];
+
+    const ordered = [...records].sort((a, b) => new Date(getRecordDate(a)) - new Date(getRecordDate(b)));
+    return ordered.map((record, index) => {
+      const nextVisitProgression =
+        record?.progression_to_next_stage ||
+        record?.prediction_with_us?.next_stage_progression ||
+        record?.prediction_lab_only?.next_stage_progression ||
+        null;
+
+      const sixMonthProgression =
+        record?.progression_to_next_stage_6_month ||
+        record?.prediction_with_us?.next_stage_progression_6_month ||
+        record?.prediction_lab_only?.next_stage_progression_6_month ||
+        null;
+
+      return {
+        visitNumber: index + 1,
+        visitDate: formatDateOnly(getRecordDate(record)),
+        currentStage:
+          record?.prediction_with_us?.predicted_stage ||
+          record?.prediction_lab_only?.predicted_stage ||
+          record?.prediction_with_us?.current_stage ||
+          record?.prediction_lab_only?.current_stage ||
+          "N/A",
+        nextStage: nextVisitProgression?.next_stage || "N/A",
+        currentHistoryProbability: toPercentText(nextVisitProgression),
+        sixMonthProbability: toPercentText(sixMonthProgression),
+      };
+    });
+  }, [records]);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F5F7FA" />
+
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color="#1C1C1E" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>My Progress Path</Text>
+        <View style={styles.placeholder} />
+      </View>
+
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Your Kidney Health Journey</Text>
+          <Text style={styles.cardSub}>Patient: {userName || userEmail}</Text>
+          <Text style={styles.cardDesc}>
+            Blue line = past kidney function (eGFR). Dotted red line = predicted next visit from Future CKD Stage progression probability.
+          </Text>
+        </View>
+
+        {loading ? (
+          <ActivityIndicator size="large" color="#4A90E2" style={{ marginTop: 24 }} />
+        ) : error ? (
+          <Text style={styles.errorText}>{error}</Text>
+        ) : chartData.points.length === 0 ? (
+          <View style={styles.emptyBox}>
+            <Text style={styles.emptyText}>No usable Future CKD Stage history to draw graph yet.</Text>
+          </View>
+        ) : (
+          <View style={styles.graphCard}>
+            <Text style={styles.graphTitle}>Health Trend</Text>
+            <Svg width={chart.width} height={chart.height}>
+              {chart.zoneBands?.map((zone, idx) => (
+                <Line
+                  key={`zone-${idx}`}
+                  x1={32}
+                  y1={(zone.yTop + zone.yBottom) / 2}
+                  x2={chart.width - 24}
+                  y2={(zone.yTop + zone.yBottom) / 2}
+                  stroke={zone.color}
+                  strokeWidth={Math.max(1, zone.yBottom - zone.yTop)}
+                />
+              ))}
+
+              <Line x1={32} y1={chart.height - 32} x2={chart.width - 24} y2={chart.height - 32} stroke="#CBD5E1" strokeWidth="1" />
+              <Line x1={32} y1={20} x2={32} y2={chart.height - 32} stroke="#CBD5E1" strokeWidth="1" />
+
+              {chart.yTicks.map((tick, idx) => (
+                <React.Fragment key={`yt-${idx}`}>
+                  <Line x1={28} y1={tick.y} x2={chart.width - 24} y2={tick.y} stroke="#EEF2F7" strokeWidth="1" />
+                  <SvgText x={4} y={tick.y + 4} fontSize="10" fill="#64748B">
+                    {tick.value}
+                  </SvgText>
+                </React.Fragment>
+              ))}
+
+              {chart.bluePolyline ? (
+                <Polyline
+                  points={chart.bluePolyline}
+                  fill="none"
+                  stroke="#3B82F6"
+                  strokeWidth="3"
+                />
+              ) : null}
+
+              {chart.blueDots.map((dot, idx) => (
+                <Circle key={`bd-${idx}`} cx={dot.x} cy={dot.y} r="4" fill="#2563EB" />
+              ))}
+
+              {chart.redSegment ? (
+                <>
+                  <Line
+                    x1={chart.redSegment.fromX}
+                    y1={chart.redSegment.fromY}
+                    x2={chart.redSegment.toX}
+                    y2={chart.redSegment.toY}
+                    stroke="#EF4444"
+                    strokeWidth="3"
+                    strokeDasharray="6,6"
+                  />
+                  <Circle cx={chart.redSegment.toX} cy={chart.redSegment.toY} r="4" fill="#DC2626" />
+                  {chart.redSegment.probabilityText && chart.redSegment.probabilityText !== "N/A" ? (
+                    <SvgText
+                      x={chart.redSegment.midX + 4}
+                      y={chart.redSegment.midY - 6}
+                      fontSize="10"
+                      fill="#B91C1C"
+                      fontWeight="700"
+                    >
+                      {chart.redSegment.probabilityText}
+                    </SvgText>
+                  ) : null}
+                </>
+              ) : null}
+
+              {chart.xLabels.map((label, idx) => (
+                <SvgText key={`xl-${idx}`} x={label.x - 8} y={chart.height - 10} fontSize="10" fill="#64748B">
+                  {label.text}
+                </SvgText>
+              ))}
+            </Svg>
+
+            <View style={styles.legendRow}>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: "#2563EB" }]} />
+                <Text style={styles.legendText}>Past visits</Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: "#DC2626" }]} />
+                <Text style={styles.legendText}>Predicted next visit</Text>
+              </View>
+            </View>
+
+            <View style={styles.zoneLegendWrap}>
+              <Text style={styles.zoneLegendTitle}>eGFR Ranges</Text>
+              <Text style={styles.zoneLine}>Green (90+): Stable and healthy</Text>
+              <Text style={styles.zoneLine}>Yellow (60-89): Monitor closely</Text>
+              <Text style={styles.zoneLine}>Orange (30-59): Increased risk</Text>
+              <Text style={styles.zoneLine}>Red (0-30): Action required</Text>
+            </View>
+
+            {worseningDetected ? (
+              <View style={styles.worseningBanner}>
+                <Ionicons name="warning" size={16} color="#B91C1C" />
+                <Text style={styles.worseningText}>Worsening Trend Detected</Text>
+              </View>
+            ) : null}
+
+            <View style={styles.tableWrap}>
+              <Text style={styles.tableTitle}>Visit Progression History</Text>
+              {progressionRows.map((row) => (
+                <View key={`row-${row.visitNumber}-${row.visitDate}`} style={styles.historyCard}>
+                  <View style={styles.historyCardTop}>
+                    <Text style={styles.visitBadge}>{`Visit #${row.visitNumber}`}</Text>
+                    <Text style={styles.historyDate}>{row.visitDate}</Text>
+                  </View>
+
+                  <View style={styles.stageFlowRow}>
+                    <View style={styles.stagePill}>
+                      <Text style={styles.stagePillLabel}>Current</Text>
+                      <Text style={styles.stagePillValue}>{`S${row.currentStage}`}</Text>
+                    </View>
+                    <Ionicons name="arrow-forward" size={16} color="#94A3B8" />
+                    <View style={styles.stagePillNext}>
+                      <Text style={styles.stagePillLabel}>Next</Text>
+                      <Text style={styles.stagePillValue}>{`S${row.nextStage}`}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.metricsRow}>
+                    <View style={styles.metricBox}>
+                      <Text style={styles.metricLabel}>Current History</Text>
+                      <Text style={styles.metricValue}>{row.currentHistoryProbability}</Text>
+                    </View>
+                    <View style={styles.metricBox}>
+                      <Text style={styles.metricLabel}>Next 6-Month</Text>
+                      <Text style={styles.metricValue}>{row.sixMonthProbability}</Text>
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#F5F7FA",
+    paddingTop: StatusBar.currentHeight || 0,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingTop: 10,
+    paddingBottom: 16,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1C1C1E",
+  },
+  placeholder: {
+    width: 40,
+  },
+  content: {
+    padding: 24,
+    gap: 12,
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  cardSub: {
+    marginTop: 4,
+    fontSize: 13,
+    color: "#6B7280",
+  },
+  cardDesc: {
+    marginTop: 10,
+    fontSize: 13,
+    color: "#374151",
+    lineHeight: 19,
+  },
+  graphCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    alignItems: "center",
+  },
+  graphTitle: {
+    alignSelf: "flex-start",
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 8,
+  },
+  legendRow: {
+    marginTop: 8,
+    flexDirection: "row",
+    gap: 18,
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  legendDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  legendText: {
+    fontSize: 12,
+    color: "#475569",
+  },
+  zoneLegendWrap: {
+    width: "100%",
+    marginTop: 10,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
+    backgroundColor: "#FFFFFF",
+    gap: 4,
+  },
+  zoneLegendTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#1F2937",
+    marginBottom: 2,
+  },
+  zoneLine: {
+    fontSize: 11,
+    color: "#475569",
+  },
+  worseningBanner: {
+    width: "100%",
+    marginTop: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 9,
+    paddingHorizontal: 10,
+    backgroundColor: "#FEE2E2",
+    borderWidth: 1,
+    borderColor: "#FCA5A5",
+    borderRadius: 10,
+  },
+  worseningText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#B91C1C",
+  },
+  tableWrap: {
+    marginTop: 14,
+    width: "100%",
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+    paddingTop: 12,
+  },
+  tableTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#1F2937",
+    marginBottom: 8,
+  },
+  historyCard: {
+    marginTop: 10,
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    padding: 12,
+    gap: 10,
+  },
+  historyCardTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  visitBadge: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#1D4ED8",
+    backgroundColor: "#DBEAFE",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  historyDate: {
+    fontSize: 12,
+    color: "#64748B",
+    fontWeight: "600",
+  },
+  stageFlowRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  stagePill: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+    backgroundColor: "#EFF6FF",
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  stagePillNext: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    backgroundColor: "#FEF2F2",
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  stagePillLabel: {
+    fontSize: 11,
+    color: "#64748B",
+    fontWeight: "600",
+  },
+  stagePillValue: {
+    marginTop: 2,
+    fontSize: 14,
+    color: "#111827",
+    fontWeight: "800",
+  },
+  metricsRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  metricBox: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  metricLabel: {
+    fontSize: 11,
+    color: "#64748B",
+    fontWeight: "600",
+  },
+  metricValue: {
+    marginTop: 2,
+    fontSize: 14,
+    color: "#0F172A",
+    fontWeight: "800",
+  },
+  emptyBox: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  emptyText: {
+    color: "#6B7280",
+    fontSize: 13,
+  },
+  errorText: {
+    color: "#EF4444",
+    textAlign: "center",
+    marginTop: 24,
+  },
+});
+
+export default MyProgressPathScreen;

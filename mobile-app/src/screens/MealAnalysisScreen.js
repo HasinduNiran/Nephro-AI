@@ -7,7 +7,8 @@ import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage'; 
 import axios from '../api/axiosConfig';
 import { useWallet } from '../context/WalletContext'; 
-import { Ionicons } from '@expo/vector-icons'; 
+import { Ionicons } from '@expo/vector-icons';
+import PlateCamera from '../components/PlateCamera'; 
 
 // --- LOCAL DATABASE ---
 const foodNutrientDB = {
@@ -48,7 +49,8 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   const [searchText, setSearchText] = useState('');
   const [hasScanned, setHasScanned] = useState(false);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
-  const [imageSource, setImageSource] = useState(null); // 'camera' or 'gallery' 
+  const [imageSource, setImageSource] = useState(null); // 'camera' or 'gallery'
+  const [showPlateCamera, setShowPlateCamera] = useState(false); // Custom camera with overlay
 
   useEffect(() => {
     const loadUserId = async () => {
@@ -84,11 +86,19 @@ const MealAnalysisScreen = ({ route, navigation }) => {
     setShowGuidelines(false);
     setTimeout(() => {
       if (imageSource === 'camera') {
-        pickImageCamera();
+        // Open the custom camera with plate overlay
+        setShowPlateCamera(true);
       } else if (imageSource === 'gallery') {
         pickImageGallery();
       }
     }, 300);
+  };
+
+  // --- HANDLE PHOTO FROM PLATE CAMERA ---
+  const handlePlateCameraCapture = (uri) => {
+    setShowPlateCamera(false);
+    setImageUri(uri);
+    detectFoods(uri);
   };
 
   // --- CAMERA & GALLERY ---
@@ -190,6 +200,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
       });
 
       const detectedData = response.data.detected || [];
+      const hasAutoPortions = response.data.hasAutoPortions || false;
 
       const initialItems = detectedData.map((item) => {
         let foodName = item.food;
@@ -213,13 +224,59 @@ const MealAnalysisScreen = ({ route, navigation }) => {
           units = units.filter(u => u && u !== 'undefined' && u !== null);
         }
         
+        // --- AUTO PORTION: Use AI-estimated grams if available ---
+        let autoAmount = "1";
+        let autoUnit = (units && units.length > 0 && units[0]) ? units[0] : 'grams';
+        
+        if (hasAutoPortions && item.autoPortionGrams && item.autoPortionGrams > 0) {
+          // Convert grams to the best matching unit
+          const localFood = foodNutrientDB[foodName];
+          if (localFood && localFood.units) {
+            // Find the unit whose weight best matches the estimated grams
+            let bestUnit = null;
+            let bestAmount = 1;
+            let bestDiff = Infinity;
+            
+            for (const [unitName, unitGrams] of Object.entries(localFood.units)) {
+              if (!unitName || unitName === 'undefined') continue;
+              // How many of this unit = estimated grams?
+              const count = item.autoPortionGrams / unitGrams;
+              // Round to nearest 0.5
+              const rounded = Math.round(count * 2) / 2;
+              if (rounded >= 0.5) {
+                const diff = Math.abs(rounded * unitGrams - item.autoPortionGrams);
+                if (diff < bestDiff) {
+                  bestDiff = diff;
+                  bestUnit = unitName;
+                  bestAmount = rounded;
+                }
+              }
+            }
+            
+            if (bestUnit) {
+              autoUnit = bestUnit;
+              autoAmount = String(bestAmount);
+            }
+          } else {
+            // No unit conversion possible, use grams directly
+            autoUnit = 'grams';
+            autoAmount = String(item.autoPortionGrams);
+            if (!units.includes('grams')) {
+              units = ['grams', ...units];
+            }
+          }
+        }
+        
         return {
           food: foodName,
-          amount: "1",
-          unit: (units && units.length > 0 && units[0]) ? units[0] : 'grams',
+          amount: autoAmount,
+          unit: autoUnit,
           availableUnits: (units && units.length > 0) ? units : ['grams'],
           hasVariants: variants !== null,
-          variants: variants || []
+          variants: variants || [],
+          autoEstimated: hasAutoPortions && item.autoPortionGrams > 0,
+          autoPortionGrams: item.autoPortionGrams || null,
+          compartment: item.compartment || null,
         };
       });
 
@@ -227,6 +284,12 @@ const MealAnalysisScreen = ({ route, navigation }) => {
       
       if (initialItems.length === 0) {
         Alert.alert("No Food Detected", "Try searching and adding food manually.");
+      } else if (hasAutoPortions) {
+        Alert.alert(
+          "Auto Portions Estimated", 
+          "Portion sizes have been automatically estimated from the plate compartments. You can adjust them if needed.",
+          [{ text: "OK" }]
+        );
       }
 
     } catch (error) {
@@ -550,6 +613,14 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                               <Ionicons name="close-circle" size={24} color="#dc3545" />
                           </TouchableOpacity>
                       </View>
+                      {item.autoEstimated && (
+                        <View style={styles.autoEstimateBadge}>
+                          <Ionicons name="sparkles" size={14} color="#007BFF" />
+                          <Text style={styles.autoEstimateText}>
+                            Auto-estimated: ~{item.autoPortionGrams}g ({item.compartment?.replace('_', ' ')})
+                          </Text>
+                        </View>
+                      )}
                       <View style={styles.portionRow}>
                           <View style={styles.portionControl}>
                               <Text style={styles.portionLabel}>Amount</Text>
@@ -684,8 +755,22 @@ const MealAnalysisScreen = ({ route, navigation }) => {
           <View style={styles.guidelineBox}>
             <Text style={styles.guideTitle}>📸 Photo Instructions</Text>
             
-            {/* STEP 1: SEPARATION */}
-            <Text style={styles.sectionTitle}>1. Food Arrangement</Text>
+            {/* STEP 1: USE STANDARD PLATE */}
+            <Text style={styles.sectionTitle}>1. Use the Standard 3-Compartment Plate</Text>
+            <View style={[styles.guideRow, {flexDirection: 'column', alignItems: 'center'}]}>
+              <Image 
+                source={require('../../assets/plate_overlay_transparent.png')} 
+                style={{width: 120, height: 120, resizeMode: 'contain', marginBottom: 8}} 
+              />
+              <Text style={styles.guideDesc}>
+                Place your food in the standard 3-compartment plate. Put rice/carbs in the large section, curry/protein in one side, and vegetables in the other.
+              </Text>
+            </View>
+
+            <View style={styles.dividerLight} />
+            
+            {/* STEP 2: SEPARATION */}
+            <Text style={styles.sectionTitle}>2. Food Arrangement</Text>
             <View style={styles.guideRow}>
               {/* Bad Example */}
               <View style={styles.guideItem}>
@@ -713,8 +798,8 @@ const MealAnalysisScreen = ({ route, navigation }) => {
 
             <View style={styles.dividerLight} />
 
-            {/* STEP 2: CAMERA ANGLE */}
-            <Text style={styles.sectionTitle}>2. Camera Angle</Text>
+            {/* STEP 3: CAMERA ANGLE */}
+            <Text style={styles.sectionTitle}>3. Camera Angle — Align with Overlay</Text>
             <View style={styles.guideRow}>
               {/* Bad Angle */}
               <View style={styles.guideItem}>
@@ -781,6 +866,13 @@ const MealAnalysisScreen = ({ route, navigation }) => {
             />
         </View>
       </Modal>
+
+      {/* --- CUSTOM PLATE CAMERA WITH OVERLAY --- */}
+      <PlateCamera
+        visible={showPlateCamera}
+        onCapture={handlePlateCameraCapture}
+        onClose={() => setShowPlateCamera(false)}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -835,6 +927,22 @@ const styles = StyleSheet.create({
   variantPicker: { height: 55, width: '100%', color: '#007BFF', fontSize: 15 },
   foodLabelStatic: { flex: 1, fontSize: 16, fontWeight: '600', color: '#212529', textTransform: 'capitalize' },
   deleteIcon: { padding: 5 },
+  autoEstimateBadge: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#E8F4FD', 
+    paddingHorizontal: 10, 
+    paddingVertical: 4, 
+    borderRadius: 12, 
+    marginBottom: 8, 
+    alignSelf: 'flex-start' 
+  },
+  autoEstimateText: { 
+    fontSize: 12, 
+    color: '#007BFF', 
+    marginLeft: 4, 
+    fontWeight: '500' 
+  },
   portionRow: { flexDirection: 'row', gap: 12 },
   portionControl: { flex: 1 },
   portionLabel: { fontSize: 12, fontWeight: '600', color: '#6c757d', marginBottom: 6 },

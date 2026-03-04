@@ -13,7 +13,11 @@ const stageProgressionRecordSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    visitDate: {
+      type: Date,
+    },
     inputs: {
+      visitDate: Date,
       age: Number,
       gender: String,
       labs: {
@@ -44,6 +48,28 @@ const stageProgressionRecordSchema = new mongoose.Schema(
       probability_percentage: String,
       message: String,
     },
+    progression_to_next_stage_6_month: {
+      next_stage: String,
+      probability: Number,
+      probability_percentage: String,
+      message: String,
+    },
+    progression_by_stage: [
+      {
+        stage: String,
+        stage_display: String,
+        probability: Number,
+        probability_percentage: Number,
+      },
+    ],
+    progression_by_stage_6_month: [
+      {
+        stage: String,
+        stage_display: String,
+        probability: Number,
+        probability_percentage: Number,
+      },
+    ],
   },
   { timestamps: true }
 );

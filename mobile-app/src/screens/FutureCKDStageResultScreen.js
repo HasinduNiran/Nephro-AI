@@ -39,16 +39,31 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
   }
 
   const { prediction_with_us, prediction_lab_only, eGFR_info } = result;
+  const visitNumber = Number.isFinite(Number(result?.submissionIndex))
+    ? Number(result.submissionIndex)
+    : null;
 
   const primaryPrediction = prediction_with_us || prediction_lab_only;
   const primaryLabel = prediction_with_us ? "Lab + Ultrasound" : "Lab Only";
   const primaryIcon = prediction_with_us ? "analytics" : "flask";
   const primaryColor = prediction_with_us ? "#4A90E2" : "#F5A623";
+  const primaryProgressionByStage =
+    (prediction_with_us
+      ? result.progression_by_stage_with_us
+      : result.progression_by_stage_lab_only) ||
+    primaryPrediction?.progression_by_stage ||
+    [];
 
   const nextProgression =
     primaryPrediction?.next_stage_progression ||
     primaryPrediction?.progression ||
     primaryPrediction?.progression_to_next_stage ||
+    null;
+
+  const nextProgression6Month =
+    primaryPrediction?.next_stage_progression_6_month ||
+    result?.progression_6_month ||
+    result?.progression_to_next_stage_6_month ||
     null;
 
   const probabilityNum = (() => {
@@ -118,7 +133,7 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
     return "#FF3B30";
   };
 
-  const renderPredictionCard = (prediction, title, icon, color, hasUltrasound = false) => {
+  const renderPredictionCard = (prediction, title, icon, color, hasUltrasound = false, progressionByStage = []) => {
     if (!prediction) return null;
 
     const {
@@ -131,6 +146,12 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
       prediction.next_stage_progression ||
       prediction.progression ||
       prediction.progression_to_next_stage ||
+      null;
+
+    const nextProgression6Month =
+      prediction.next_stage_progression_6_month ||
+      result?.progression_6_month ||
+      result?.progression_to_next_stage_6_month ||
       null;
 
     const nextStageLabel = nextProgression?.next_stage || "N/A";
@@ -146,6 +167,20 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
     const nextStageProb =
       probabilityNum !== null
         ? `${(probabilityNum * 100).toFixed(1)}%`
+        : "N/A";
+
+    const probabilityNum6Month = (() => {
+      if (typeof nextProgression6Month?.probability === "number") return nextProgression6Month.probability;
+      if (typeof nextProgression6Month?.probability_percentage === "string") {
+        const num = parseFloat(String(nextProgression6Month.probability_percentage).replace("%", ""));
+        if (!Number.isNaN(num)) return num / 100;
+      }
+      return null;
+    })();
+
+    const nextStageProb6Month =
+      probabilityNum6Month !== null
+        ? `${(probabilityNum6Month * 100).toFixed(1)}%`
         : "N/A";
 
     return (
@@ -171,8 +206,14 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
             <Text style={styles.nextStageValue}>{nextStageLabel}</Text>
           </View>
           <View style={styles.nextStageHighlight}>
-            <Text style={styles.nextStageHighlightLabel}>Progression probability</Text>
-            <Text style={styles.nextStageHighlightValue}>{nextStageProb}</Text>
+            <View style={styles.progressionMetricRow}>
+              <Text style={styles.progressionMetricLabel}>Progression probability with current history</Text>
+              <Text style={styles.progressionMetricValue}>{nextStageProb}</Text>
+            </View>
+            <View style={[styles.progressionMetricRow, styles.progressionMetricRowSecondary]}>
+              <Text style={styles.progressionMetricLabel}>Next 6-month progression probability</Text>
+              <Text style={styles.progressionMetricValue}>{nextStageProb6Month}</Text>
+            </View>
           </View>
         </View>
 
@@ -186,6 +227,23 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
           <Text style={styles.dataSourceText}>
             {hasUltrasound ? "Includes Ultrasound Data" : "Lab Data Only"}
           </Text>
+        </View>
+
+        <View style={styles.progressionByStageBox}>
+          <Text style={styles.progressionByStageTitle}>Probability by next stages</Text>
+          {progressionByStage.length ? (
+            progressionByStage.map((item, idx) => (
+              <View key={`${title}-prog-${idx}`} style={styles.progressionByStageRow}>
+                <Text style={styles.progressionByStageStage}>{item.stage_display || item.stage}</Text>
+                <Text style={styles.progressionByStageArrow}>→</Text>
+                <Text style={styles.progressionByStagePercent}>
+                  {Number(item.probability_percentage || 0).toFixed(1)}%
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.progressionByStageEmpty}>No per-stage probabilities available.</Text>
+          )}
         </View>
       </View>
     );
@@ -216,6 +274,7 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
       >
         <Text style={styles.welcomeText}>CKD Stage Progression Analysis</Text>
         <Text style={styles.subtitle}>Patient: {userName || userEmail}</Text>
+        <Text style={styles.emailText}>Visit #{visitNumber ?? "N/A"}</Text>
         {userEmail ? (
           <Text style={styles.emailText}>Email: {userEmail}</Text>
         ) : (
@@ -242,7 +301,8 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
                 primaryLabel,
                 primaryIcon,
                 primaryColor,
-                !!prediction_with_us
+                !!prediction_with_us,
+                primaryProgressionByStage
               )}
           </View>
 
@@ -302,6 +362,17 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
         >
           <Ionicons name="home" size={24} color="#FFFFFF" />
           <Text style={styles.actionButtonText}>Back to Home</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionButton, styles.secondaryButton]}
+          onPress={() => navigation.navigate("FutureCKDStageHistory", { userName, userEmail })}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="time-outline" size={24} color="#4A90E2" />
+          <Text style={[styles.actionButtonText, styles.secondaryButtonText]}>
+            Go to History
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -488,6 +559,31 @@ const styles = StyleSheet.create({
     borderColor: "#C7E3FF",
     alignItems: "center",
   },
+  progressionMetricRow: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 2,
+    gap: 8,
+  },
+  progressionMetricRowSecondary: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#D6E8FF",
+  },
+  progressionMetricLabel: {
+    flex: 1,
+    fontSize: 12,
+    color: "#4A90E2",
+    fontWeight: "600",
+  },
+  progressionMetricValue: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: "#1C1C1E",
+  },
   nextStageHighlightLabel: {
     fontSize: 12,
     color: "#4A90E2",
@@ -513,6 +609,46 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#8E8E93",
     marginLeft: 6,
+  },
+  progressionByStageBox: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E5EA",
+    gap: 6,
+  },
+  progressionByStageTitle: {
+    fontSize: 12,
+    color: "#6B7280",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+    fontWeight: "700",
+    marginBottom: 2,
+  },
+  progressionByStageRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  progressionByStageStage: {
+    minWidth: 50,
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  progressionByStageArrow: {
+    fontSize: 13,
+    color: "#6B7280",
+    fontWeight: "700",
+  },
+  progressionByStagePercent: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1C1C1E",
+  },
+  progressionByStageEmpty: {
+    fontSize: 12,
+    color: "#8E8E93",
   },
   recommendationsCard: {
     backgroundColor: "#FFFFFF",

@@ -7,7 +7,7 @@ import os
 # Helper to ensure imports work regardless of where you run the command from
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from mealPlate.predictor import predict_image_yolo
+from mealPlate.predictor import predict_image_yolo, predict_image_with_portions
 
 app = FastAPI()
 
@@ -28,6 +28,7 @@ def read_root():
 
 @app.post("/predict_meal")
 async def predict_meal(image: UploadFile = File(...)):
+    """Original endpoint: returns food names only."""
     try:
         # Read the uploaded file
         image_bytes = await image.read()
@@ -37,6 +38,49 @@ async def predict_meal(image: UploadFile = File(...)):
         
         print(f"Detected: {detected_foods}") # Log to console for debugging
         return {"foods": detected_foods}
+        
+    except Exception as e:
+        print(f"Server Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/predict_meal_with_portions")
+async def predict_meal_with_portions(image: UploadFile = File(...)):
+    """
+    Enhanced endpoint: returns food names + auto-estimated portion sizes.
+    The image should be taken with the plate aligned to the overlay.
+    
+    Returns:
+    {
+      "foods": ["white rice", "dahl curry", ...],
+      "portions": [
+        {
+          "food": "white rice",
+          "estimated_grams": 367.6,
+          "compartment": "main_carb",
+          "fill_ratio": 0.955,
+          "confidence": 0.84,
+          ...
+        },
+        ...
+      ]
+    }
+    """
+    try:
+        image_bytes = await image.read()
+        
+        # Get predictions with portion estimates
+        detected_items = predict_image_with_portions(image_bytes)
+        
+        # Also extract just the food names for backward compatibility
+        food_names = list(set(item["food"] for item in detected_items))
+        
+        print(f"Detected with portions: {[(i['food'], i['estimated_grams']) for i in detected_items]}")
+        
+        return {
+            "foods": food_names,
+            "portions": detected_items
+        }
         
     except Exception as e:
         print(f"Server Error: {e}")

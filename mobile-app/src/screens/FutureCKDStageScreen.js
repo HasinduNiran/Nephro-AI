@@ -16,8 +16,52 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useFocusEffect } from "@react-navigation/native";
 import axios, { API_URL } from "../api/axiosConfig";
+
+const normalizeGenderCode = (genderValue) => {
+  if (!genderValue) return "";
+  const normalized = String(genderValue).trim().toLowerCase();
+  if (normalized === "female" || normalized === "f") return "F";
+  if (normalized === "male" || normalized === "m") return "M";
+  return "";
+};
+
+const getCreatinineRangeByGender = (genderCode) => {
+  if (genderCode === "F") {
+    return { min: 0.1, max: 1.3, label: "0.1 - 1.3 mg/dL" };
+  }
+  return { min: 0.1, max: 1.6, label: "0.1 - 1.6 mg/dL" };
+};
+
+const getBunRiskCategory = (bunValue) => {
+  if (bunValue < 30) return "Normal";
+  if (bunValue <= 300) return "Early risk";
+  return "High risk";
+};
+
+const getTodayDateString = () => {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const toDateString = (date) => {
+  const d = date instanceof Date ? date : new Date(date);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const parseDateString = (value) => {
+  if (!value) return new Date();
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+};
 
 const FutureCKDStageScreen = ({ navigation, route }) => {
   // Try multiple param shapes to recover email passed from upstream screens/auth
@@ -73,9 +117,10 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
             setAge(calculatedAge.toString());
           }
 
-          // Set gender from user data (convert "Female"/"Male" to "F"/"M")
-          if (userData.gender) {
-            const genderCode = userData.gender === "Female" ? "F" : "M";
+          const routeGenderCode = normalizeGenderCode(route.params?.user?.gender);
+          const storedGenderCode = normalizeGenderCode(userData.gender);
+          const genderCode = storedGenderCode || routeGenderCode;
+          if (genderCode) {
             setGender(genderCode);
           }
         }
@@ -91,6 +136,8 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
   const [labReportImage, setLabReportImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [age, setAge] = useState("");
+  const [visitDate, setVisitDate] = useState(getTodayDateString());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [gender, setGender] = useState(""); // "M" or "F"
   const [showGenderPicker, setShowGenderPicker] = useState(false);
   
@@ -105,6 +152,11 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
+
+  const bunNumber = bun ? parseFloat(bun) : null;
+  const bunRiskCategory = bunNumber !== null && !Number.isNaN(bunNumber) && bunNumber >= 0
+    ? getBunRiskCategory(bunNumber)
+    : "";
 
   const formatDateTime = (isoString) => {
     try {
@@ -215,12 +267,52 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
 
     // Validate manual values if no lab report
     if (!hasLabReport && hasManualValues) {
-      if (!creatinine && !egfr) {
+      if (!egfr && !creatinine) {
         Alert.alert(
           "Insufficient Data",
-          "Please provide at least Creatinine or eGFR value for analysis."
+          "Creatinine is required when eGFR is not provided."
         );
         return;
+      }
+
+      const egfrValue = egfr ? parseFloat(egfr) : null;
+      if (egfr && (Number.isNaN(egfrValue) || egfrValue < 0)) {
+        Alert.alert(
+          "Validation Error",
+          "eGFR cannot be less than 0."
+        );
+        return;
+      }
+
+      const creatinineValue = creatinine ? parseFloat(creatinine) : null;
+      if (creatinine && Number.isNaN(creatinineValue)) {
+        Alert.alert(
+          "Validation Error",
+          "Please enter a valid Creatinine value."
+        );
+        return;
+      }
+
+      if (creatinineValue !== null) {
+        const creatinineRange = getCreatinineRangeByGender(gender);
+        if (creatinineValue < creatinineRange.min || creatinineValue > creatinineRange.max) {
+          Alert.alert(
+            "Validation Error",
+            `Creatinine for ${gender === "F" ? "female" : "male"} should be within ${creatinineRange.label}.`
+          );
+          return;
+        }
+      }
+
+      if (bun) {
+        const bunValue = parseFloat(bun);
+        if (Number.isNaN(bunValue) || bunValue < 0) {
+          Alert.alert(
+            "Validation Error",
+            "BUN cannot be less than 0."
+          );
+          return;
+        }
       }
       
       // Age and gender required for eGFR calculation
@@ -289,11 +381,13 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
       if (userEmail) formData.append("userEmail", userEmail);
       formData.append("age", age);
       formData.append("gender", gender);
+      formData.append("visitDate", visitDate || getTodayDateString());
       
       // Add manual lab values if provided
       if (creatinine) formData.append("creatinine", creatinine);
       if (egfr) formData.append("egfr", egfr);
       if (bun) formData.append("bun", bun);
+      if (bunRiskCategory) formData.append("bunRiskCategory", bunRiskCategory);
       if (albumin) formData.append("albumin", albumin);
       if (hemoglobin) formData.append("hemoglobin", hemoglobin);
 
@@ -400,6 +494,13 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
     }
   };
 
+  const handleVisitDateChange = (_event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setVisitDate(toDateString(selectedDate));
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F5F7FA" />
@@ -482,12 +583,51 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                 <Text style={styles.sectionTitle}>Patient Details</Text>
               </View>
 
-              {/* Age Input - Read Only */}
+              {/* Age Input - Editable, prefilled from DB profile */}
               <View style={styles.ageGenderField}>
                 <Text style={styles.fieldLabel}>Age</Text>
-                <View style={styles.readOnlyInput}>
-                  <Text style={styles.readOnlyText}>{age} years</Text>
-                </View>
+                <TextInput
+                  style={styles.textInput}
+                  value={age}
+                  onChangeText={setAge}
+                  placeholder="Enter age"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="number-pad"
+                />
+              </View>
+
+              {/* Visit Date - Auto today, editable */}
+              <View style={[styles.ageGenderField, { marginTop: 12 }]}> 
+                <Text style={styles.fieldLabel}>Visit Date</Text>
+                {Platform.OS === "web" ? (
+                  <TextInput
+                    style={styles.textInput}
+                    value={visitDate}
+                    onChangeText={setVisitDate}
+                    placeholder="YYYY-MM-DD"
+                    placeholderTextColor="#8E8E93"
+                    autoCapitalize="none"
+                  />
+                ) : (
+                  <TouchableOpacity
+                    style={styles.datePickerButton}
+                    onPress={() => setShowDatePicker(true)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="calendar-outline" size={18} color="#4A90E2" />
+                    <Text style={styles.datePickerButtonText}>{visitDate || "Select date"}</Text>
+                  </TouchableOpacity>
+                )}
+
+                {showDatePicker && Platform.OS !== "web" ? (
+                  <DateTimePicker
+                    value={parseDateString(visitDate)}
+                    mode="date"
+                    display="default"
+                    onChange={handleVisitDateChange}
+                    maximumDate={new Date()}
+                  />
+                ) : null}
               </View>
 
               {/* Gender Selection - Read Only */}
@@ -495,7 +635,7 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                 <Text style={styles.fieldLabel}>Gender</Text>
                 <View style={styles.readOnlyInput}>
                   <Text style={styles.readOnlyText}>
-                    {gender === "F" ? "Female" : "Male"}
+                    {gender === "F" ? "Female" : gender === "M" ? "Male" : "Not set"}
                   </Text>
                 </View>
               </View>
@@ -569,7 +709,7 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
               )}
               
               <Text style={styles.manualEntryHint}>
-                Use instead of or along with lab image
+                If eGFR is entered, Creatinine is optional. If eGFR is empty, Creatinine is required.
               </Text>
 
               {showManualEntry && (
@@ -586,6 +726,9 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                       placeholderTextColor="#8E8E93"
                       keyboardType="decimal-pad"
                     />
+                    <Text style={styles.validationHint}>
+                      {`Range (${gender === "F" ? "Female" : "Male"}): ${getCreatinineRangeByGender(gender || "M").label}`}
+                    </Text>
                   </View>
 
                   {/* eGFR */}
@@ -600,6 +743,7 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                       placeholderTextColor="#8E8E93"
                       keyboardType="decimal-pad"
                     />
+                    <Text style={styles.validationHint}>Must be 0 or greater</Text>
                   </View>
 
                   {/* BUN */}
@@ -614,6 +758,10 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                       placeholderTextColor="#8E8E93"
                       keyboardType="decimal-pad"
                     />
+                    <Text style={styles.validationHint}>Must be 0 or greater</Text>
+                    {bunRiskCategory ? (
+                      <Text style={styles.bunRiskText}>{`BUN Category: ${bunRiskCategory}`}</Text>
+                    ) : null}
                   </View>
 
                   {/* Albumin */}
@@ -685,7 +833,7 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
             <View style={styles.historyHeaderLeft}>
               <Ionicons name="time" size={22} color="#4A90E2" />
               <View>
-                <Text style={styles.historyTitle}>Past Future CKD Stages</Text>
+                <Text style={styles.historyTitle}>Past Records</Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={22} color="#8E8E93" />
@@ -710,6 +858,7 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                   const inputs = record.inputs || {};
                   const labs = inputs.labs || {};
                   const uploaded = inputs.uploaded || {};
+                  const visitNumber = index + 1;
 
                   return (
                     <View key={record._id || record.id || index} style={styles.historyCard}>
@@ -720,10 +869,8 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                               ? `Stage ${stageWithUS || stageLabOnly}`
                               : "Result saved"}
                           </Text>
-                          <Text style={styles.historyCardDate}>{formatDateTime(record.createdAt)}</Text>
-                          {record.submissionIndex ? (
-                            <Text style={styles.historyCardDate}>Submission #{record.submissionIndex}</Text>
-                          ) : null}
+                          <Text style={styles.historyCardDate}>{formatDateTime(record.visitDate || record.inputs?.visitDate || record.createdAt)}</Text>
+                          <Text style={styles.historyCardDate}>Visit #{visitNumber}</Text>
                         </View>
                         {/* <View style={styles.badgeRow}>
                           {uploaded.labReport && (
@@ -947,6 +1094,17 @@ const styles = StyleSheet.create({
     color: "#8E8E93",
     marginBottom: 4,
   },
+  validationHint: {
+    fontSize: 11,
+    color: "#8E8E93",
+    marginTop: 4,
+  },
+  bunRiskText: {
+    fontSize: 11,
+    color: "#FF9500",
+    marginTop: 4,
+    fontWeight: "600",
+  },
   textInput: {
     backgroundColor: "#F5F7FA",
     borderRadius: 12,
@@ -955,6 +1113,22 @@ const styles = StyleSheet.create({
     color: "#1C1C1E",
     borderWidth: 1,
     borderColor: "#E5E5EA",
+  },
+  datePickerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5F7FA",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: "#E5E5EA",
+    gap: 8,
+  },
+  datePickerButtonText: {
+    fontSize: 14,
+    color: "#1C1C1E",
+    fontWeight: "500",
   },
   readOnlyInput: {
     backgroundColor: "#F5F7FA",
