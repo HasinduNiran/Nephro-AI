@@ -305,6 +305,25 @@ const ChatbotScreen = ({ route, navigation }) => {
     }
   };
 
+  /**
+   * Parse a length-framed binary response from /chat/tts/stream.
+   * Frame format per segment: [4-byte big-endian uint32 length][MP3 bytes]
+   * Returns an array of ArrayBuffers, one per sentence.
+   */
+  const parseStreamedSegments = (arrayBuffer) => {
+    const segments = [];
+    const view = new DataView(arrayBuffer);
+    let offset = 0;
+    while (offset + 4 <= arrayBuffer.byteLength) {
+      const length = view.getUint32(offset, false); // big-endian
+      offset += 4;
+      if (length === 0 || offset + length > arrayBuffer.byteLength) break;
+      segments.push(arrayBuffer.slice(offset, offset + length));
+      offset += length;
+    }
+    return segments;
+  };
+
   // Server-side TTS playback (Gemini TTS for Sinhala, expo-speech for English)
   const playServerTTS = async (text, messageId) => {
     // ── TOGGLE-OFF: user tapped the button that is already playing/loading ──
@@ -346,14 +365,16 @@ const ChatbotScreen = ({ route, navigation }) => {
       return;
     }
 
-    // For Sinhala, call the server /chat/tts endpoint (Gemini TTS)
+    // For Sinhala, use the streaming endpoint (/chat/tts/stream) which generates
+    // each sentence in parallel on the server — then plays segments sequentially.
+    // Falls back to /chat/tts (full-text) if the stream endpoint fails.
     console.log(
-      `[TTS] ▶ SERVER Gemini voice | endpoint: ${BACKEND_URL}/chat/tts`,
+      `[TTS] ▶ STREAM Gemini voice | endpoint: ${BACKEND_URL}/chat/tts/stream`,
     );
     setIsTTSLoading(true);
     setCurrentlyPlayingId(messageId);
 
-    // Create a fresh AbortController for this specific request
+    // AbortController for the fetch phase
     const abortController = new AbortController();
     fetchAbortRef.current = abortController;
 
@@ -367,72 +388,142 @@ const ChatbotScreen = ({ route, navigation }) => {
         playThroughEarpieceAndroid: false,
       });
 
-      console.log("[TTS] Fetching audio from server...");
-      const response = await fetch(`${BACKEND_URL}/chat/tts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: text }),
-        signal: abortController.signal, // ← allows mid-flight cancellation
-      });
+      // ── 1. Try fast /chat/tts/stream endpoint ────────────────────────────
+      let segments = null;
+      let usedStreamEndpoint = false;
+      try {
+        console.log(
+          "[TTS] Trying /chat/tts/stream (parallel sentence generation)...",
+        );
+        const streamResponse = await fetch(`${BACKEND_URL}/chat/tts/stream`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+          signal: abortController.signal,
+        });
+        if (fetchAbortRef.current === abortController)
+          fetchAbortRef.current = null;
 
-      // Fetch completed — clear the abort ref
-      if (fetchAbortRef.current === abortController) {
-        fetchAbortRef.current = null;
-      }
-
-      console.log(`[TTS] Server response: HTTP ${response.status}`);
-      if (!response.ok) {
-        throw new Error(`TTS server error: ${response.status}`);
-      }
-
-      // ── Reliable audio decoding via ArrayBuffer + Buffer (avoids FileReader polyfill bug) ──
-      console.log("[TTS] Reading response as ArrayBuffer...");
-      const arrayBuffer = await response.arrayBuffer();
-      console.log(
-        `[TTS] ArrayBuffer received | byteLength=${arrayBuffer.byteLength}`,
-      );
-
-      if (!arrayBuffer.byteLength) {
-        throw new Error("TTS server returned empty audio data");
-      }
-
-      // Convert ArrayBuffer → base64 using the Buffer package (reliable in React Native)
-      const base64Data = Buffer.from(arrayBuffer).toString("base64");
-      console.log(`[TTS] base64 encoded | length=${base64Data.length}`);
-
-      // Write audio to a temp file
-      const fileUri = FileSystem.cacheDirectory + `tts_${messageId}.mp3`;
-      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-        encoding: "base64", // string literal avoids EncodingType enum resolution bug
-      });
-      console.log(`[TTS] Audio written to: ${fileUri}`);
-
-      // Play with expo-av
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: fileUri },
-        { shouldPlay: true },
-      );
-      console.log("[TTS] ✅ Gemini (Aoede) voice is now playing");
-
-      soundRef.current = newSound;
-
-      // Listen for playback completion
-      newSound.setOnPlaybackStatusUpdate((status) => {
-        if (status.didJustFinish) {
-          console.log("[TTS] Playback finished — cleaning up");
-          setCurrentlyPlayingId(null);
-          soundRef.current = null;
-          FileSystem.deleteAsync(fileUri, { idempotent: true }).catch(() => {});
-          // Restore audio mode for recording
-          Audio.setAudioModeAsync({
-            allowsRecordingIOS: true,
-            playsInSilentModeIOS: true,
-            staysActiveInBackground: false,
-            shouldDuckAndroid: true,
-            playThroughEarpieceAndroid: false,
-          }).catch(() => {});
+        console.log(`[TTS] Stream response: HTTP ${streamResponse.status}`);
+        if (streamResponse.ok) {
+          const streamBuffer = await streamResponse.arrayBuffer();
+          segments = parseStreamedSegments(streamBuffer);
+          console.log(
+            `[TTS] Parsed ${segments.length} segment(s) from stream | total=${streamBuffer.byteLength} bytes`,
+          );
+          usedStreamEndpoint = segments.length > 0;
         }
-      });
+      } catch (streamErr) {
+        if (streamErr.name === "AbortError") throw streamErr; // propagate user-stop
+        console.warn(
+          `[TTS] /chat/tts/stream failed — falling back. Reason: ${streamErr.message}`,
+        );
+      }
+
+      // ── 2. Fallback to /chat/tts (single full-text request) ─────────────
+      if (!segments || segments.length === 0) {
+        console.log(`[TTS] Fallback → ${BACKEND_URL}/chat/tts`);
+        const fallbackController = new AbortController();
+        fetchAbortRef.current = fallbackController;
+        const response = await fetch(`${BACKEND_URL}/chat/tts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+          signal: fallbackController.signal,
+        });
+        if (fetchAbortRef.current === fallbackController)
+          fetchAbortRef.current = null;
+
+        console.log(`[TTS] Fallback response: HTTP ${response.status}`);
+        if (!response.ok)
+          throw new Error(`TTS server error: ${response.status}`);
+
+        const arrayBuffer = await response.arrayBuffer();
+        if (!arrayBuffer.byteLength)
+          throw new Error("TTS server returned empty audio");
+        console.log(
+          `[TTS] Fallback buffer | byteLength=${arrayBuffer.byteLength}`,
+        );
+        segments = [arrayBuffer]; // treat the whole MP3 as one segment
+      }
+
+      // ── 3. Write all segment files up-front ─────────────────────────────
+      const tempFiles = [];
+      for (let i = 0; i < segments.length; i++) {
+        const segBase64 = Buffer.from(segments[i]).toString("base64");
+        const segUri =
+          FileSystem.cacheDirectory + `tts_${messageId}_seg${i}.mp3`;
+        await FileSystem.writeAsStringAsync(segUri, segBase64, {
+          encoding: "base64",
+        });
+        tempFiles.push(segUri);
+      }
+      console.log(`[TTS] Wrote ${tempFiles.length} segment file(s)`);
+
+      // ── 4. Sequential playback with stop-anywhere cancellation ───────────
+      // We replace fetchAbortRef with a synthetic object whose .abort() cancels
+      // the segment chain — so stopAllAudio() works during playback too.
+      const sessionToken = { active: true };
+      const syntheticAbort = {
+        abort: () => {
+          sessionToken.active = false;
+        },
+      };
+      fetchAbortRef.current = syntheticAbort;
+
+      const cleanupSegments = () => {
+        if (fetchAbortRef.current === syntheticAbort)
+          fetchAbortRef.current = null;
+        setCurrentlyPlayingId(null);
+        tempFiles.forEach((f) =>
+          FileSystem.deleteAsync(f, { idempotent: true }).catch(() => {}),
+        );
+        Audio.setAudioModeAsync({
+          allowsRecordingIOS: true,
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: false,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        }).catch(() => {});
+      };
+
+      const playSegment = async (index) => {
+        if (!sessionToken.active || index >= tempFiles.length) {
+          if (index >= tempFiles.length) {
+            console.log("[TTS] ✅ All segments finished playing");
+          }
+          cleanupSegments();
+          return;
+        }
+        // Unload previous segment sound object
+        if (soundRef.current) {
+          try {
+            await soundRef.current.unloadAsync();
+          } catch (e) {
+            /* ignore */
+          }
+          soundRef.current = null;
+        }
+        console.log(
+          `[TTS] ▶ Segment ${index + 1}/${tempFiles.length}: ${tempFiles[index]}`,
+        );
+        const { sound } = await Audio.Sound.createAsync(
+          { uri: tempFiles[index] },
+          { shouldPlay: true },
+        );
+        soundRef.current = sound;
+        sound.setOnPlaybackStatusUpdate((status) => {
+          if (status.didJustFinish) {
+            playSegment(index + 1);
+          }
+        });
+      };
+
+      setIsTTSLoading(false);
+      console.log(
+        `[TTS] ✅ ${usedStreamEndpoint ? "Gemini stream" : "Gemini fallback"} — starting playback`,
+      );
+      await playSegment(0);
     } catch (error) {
       // AbortError means the user intentionally stopped — exit silently
       if (error.name === "AbortError") {
@@ -445,17 +536,12 @@ const ChatbotScreen = ({ route, navigation }) => {
         `[TTS] ❌ Gemini pipeline failed | ${error.name}: ${error.message}`,
       );
       console.warn("[TTS] ⚠ FALLBACK → local si-LK voice (Thilini)");
-      // Fallback to local Speech for Sinhala
       Speech.stop();
-      Speech.speak(cleanText, {
-        language: "si-LK",
-        pitch: 1.0,
-        rate: 0.9,
-      });
+      Speech.speak(cleanText, { language: "si-LK", pitch: 1.0, rate: 0.9 });
       setCurrentlyPlayingId(null);
     } finally {
       setIsTTSLoading(false);
-      // Safety-clear the abort ref if it still points to this request
+      // Safety-clear — only if still pointing at the original controller
       if (fetchAbortRef.current === abortController) {
         fetchAbortRef.current = null;
       }
