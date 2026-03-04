@@ -89,7 +89,7 @@ class OpenAIEmbeddings:
                 self.api_url,
                 headers=headers,
                 data=json.dumps(payload),
-                timeout=30
+                timeout=60
             )
             
             # 2. Check for HTTP Errors

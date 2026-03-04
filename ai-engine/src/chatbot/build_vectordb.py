@@ -217,30 +217,52 @@ class VectorDBBuilder:
         return embeddings
     
     def add_to_collection(self, data: Dict, batch_size: int = 100):
-     
+
         documents = data['documents']
         metadatas = data['metadatas']
         ids = data['ids']
-        
-        print(f"\n Adding {len(documents)} documents to collection...")
-        print(f"   Batch size: {batch_size}")
-        
-        # Generate embeddings
-        embeddings = self.generate_embeddings(documents, batch_size=32)
-        
-        # Add to collection in batches
-        print("\n Storing in ChromaDB...")
-        for i in tqdm(range(0, len(documents), batch_size), desc="Storing"):
-            batch_end = min(i + batch_size, len(documents))
-            
-            self.collection.add(
-                documents=documents[i:batch_end],
-                metadatas=metadatas[i:batch_end],
-                ids=ids[i:batch_end],
-                embeddings=embeddings[i:batch_end]
+
+        total = len(documents)
+        print(f"\n Adding {total} documents to collection...")
+        print(f"   Strategy: embed-then-store in chunks of 500 (crash-safe)")
+
+        # Process in chunks: embed a chunk then immediately persist to ChromaDB.
+        # If the process crashes mid-way, already-stored chunks survive and the
+        # next run (incremental=True) will skip them automatically.
+        CHUNK_SIZE = 500
+        stored = 0
+        num_chunks = (total + CHUNK_SIZE - 1) // CHUNK_SIZE
+
+        for chunk_idx, chunk_start in enumerate(range(0, total, CHUNK_SIZE)):
+            chunk_end = min(chunk_start + CHUNK_SIZE, total)
+            chunk_docs  = documents[chunk_start:chunk_end]
+            chunk_metas = metadatas[chunk_start:chunk_end]
+            chunk_ids   = ids[chunk_start:chunk_end]
+
+            print(f"\n[{chunk_idx+1}/{num_chunks}] Embedding docs {chunk_start+1}-{chunk_end}...")
+
+            embeddings = self.embedding_model.encode(
+                chunk_docs,
+                batch_size=32,
+                show_progress_bar=True,
+                normalize_embeddings=False
             )
-        
-        print(f" Successfully added all documents")
+
+            # Immediately write this chunk to ChromaDB
+            print(f"  Storing chunk {chunk_idx+1} to ChromaDB...")
+            for i in range(0, len(chunk_docs), batch_size):
+                b_end = min(i + batch_size, len(chunk_docs))
+                self.collection.add(
+                    documents=chunk_docs[i:b_end],
+                    metadatas=chunk_metas[i:b_end],
+                    ids=chunk_ids[i:b_end],
+                    embeddings=embeddings[i:b_end]
+                )
+
+            stored += len(chunk_docs)
+            print(f"  Progress: {stored}/{total} stored  |  ChromaDB count: {self.collection.count()}")
+
+        print(f"\n Successfully added all {total} documents")
         print(f"   Total documents in collection: {self.collection.count()}")
     
     def verify_collection(self):

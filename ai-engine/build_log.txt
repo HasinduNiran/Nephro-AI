@@ -1,0 +1,186 @@
+✅ Loaded 1357 Sinhala/Singlish terms from dictionary.
+======================================================================
+️  CHROMADB VECTOR DATABASE BUILDER
+======================================================================
+ VectorDB documents: E:\Y4S1\Final Year Research Project\Nephro-AI\ai-engine\data\vectordb_ready\documents
+ Database path: E:\Y4S1\Final Year Research Project\Nephro-AI\ai-engine\vectordb\chroma_db
+ Collection: nephro_ai_medical_kb
+ Embedding model: openai/text-embedding-3-small
+======================================================================
+
+
+ Initializing ChromaDB...
+ Collection 'nephro_ai_medical_kb' already exists
+    Incremental mode: Will add new documents only
+
+ Initializing embedding model: openai/text-embedding-3-small...
+ Embedding model initialized successfully
+   - Embedding dimension: 1536
+ Collection 'nephro_ai_medical_kb' ready
+   - Current document count: 2000
+
+ Checking existing documents...
+   Found 2000 existing documents in database
+ Loading vectordb_ready documents...
+   Found 149 vectordb_ready files
+    Incremental mode: Skipping 2000 existing documents
+   ️  Skipping: #13 Renal System Lect Notes_vectordb_ready.json (already in database)
+   ️  Skipping: 1-s2.0-S0085253815497455-main_vectordb_ready.json (already in database)
+   ️  Skipping: 1-s2.0-S0085253815523272-main (1)_vectordb_ready.json (already in database)
+   ️  Skipping: 1-s2.0-S0085253815523272-main_vectordb_ready.json (already in database)
+   ️  Skipping: 1-s2.0-S0085253820312709-main_vectordb_ready.json (already in database)
+   ️  Skipping: 1-s2.0-S0272638622007090-main_vectordb_ready.json (already in database)
+   ️  Skipping: 10.1177_23743735241256464_vectordb_ready.json (already in database)
+   ️  Skipping: 11-10-0101_vectordb_ready.json (already in database)
+   ️  Skipping: 11-10-0209_2203_patbro_diabckd1-4p5_vectordb_ready.json (already in database)
+   ️  Skipping: 11-10-0513_2401_patbro_traveltip_t1_vectordb_ready.json (already in database)
+   ️  Skipping: 11-10_0502_2312_patbro_keepingfit_t1_final_vectordb_ready.json (already in database)
+   ️  Skipping: 11-50-0160_patientguideCKD_vectordb_ready.json (already in database)
+   ️  Skipping: 1803.11253v1_vectordb_ready.json (already in database)
+   ️  Skipping: 184f7326bfd6b935fddfa26044eba920_vectordb_ready.json (already in database)
+   ️  Skipping: 200511johnson_vectordb_ready.json (already in database)
+   ️  Skipping: 24d9acfe04b9974fd1e985af8f2790abcdd3_vectordb_ready.json (already in database)
+   ️  Skipping: 26_-_Renal_Physiology_andthophysiology_in_ITU_vectordb_ready.json (already in database)
+   ️  Skipping: 2_5407041166245900438_vectordb_ready.json (already in database)
+   ️  Skipping: 441-9378_2305_patbro_dialysisandyou_t2_vectordb_ready.json (already in database)
+   ️  Skipping: 441-9471_2307_patbro_riskfactors_t3_002_vectordb_ready.json (already in database)
+   ️  Skipping: 443-9484_2307_patbro_hbpandckd_t3_0_vectordb_ready.json (already in database)
+   ️  Skipping: 4cf36d05570495ccc36d867768444e076b22_vectordb_ready.json (already in database)
+   ️  Skipping: 8205Oxford Handbook of Clinical Medicine 10th 2017 Edition_SamanSarKo - Copy_vectordb_ready.json (already in database)
+   ️  Skipping: 8769cc4e35dda021cfe25e0ddb2298d67c55_vectordb_ready.json (already in database)
+   ️  Skipping: 8a1062a0d440dde5c9b5aa3317bb9e89_vectordb_ready.json (already in database)
+   ️  Skipping: AIHW-CKD-20-CKD-Australian-facts-17-June-2024_vectordb_ready.json (already in database)
+   ️  Skipping: A_commentary_from_the_European_Renal_Best_Practice_vectordb_ready.json (already in database)
+   ️  Skipping: About Living Donation-Patient Brochure_11_24_vectordb_ready.json (already in database)
+   ️  Skipping: CATAG-Topic_Medicines-and-the-Kidney_Teaching-Tool_F_vectordb_ready.json (already in database)
+   ️  Skipping: CKD-Factsheet-H_vectordb_ready.json (already in database)
+   ️  Skipping: CKD-STAGE-3-PDF-VERSION_vectordb_ready.json (already in database)
+   ️  Skipping: CPG Management of Chronic Kidney  Disease (Second Edition)_vectordb_ready.json (already in database)
+   ️  Skipping: Chronic Kidney Disease (CKD) Everything you need to know_vectordb_ready.json (already in database)
+   ️  Skipping: Chronic Kidney Disease Disparities - Educational Guide for Primary Care - 508 - April 2021_vectordb_ready.json (already in database)
+   ️  Skipping: E143 - Chronic Kidney Disease education - Powerpoint_vectordb_ready.json (already in database)
+   ️  Skipping: ESPEN-guideline-on-clinical-nutrition-in-hospitalized-patients-with-acute-or-chronic-kidney-disease_vectordb_ready.json (already in database)
+   ️  Skipping: Economics-of-Kidney-Disease-full-report_accessible_vectordb_ready.json (already in database)
+   ️  Skipping: Editorial-Board_2024_Kidney-International_vectordb_ready.json (already in database)
+   ️  Skipping: FINAL UKKA NICE-KDIGO commentary December 2022_vectordb_ready.json (already in database)
+   ️  Skipping: Final Session 1 Otteman Guide to CKD Screening and Evaluation_vectordb_ready.json (already in database)
+   ️  Skipping: Guidelines on Supportive Care, Symptom Control and End of Life Care for Renal Patients with Chronic Kidney Disease (CKD)_vectordb_ready.json (already in database)
+   ️  Skipping: HFHS_CKD_V6_vectordb_ready.json (already in database)
+   ️  Skipping: HP2020MCR-C06-CKD_vectordb_ready.json (already in database)
+   ️  Skipping: Investigation-and-management-of-CKD-Visual-summary-v2_vectordb_ready.json (already in database)
+   ️  Skipping: J of Clinical Hypertension - 2008 - Pickering - Call to Action on Use and Reimbursement for Home Blood Pressure Monitoring _vectordb_ready.json (already in database)
+   ️  Skipping: J of Clinical Hypertension - 2016 - Tadic - Masked Hypertension and Left Atrial Dysfunction  A Hidden Association_vectordb_ready.json (already in database)
+   ️  Skipping: KAHPF+Chronic+Kidney+Disease+(CKD)+Protocol_endorsed+12.07.22_vectordb_ready.json (already in database)
+   ️  Skipping: KDIGO-2024-CKD-Guideline_vectordb_ready.json (already in database)
+   ️  Skipping: KDIGO-2024-Clinical-Practice-Guideline-for-the-Evaluation-a_2024_Kidney-Inte_vectordb_ready.json (already in database)
+   ️  Skipping: KDIGO-CKD-Guideline-Manila_Kasiske_vectordb_ready.json (already in database)
+   ️  Skipping: KDIGO_2021_Clinical_Practice_Guideline_for_the_Man_vectordb_ready.json (already in database)
+   ️  Skipping: KHA-CKD-Handbook-5th-Ed-July2024_vectordb_ready.json (already in database)
+   ️  Skipping: KHA-Factsheet-Blood-Pressure-and-CKD-2022_vectordb_ready.json (already in database)
+   ️  Skipping: KHA-Factsheet-What-is-CKD-2023_vectordb_ready.json (already in database)
+   ️  Skipping: LibraryFile_151620_46_vectordb_ready.json (already in database)
+   ️  Skipping: NEJMoa041031 (1)_vectordb_ready.json (already in database)
+   ️  Skipping: NEJMoa041031_vectordb_ready.json (already in database)
+   ️  Skipping: NEJMoa1712231_vectordb_ready.json (already in database)
+   ️  Skipping: NICE-Chronic-Kidney-Disease-Assessment-and-Guidelines_vectordb_ready.json (already in database)
+   ️  Skipping: New Text Document (2)_vectordb_ready.json (already in database)
+   ️  Skipping: New Text Document (3)_vectordb_ready.json (already in database)
+   ️  Skipping: New Text Document (4)_vectordb_ready.json (already in database)
+   ️  Skipping: New Text Document_vectordb_ready.json (already in database)
+    Loading: Oct2020_Highlight_Updated_11102021_508c_vectordb_ready.json
+    Loading: Oxford-Handbook-of-Nephrology-and-Hypertension-PDFDrive-_vectordb_ready.json
+    Loading: PIIS0085253820312709_vectordb_ready.json
+    Loading: PIIS0272638619300940 (1)_vectordb_ready.json
+    Loading: PIIS0272638619300940_vectordb_ready.json
+    Loading: PIIS0272638620307265 (1)_vectordb_ready.json
+    Loading: PIIS0272638620307265_vectordb_ready.json
+    Loading: Presentation-CKD-Diabetes-CVD-1.5-hr-v0325-v1.0-002_vectordb_ready.json
+    Loading: Renal Diseases_vectordb_ready.json
+    Loading: Renal Physiology _vectordb_ready.json
+    Loading: Reportexpertconsultationonckdu_vectordb_ready.json
+    Loading: Screening Guidelines Chronic Kidney Disease Sri Lanka - 2017_vectordb_ready.json
+    Loading: Table-of-Contents_2024_Kidney-International_vectordb_ready.json
+    Loading: Title-Page_2024_Kidney-International_vectordb_ready.json
+    Loading: WEB_Chronic-Kidney-Disease_ENG_January-7_vectordb_ready.json
+    Loading: advance_directives_vectordb_ready.json
+    Loading: anatomy+phys+vol2a_vectordb_ready.json
+    Loading: bankir-et-al-2008-nighttime-blood-pressure-and-nocturnal-dipping-are-associated-with-daytime-urinary-sodium-excretion_vectordb_ready.json
+    Loading: bjca.2009.4.2.39357_vectordb_ready.json
+    Loading: c3c3c7a683d3d739499c83c2d7b1fbd2a1e0_vectordb_ready.json
+    Loading: chobanian-et-al-2003-seventh-report-of-the-joint-national-committee-on-prevention-detection-evaluation-and-treatment-of_vectordb_ready.json
+    Loading: choosing_a_treatment_vectordb_ready.json
+    Loading: chronic-kidney-disease-assessment-and-management-pdf-66143713055173_vectordb_ready.json
+    Loading: chronic-kidney-disease-in-adults-pdf-58297746373_vectordb_ready.json
+    Loading: chronic-kidney-disease_2_vectordb_ready.json
+    Loading: chronic-kidney-disease_vectordb_ready.json
+    Loading: ckd_evaluation_classification_stratification_vectordb_ready.json
+    Loading: coping_vectordb_ready.json
+    Loading: cureus-0014-00000024244_vectordb_ready.json
+    Loading: current-trends-in-hypertension-takeaways-from-the-2021-kdigo-guidelines_vectordb_ready.json
+    Loading: dialysis_patients_bill_of_rights_vectordb_ready.json
+    Loading: dining_out_with_confidence_1_2_vectordb_ready.json
+    Loading: dining_out_with_confidence_1_vectordb_ready.json
+    Loading: e554aa91d426eee7edf579315638edf64d3f_vectordb_ready.json
+    Loading: ehy339_vectordb_ready.json
+    Loading: epidemiology_of_chronic_kidney_disease_in_a_sri.41_vectordb_ready.json
+    Loading: file_vectordb_ready.json
+    Loading: furenalpre-courseworkbook_vectordb_ready.json
+    Loading: furthetalkdigocontroversyobesityandckd_vectordb_ready.json
+    Loading: gfab017_vectordb_ready.json
+    Loading: gfr_a_key_to_understanding_vectordb_ready.json
+    Loading: guidelines-for-management-of-chronic-kidney-disease-ckd-for-adults_vectordb_ready.json
+    Loading: hemodialysis_0_vectordb_ready.json
+    Loading: home_hemo_vectordb_ready.json
+    Loading: hyperkalemia_vectordb_ready.json
+    Loading: if_you_choose_not_to_start_dialysis_treatment_vectordb_ready.json
+    Loading: iris-pocket-guide-2_vectordb_ready.json
+    Loading: j-krcp-23-194_vectordb_ready.json
+    Loading: kidney_cancer_vectordb_ready.json
+    Loading: kidneytransplant_updated_vectordb_ready.json
+    Loading: managing_anemia_vectordb_ready.json
+    Loading: managing_iron_vectordb_ready.json
+    Loading: manual-of-clinical-nephrology-first-edition_compress_vectordb_ready.json
+    Loading: mineral_and_bone_disorder_vectordb_ready.json
+    Loading: niceng203guid_pathway1_vectordb_ready.json
+    Loading: northwestern-medicine-chronic-kidney-renal-disease_vectordb_ready.json
+    Loading: nutrition_and_ckd_vectordb_ready.json
+    Loading: nutrition_and_peritoneal_dialysis_vectordb_ready.json
+    Loading: nutrition_and_transplant_vectordb_ready.json
+    Loading: oxford-textbook-of-clinical-nephrology-4nbsped-9780199592548-0199592548_compress_vectordb_ready.json
+    Loading: pain_medicines_vectordb_ready.json
+    Loading: peritoneal_dialysis_vectordb_ready.json
+    Loading: planning_for_emergencies_vectordb_ready.json
+    Loading: pqnew95_vectordb_ready.json
+    Loading: renal-failure-symptoms-understanding-the-warning-signs_vectordb_ready.json
+    Loading: renal-pathology_vectordb_ready.json
+    Loading: s12882-017-0501-1_vectordb_ready.json
+    Loading: s12882-019-1501-0_vectordb_ready.json
+    Loading: s12882-020-02151-7 (1)_vectordb_ready.json
+    Loading: s12882-020-02151-7_vectordb_ready.json
+    Loading: s12955-020-01369-1_vectordb_ready.json
+    Loading: s312_vectordb_ready.json
+    Loading: s41440-018-0026-4_vectordb_ready.json
+    Loading: sachdeva-weder-2006-nocturnal-sodium-excretion-blood-pressure-dipping-and-sodium-sensitivity_vectordb_ready.json
+    Loading: sfae278_vectordb_ready.json
+    Loading: slowing-the-progression-of-chronic-kidney-disease_vectordb_ready.json
+    Loading: the-stages-of-chronic-kidney-disease-3ihwageidf_vectordb_ready.json
+    Loading: urine-albumin_vectordb_ready.json
+    Loading: v40b_a5_vectordb_ready.json
+    Loading: vaccines_and_dialysis_vectordb_ready.json
+    Loading: web_kidneybasics_pdf_v2_vectordb_ready.json
+    Loading: whelton-et-al-2017-2017-acc-aha-aapa-abc-acpm-ags-apha-ash-aspc-nma-pcna-guideline-for-the-prevention-detection_vectordb_ready.json
+    Loading: working_with_kidney_disease_vectordb_ready.json
+    Loading: yacosta,+2-Gastrointestinal+++manifestations-1_vectordb_ready.json
+    Loading: yjoh-22-259_vectordb_ready.json
+    Loading: Δείτε-Απόσπασμα-του-Βιβλίου-13_vectordb_ready.json
+
+ Loaded 5265 NEW documents from 86 files
+   ️  Skipped 2000 existing documents
+   - Documents: 5265
+   - Metadata entries: 5265
+   - IDs: 5265
+
+ Adding 5265 documents to collection...
+   Strategy: embed-then-store in chunks of 500 (crash-safe)
+
+[1/11] Embedding docs 1-500...
