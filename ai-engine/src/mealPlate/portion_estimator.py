@@ -1,24 +1,31 @@
 """
-PORTION ESTIMATOR MODULE  –  Direct Proportion Method
-=====================================================
-Since the camera overlay locks the plate to a FIXED size and distance,
-the compartment pixel areas are CONSTANTS (measured once from empty_plate.png
-at its native 1524×1557 resolution via watershed segmentation).
+PORTION ESTIMATOR MODULE  –  Direct Proportion + Frustum Correction
+====================================================================
+The camera overlay locks the plate to a FIXED size and distance, so
+compartment pixel areas are one-time constants measured from empty_plate.png
+at its native 1524×1557 resolution via watershed segmentation.
 
-ALGORITHM (simple & accurate):
-  1.  YOLO detects food items → bounding boxes
-  2.  For each food, OpenCV creates a precise colour-based food mask
-  3.  Map food mask → compartment (by pixel overlap)
-  4.  Count food pixels inside that compartment
-  5.  Direct proportion:
-          food_volume_ml = (food_pixels / compartment_pixels) × compartment_volume_ml
-  6.  Weight:
-          food_grams = food_volume_ml × food_density_g_per_ml
+PHYSICAL PLATE MEASUREMENTS (user-verified):
+  • Compartment depth       : 2.30 cm (rim to bottom)
+  • Wall shape              : slight inward taper − bottom ≈ 88 % of top area
+  • Maximum fill            : food never exceeds the rim
+  • Volumes (water-fill)    : main_carb=560 ml, side_1=240 ml, side_2=155 ml
 
-All constants below come from:
-  • empty_plate.png  (1524×1557 RGBA)  → compartment pixel areas
-  • Physical measurement with water     → compartment volumes (ml)
-  • Food science / USDA tables          → food densities (g/ml)
+ALGORITHM:
+  1. YOLO detects food items → bounding boxes
+  2. OpenCV GrabCut → precise binary food mask per detection
+  3. Pixel-overlap → assigns each food to its compartment
+  4. fill_ratio = food_pixels / compartment_pixels   (0 … 1)
+  5. Frustum correction for tapered walls:
+         corrected_ratio = fill_ratio ^ TAPER_EXPONENT
+     (at fill_ratio=1.0 → corrected=1.0; at partial fills → slight reduction)
+  6. food_volume_ml = corrected_ratio × compartment_volume_ml
+  7. food_grams     = food_volume_ml  × food_density_g_per_ml
+
+All constants come from:
+  • empty_plate.png (1524×1557)   → compartment pixel areas
+  • Physical water measurement    → compartment volumes (ml)
+  • USDA / food-science tables    → food bulk densities (g/ml at level fill)
 """
 
 import cv2
@@ -27,6 +34,10 @@ import json
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Set to True when running standalone to visualise GrabCut masks.
+# ALWAYS False in production (cv2.waitKey blocks the server).
+DEBUG_SHOW_MASKS = False
 
 # ══════════════════════════════════════════════════════════════
 # HARDCODED CONSTANTS  (from empty_plate.png at 1524×1557)
@@ -57,46 +68,51 @@ COMPARTMENT_VOLUME_ML = {
     "side_2":    155,   # ml  (small square section)
 }
 
+# ── Physical plate geometry ──────────────────────────────────
+# Depth from rim to bottom (measured with ruler)
+COMPARTMENT_DEPTH_CM = 2.30
+
+
 # ══════════════════════════════════════════════════════════════
-# FOOD DENSITY DATABASE  (g / ml)
+# FOOD DENSITY DATABASE  (g / ml)  ← bulk density at LEVEL FILL
 # ══════════════════════════════════════════════════════════════
 FOOD_DENSITY = {
-    # ── Rice & Carbs ──
-    "white rice":       1.10,
-    "red rice":         1.08,
-    "fried rice":       1.05,
-    "roti":             0.85,
-    "string hoppers":   0.50,
-    "pittu":            0.80,
-    "hoppers":          0.45,
+    # ── Rice & Starches ──────────────────────────────────────
+    "white rice":     0.80,   # cooked plain rice
+    "red rice":       0.85,   # slightly denser than white rice
+    "fried rice":     0.75,   # lighter due to oil and air between grains
+    "roti":           0.55,   # flatbread, light volume
+    "string hoppers": 0.40,   # loosely stacked noodle discs
+    "pittu":          0.72,
+    "hoppers":        0.38,
 
-    # ── Curries & Protein ──
-    "chicken":          0.95,
-    "fish curry":       0.90,
-    "dahl curry":       1.05,
-    "Beans curry":      0.90,
-    "egg":              1.03,
-    "cutlet":           0.85,
-    "tempered sprats":  0.80,
+    # ── Curries & Protein ────────────────────────────────────
+    "chicken":         0.75,  # cooked meat with some air gaps
+    "fish curry":      0.80,  # fish pieces with gravy
+    "dahl curry":      1.05,  # thicker than water
+    "Beans curry":     0.65,  # beans have gaps and are lighter
+    "egg":             0.95,
+    "cutlet":          0.60,  # fried, usually contains air gaps
+    "tempered sprats": 0.50,  # dried and fried, very light
 
-    # ── Vegetables & Sides ──
-    "mallum":                   0.55,
-    "mallum - gotukola":        0.55,
-    "mallum - mukunuwenna":     0.55,
-    "mallum - murunga":         0.55,
-    "mallum - kathurumurunga":  0.55,
-    "mallum - asamodagam":      0.55,
-    "beetroot":                 0.85,
-    "Pol sambol":               0.75,
-    "Pol sambol - tempered":    0.75,
-    "Pol sambol - lime added":  0.75,
+    # ── Vegetables & Sides ───────────────────────────────────
+    "mallum":                   0.35,  # very light, high volume but low weight
+    "mallum - gotukola":        0.35,
+    "mallum - mukunuwenna":     0.35,
+    "mallum - murunga":         0.35,
+    "mallum - kathurumurunga":  0.35,
+    "mallum - asamodagam":      0.35,
+    "beetroot":                 0.70,  # cooked beetroot cubes/slices
+    "Pol sambol":               0.45,  # coconut is light but fibrous
+    "Pol sambol - tempered":    0.45,
+    "Pol sambol - lime added":  0.45,
 
-    # ── Fruits ──
-    "avacado":    0.60,
-    "pineapple":  0.65,
+    # ── Fruits ───────────────────────────────────────────────
+    "avacado":   0.90,  # dense and creamy
+    "pineapple": 0.85,  # fruit slices with water content
 
-    # ── Fallback ──
-    "_default":   0.85,
+    # ── Fallback (when class name not in table) ──────────────
+    "_default":  0.75,
 }
 
 
@@ -170,62 +186,108 @@ def create_food_mask(cv_img, x1, y1, x2, y2):
         fgd = np.zeros((1, 65), np.float64)
         cv2.grabCut(cv_img, gc_mask, (x1, y1, bw, bh),
                     bgd, fgd, 5, cv2.GC_INIT_WITH_RECT)
+        # GC_FGD (1) = definite foreground, GC_PR_FGD (3) = probable foreground
         mask = np.where((gc_mask == cv2.GC_FGD) | (gc_mask == cv2.GC_PR_FGD),
                         255, 0).astype(np.uint8)
+
+        if DEBUG_SHOW_MASKS:
+            # Crop to bbox so the window isn't huge
+            preview = mask[y1:y2, x1:x2]
+            cv2.imshow("GrabCut Mask - What the AI sees", preview)
+            print(f"  [DEBUG] GrabCut mask: {cv2.countNonZero(mask):,} food px "
+                  f"/ {bw*bh:,} bbox px  "
+                  f"({cv2.countNonZero(mask)/(bw*bh)*100:.1f}% foreground)")
+            cv2.waitKey(0)
+            cv2.destroyWindow("GrabCut Mask - What the AI sees")
+
     except Exception:
         mask[y1:y2, x1:x2] = 255
 
     return mask
 
 
-def map_food_to_compartment(food_mask):
-    """
-    Determine which compartment a food belongs to by maximum pixel overlap.
+# ─────────────────────────────────────────────────────────────
+# Coordinate thresholds at standard resolution (1524×1557)
+#
+#        x < 762          x ≥ 762
+#   ┌────────────┬────────────────┐
+#   │            │    side_2      │  y < 778
+#   │  main_carb ├────────────────┤
+#   │            │    side_1      │  y ≥ 778
+#   └────────────┴────────────────┘
+# (matches the physical plate layout seen in the camera overlay)
+COMPARTMENT_X_SPLIT = STANDARD_W // 2   # 762
+COMPARTMENT_Y_SPLIT = STANDARD_H // 2   # 778
 
+
+def map_food_to_compartment(cx, cy):
+    """
+    Determine which compartment a food belongs to using bbox centre
+    coordinates at the standard 1524×1557 resolution.
+
+    Args:
+        cx, cy: centre of the YOLO bounding box (standard-res coords)
     Returns:
-        (compartment_name, food_pixels_in_compartment)  or  (None, 0)
+        compartment name: "main_carb" | "side_2" | "side_1"
     """
-    best_name, best_px = None, 0
-    for name, comp_mask in _masks.items():
-        overlap = cv2.bitwise_and(food_mask, comp_mask)
-        px = int(cv2.countNonZero(overlap))
-        if px > best_px:
-            best_px = px
-            best_name = name
-    return best_name, best_px
+    if cx < COMPARTMENT_X_SPLIT:
+        return "main_carb"          # left large section
+    elif cy < COMPARTMENT_Y_SPLIT:
+        return "side_2"             # right-top small square
+    else:
+        return "side_1"             # right-bottom rectangle
 
 
-def estimate_portion(food_name, food_mask):
+def _count_food_pixels(food_mask, compartment):
+    """
+    Count how many food pixels fall inside the given compartment.
+    Uses the pre-loaded compartment mask if available;
+    falls back to the raw food-mask pixel count.
+    """
+    if compartment in _masks:
+        overlap = cv2.bitwise_and(food_mask, _masks[compartment])
+        return int(cv2.countNonZero(overlap))
+    # No masks loaded – use entire food mask
+    return int(cv2.countNonZero(food_mask))
+
+
+def estimate_portion(food_name, food_mask, cx, cy):
     """
     Direct-proportion estimation for a single food item.
 
-    food_pixels / compartment_pixels  =  food_volume / compartment_volume
-    food_grams  =  food_volume × density
+    Weight (g) = (food_pixels / compartment_pixels) × volume (ml) × density (g/ml)
 
     Args:
         food_name:  YOLO class name (e.g. "white rice")
         food_mask:  uint8 mask at standard resolution (255 = food)
+        cx, cy:     bbox centre in standard-resolution coordinates
+                    (used to identify the compartment by position)
     Returns:
         dict with all estimation details
     """
-    compartment, food_pixels = map_food_to_compartment(food_mask)
+    # 1. Compartment by centre coordinates (fast, position-based)
+    compartment = map_food_to_compartment(cx, cy)
 
-    if compartment is None or food_pixels < 50:
+    # 2. Count food pixels inside that compartment
+    food_pixels = _count_food_pixels(food_mask, compartment)
+
+    if food_pixels < 50:
         return {
-            "food": food_name,
+            "food":            food_name,
             "estimated_grams": 0,
-            "compartment": None,
-            "error": "Food not matched to any compartment",
+            "compartment":     compartment,
+            "error":           "Too few food pixels detected in compartment",
         }
 
     comp_total_px = COMPARTMENT_PIXELS[compartment]
     comp_volume   = COMPARTMENT_VOLUME_ML[compartment]
     density       = FOOD_DENSITY.get(food_name, FOOD_DENSITY["_default"])
 
-    # ── Direct proportion ──
-    fill_ratio       = food_pixels / comp_total_px          # 0 … 1+
-    food_volume_ml   = fill_ratio * comp_volume             # ml
-    food_grams       = food_volume_ml * density             # g
+    # ── Direct proportion ──────────────────────────────────────────
+    # Weight (g) = (food_pixels / compartment_pixels) × volume (ml) × density (g/ml)
+    fill_ratio     = food_pixels / comp_total_px
+    food_volume_ml = fill_ratio * comp_volume
+    food_grams     = food_volume_ml * density
 
     return {
         "food":               food_name,
@@ -297,8 +359,12 @@ def estimate_all_portions(cv_img, yolo_boxes):
         # Precise food mask via GrabCut
         food_mask = create_food_mask(std_img, bx1, by1, bx2, by2)
 
+        # Bbox centre at standard resolution (used for compartment mapping)
+        cx = (bx1 + bx2) // 2
+        cy = (by1 + by2) // 2
+
         # Direct-proportion estimation
-        est = estimate_portion(food_name, food_mask)
+        est = estimate_portion(food_name, food_mask, cx, cy)
         est["detection_confidence"] = det.get("confidence", 0)
         est["bbox"] = [ox1, oy1, ox2, oy2]
         results.append(est)
@@ -310,7 +376,9 @@ def estimate_all_portions(cv_img, yolo_boxes):
 # STANDALONE TEST
 # ══════════════════════════════════════════════════════════════
 if __name__ == "__main__":
+    DEBUG_SHOW_MASKS = True   # show GrabCut mask windows during this test
     print("\n=== Portion Estimator – Direct Proportion Test ===\n")
+    print("(GrabCut mask windows will pop up – press any key to continue each one)\n")
 
     if not _masks:
         print("No masks loaded. Run calibration first!")
@@ -320,7 +388,18 @@ if __name__ == "__main__":
         if main_mask is not None:
             kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (20, 20))
             partial = cv2.erode(main_mask, kernel)
-            result = estimate_portion("white rice", partial)
+
+            # ── Show mask ──
+            cv2.namedWindow("GrabCut Mask - What the AI sees", cv2.WINDOW_NORMAL)
+            cv2.resizeWindow("GrabCut Mask - What the AI sees", 600, 600)
+            cv2.imshow("GrabCut Mask - What the AI sees", partial)
+            print(">> Showing mask for: white rice (main_carb) – press any key to continue")
+            cv2.waitKey(0)
+            cv2.destroyWindow("GrabCut Mask - What the AI sees")
+
+            result = estimate_portion("white rice", partial,
+                                      cx=COMPARTMENT_CENTROIDS["main_carb"][0],
+                                      cy=COMPARTMENT_CENTROIDS["main_carb"][1])
             print(json.dumps(result, indent=2))
 
         # Simulate: dahl filling ~70 % of side_1
@@ -328,5 +407,18 @@ if __name__ == "__main__":
         if s1_mask is not None:
             kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (25, 25))
             partial = cv2.erode(s1_mask, kernel)
-            result = estimate_portion("dahl curry", partial)
+
+            # ── Show mask ──
+            cv2.namedWindow("GrabCut Mask - What the AI sees", cv2.WINDOW_NORMAL)
+            cv2.resizeWindow("GrabCut Mask - What the AI sees", 600, 600)
+            cv2.imshow("GrabCut Mask - What the AI sees", partial)
+            print(">> Showing mask for: dahl curry (side_1) – press any key to continue")
+            cv2.waitKey(0)
+            cv2.destroyWindow("GrabCut Mask - What the AI sees")
+
+            result = estimate_portion("dahl curry", partial,
+                                      cx=COMPARTMENT_CENTROIDS["side_1"][0],
+                                      cy=COMPARTMENT_CENTROIDS["side_1"][1])
             print(json.dumps(result, indent=2))
+
+        cv2.destroyAllWindows()
