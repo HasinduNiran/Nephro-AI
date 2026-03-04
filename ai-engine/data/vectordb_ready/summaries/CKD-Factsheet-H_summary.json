@@ -1,0 +1,25 @@
+{
+  "total_documents": 13,
+  "source_file": "CKD-Factsheet-H_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\CKD-Factsheet-H_chunks.json",
+  "preparation_date": "2026-03-04T12:04:55.588722",
+  "avg_word_count": 155.23076923076923,
+  "content_types": {
+    "dietary": 3,
+    "dietary, treatment": 2,
+    "recommendation, dietary, treatment": 2,
+    "dietary, treatment, monitoring": 1,
+    "treatment": 1,
+    "recommendation, reference, dietary, treatment, monitoring": 1,
+    "reference, dietary, treatment, monitoring": 1,
+    "recommendation, reference, monitoring": 1,
+    "recommendation, definition, dietary": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 13,
+    "GFR": 8,
+    "diabetes": 8,
+    "hypertension": 8,
+    "dialysis": 2
+  }
+}

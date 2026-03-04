@@ -1,0 +1,31 @@
+{
+  "total_documents": 17,
+  "source_file": "KAHPF+Chronic+Kidney+Disease+(CKD)+Protocol_endorsed+12.07.22_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\KAHPF+Chronic+Kidney+Disease+(CKD)+Protocol_endorsed+12.07.22_chunks.json",
+  "preparation_date": "2026-03-04T12:04:56.614296",
+  "avg_word_count": 105.0,
+  "content_types": {
+    "definition, dietary": 1,
+    "reference": 1,
+    "recommendation, treatment": 1,
+    "reference, monitoring": 1,
+    "recommendation, evidence, reference, dietary, treatment, monitoring": 1,
+    "evidence, dietary, monitoring": 1,
+    "dietary": 2,
+    "recommendation, definition, reference, dietary, treatment, monitoring": 1,
+    "reference, dietary, treatment, monitoring": 1,
+    "recommendation, dietary, monitoring": 2,
+    "recommendation, monitoring": 1,
+    "treatment": 1,
+    "evidence, dietary, treatment": 1,
+    "dietary, treatment": 1,
+    "recommendation, reference": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 16,
+    "GFR": 5,
+    "diabetes": 4,
+    "hypertension": 5,
+    "dialysis": 4
+  }
+}

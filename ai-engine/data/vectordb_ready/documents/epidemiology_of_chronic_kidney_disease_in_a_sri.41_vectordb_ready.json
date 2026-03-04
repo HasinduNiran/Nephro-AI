@@ -1,0 +1,81 @@
+{
+  "documents": [
+    "## Renal Data from Asia-Africa\n## Epidemiology of Chronic Kidney Disease in a Sri Lankan Population: Experience of a Tertiary Care Center\nEranga S. Wijewickrama 1 , Dinushi Weerasinghe 2 , Pubudu S. Sumathipala 2 , Charith Horadagoda 1 , Rushika D. Lanarolle 2 , Rezvi MH. Sheriff 2\n\nUniversity Medical Unit 1 , National Hospital of Sri Lanka, Department of Clinical Medicine 2 , Faculty of Medicine, Colombo, Sri Lanka\n\nABSTRACT. Chronic kidney disease (CKD) is a growing problem in Sri Lanka. Diabetes and hypertension are the main contributors to the disease burden. A new form of CKD of uncertain etiology (CKD-u) is the predominant form of CKD in certain parts of Sri Lanka, threatening to reach epidemic proportions. A cross-sectional descriptive study was carried out over a three-month period at the National Hospital of Sri Lanka to identify the underlying etiologic factors for the disease in a cohort of patients with CKD. A total of 200 patients were studied with a mean age of 50.57 years. Of them, 108 (54%) were in CKD stage V. Majority of the patients were from the western province (137, 68.5%) with only five (2.5%) from provinces with high prevalence of CKD-u. The most common underlying causes of CKD were diabetes (88, 44%) and hypertension (34, 17%). However, in patients younger than 40 years of age the most common cause was glomerulonephritis (20, 42.6%). Diabetes was the most common cause of CKD among patients from the western province (74, 54%). The prevalence of CKD-u was twice as high in patients from areas outside the western province compared with patients from this province ( P &gt; 0.05). The low prevalence of CKD-u in the study population could be the result of poor representation of patients from provinces with high prevalence of CKD-u.",
+    "Diabetes was considered the presumptive underlying cause of CKD if a patient had clinically and biochemically confirmed diabetes mellitus and one of the following criteria in the absence of indicators of any other etiologies: long duration of diabetes before the onset of CKD (minimum of five years) or the presence of diabetic retinopathy on fundus examination. Hypertension was considered the presumptive underlying cause if a patient with CKD had hypertension associated with any of the following criteria in the absence of indicators of any other etiologies: long duration of hypertension (at least five years), presence of concentric left ventricular hypertrophy, or the presence of hypertensive retinopathy at the time of diagnosis of CKD.",
+    "## References\n1. Nahas AM, Belle AK. Chronic kidney disease: The global challenge. Lancet 2005;365:331-40.\n2. Barsoum RS. Chronic kidney disease in the developing world. N Engl J Med 2006;354:997-9.\n3. Annual Health Statistics of Sri Lanka, 2007.\n4. Katulanda P, Sheriff MH, Mathews DR. The diabetic epidemic in Sri Lanka: a growing problem. Ceylon Med J 2006;51:26-8.\n5. Katulanda P, Constantine GR, Mahesh JG, et al. Prevalence and projections of diabetes and prediabetes in adults in Sri Lanka: Sri Lanka Diabetes, Cardiovascular Study (SLDCS). Diabet Med 2008;25(9):1062-9.\n6. Athuraliya TN, Abeysekera DT, Amerasinghe PH, Kumarasiri PV, Dissanayake V. Prevalence of chronic kidney disease in two tertiary care hospitals: high proportion of cases with uncertain aetiology. Ceylon Med J 2009;54:23-5.\n7. National Kidney Foundation: K/DOQI Clinical practice guidelines for chronic kidney disease: evaluation, classification and stratification. Am J Kidney Dis 2002;39(Suppl):S1-266.\n8. Levey AS, Greene T, Kusek JW, et al. A simplified equation to predict glomerular filtration rate from serum creatinine. J Am Soc Nephrol 2000;11:A0828.\n9. Gooneratne IK, Ranaweera AK, Liyanarchchi NP, Gunawardane N, Lanarolle RD. Epidemiology of chronic kidney disease in a Sri Lankan population. Int J Diab Dev Ctries 2008;28:60-4.\n10. Wing AJ. Causes of end-stage renal failure. In: Davison MA, Cameron JS, Grunfeld JP, Ponticelli C, Ritz E, Winearls EG, eds. The Oxford Textbook of Clinical Nephrology 1 st edition.\n11. Wanigasuriya KP, Peiris-John RJ, Wickremasinghe R, Hittarage A. Chronic renal failure in North Central Province of Sri Lanka: an environmentally induced disease. Trans Royal Soc Trop Med Hyg 2007;101(10):1013-7"
+  ],
+  "metadatas": [
+    {
+      "source": "epidemiology_of_chronic_kidney_disease_in_a_sri.41.pdf",
+      "chunk_id": 0,
+      "content_type": "evidence",
+      "content_type_confidence": 0,
+      "word_count": 298,
+      "entity_count": 2,
+      "has_ckd": true,
+      "has_gfr": false,
+      "has_diabetes": true,
+      "has_hypertension": true,
+      "has_dialysis": false,
+      "is_gold_standard": false,
+      "medical_entities": "CKD, chronic kidney disease",
+      "year": "2026",
+      "organization": "Unknown",
+      "section": "Epidemiology of Chronic Kidney Disease in a Sri Lankan Population: Experience of a Tertiary Care Cen",
+      "section_path": "Epidemiology of Chronic Kidney Disease in a Sri Lankan Population: Experience of a Tertiary Care Center",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "structural"
+    },
+    {
+      "source": "epidemiology_of_chronic_kidney_disease_in_a_sri.41.pdf",
+      "chunk_id": 2,
+      "content_type": "general",
+      "content_type_confidence": 0,
+      "word_count": 113,
+      "entity_count": 2,
+      "has_ckd": true,
+      "has_gfr": false,
+      "has_diabetes": true,
+      "has_hypertension": true,
+      "has_dialysis": false,
+      "is_gold_standard": false,
+      "medical_entities": "CKD, retinopathy",
+      "year": "2026",
+      "organization": "Unknown",
+      "section": "Subjects and Methods",
+      "section_path": "Subjects and Methods",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "semantic",
+      "sub_chunk_index": 0
+    },
+    {
+      "source": "epidemiology_of_chronic_kidney_disease_in_a_sri.41.pdf",
+      "chunk_id": 5,
+      "content_type": "recommendation, evidence, reference, monitoring",
+      "content_type_confidence": 0,
+      "word_count": 254,
+      "entity_count": 6,
+      "has_ckd": true,
+      "has_gfr": true,
+      "has_diabetes": true,
+      "has_hypertension": false,
+      "has_dialysis": false,
+      "is_gold_standard": false,
+      "medical_entities": "chronic kidney disease, glomerular filtration rate, renal failure, creatinine, serum creatinine, classification",
+      "year": "2026",
+      "organization": "Unknown",
+      "section": "References",
+      "section_path": "References",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "structural"
+    }
+  ],
+  "ids": [
+    "epidemiology_of_chronic_kidney_disease_in_a_sri.41_0",
+    "epidemiology_of_chronic_kidney_disease_in_a_sri.41_2",
+    "epidemiology_of_chronic_kidney_disease_in_a_sri.41_5"
+  ]
+}

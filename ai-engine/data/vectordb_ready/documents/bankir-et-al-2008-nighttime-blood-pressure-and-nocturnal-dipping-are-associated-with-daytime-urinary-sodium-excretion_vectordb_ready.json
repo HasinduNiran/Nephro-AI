@@ -1,0 +1,56 @@
+{
+  "documents": [
+    "## Statistical Analyses\nThe data were divided into sex-specific tertiles (T1, T2, and T3) according to the day:night ratio of urinary sodium excretion. A nonparametric test was used to evaluate trends across tertiles. The Wilcoxon matched-pairs signed-rank test was used to compare day and night values within each tertile. The ASSOC program (5.2v) in the Statistical Analysis for Genetic Epidemiology package was used to conduct multiple linear regression models while accounting for familial correlations and also to estimate heritability to assess familial aggregation of nocturnal dipping. The following dependent variables were used: night values and differences between daytime and nighttime values (ie, nocturnal dipping) for systolic (SBP), diastolic (DBP) and pulse pressure (PP; ie, 6 models). All of the models were adjusted for age, sex, BMI, ascertainment, 24-hour sodium and potassium excretion, urine flow rate (milliliters per minute), and urinary creatinine concentration in day and night urine. Models with DBP or PP as the dependent variable were also adjusted for age 2 to account for the nonlinear relation of DBP with age. We used the daytime and nighttime urinary U Na and UK (millimoles per liter) as the covariates of interest. Sensitivity analyses were conducted that included an additional adjustment for the following: (1) GFR measured using inulin clearance; (2) 24-hour FE Na ; (3) reported tobacco consumption; (4) reported alcohol consumption; and (5) fasting blood glucose.",
+    "## Perspectives\nBecause nighttime BP is associated with target organ damages and cardiovascular events, it is crucial to identify its clinical and physiological determinants. In this study performed on a large group of normotensive and hypertensive subjects, we demonstrate that sodium excretion during daytime is a significant determinant of nighttime BP. This observation has 2 important implications. First, it highlights the importance of considering sodium intake as a major\n\nconfounding factor whenever investigating or trying to explain circadian variations of BP. Second, because a lowsodium diet and diuretics have been found to restore a normal diurnal pattern of BP in nondippers, our findings further support the recommendation of a low-sodium intake in hypertension not only to lower BP but also to restore a normal diurnal rhythm of BP and, hence, to further reduce the patients' cardiovascular risk."
+  ],
+  "metadatas": [
+    {
+      "source": "bankir-et-al-2008-nighttime-blood-pressure-and-nocturnal-dipping-are-associated-with-daytime-urinary-sodium-excretion.pdf",
+      "chunk_id": 1,
+      "content_type": "dietary",
+      "content_type_confidence": 0,
+      "word_count": 227,
+      "entity_count": 4,
+      "has_ckd": false,
+      "has_gfr": true,
+      "has_diabetes": false,
+      "has_hypertension": true,
+      "has_dialysis": false,
+      "is_gold_standard": false,
+      "medical_entities": "GFR, creatinine, sodium, potassium",
+      "year": "2008",
+      "organization": "Unknown",
+      "section": "Statistical Analyses",
+      "section_path": "Statistical Analyses",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "structural"
+    },
+    {
+      "source": "bankir-et-al-2008-nighttime-blood-pressure-and-nocturnal-dipping-are-associated-with-daytime-urinary-sodium-excretion.pdf",
+      "chunk_id": 4,
+      "content_type": "recommendation, evidence, definition, dietary, treatment",
+      "content_type_confidence": 0,
+      "word_count": 137,
+      "entity_count": 3,
+      "has_ckd": false,
+      "has_gfr": false,
+      "has_diabetes": false,
+      "has_hypertension": true,
+      "has_dialysis": false,
+      "is_gold_standard": false,
+      "medical_entities": "sodium, diet, diuretics",
+      "year": "2008",
+      "organization": "Unknown",
+      "section": "Perspectives",
+      "section_path": "Perspectives",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "structural"
+    }
+  ],
+  "ids": [
+    "bankir_et_al_2008_nighttime_blood_pressure_and_nocturnal_dipping_are_associated_with_daytime_urinary_sodium_excretion_1",
+    "bankir_et_al_2008_nighttime_blood_pressure_and_nocturnal_dipping_are_associated_with_daytime_urinary_sodium_excretion_4"
+  ]
+}

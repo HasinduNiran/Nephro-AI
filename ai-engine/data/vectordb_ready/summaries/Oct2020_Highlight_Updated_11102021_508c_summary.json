@@ -1,0 +1,21 @@
+{
+  "total_documents": 6,
+  "source_file": "Oct2020_Highlight_Updated_11102021_508c_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\Oct2020_Highlight_Updated_11102021_508c_chunks.json",
+  "preparation_date": "2026-03-04T12:05:03.139784",
+  "avg_word_count": 152.66666666666666,
+  "content_types": {
+    "evidence, reference": 2,
+    "evidence, definition, reference, monitoring": 1,
+    "evidence, definition": 1,
+    "evidence, definition, reference": 1,
+    "general": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 6,
+    "GFR": 1,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

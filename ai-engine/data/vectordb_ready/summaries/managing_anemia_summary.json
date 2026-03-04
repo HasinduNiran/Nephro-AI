@@ -1,0 +1,27 @@
+{
+  "total_documents": 18,
+  "source_file": "managing_anemia_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\managing_anemia_chunks.json",
+  "preparation_date": "2026-03-04T12:05:07.491528",
+  "avg_word_count": 116.5,
+  "content_types": {
+    "recommendation, treatment": 2,
+    "definition, reference, dietary, treatment": 1,
+    "reference, dietary, treatment": 1,
+    "treatment": 6,
+    "definition, treatment": 1,
+    "general": 1,
+    "recommendation, treatment, monitoring": 1,
+    "evidence": 1,
+    "recommendation, dietary, monitoring": 1,
+    "treatment, monitoring": 1,
+    "dietary, treatment": 2
+  },
+  "medical_entity_coverage": {
+    "CKD": 12,
+    "GFR": 3,
+    "diabetes": 3,
+    "hypertension": 2,
+    "dialysis": 5
+  }
+}

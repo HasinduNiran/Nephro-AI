@@ -1,0 +1,36 @@
+{
+  "total_documents": 54,
+  "source_file": "anatomy+phys+vol2a_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\anatomy+phys+vol2a_chunks.json",
+  "preparation_date": "2026-03-04T12:05:05.525838",
+  "avg_word_count": 196.0185185185185,
+  "content_types": {
+    "dietary": 10,
+    "treatment": 4,
+    "recommendation, evidence, definition, dietary, treatment, monitoring": 1,
+    "dietary, treatment": 9,
+    "reference, dietary": 6,
+    "reference, treatment": 1,
+    "evidence, dietary, treatment": 1,
+    "definition": 1,
+    "reference, dietary, treatment": 3,
+    "evidence, reference, dietary, treatment": 1,
+    "general": 7,
+    "evidence, dietary": 1,
+    "reference, monitoring": 1,
+    "evidence, reference, dietary": 2,
+    "recommendation, reference, dietary": 1,
+    "recommendation, definition, reference, treatment": 1,
+    "dietary, monitoring": 1,
+    "definition, treatment, monitoring": 1,
+    "treatment, monitoring": 1,
+    "definition, dietary": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 3,
+    "GFR": 1,
+    "diabetes": 12,
+    "hypertension": 22,
+    "dialysis": 0
+  }
+}

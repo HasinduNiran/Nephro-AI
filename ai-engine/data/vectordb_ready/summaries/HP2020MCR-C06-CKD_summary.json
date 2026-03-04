@@ -1,0 +1,26 @@
+{
+  "total_documents": 15,
+  "source_file": "HP2020MCR-C06-CKD_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\HP2020MCR-C06-CKD_chunks.json",
+  "preparation_date": "2026-03-04T12:04:56.446657",
+  "avg_word_count": 495.93333333333334,
+  "content_types": {
+    "recommendation, evidence, reference, treatment, monitoring": 1,
+    "recommendation, reference, treatment, monitoring": 3,
+    "reference, treatment": 3,
+    "definition, reference, treatment": 1,
+    "recommendation, reference, dietary": 1,
+    "recommendation, reference, dietary, treatment, monitoring": 1,
+    "reference, treatment, monitoring": 1,
+    "reference, dietary, treatment": 1,
+    "reference": 2,
+    "reference, dietary, treatment, monitoring": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 15,
+    "GFR": 4,
+    "diabetes": 8,
+    "hypertension": 5,
+    "dialysis": 10
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "total_documents": 17,
+  "source_file": "New Text Document (2)_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\New Text Document (2)_chunks.json",
+  "preparation_date": "2026-03-04T12:05:00.184350",
+  "avg_word_count": 567.2352941176471,
+  "content_types": {
+    "evidence, definition, reference, dietary, monitoring": 1,
+    "recommendation, evidence, definition, reference, dietary, treatment, monitoring": 5,
+    "recommendation, evidence, definition, dietary, treatment, monitoring": 1,
+    "recommendation, evidence, definition, reference, treatment, monitoring": 2,
+    "recommendation, evidence, reference, dietary, treatment": 2,
+    "recommendation, evidence, dietary, treatment, monitoring": 1,
+    "recommendation, evidence, definition, treatment, monitoring": 1,
+    "evidence, definition, reference, dietary, treatment, monitoring": 2,
+    "evidence, definition, reference, treatment": 1,
+    "evidence, definition, reference, treatment, monitoring": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 12,
+    "GFR": 10,
+    "diabetes": 10,
+    "hypertension": 17,
+    "dialysis": 0
+  }
+}

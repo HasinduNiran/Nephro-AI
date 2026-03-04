@@ -1,0 +1,56 @@
+{
+  "documents": [
+    "## 7 Recommendations for clinical laboratories\n## Creatinine-based estimate of GFR\nWhenever a request for serum creatinine measurement is made, clinical laboratories should report an eGFRcreatinine using a prediction equation in addition to reporting the serum creatinine result.\n\neGFRcreatinine may be less reliable in certain situations (for example, acute kidney injury, pregnancy, oedematous states, muscle wasting disorders, and in adults who are malnourished, who have higher muscle mass or use protein supplements, or who have had an amputation) and has not been well validated in certain ethnic groups (for example, black, Asian and other minority ethnic groups with CKD living in the UK).\n\nClinical laboratories should:\n\n- use the CKD-EPI creatinine equation to estimate GFRcreatinine for adults, using creatinine assays with calibration traceable to standardised reference material\n- use creatinine assays that are specific (for example, enzymatic assays) and zero-biased compared with IDMS\n- participate in a UK national external quality assessment scheme for creatinine.\n\nSee the NICE guideline to find out why we did not make new recommendations on creatininebased estimation of GFR.",
+    "## Your responsibility\n## Guidelines\nThe recommendations in this guideline represent the view of NICE, arrived at after careful consideration of the evidence available. When exercising their judgement, professionals and practitioners are expected to take this guideline fully into account, alongside the individual needs, preferences and values of their patients or the people using their service. It is not mandatory to apply the recommendations, and the guideline does not override the responsibility to make decisions appropriate to the circumstances of the individual, in consultation with them and their families and carers or guardian.\n\nLocal commissioners and providers of healthcare have a responsibility to enable the guideline to be applied when individual professionals and people using services wish to use it. They should do so in the context of local and national priorities for funding and developing services, and in light of their duties to have due regard to the need to eliminate unlawful discrimination, to advance equality of opportunity and to reduce health inequalities. Nothing in this guideline should be interpreted in a way that would be inconsistent with complying with those duties.\n\nCommissioners and providers have a responsibility to promote an environmentally sustainable health and care system and should assess and reduce the environmental impact of implementing NICE recommendations wherever possible."
+  ],
+  "metadatas": [
+    {
+      "source": "niceng203guid_pathway1.pdf",
+      "chunk_id": 4,
+      "content_type": "recommendation, reference, dietary, monitoring",
+      "content_type_confidence": 0,
+      "word_count": 174,
+      "entity_count": 7,
+      "has_ckd": true,
+      "has_gfr": true,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": false,
+      "is_gold_standard": false,
+      "medical_entities": "CKD, acute kidney injury, GFR, creatinine, serum creatinine, supplements, guideline",
+      "year": "2021",
+      "organization": "Unknown",
+      "section": "Creatinine-based estimate of GFR",
+      "section_path": "Creatinine-based estimate of GFR",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "structural"
+    },
+    {
+      "source": "niceng203guid_pathway1.pdf",
+      "chunk_id": 7,
+      "content_type": "recommendation, evidence, reference",
+      "content_type_confidence": 0,
+      "word_count": 212,
+      "entity_count": 1,
+      "has_ckd": false,
+      "has_gfr": false,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": false,
+      "is_gold_standard": false,
+      "medical_entities": "guideline",
+      "year": "2021",
+      "organization": "Unknown",
+      "section": "Guidelines",
+      "section_path": "Guidelines",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "structural"
+    }
+  ],
+  "ids": [
+    "niceng203guid_pathway1_4",
+    "niceng203guid_pathway1_7"
+  ]
+}

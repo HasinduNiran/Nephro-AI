@@ -1,0 +1,18 @@
+{
+  "total_documents": 2,
+  "source_file": "v40b_a5_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\v40b_a5_chunks.json",
+  "preparation_date": "2026-03-04T12:05:10.971264",
+  "avg_word_count": 135.5,
+  "content_types": {
+    "evidence, definition, treatment": 1,
+    "recommendation, evidence, monitoring": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 2,
+    "GFR": 0,
+    "diabetes": 1,
+    "hypertension": 1,
+    "dialysis": 0
+  }
+}
