@@ -1,0 +1,80 @@
+{
+  "documents": [
+    "## Abstract\nIntroduction: There is a wide variety of gastrointestinal clinical manifestations that may increase the deterioration of the quality of life in patients with chronic kidney disease (CKD), which are manageable if properly detected.\n\nObjective : The objective of this work is to perform an updated and analytical re-view of the literature on the manifestations in the digestive tract of patients with chronic deterioration of renal function.\n\nResults: The results indicate that some of the signs and symptoms on the gastrointestinal tract of patients with CKD are individual, and non-specific symptoms such as anorexia, nausea and vomiting predominate, which can be controlled with adequate renal replacement therapy; while others, rarer, such as ascites associated with dialysis, impoverish the prognosis and illustrate the need for transplantation.\n\nKey words: Gastrointestinal diseases, gastrointestinal tract, chronic renal failure, digestive signs and symptoms, symptom assessment, uremia.",
+    "## Gastrointestinal manifestations in renal transplantation\nAfter renal transplantation gastrointestinal manifestations are common (about 20% of the cases), generating morbidity in these patients. Some of the manifestations follow post-immunosuppressive therapy (especially mycophenolate mofetil and steroids), while others are directly related to pretransplant gastrointestinal morbidity, antibiotic use or infections. The most common clinical manifestations are nonspecific: nausea, vomiting and abdominal pain; however, esophageal infections by candida, herpes or cytomegalovirus, ulcerous peptic disease, diarrhea and perforation in the colon or digestive bleeding have also been described. Prior to the screening for helicobacteriosis, gastritis and peptic ulcer were present in 4% of patients. However, with conventional therapy there is adequate control over pathology. The most frequent cause of diarrhea in these patients is viral gastroenteritis, self-limiting in patients with immunodepression, especially with mycophenolate. Pseudomembranous colitis can occur in up to 50% of patients receiving antibiotics or other bacteria and parasites. In elderly transplanted patients and in those with polycystic kidney disease, the frequency of cecal ulcerations, diverticular disease, and vascular insufficiency is increased. Finally, the gastrointestinal tract is also a site of onset of post-transplant lymph proliferative disorders 49-50 .\n\nTable 2. Diseases with renal and gastrointestinal involvement\n\n| Location | Symptom |\n|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|\n| Diabetes | Stomatitis, gingivitis, mumps |\n| Multiple myeloma | Esophagitis, gastro-esophageal reflux, biliary reflux, gastritis, duodenitis, peptic ulcer, angiodysplasias and digestive bleeding. |\n| Hyperparathyroidism | Constipation, diverticular disease, ischemic colitis, uremic colitis, perforation of the colon, angiodysplasias and digestive bleeding |\n| Purpura Henoch-Schonlein | Hematuria, proteinuria, hypertension -from nausea, vomiting, abdominal pain, paralytic ileus to gastrointestinal hemorrhages-, intestinal ischemia and necrosis, intestinal invagina - tion, intestinal perforation. |\n| Diseases of vascular collagen | Scleroderma-vasculitis. |\n\nSource: own elaborationa.",
+    "## References\n1. Cano AE, Neil AK, Kang JY, Barnabas A, Eastwood JB, Nelson SR, Hartley I, Maxwell D. Gastroin -testinal symptoms in patients with end-stage renal disease undergoing treatment by hemodialysis or peritoneal dialysis. Am J Gastroenterol. 2007 Sep;102(9):1990-7.\n2. Hammer J, Oesterreicher C, Hammer K, Koch U, Traindl O, Kovarik J. Chronic gastrointestinal symptoms in hemodialysis patients. Wien Klin Wochenschr. 1998 Apr;110(8):287-91.\n3. Grant CJ, Harrison LE, Hoad CL, Marciani L, Gowland PA, McIntyre CW. Patients with CKD have abnormal upper gastro-intestinal tract digestive function: a study of uremic enteropathy. J Gastroente -rol Hepatol. 2016 May 25.\n4. Etemad B. Gastrointestinal complications of renal failure. Gastroenterol Clin North Am. 1998;27(4):875-92.\n5. 5 Almutary H, Douglas C, Bonner A. Multidimensional symptom clusters: an exploratory factor analy -sis in advanced chronic kidney disease. J Adv Nurs. 2016 Oct;72(10):2389-400.\n6. Chong VH, Tan J. Prevalence of gastrointestinal and psychosomatic symptoms among Asian patients"
+  ],
+  "metadatas": [
+    {
+      "source": "yacosta,+2-Gastrointestinal+++manifestations-1.pdf",
+      "chunk_id": 1,
+      "content_type": "evidence, treatment, monitoring",
+      "content_type_confidence": 0,
+      "word_count": 142,
+      "entity_count": 6,
+      "has_ckd": true,
+      "has_gfr": true,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": true,
+      "is_gold_standard": false,
+      "medical_entities": "CKD, chronic kidney disease, renal function, renal failure, dialysis, quality of life",
+      "year": "2017",
+      "organization": "Unknown",
+      "section": "Abstract",
+      "section_path": "Abstract",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "structural"
+    },
+    {
+      "source": "yacosta,+2-Gastrointestinal+++manifestations-1.pdf",
+      "chunk_id": 4,
+      "content_type": "reference, dietary, treatment, monitoring",
+      "content_type_confidence": 0,
+      "word_count": 284,
+      "entity_count": 2,
+      "has_ckd": true,
+      "has_gfr": false,
+      "has_diabetes": true,
+      "has_hypertension": true,
+      "has_dialysis": false,
+      "is_gold_standard": false,
+      "medical_entities": "proteinuria, screening",
+      "year": "2017",
+      "organization": "Unknown",
+      "section": "Gastrointestinal manifestations in renal transplantation",
+      "section_path": "Gastrointestinal manifestations in renal transplantation",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "structural"
+    },
+    {
+      "source": "yacosta,+2-Gastrointestinal+++manifestations-1.pdf",
+      "chunk_id": 5,
+      "content_type": "evidence, reference, treatment",
+      "content_type_confidence": 0,
+      "word_count": 152,
+      "entity_count": 7,
+      "has_ckd": true,
+      "has_gfr": false,
+      "has_diabetes": false,
+      "has_hypertension": false,
+      "has_dialysis": true,
+      "is_gold_standard": false,
+      "medical_entities": "CKD, chronic kidney disease, renal failure, end-stage renal disease, dialysis, hemodialysis, peritoneal dialysis",
+      "year": "2017",
+      "organization": "Unknown",
+      "section": "References",
+      "section_path": "References",
+      "header_level": 2,
+      "extraction_method": "docling_dynamic_ocr",
+      "chunking_method": "structural"
+    }
+  ],
+  "ids": [
+    "yacosta,+2_gastrointestinal+++manifestations_1_1",
+    "yacosta,+2_gastrointestinal+++manifestations_1_4",
+    "yacosta,+2_gastrointestinal+++manifestations_1_5"
+  ]
+}

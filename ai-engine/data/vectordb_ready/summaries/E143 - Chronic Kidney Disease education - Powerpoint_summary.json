@@ -1,0 +1,38 @@
+{
+  "total_documents": 30,
+  "source_file": "E143 - Chronic Kidney Disease education - Powerpoint_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\E143 - Chronic Kidney Disease education - Powerpoint_chunks.json",
+  "preparation_date": "2026-03-04T12:04:55.874042",
+  "avg_word_count": 92.0,
+  "content_types": {
+    "reference": 1,
+    "recommendation, reference, treatment": 1,
+    "recommendation, monitoring": 2,
+    "dietary, monitoring": 1,
+    "monitoring": 1,
+    "recommendation, evidence, monitoring": 2,
+    "evidence": 2,
+    "evidence, dietary, treatment": 1,
+    "recommendation, evidence, reference, dietary": 1,
+    "dietary, treatment": 1,
+    "general": 1,
+    "recommendation, treatment, monitoring": 3,
+    "evidence, reference, treatment": 1,
+    "treatment": 3,
+    "recommendation, reference, dietary": 1,
+    "recommendation": 2,
+    "recommendation, definition": 1,
+    "recommendation, definition, monitoring": 1,
+    "recommendation, treatment": 1,
+    "recommendation, dietary, treatment": 1,
+    "reference, treatment, monitoring": 1,
+    "reference, dietary, treatment": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 25,
+    "GFR": 18,
+    "diabetes": 8,
+    "hypertension": 13,
+    "dialysis": 2
+  }
+}

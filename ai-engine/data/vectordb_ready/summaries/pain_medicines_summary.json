@@ -1,0 +1,19 @@
+{
+  "total_documents": 5,
+  "source_file": "pain_medicines_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\pain_medicines_chunks.json",
+  "preparation_date": "2026-03-04T12:05:09.971045",
+  "avg_word_count": 139.8,
+  "content_types": {
+    "recommendation, treatment": 3,
+    "definition, reference, dietary, treatment": 1,
+    "recommendation, definition": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 4,
+    "GFR": 3,
+    "diabetes": 0,
+    "hypertension": 0,
+    "dialysis": 0
+  }
+}

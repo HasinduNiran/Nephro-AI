@@ -1,0 +1,21 @@
+{
+  "total_documents": 5,
+  "source_file": "iris-pocket-guide-2_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\iris-pocket-guide-2_chunks.json",
+  "preparation_date": "2026-03-04T12:05:07.251533",
+  "avg_word_count": 69.0,
+  "content_types": {
+    "recommendation, reference, dietary, monitoring": 1,
+    "evidence, dietary, treatment": 1,
+    "evidence, dietary": 1,
+    "evidence, dietary, treatment, monitoring": 1,
+    "recommendation, dietary, treatment": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 5,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 3,
+    "dialysis": 0
+  }
+}

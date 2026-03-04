@@ -1,0 +1,20 @@
+{
+  "total_documents": 4,
+  "source_file": "sachdeva-weder-2006-nocturnal-sodium-excretion-blood-pressure-dipping-and-sodium-sensitivity_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\sachdeva-weder-2006-nocturnal-sodium-excretion-blood-pressure-dipping-and-sodium-sensitivity_chunks.json",
+  "preparation_date": "2026-03-04T12:05:10.636939",
+  "avg_word_count": 67.0,
+  "content_types": {
+    "dietary": 1,
+    "recommendation, evidence, definition, reference, dietary, monitoring": 1,
+    "dietary, treatment": 1,
+    "reference, dietary": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 0,
+    "GFR": 0,
+    "diabetes": 0,
+    "hypertension": 1,
+    "dialysis": 0
+  }
+}

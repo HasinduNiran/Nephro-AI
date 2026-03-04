@@ -1,0 +1,32 @@
+{
+  "total_documents": 25,
+  "source_file": "441-9378_2305_patbro_dialysisandyou_t2_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\441-9378_2305_patbro_dialysisandyou_t2_chunks.json",
+  "preparation_date": "2026-03-04T12:04:49.616733",
+  "avg_word_count": 138.0,
+  "content_types": {
+    "reference, dietary": 1,
+    "definition, dietary": 1,
+    "dietary, treatment": 4,
+    "recommendation, dietary, treatment": 2,
+    "definition, treatment": 1,
+    "general": 1,
+    "recommendation": 2,
+    "recommendation, dietary": 3,
+    "treatment, monitoring": 1,
+    "reference, treatment": 1,
+    "recommendation, reference, dietary": 2,
+    "recommendation, reference, dietary, treatment": 1,
+    "recommendation, evidence, dietary, treatment": 1,
+    "treatment": 2,
+    "recommendation, treatment": 1,
+    "recommendation, reference, treatment": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 10,
+    "GFR": 3,
+    "diabetes": 1,
+    "hypertension": 5,
+    "dialysis": 21
+  }
+}

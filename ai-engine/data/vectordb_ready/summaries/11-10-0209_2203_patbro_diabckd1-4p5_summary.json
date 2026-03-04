@@ -1,0 +1,31 @@
+{
+  "total_documents": 18,
+  "source_file": "11-10-0209_2203_patbro_diabckd1-4p5_chunks.json",
+  "source_path": "E:\\Y4S1\\Final Year Research Project\\Nephro-AI\\ai-engine\\data\\processed\\11-10-0209_2203_patbro_diabckd1-4p5_chunks.json",
+  "preparation_date": "2026-03-04T12:04:49.133813",
+  "avg_word_count": 122.0,
+  "content_types": {
+    "reference": 1,
+    "dietary": 2,
+    "dietary, treatment": 1,
+    "reference, dietary, treatment": 1,
+    "recommendation, definition, dietary, treatment": 1,
+    "general": 2,
+    "recommendation, evidence, treatment, monitoring": 1,
+    "recommendation, dietary, treatment": 1,
+    "recommendation, evidence, dietary, treatment, monitoring": 1,
+    "recommendation, treatment": 2,
+    "recommendation, evidence, treatment": 1,
+    "recommendation, evidence, dietary": 1,
+    "dietary, monitoring": 1,
+    "reference, dietary, treatment, monitoring": 1,
+    "recommendation, reference, treatment": 1
+  },
+  "medical_entity_coverage": {
+    "CKD": 13,
+    "GFR": 7,
+    "diabetes": 13,
+    "hypertension": 7,
+    "dialysis": 2
+  }
+}
