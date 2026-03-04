@@ -284,7 +284,11 @@ const ChatbotScreen = ({ route, navigation }) => {
 
   // Server-side TTS playback (Gemini TTS for Sinhala, expo-speech for English)
   const playServerTTS = async (text, messageId) => {
-    // If something is currently playing, stop it
+    // Snapshot before any state mutations — needed for accurate toggle-off check
+    const wasPlayingId = currentlyPlayingId;
+
+    // Stop any currently playing audio (covers both English expo-speech and Sinhala expo-av)
+    Speech.stop();
     if (soundRef.current) {
       try {
         await soundRef.current.stopAsync();
@@ -296,8 +300,9 @@ const ChatbotScreen = ({ route, navigation }) => {
       setCurrentlyPlayingId(null);
     }
 
-    // If user tapped the same message that was playing, just stop (toggle off)
-    if (currentlyPlayingId === messageId) {
+    // If user tapped the same message that was playing, this is a Stop action — exit
+    if (wasPlayingId === messageId) {
+      setCurrentlyPlayingId(null);
       return;
     }
 
@@ -308,11 +313,14 @@ const ChatbotScreen = ({ route, navigation }) => {
 
     // For English, use local expo-speech (fast, good quality)
     if (!isSinhala) {
-      Speech.stop();
+      setCurrentlyPlayingId(messageId);
       Speech.speak(cleanText, {
         language: "en-US",
         pitch: 1.0,
         rate: 1.0,
+        onDone: () => setCurrentlyPlayingId(null),
+        onStopped: () => setCurrentlyPlayingId(null),
+        onError: () => setCurrentlyPlayingId(null),
       });
       return;
     }
@@ -356,7 +364,7 @@ const ChatbotScreen = ({ route, navigation }) => {
       // Strip the "data:audio/...;base64," prefix to get raw base64
       const base64Data = base64Audio.split(",")[1];
       await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-        encoding: "base64",
+        encoding: FileSystem.EncodingType.Base64,
       });
 
       // Play with expo-av
@@ -927,10 +935,16 @@ const ChatbotScreen = ({ route, navigation }) => {
                       <TouchableOpacity
                         style={[
                           styles.audioButton,
-                          currentlyPlayingId === item.id && {
-                            backgroundColor: COLORS.primary,
-                            borderColor: COLORS.primaryDark,
-                          },
+                          isTTSLoading &&
+                            currentlyPlayingId === item.id && {
+                              backgroundColor: COLORS.primary + "20",
+                              borderColor: COLORS.primary,
+                            },
+                          !isTTSLoading &&
+                            currentlyPlayingId === item.id && {
+                              backgroundColor: COLORS.danger + "20",
+                              borderColor: COLORS.danger,
+                            },
                         ]}
                         onPress={() => playServerTTS(item.text, item.id)}
                         activeOpacity={0.7}
@@ -941,19 +955,19 @@ const ChatbotScreen = ({ route, navigation }) => {
                         {isTTSLoading && currentlyPlayingId === item.id ? (
                           <ActivityIndicator
                             size="small"
-                            color={COLORS.white}
+                            color={COLORS.primary}
                           />
                         ) : (
                           <Ionicons
                             name={
                               currentlyPlayingId === item.id
-                                ? "stop"
+                                ? "stop-circle"
                                 : "volume-high"
                             }
                             size={24}
                             color={
                               currentlyPlayingId === item.id
-                                ? COLORS.white
+                                ? COLORS.danger
                                 : COLORS.primary
                             }
                           />
@@ -962,14 +976,16 @@ const ChatbotScreen = ({ route, navigation }) => {
                           style={[
                             styles.audioText,
                             currentlyPlayingId === item.id && {
-                              color: COLORS.white,
+                              color: isTTSLoading
+                                ? COLORS.primary
+                                : COLORS.danger,
                             },
                           ]}
                         >
                           {isTTSLoading && currentlyPlayingId === item.id
                             ? "Loading..."
                             : currentlyPlayingId === item.id
-                              ? "Stop"
+                              ? "Stop Speaking"
                               : "Read Aloud"}
                         </Text>
                       </TouchableOpacity>
@@ -1034,7 +1050,10 @@ const ChatbotScreen = ({ route, navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+    <SafeAreaView
+      style={styles.container}
+      edges={["top", "left", "right", "bottom"]}
+    >
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.card} />
 
       <KeyboardAvoidingView
@@ -1548,6 +1567,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     padding: 12,
+    paddingBottom: Platform.OS === "ios" ? 10 : 12,
     backgroundColor: COLORS.card,
     alignItems: "flex-end",
     borderTopWidth: 1,
