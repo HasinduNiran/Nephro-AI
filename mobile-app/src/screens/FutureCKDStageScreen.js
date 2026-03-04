@@ -20,6 +20,27 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useFocusEffect } from "@react-navigation/native";
 import axios, { API_URL } from "../api/axiosConfig";
 
+const normalizeGenderCode = (genderValue) => {
+  if (!genderValue) return "";
+  const normalized = String(genderValue).trim().toLowerCase();
+  if (normalized === "female" || normalized === "f") return "F";
+  if (normalized === "male" || normalized === "m") return "M";
+  return "";
+};
+
+const getCreatinineRangeByGender = (genderCode) => {
+  if (genderCode === "F") {
+    return { min: 0.1, max: 1.3, label: "0.1 - 1.3 mg/dL" };
+  }
+  return { min: 0.1, max: 1.6, label: "0.1 - 1.6 mg/dL" };
+};
+
+const getBunRiskCategory = (bunValue) => {
+  if (bunValue < 30) return "Normal";
+  if (bunValue <= 300) return "Early risk";
+  return "High risk";
+};
+
 const getTodayDateString = () => {
   const now = new Date();
   const yyyy = now.getFullYear();
@@ -96,9 +117,10 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
             setAge(calculatedAge.toString());
           }
 
-          // Set gender from user data (convert "Female"/"Male" to "F"/"M")
-          if (userData.gender) {
-            const genderCode = userData.gender === "Female" ? "F" : "M";
+          const routeGenderCode = normalizeGenderCode(route.params?.user?.gender);
+          const storedGenderCode = normalizeGenderCode(userData.gender);
+          const genderCode = storedGenderCode || routeGenderCode;
+          if (genderCode) {
             setGender(genderCode);
           }
         }
@@ -130,6 +152,11 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
+
+  const bunNumber = bun ? parseFloat(bun) : null;
+  const bunRiskCategory = bunNumber !== null && !Number.isNaN(bunNumber) && bunNumber >= 0
+    ? getBunRiskCategory(bunNumber)
+    : "";
 
   const formatDateTime = (isoString) => {
     try {
@@ -240,12 +267,52 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
 
     // Validate manual values if no lab report
     if (!hasLabReport && hasManualValues) {
-      if (!creatinine && !egfr) {
+      if (!egfr && !creatinine) {
         Alert.alert(
           "Insufficient Data",
-          "Please provide at least Creatinine or eGFR value for analysis."
+          "Creatinine is required when eGFR is not provided."
         );
         return;
+      }
+
+      const egfrValue = egfr ? parseFloat(egfr) : null;
+      if (egfr && (Number.isNaN(egfrValue) || egfrValue < 0)) {
+        Alert.alert(
+          "Validation Error",
+          "eGFR cannot be less than 0."
+        );
+        return;
+      }
+
+      const creatinineValue = creatinine ? parseFloat(creatinine) : null;
+      if (creatinine && Number.isNaN(creatinineValue)) {
+        Alert.alert(
+          "Validation Error",
+          "Please enter a valid Creatinine value."
+        );
+        return;
+      }
+
+      if (creatinineValue !== null) {
+        const creatinineRange = getCreatinineRangeByGender(gender);
+        if (creatinineValue < creatinineRange.min || creatinineValue > creatinineRange.max) {
+          Alert.alert(
+            "Validation Error",
+            `Creatinine for ${gender === "F" ? "female" : "male"} should be within ${creatinineRange.label}.`
+          );
+          return;
+        }
+      }
+
+      if (bun) {
+        const bunValue = parseFloat(bun);
+        if (Number.isNaN(bunValue) || bunValue < 0) {
+          Alert.alert(
+            "Validation Error",
+            "BUN cannot be less than 0."
+          );
+          return;
+        }
       }
       
       // Age and gender required for eGFR calculation
@@ -320,6 +387,7 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
       if (creatinine) formData.append("creatinine", creatinine);
       if (egfr) formData.append("egfr", egfr);
       if (bun) formData.append("bun", bun);
+      if (bunRiskCategory) formData.append("bunRiskCategory", bunRiskCategory);
       if (albumin) formData.append("albumin", albumin);
       if (hemoglobin) formData.append("hemoglobin", hemoglobin);
 
@@ -641,7 +709,7 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
               )}
               
               <Text style={styles.manualEntryHint}>
-                Use instead of or along with lab image
+                If eGFR is entered, Creatinine is optional. If eGFR is empty, Creatinine is required.
               </Text>
 
               {showManualEntry && (
@@ -658,6 +726,9 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                       placeholderTextColor="#8E8E93"
                       keyboardType="decimal-pad"
                     />
+                    <Text style={styles.validationHint}>
+                      {`Range (${gender === "F" ? "Female" : "Male"}): ${getCreatinineRangeByGender(gender || "M").label}`}
+                    </Text>
                   </View>
 
                   {/* eGFR */}
@@ -672,6 +743,7 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                       placeholderTextColor="#8E8E93"
                       keyboardType="decimal-pad"
                     />
+                    <Text style={styles.validationHint}>Must be 0 or greater</Text>
                   </View>
 
                   {/* BUN */}
@@ -686,6 +758,10 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                       placeholderTextColor="#8E8E93"
                       keyboardType="decimal-pad"
                     />
+                    <Text style={styles.validationHint}>Must be 0 or greater</Text>
+                    {bunRiskCategory ? (
+                      <Text style={styles.bunRiskText}>{`BUN Category: ${bunRiskCategory}`}</Text>
+                    ) : null}
                   </View>
 
                   {/* Albumin */}
@@ -1017,6 +1093,17 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#8E8E93",
     marginBottom: 4,
+  },
+  validationHint: {
+    fontSize: 11,
+    color: "#8E8E93",
+    marginTop: 4,
+  },
+  bunRiskText: {
+    fontSize: 11,
+    color: "#FF9500",
+    marginTop: 4,
+    fontWeight: "600",
   },
   textInput: {
     backgroundColor: "#F5F7FA",

@@ -164,6 +164,13 @@ const MyProgressPathScreen = ({ navigation, route }) => {
     const latest = ordered[ordered.length - 1] || {};
     const latestVisitLabel = `V${ordered.length + 1}`;
 
+    const nextVisitProgression =
+      latest?.progression_to_next_stage ||
+      latest?.prediction_with_us?.next_stage_progression ||
+      latest?.prediction_lab_only?.next_stage_progression ||
+      null;
+    const nextStageProbabilityText = toPercentText(nextVisitProgression);
+
     const nextStage = normalizeStageKey(
       latest?.progression_to_next_stage?.next_stage ||
         latest?.prediction_with_us?.next_stage_progression?.next_stage ||
@@ -173,7 +180,9 @@ const MyProgressPathScreen = ({ navigation, route }) => {
 
     return {
       points,
-      predicted: Number.isFinite(predictedEgfr) ? { xLabel: latestVisitLabel, y: predictedEgfr } : null,
+      predicted: Number.isFinite(predictedEgfr)
+        ? { xLabel: latestVisitLabel, y: predictedEgfr, probabilityText: nextStageProbabilityText }
+        : null,
       labels: points.map((p) => p.xLabel),
       latestActualEgfr: points[points.length - 1]?.y ?? null,
     };
@@ -216,6 +225,9 @@ const MyProgressPathScreen = ({ navigation, route }) => {
         toX: predX,
         toY: predY,
         label: predicted.xLabel,
+        probabilityText: predicted.probabilityText,
+        midX: (lastBlue.x + predX) / 2,
+        midY: (lastBlue.y + predY) / 2,
       };
     }
 
@@ -371,6 +383,17 @@ const MyProgressPathScreen = ({ navigation, route }) => {
                     strokeDasharray="6,6"
                   />
                   <Circle cx={chart.redSegment.toX} cy={chart.redSegment.toY} r="4" fill="#DC2626" />
+                  {chart.redSegment.probabilityText && chart.redSegment.probabilityText !== "N/A" ? (
+                    <SvgText
+                      x={chart.redSegment.midX + 4}
+                      y={chart.redSegment.midY - 6}
+                      fontSize="10"
+                      fill="#B91C1C"
+                      fontWeight="700"
+                    >
+                      {chart.redSegment.probabilityText}
+                    </SvgText>
+                  ) : null}
                 </>
               ) : null}
 

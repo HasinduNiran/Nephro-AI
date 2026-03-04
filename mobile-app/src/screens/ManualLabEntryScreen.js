@@ -15,6 +15,27 @@ import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import api from "../api/axiosConfig";
 
+const normalizeGenderCode = (genderValue) => {
+  if (!genderValue) return "";
+  const normalized = String(genderValue).trim().toLowerCase();
+  if (normalized === "female" || normalized === "f") return "F";
+  if (normalized === "male" || normalized === "m") return "M";
+  return "";
+};
+
+const getCreatinineRangeByGender = (genderCode) => {
+  if (genderCode === "F") {
+    return { min: 0.1, max: 1.3, label: "0.1 - 1.3 mg/dL" };
+  }
+  return { min: 0.1, max: 1.6, label: "0.1 - 1.6 mg/dL" };
+};
+
+const getBunRiskCategory = (bunValue) => {
+  if (bunValue < 30) return "Normal";
+  if (bunValue <= 300) return "Early risk";
+  return "High risk";
+};
+
 const ManualLabEntryScreen = ({ navigation, route }) => {
   const userName = route.params?.userName || "User";
   const userEmail = route.params?.userEmail || "";
@@ -22,7 +43,7 @@ const ManualLabEntryScreen = ({ navigation, route }) => {
   const [formData, setFormData] = useState({
     name: userName || userEmail || "",
     age: "",
-    gender: "M",
+    gender: "",
     creatinine: "",
     eGFR: "",
     bun: "",
@@ -59,8 +80,10 @@ const ManualLabEntryScreen = ({ navigation, route }) => {
           }
 
           // Set gender from user data (convert "Male"/"Female" to "M"/"F")
-          if (userData.gender) {
-            const genderCode = userData.gender === "Female" ? "F" : "M";
+          const routeGenderCode = normalizeGenderCode(route.params?.user?.gender);
+          const storedGenderCode = normalizeGenderCode(userData.gender);
+          const genderCode = storedGenderCode || routeGenderCode;
+          if (genderCode) {
             setFormData(prev => ({
               ...prev,
               gender: genderCode,
@@ -79,6 +102,11 @@ const ManualLabEntryScreen = ({ navigation, route }) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const bunNumber = formData.bun ? parseFloat(formData.bun) : null;
+  const bunRiskCategory = bunNumber !== null && !Number.isNaN(bunNumber) && bunNumber >= 0
+    ? getBunRiskCategory(bunNumber)
+    : "";
+
   const handleSubmit = async () => {
     // Validation
     if (!formData.name.trim()) {
@@ -91,9 +119,45 @@ const ManualLabEntryScreen = ({ navigation, route }) => {
       return;
     }
 
-    if (!formData.creatinine && !formData.eGFR) {
-      Alert.alert("Validation Error", "Please enter either Creatinine or eGFR value");
+    if (!formData.gender) {
+      Alert.alert("Validation Error", "Gender is missing in profile. Please update your account profile.");
       return;
+    }
+
+    if (!formData.eGFR && !formData.creatinine) {
+      Alert.alert("Validation Error", "Creatinine is required when eGFR is not provided.");
+      return;
+    }
+
+    const eGFRValue = formData.eGFR ? parseFloat(formData.eGFR) : null;
+    if (formData.eGFR && (Number.isNaN(eGFRValue) || eGFRValue < 0)) {
+      Alert.alert("Validation Error", "eGFR cannot be less than 0.");
+      return;
+    }
+
+    const creatinineValue = formData.creatinine ? parseFloat(formData.creatinine) : null;
+    if (formData.creatinine && Number.isNaN(creatinineValue)) {
+      Alert.alert("Validation Error", "Please enter a valid Creatinine value.");
+      return;
+    }
+
+    if (creatinineValue !== null) {
+      const creatinineRange = getCreatinineRangeByGender(formData.gender);
+      if (creatinineValue < creatinineRange.min || creatinineValue > creatinineRange.max) {
+        Alert.alert(
+          "Validation Error",
+          `Creatinine for ${formData.gender === "F" ? "female" : "male"} should be within ${creatinineRange.label}.`
+        );
+        return;
+      }
+    }
+
+    if (formData.bun) {
+      const bunValue = parseFloat(formData.bun);
+      if (Number.isNaN(bunValue) || bunValue < 0) {
+        Alert.alert("Validation Error", "BUN cannot be less than 0.");
+        return;
+      }
     }
 
     setLoading(true);
@@ -128,6 +192,7 @@ const ManualLabEntryScreen = ({ navigation, route }) => {
         creatinine: formData.creatinine ? parseFloat(formData.creatinine) : undefined,
         eGFR: finalEGFR,
         bun: formData.bun ? parseFloat(formData.bun) : undefined,
+        bunRiskCategory: bunRiskCategory || undefined,
         albumin: formData.albumin ? parseFloat(formData.albumin) : undefined,
       };
 
@@ -188,16 +253,21 @@ const ManualLabEntryScreen = ({ navigation, route }) => {
         <View style={styles.row}>
           <View style={styles.halfInputGroup}>
             <Text style={styles.label}>Age *</Text>
-            <View style={styles.readOnlyInput}>
-              <Text style={styles.readOnlyText}>{formData.age} years</Text>
-            </View>
+            <TextInput
+              style={styles.input}
+              value={formData.age}
+              onChangeText={(value) => updateField("age", value)}
+              placeholder="Enter age"
+              placeholderTextColor="#C7C7CC"
+              keyboardType="number-pad"
+            />
           </View>
 
           <View style={styles.halfInputGroup}>
             <Text style={styles.label}>Gender *</Text>
             <View style={styles.readOnlyInput}>
               <Text style={styles.readOnlyText}>
-                {formData.gender === "F" ? "Female" : "Male"}
+                {formData.gender === "F" ? "Female" : formData.gender === "M" ? "Male" : "Not set"}
               </Text>
             </View>
           </View>
@@ -205,7 +275,8 @@ const ManualLabEntryScreen = ({ navigation, route }) => {
 
         <Text style={styles.sectionTitle}>Lab Values</Text>
         <Text style={styles.hint}>
-          * Enter either Creatinine or eGFR
+          * If eGFR is entered, Creatinine is optional{"\n"}
+          * If eGFR is empty, Creatinine is required
         </Text>
 
         {/* Creatinine and eGFR Row */}
@@ -221,6 +292,9 @@ const ManualLabEntryScreen = ({ navigation, route }) => {
               keyboardType="decimal-pad"
             />
             <Text style={styles.unit}>mg/dL</Text>
+            <Text style={styles.validationHint}>
+              {`Range (${formData.gender === "F" ? "Female" : formData.gender === "M" ? "Male" : "Male"}): ${getCreatinineRangeByGender(formData.gender || "M").label}`}
+            </Text>
           </View>
 
           <View style={styles.halfInputGroup}>
@@ -234,6 +308,7 @@ const ManualLabEntryScreen = ({ navigation, route }) => {
               keyboardType="decimal-pad"
             />
             <Text style={styles.unit}>mL/min/1.73m²</Text>
+            <Text style={styles.validationHint}>Must be 0 or greater</Text>
           </View>
         </View>
 
@@ -250,6 +325,10 @@ const ManualLabEntryScreen = ({ navigation, route }) => {
               keyboardType="decimal-pad"
             />
             <Text style={styles.unit}>mg/dL</Text>
+            <Text style={styles.validationHint}>Must be 0 or greater</Text>
+            {/* {bunRiskCategory ? (
+              <Text style={styles.bunRiskText}>{`BUN Category: ${bunRiskCategory}`}</Text>
+            ) : null} */}
           </View>
 
           <View style={styles.halfInputGroup}>
@@ -397,6 +476,17 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#8E8E93",
     marginTop: 4,
+  },
+  validationHint: {
+    fontSize: 11,
+    color: "#8E8E93",
+    marginTop: 3,
+  },
+  bunRiskText: {
+    fontSize: 11,
+    color: "#FF9500",
+    marginTop: 3,
+    fontWeight: "600",
   },
   pickerContainer: {
     backgroundColor: "#FFFFFF",
