@@ -325,7 +325,9 @@ const ChatbotScreen = ({ route, navigation }) => {
   };
 
   // Server-side TTS playback (Gemini TTS for Sinhala, expo-speech for English)
-  const playServerTTS = async (text, messageId) => {
+  // urgencyFlags: array of {flag, term, ...} from the message — used to trigger
+  // the pre-cached emergency phrase as the very first audio segment.
+  const playServerTTS = async (text, messageId, urgencyFlags = []) => {
     // ── TOGGLE-OFF: user tapped the button that is already playing/loading ──
     // Check this FIRST before any async work so we can abort fetches mid-flight.
     if (currentlyPlayingId === messageId) {
@@ -398,7 +400,7 @@ const ChatbotScreen = ({ route, navigation }) => {
         const streamResponse = await fetch(`${BACKEND_URL}/chat/tts/stream`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text }),
+          body: JSON.stringify({ text, urgency_flags: urgencyFlags }),
           signal: abortController.signal,
         });
         if (fetchAbortRef.current === abortController)
@@ -1094,7 +1096,13 @@ const ChatbotScreen = ({ route, navigation }) => {
                               borderColor: COLORS.danger,
                             },
                         ]}
-                        onPress={() => playServerTTS(item.text, item.id)}
+                        onPress={() =>
+                          playServerTTS(
+                            item.text,
+                            item.id,
+                            item.urgencyFlags || [],
+                          )
+                        }
                         activeOpacity={0.7}
                         disabled={
                           isTTSLoading && currentlyPlayingId !== item.id
