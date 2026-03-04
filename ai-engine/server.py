@@ -43,6 +43,7 @@ class ChatRequest(BaseModel):
 
 class TTSRequest(BaseModel):
     text: str
+    urgency_flags: list = []  # list of {flag, term, ...} dicts from NLG engine
 
 app.add_middleware(
     CORSMiddleware,
@@ -85,6 +86,14 @@ except Exception as e:
 
 Path("temp_inputs").mkdir(exist_ok=True)
 Path("tts_cache").mkdir(exist_ok=True)
+
+# --- PRE-GENERATION CACHE for emergency phrases (populated once at startup) ---
+EMERGENCY_PHRASES = {
+    # Sinhala: "Go to a hospital right now! This is a medical emergency."
+    "si": "\u0dafැන් රෝහලයට යන්න! මෙය හදිසි වැද්\u200dය අවස්අාවකි.",
+    "en": "This sounds urgent. Please go to a hospital immediately.",
+}
+PREGEN_CACHE: dict = {}  # {"si": Path(...), "en": Path(...)}
 
 # -----------------------------------------------------------------------------
 # HELPERS
@@ -279,6 +288,35 @@ def _generate_gemini_tts_bytes(text: str):
         return None
 
 
+async def _pregen_emergency_audio():
+    """
+    Called once at startup. Pre-generates WAV/MP3 files for each emergency
+    phrase so CRITICAL_URGENCY responses hit the local disk instead of waiting
+    for a Gemini API call.
+    """
+    global PREGEN_CACHE
+    for lang, phrase in EMERGENCY_PHRASES.items():
+        try:
+            path = await generate_tts_file(phrase)
+            if path.exists() and path.stat().st_size > 0:
+                PREGEN_CACHE[lang] = path
+                print(f"   \u2705 Emergency audio ready [{lang}]: {path.name} ({path.stat().st_size:,} bytes)")
+            else:
+                print(f"   \u26a0\ufe0f  Emergency pre-gen returned empty file [{lang}]")
+        except Exception as e:
+            print(f"   \u26a0\ufe0f  Emergency pre-gen failed [{lang}]: {e}")
+
+
+@app.on_event("startup")
+async def startup_event():
+    Log.step("\U0001f6a8", "Pre-generating emergency audio phrases...")
+    await _pregen_emergency_audio()
+    if PREGEN_CACHE:
+        Log.success(f"Emergency audio cache ready ({len(PREGEN_CACHE)} phrase(s) cached)")
+    else:
+        Log.warning("Emergency audio pre-gen skipped — will generate on first hit")
+
+
 # -----------------------------------------------------------------------------
 # ENDPOINTS
 # -----------------------------------------------------------------------------
@@ -384,20 +422,35 @@ async def text_to_speech_stream(request: TTSRequest):
         *[generate_sentence_bytes(i, s) for i, s in enumerate(sentences)]
     )
 
-    # Pack as length-framed binary: <uint32 len><mp3 bytes> per segment
+    # Pack as length-framed binary: <uint32 len><wav/mp3 bytes> per segment
     output = io.BytesIO()
     valid = 0
-    for mp3_bytes in results:
-        if mp3_bytes:
-            output.write(struct.pack(">I", len(mp3_bytes)))
-            output.write(mp3_bytes)
+
+    # 🚨 CRITICAL_URGENCY fast-path: prepend pre-cached emergency phrase (0ms disk read)
+    flag_types = [f.get("flag") for f in request.urgency_flags]
+    if "CRITICAL_URGENCY" in flag_types:
+        pregen_key = "si" if is_sinhala else "en"
+        pregen_path = PREGEN_CACHE.get(pregen_key)
+        if pregen_path and pregen_path.exists():
+            emergency_bytes = pregen_path.read_bytes()
+            output.write(struct.pack(">I", len(emergency_bytes)))
+            output.write(emergency_bytes)
+            valid += 1
+            print(f"   \U0001f6a8 CRITICAL_URGENCY: prepended emergency phrase ({len(emergency_bytes):,} bytes, 0ms)")
+        else:
+            print("   \u26a0\ufe0f  CRITICAL_URGENCY: pre-cache miss \u2014 emergency phrase not available")
+
+    for wav_bytes in results:
+        if wav_bytes:
+            output.write(struct.pack(">I", len(wav_bytes)))
+            output.write(wav_bytes)
             valid += 1
 
     data = output.getvalue()
     if not data:
         raise HTTPException(status_code=500, detail="All TTS segments failed")
 
-    print(f"   \u2705 Returning {valid}/{len(sentences)} segments — {len(data):,} bytes total")
+    print(f"   \u2705 Returning {valid} segment(s) \u2014 {len(data):,} bytes total")
     return Response(
         content=data,
         media_type="application/octet-stream",
@@ -464,7 +517,8 @@ async def text_chat(request: ChatRequest):
     return {
         "response": result["response"],
         "sources": result.get("source_metadata", []),
-        "nlu_analysis": result.get("nlu_analysis", {})
+        "nlu_analysis": result.get("nlu_analysis", {}),
+        "urgency_flags": result.get("urgency_flags", []),
     }
 
 @app.post("/chat/audio")
