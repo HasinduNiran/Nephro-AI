@@ -451,8 +451,14 @@ const ChatbotScreen = ({ route, navigation }) => {
       const tempFiles = [];
       for (let i = 0; i < segments.length; i++) {
         const segBase64 = Buffer.from(segments[i]).toString("base64");
+
+        // Use .wav for Gemini (Sinhala) — zero-transcoding WAV delivery
+        // Use .mp3 for Edge-TTS (English) — already MP3 from edge_tts
+        const fileExtension = isSinhala ? "wav" : "mp3";
         const segUri =
-          FileSystem.cacheDirectory + `tts_${messageId}_seg${i}.mp3`;
+          FileSystem.cacheDirectory +
+          `tts_${messageId}_seg${i}.${fileExtension}`;
+
         await FileSystem.writeAsStringAsync(segUri, segBase64, {
           encoding: "base64",
         });
