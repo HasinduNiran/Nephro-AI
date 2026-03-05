@@ -69,14 +69,34 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
   // Re-assign visit numbers by date after a deletion and return newest-first
   const resequenceByDisplayOrder = (items) => {
     if (!items?.length) return [];
-    // Sort ascending (oldest first) to assign chronological visit numbers
-    const sorted = [...items].sort((a, b) => {
+    const hasAnySubmissionIndex = items.some((item) => Number.isFinite(Number(item?.submissionIndex)));
+
+    // Prefer backend-assigned visit index ordering when available
+    if (hasAnySubmissionIndex) {
+      const sortedByVisit = [...items].sort((a, b) => {
+        const va = Number(a?.submissionIndex ?? -1);
+        const vb = Number(b?.submissionIndex ?? -1);
+        if (va !== vb) return vb - va; // newest visit first
+        const da = new Date(a.visitDate || a.inputs?.visitDate || a.createdAt || 0);
+        const db = new Date(b.visitDate || b.inputs?.visitDate || b.createdAt || 0);
+        return db - da;
+      });
+
+      return sortedByVisit.map((item) => ({
+        ...item,
+        _visitNumber: Number.isFinite(Number(item?.submissionIndex))
+          ? Number(item.submissionIndex)
+          : item._visitNumber,
+      }));
+    }
+
+    // Fallback when submissionIndex is missing
+    const sortedByDateAsc = [...items].sort((a, b) => {
       const da = new Date(a.visitDate || a.inputs?.visitDate || a.createdAt || 0);
       const db = new Date(b.visitDate || b.inputs?.visitDate || b.createdAt || 0);
       return da - db;
     });
-    const numbered = sorted.map((item, index) => ({ ...item, _visitNumber: index + 1 }));
-    // Return newest first for display
+    const numbered = sortedByDateAsc.map((item, index) => ({ ...item, _visitNumber: index + 1 }));
     return [...numbered].reverse();
   };
 
@@ -93,16 +113,7 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
       const response = await axios.get(`/stage-progression/history/${encodeURIComponent(effectiveEmail)}`);
       if (response.data?.success) {
         const raw = response.data.records || [];
-        // Sort ascending by date so oldest record = Visit #1
-        const sorted = [...raw].sort((a, b) => {
-          const da = new Date(a.visitDate || a.inputs?.visitDate || a.createdAt || 0);
-          const db = new Date(b.visitDate || b.inputs?.visitDate || b.createdAt || 0);
-          return da - db;
-        });
-        // Stamp each record with its chronological visit number
-        const numbered = sorted.map((item, index) => ({ ...item, _visitNumber: index + 1 }));
-        // Display newest first (highest visit number at top)
-        setRecords([...numbered].reverse());
+        setRecords(resequenceByDisplayOrder(raw));
       } else {
         setRecords([]);
         setError("Failed to load history");
@@ -240,6 +251,10 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
     const confidenceUS = record.prediction_with_us?.confidence;
     const confidenceLab = record.prediction_lab_only?.confidence;
     const egfrValue = record.eGFR_info?.value;
+    const hasCurrentVisitUltrasound = !!record.inputs?.uploaded?.ultrasound;
+    const kidneyLength = hasCurrentVisitUltrasound
+      ? (record.ultrasound_info?.kidney_length_cm ?? null)
+      : null;
     const progression = record.progression_to_next_stage || record.prediction_with_us?.next_stage_progression || record.prediction_lab_only?.next_stage_progression;
     const progression6Month =
       record.progression_to_next_stage_6_month ||
@@ -259,6 +274,23 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
     const age = record.inputs?.age;
     const gender = record.inputs?.gender;
     const isExpanded = expandedId === recordId;
+    const context = record.prediction_context || {};
+    const visitNumbersUsed = Array.isArray(context.visit_numbers_used)
+      ? context.visit_numbers_used
+      : [];
+    const visitWindowText = visitNumbersUsed.length
+      ? visitNumbersUsed.map((v) => `Visit ${v}`).join(" + ")
+      : null;
+    const anyDeclinePercent = (() => {
+      if (typeof progression?.any_decline_percentage === "string") {
+        const num = parseFloat(String(progression.any_decline_percentage).replace("%", ""));
+        return Number.isNaN(num) ? null : `${num.toFixed(1)}%`;
+      }
+      if (typeof progression?.any_decline_probability === "number") {
+        return `${(progression.any_decline_probability * 100).toFixed(1)}%`;
+      }
+      return null;
+    })();
     // Use the chronologically-assigned visit number (oldest = 1)
     const visitNumber = record._visitNumber ?? idx + 1;
 
@@ -284,6 +316,15 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
                   .filter(Boolean)
                   .join(" | ")}
               </Text>
+            ) : null}
+            {kidneyLength ? (
+              <Text style={styles.cardMeta}>{`Kidney Length: ${Number(kidneyLength).toFixed(2)} cm`}</Text>
+            ) : null}
+            {visitWindowText ? (
+              <Text style={styles.cardMeta}>{`Trend window: ${visitWindowText}`}</Text>
+            ) : null}
+            {anyDeclinePercent ? (
+              <Text style={styles.cardMeta}>{`Any decline risk: ${anyDeclinePercent}`}</Text>
             ) : null}
             {progression?.next_stage ? (
               <Text style={[styles.cardMeta, styles.progressionHighlight]}>
@@ -338,6 +379,7 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
               {/* {displayConfidence !== undefined && displayConfidence !== null ? (
                 <Text style={styles.detailMeta}>{(displayConfidence * 100).toFixed(1)}%</Text>
               ) : null} */}
+              
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>eGFR</Text>
@@ -358,12 +400,21 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
                   <Text style={styles.labValue}>{lab.value ? `${lab.value} ${lab.unit}` : "-"}</Text>
                 </View>
               ))}
+              
             </View>
 
             <View style={styles.metaRow}>
-              {record.inputs?.age ? <Text style={styles.metaText}>Age: {record.inputs.age}</Text> : null}
-              {record.inputs?.gender ? <Text style={styles.metaText}>Gender: {record.inputs.gender}</Text> : null}
-            </View>
+  {record.inputs?.age ? (
+    <Text style={styles.metaText}>Age: {record.inputs.age}</Text>
+  ) : null}
+
+  {record.inputs?.gender ? (
+    <Text style={styles.metaText}>Gender: {record.inputs.gender}</Text>
+  ) : null}
+</View>
+
+{/* Kidney Length */}
+
 
             <Text style={[styles.sectionLabel, { marginTop: 12 }]}>Progression by stage</Text>
             {progressionByStage.length ? (
