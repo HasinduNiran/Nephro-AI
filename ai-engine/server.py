@@ -110,7 +110,8 @@ def cleanup_file(path: str):
 def split_into_sentences(text: str) -> list:
     """
     Split text into TTS-sized chunks at sentence boundaries.
-    Merges fragments shorter than 15 chars into the preceding sentence.
+    Groups 2-3 sentences into ~80-char chunks to reduce API calls
+    and avoid Gemini free-tier rate limits (429 RESOURCE_EXHAUSTED).
     """
     # Split at sentence-ending punctuation (Sinhala \u0964 = danda, English . ! ?)
     parts = re.split(r'(?<=[.!?\u0964\n])\s+', text.strip())
@@ -121,7 +122,7 @@ def split_into_sentences(text: str) -> list:
         if not part:
             continue
         buffer = (buffer + " " + part).strip() if buffer else part
-        if len(buffer) >= 15:  # minimum viable TTS chunk
+        if len(buffer) >= 80:  # INCREASED FROM 15 TO 80: Group sentences to save API Quota!
             merged.append(buffer)
             buffer = ""
     if buffer:
