@@ -759,7 +759,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
             <Text style={styles.sectionTitle}>1. Use the Standard 3-Compartment Plate</Text>
             <View style={[styles.guideRow, {flexDirection: 'column', alignItems: 'center'}]}>
               <Image 
-                source={require('../../assets/plate_overlay_transparent.png')} 
+                source={require('../../assets/plate_overlay_camera.png')} 
                 style={{width: 120, height: 120, resizeMode: 'contain', marginBottom: 8}} 
               />
               <Text style={styles.guideDesc}>
