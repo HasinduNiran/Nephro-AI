@@ -32,6 +32,8 @@ import cv2
 import numpy as np
 import json
 import os
+import io
+from PIL import Image as PILImage, ImageOps
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -157,6 +159,37 @@ def standardize_image(cv_img):
                             interpolation=cv2.INTER_AREA)
     return cv_img
 
+
+def standardize_incoming_image(image_bytes):
+    """
+    EXIF Failsafe + Resize — run on every image received from the mobile app.
+
+    Some Android / iOS cameras embed an EXIF orientation tag that tells viewers
+    to rotate the image.  OpenCV / YOLO ignore this tag and see the raw (rotated)
+    pixels, which breaks compartment mapping.  ImageOps.exif_transpose() bakes
+    the rotation into the pixel data so the image is always physically upright.
+
+    Steps:
+      1. Open with PIL and physically rotate to match EXIF orientation tag.
+      2. Convert PIL RGB → OpenCV BGR.
+      3. Force calibration resolution (1524×1557) for hardware independence.
+
+    Args:
+        image_bytes: raw bytes from the multipart upload
+    Returns:
+        BGR numpy array at STANDARD_W × STANDARD_H
+    """
+    # 1. Strip hidden EXIF rotation
+    pil_img = PILImage.open(io.BytesIO(image_bytes))
+    pil_img = ImageOps.exif_transpose(pil_img)
+
+    # 2. PIL RGB → OpenCV BGR
+    cv_img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+
+    # 3. Force to calibration resolution
+    cv_img = cv2.resize(cv_img, (STANDARD_W, STANDARD_H),
+                        interpolation=cv2.INTER_AREA)
+    return cv_img
 
 def create_food_mask(cv_img, x1, y1, x2, y2):
     """

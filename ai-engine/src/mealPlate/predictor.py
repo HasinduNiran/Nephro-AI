@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 from ultralytics import YOLO
-from PIL import Image
+from PIL import Image as PILImage
 import io
 
 # ---------------------------------------------------------
@@ -34,6 +34,7 @@ except Exception as e:
 try:
     from .portion_estimator import (
         standardize_image,
+        standardize_incoming_image,
         create_food_mask,
         estimate_portion,
         estimate_all_portions,
@@ -59,7 +60,7 @@ def predict_image_yolo(image_bytes):
         return []
         
     try:
-        img = Image.open(io.BytesIO(image_bytes))
+        img = PILImage.open(io.BytesIO(image_bytes))
         results = model.predict(img, conf=0.25)
         
         detected_foods = set()
@@ -97,9 +98,9 @@ def predict_image_with_portions(image_bytes):
         return []
     
     try:
-        # 1. Convert bytes to PIL and OpenCV images
-        pil_img = Image.open(io.BytesIO(image_bytes))
-        cv_img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+        # 1. EXIF failsafe + force to 1524×1557 calibration resolution
+        cv_img = standardize_incoming_image(image_bytes)
+        pil_img = PILImage.fromarray(cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB))
         
         # 2. Run YOLO detection
         results = model.predict(pil_img, conf=0.25)
