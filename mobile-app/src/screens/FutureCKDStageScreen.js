@@ -134,13 +134,17 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
   
   const [ultrasoundImage, setUltrasoundImage] = useState(null);
   const [labReportImage, setLabReportImage] = useState(null);
+  const [scanResult, setScanResult] = useState(null);
+  const [scanLoading, setScanLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [age, setAge] = useState("");
   const [visitDate, setVisitDate] = useState(getTodayDateString());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [gender, setGender] = useState(""); // "M" or "F"
   const [showGenderPicker, setShowGenderPicker] = useState(false);
-  
+  const [manualResult, setManualResult] = useState(null);
+  const [labResult, setLabResult] = useState(null);
+  const [labAnalyzing, setLabAnalyzing] = useState(false);
   // Manual lab entry fields
   const [creatinine, setCreatinine] = useState("");
   const [egfr, setEgfr] = useState("");
@@ -157,6 +161,160 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
   const bunRiskCategory = bunNumber !== null && !Number.isNaN(bunNumber) && bunNumber >= 0
     ? getBunRiskCategory(bunNumber)
     : "";
+  const hasManualInput = !!(creatinine || egfr || bun || albumin || hemoglobin);
+  const hasLabInputForPreview = !!(labReportImage || creatinine || egfr || bun || albumin || hemoglobin);
+
+  const getLabStageColor = (stage) => {
+    const text = String(stage || "");
+    if (!text) return "#8E8E93";
+    if (text.includes("1") || text.includes("2")) return "#50E3C2";
+    if (text.includes("3")) return "#FFB946";
+    if (text.includes("4") || text.includes("5")) return "#FF6B6B";
+    return "#8E8E93";
+  };
+
+  const getLabStageIcon = (stage) => {
+    const text = String(stage || "");
+    if (!text) return "help-circle";
+    if (text.includes("1") || text.includes("2")) return "checkmark-circle";
+    if (text.includes("3")) return "warning";
+    if (text.includes("4") || text.includes("5")) return "alert-circle";
+    return "help-circle";
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Normal":
+        return "#50E3C2";
+      case "Early risk":
+        return "#FFB946";
+      case "High":
+      case "High risk":
+        return "#FF6B6B";
+      case "Low":
+        return "#FFB946";
+      default:
+        return "#8E8E93";
+    }
+  };
+
+  const clearLabPreview = () => {
+    setLabResult(null);
+    setLabReportImage(null);
+    setCreatinine("");
+    setEgfr("");
+    setBun("");
+    setAlbumin("");
+    setHemoglobin("");
+    setShowManualEntry(false);
+  };
+
+  const confirmClearLabPreview = () => {
+    Alert.alert(
+      "Delete lab result?",
+      "This will remove the lab result from this page and prevent it from being used for Future CKD probability until you analyze again.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: clearLabPreview },
+      ]
+    );
+  };
+
+  const confirmClearUltrasoundPreview = () => {
+    Alert.alert(
+      "Delete ultrasound result?",
+      "This will remove the ultrasound result from this page and prevent it from being used for Future CKD probability until you analyze again.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            setScanResult(null);
+            setUltrasoundImage(null);
+          },
+        },
+      ]
+    );
+  };
+
+  const analyzeLabInPage = async () => {
+    if (!hasLabInputForPreview) {
+      Alert.alert("No Lab Input", "Upload a lab report or enter manual lab values first.");
+      return;
+    }
+
+    if (!egfr && !creatinine && !labReportImage) {
+      Alert.alert("Validation Error", "Creatinine is required when eGFR is not provided.");
+      return;
+    }
+
+    setLabAnalyzing(true);
+    try {
+      let parsedLabData = null;
+
+      if (labReportImage) {
+        const formData = new FormData();
+        const fileUri = labReportImage.uri;
+        const fileName = fileUri.split("/").pop() || "lab-report.jpg";
+        const fileType = fileName.endsWith(".png") ? "image/png" : "image/jpeg";
+
+        if (Platform.OS === "web") {
+          const fileResponse = await fetch(fileUri);
+          const blob = await fileResponse.blob();
+          const file = new File([blob], fileName, { type: fileType });
+          formData.append("reportImage", file, fileName);
+        } else {
+          formData.append("reportImage", {
+            uri: fileUri,
+            type: fileType,
+            name: fileName,
+          });
+        }
+
+        formData.append("name", userName || userEmail || "Unknown");
+        if (userEmail) formData.append("userEmail", userEmail);
+        if (age) formData.append("age", age);
+        if (gender) formData.append("gender", gender);
+
+        const uploadResponse = await fetch(`${API_URL}/lab/upload`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error(`Lab upload failed (${uploadResponse.status})`);
+        }
+
+        const responseData = await uploadResponse.json();
+        parsedLabData = responseData?.data || responseData?.labTest || responseData;
+      } else {
+        const payload = {
+          name: userName || userEmail || "Unknown",
+          age: age ? parseInt(age, 10) : undefined,
+          gender: gender || undefined,
+          creatinine: creatinine ? parseFloat(creatinine) : undefined,
+          eGFR: egfr ? parseFloat(egfr) : undefined,
+          bun: bun ? parseFloat(bun) : undefined,
+          bunRiskCategory: bunRiskCategory || undefined,
+          albumin: albumin ? parseFloat(albumin) : undefined,
+        };
+        const response = await axios.post("/lab", payload);
+        parsedLabData = response?.data?.data || response?.data?.labTest || response?.data;
+      }
+
+      if (!parsedLabData) {
+        throw new Error("Lab analysis returned empty data");
+      }
+      setLabResult(parsedLabData);
+      setManualResult(parsedLabData);
+    } catch (error) {
+      console.error("Lab analysis error:", error);
+      Alert.alert("Error", error.message || "Failed to analyze lab data");
+    } finally {
+      setLabAnalyzing(false);
+    }
+  };
 
   const formatDateTime = (isoString) => {
     try {
@@ -239,9 +397,11 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         if (type === "ultrasound") {
+          setScanResult(null);
           setUltrasoundImage(result.assets[0]);
           console.log("Ultrasound image selected:", result.assets[0].uri);
         } else {
+          setShowManualEntry(false);
           setLabReportImage(result.assets[0]);
           console.log("Lab report image selected:", result.assets[0].uri);
         }
@@ -251,12 +411,65 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
       Alert.alert("Error", "Failed to pick image");
     }
   };
+const analyzeUltrasound = async () => {
+  if (!ultrasoundImage) {
+    Alert.alert("No Image", "Please upload an ultrasound image first");
+    return;
+  }
 
+  try {
+    setScanLoading(true);
+
+    const formData = new FormData();
+    const fileUri = ultrasoundImage.uri;
+    const fileName = fileUri.split("/").pop() || "ultrasound.jpg";
+
+    let fileType = "image/jpeg";
+    if (fileName.endsWith(".png")) fileType = "image/png";
+
+    if (Platform.OS === "web") {
+      const response = await fetch(fileUri);
+      const blob = await response.blob();
+      const file = new File([blob], fileName, { type: fileType });
+      formData.append("ultrasound", file);
+    } else {
+      formData.append("ultrasound", {
+        uri: fileUri,
+        type: fileType,
+        name: fileName,
+      });
+    }
+
+    formData.append("name", userName || userEmail || "Unknown");
+
+    const uploadResponse = await fetch(`${API_URL}/upload-ultrasound`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error("Ultrasound analysis failed");
+    }
+
+    const data = await uploadResponse.json();
+
+    if (data.success) {
+      setScanResult(data);
+    } else {
+      throw new Error(data.message || "Analysis failed");
+    }
+
+  } catch (error) {
+    console.error(error);
+    Alert.alert("Error", error.message);
+  } finally {
+    setScanLoading(false);
+  }
+};
   const analyzeData = async () => {
     // Check if we have either lab report image OR manual values
     const hasLabReport = !!labReportImage;
     const hasManualValues = !!(creatinine || egfr);
-    
     if (!hasLabReport && !hasManualValues) {
       Alert.alert(
         "Lab Data Required",
@@ -330,7 +543,7 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
     try {
       const formData = new FormData();
       
-      // Add lab report if provided (optional now)
+      // Add lab report if provided
       if (labReportImage) {
         const labFileUri = labReportImage.uri;
         const labFileName = labFileUri.split("/").pop() || "lab-report.jpg";
@@ -353,7 +566,7 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
         }
       }
 
-      // Add ultrasound if provided (optional)
+      // Add ultrasound if provided
       if (ultrasoundImage) {
         const usFileUri = ultrasoundImage.uri;
         const usFileName = usFileUri.split("/").pop() || "ultrasound.jpg";
@@ -531,59 +744,18 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
           * Ultrasound is optional (enhances prediction accuracy){"\n"}
           * Age & Gender help calculate eGFR if not provided
         </Text> */}
+  
 
         {/* Main Grid Layout - 3 Columns */}
         <View style={styles.gridContainer}>
-          {/* LEFT COLUMN - Lab Report + Age/Gender */}
+          {/* PATIENT DETAILS - FIRST */}
           <View style={styles.gridColumn}>
-            {/* Lab Report Upload Section */}
-            <View style={styles.uploadSection}>
-              <View style={styles.sectionHeader}>
-                <Ionicons name="flask" size={24} color="#F5A623" />
-                <Text style={styles.sectionTitle}>Lab Report</Text>
-              </View>
-              <Text style={styles.optionalLabel}>(Optional if Manual Values entered)</Text>
-              
-              {labReportImage && (
-                <View style={styles.imagePreviewContainer}>
-                  <Image 
-                    source={{ uri: labReportImage.uri }} 
-                    style={styles.imagePreview} 
-                  />
-                  <TouchableOpacity
-                    style={styles.removeButton}
-                    onPress={() => setLabReportImage(null)}
-                  >
-                    <Ionicons name="close-circle" size={24} color="#FF3B30" />
-                  </TouchableOpacity>
-                </View>
-              )}
-
-              <TouchableOpacity
-                style={[styles.uploadButton, labReportImage && styles.uploadButtonSecondary]}
-                onPress={() => pickImage("lab")}
-                activeOpacity={0.8}
-                disabled={loading}
-              >
-                <Ionicons 
-                  name={labReportImage ? "refresh" : "cloud-upload-outline"} 
-                  size={24} 
-                  color={labReportImage ? "#50E3C2" : "#F5A623"} 
-                />
-                <Text style={[styles.uploadButtonText, labReportImage && styles.uploadButtonTextSecondary]}>
-                  {labReportImage ? "Change" : "Upload"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Age and Gender Section */}
             <View style={styles.uploadSection}>
               <View style={styles.sectionHeader}>
                 <Ionicons name="person" size={24} color="#007AFF" />
                 <Text style={styles.sectionTitle}>Patient Details</Text>
               </View>
 
-              {/* Age Input - Editable, prefilled from DB profile */}
               <View style={styles.ageGenderField}>
                 <Text style={styles.fieldLabel}>Age</Text>
                 <TextInput
@@ -596,7 +768,6 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                 />
               </View>
 
-              {/* Visit Date - Auto today, editable */}
               <View style={[styles.ageGenderField, { marginTop: 12 }]}> 
                 <Text style={styles.fieldLabel}>Visit Date</Text>
                 {Platform.OS === "web" ? (
@@ -630,7 +801,6 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                 ) : null}
               </View>
 
-              {/* Gender Selection - Read Only */}
               <View style={styles.ageGenderField}>
                 <Text style={styles.fieldLabel}>Gender</Text>
                 <View style={styles.readOnlyInput}>
@@ -642,23 +812,29 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
             </View>
           </View>
 
-          {/* MIDDLE COLUMN - Ultrasound */}
+          {/* LEFT COLUMN - Lab Report + Age/Gender */}
           <View style={styles.gridColumn}>
+            {/* Lab Report Upload Section */}
             <View style={styles.uploadSection}>
               <View style={styles.sectionHeader}>
-                <Ionicons name="scan" size={24} color="#4A90E2" />
-                <Text style={styles.sectionTitle}>Ultrasound</Text>
+                <Ionicons name="flask" size={24} color="#F5A623" />
+                <Text style={styles.sectionTitle}>Lab Report</Text>
               </View>
-
-              {ultrasoundImage && (
+              {labReportImage ? (
+                <Text style={styles.optionalLabel}>✅ Lab Report mode selected (Manual entry locked)</Text>
+              ) : (
+                <Text style={styles.optionalLabel}>(Optional if Manual Values entered)</Text>
+              )}
+              
+              {labReportImage && (
                 <View style={styles.imagePreviewContainer}>
                   <Image 
-                    source={{ uri: ultrasoundImage.uri }} 
+                    source={{ uri: labReportImage.uri }} 
                     style={styles.imagePreview} 
                   />
                   <TouchableOpacity
                     style={styles.removeButton}
-                    onPress={() => setUltrasoundImage(null)}
+                    onPress={() => setLabReportImage(null)}
                   >
                     <Ionicons name="close-circle" size={24} color="#FF3B30" />
                   </TouchableOpacity>
@@ -666,29 +842,37 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
               )}
 
               <TouchableOpacity
-                style={[styles.uploadButton, ultrasoundImage && styles.uploadButtonSecondary]}
-                onPress={() => pickImage("ultrasound")}
+                style={[styles.uploadButton, labReportImage && styles.uploadButtonSecondary]}
+                onPress={() => pickImage("lab")}
                 activeOpacity={0.8}
                 disabled={loading}
               >
                 <Ionicons 
-                  name={ultrasoundImage ? "refresh" : "cloud-upload-outline"} 
+                  name={labReportImage ? "refresh" : "cloud-upload-outline"} 
                   size={24} 
-                  color={ultrasoundImage ? "#50E3C2" : "#4A90E2"} 
+                  color={labReportImage ? "#50E3C2" : "#F5A623"} 
                 />
-                <Text style={[styles.uploadButtonText, ultrasoundImage && styles.uploadButtonTextSecondary]}>
-                  {ultrasoundImage ? "Change" : "Upload"}
+                <Text style={[styles.uploadButtonText, labReportImage && styles.uploadButtonTextSecondary]}>
+                  {labReportImage ? "Change" : "Upload"}
                 </Text>
               </TouchableOpacity>
             </View>
           </View>
-
-          {/* RIGHT COLUMN - Manual Lab Values */}
+ {/* RIGHT COLUMN - Manual Lab Values */}
           <View style={styles.gridColumn}>
             <View style={styles.uploadSection}>
               <TouchableOpacity 
                 style={styles.sectionHeader}
-                onPress={() => setShowManualEntry(!showManualEntry)}
+                onPress={() => {
+                  if (labReportImage) {
+                    Alert.alert(
+                      "Manual Entry Locked",
+                      "Lab report mode is selected. Remove the uploaded lab report to enable manual entry."
+                    );
+                    return;
+                  }
+                  setShowManualEntry(!showManualEntry);
+                }}
               >
                 <Ionicons name="create" size={24} color="#FF9500" />
                 <Text style={styles.sectionTitle}>Manual Values</Text>
@@ -701,10 +885,13 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
               </TouchableOpacity>
               {labReportImage && (
                 <Text style={styles.disabledLabel}>
-                  ⚠️ Lab report already uploaded. Remove it to enter manual values.
+                  ✅ Lab Report mode approved. Remove it to use Manual Entry.
                 </Text>
               )}
-              {!labReportImage && (
+              {!labReportImage && hasManualInput && (
+                <Text style={styles.optionalLabel}>✅ Manual Entry mode selected</Text>
+              )}
+              {!labReportImage && !hasManualInput && (
                 <Text style={styles.optionalLabel}>(Optional if Lab Report uploaded)</Text>
               )}
               
@@ -794,9 +981,267 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
                 </View>
               )}
             </View>
+
+            {hasLabInputForPreview && !labResult && (
+              <TouchableOpacity
+                style={styles.inlineAnalyzeButton}
+                onPress={analyzeLabInPage}
+                activeOpacity={0.8}
+                disabled={labAnalyzing}
+              >
+                {labAnalyzing ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <Ionicons name="flask" size={20} color="#FFFFFF" />
+                    <Text style={styles.inlineAnalyzeButtonText}>Analyze Lab</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+
+            {labResult && (
+              <View style={styles.resultsContainer}>
+                <View style={styles.inlineResultHeader}>
+                  <Text style={styles.inlineResultTitle}>Lab Analysis Result</Text>
+                  <TouchableOpacity
+                    style={styles.inlineDeleteButton}
+                    onPress={confirmClearLabPreview}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="trash" size={18} color="#FF3B30" />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={[styles.labStageCard, { borderLeftColor: getLabStageColor(labResult.ckdStage) }]}>
+                  <View style={styles.statusHeader}>
+                    <Ionicons
+                      name={getLabStageIcon(labResult.ckdStage)}
+                      size={28}
+                      color={getLabStageColor(labResult.ckdStage)}
+                    />
+                    <View style={{ marginLeft: 10, flex: 1 }}>
+                      <Text style={[styles.statusText, { color: getLabStageColor(labResult.ckdStage), fontSize: 20 }]}>
+                        {labResult.ckdStage || "Unknown Stage"}
+                      </Text>
+                      <Text style={styles.measurementLabel}>eGFR: {labResult.eGFRRange || "N/A"}</Text>
+                    </View>
+                  </View>
+                  {labResult.stageDescription ? (
+                    <Text style={styles.interpretationText}>{labResult.stageDescription}</Text>
+                  ) : null}
+                </View>
+
+                <View style={styles.resultCard}>
+                  <Text style={styles.cardTitle}>Lab Values</Text>
+
+                  <View style={styles.measurementRow}>
+                    <Ionicons name="water-outline" size={20} color="#4A90E2" />
+                    <View style={styles.measurementContent}>
+                      <Text style={styles.measurementLabel}>eGFR</Text>
+                      <Text style={styles.measurementValue}>
+                        {typeof labResult.eGFR === "number" ? labResult.eGFR.toFixed(2) : "N/A"} mL/min/1.73m²
+                      </Text>
+                    </View>
+                  </View>
+
+                  {typeof labResult.creatinine === "number" ? (
+                    <View style={styles.measurementRow}>
+                      <Ionicons name="flask-outline" size={20} color="#4A90E2" />
+                      <View style={styles.measurementContent}>
+                        <Text style={styles.measurementLabel}>Creatinine</Text>
+                        <Text style={styles.measurementValue}>{labResult.creatinine.toFixed(2)} mg/dL</Text>
+                      </View>
+                    </View>
+                  ) : null}
+
+                  {typeof labResult.bun === "number" ? (
+                    <View style={styles.measurementRow}>
+                      <Ionicons name="fitness-outline" size={20} color="#4A90E2" />
+                      <View style={styles.measurementContent}>
+                        <Text style={styles.measurementLabel}>BUN</Text>
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                          <Text style={styles.measurementValue}>{labResult.bun.toFixed(2)} mg/dL</Text>
+                          <View
+                            style={{
+                              paddingHorizontal: 8,
+                              paddingVertical: 4,
+                              borderRadius: 8,
+                              backgroundColor: `${getStatusColor(labResult.bunRiskCategory || getBunRiskCategory(labResult.bun))}20`,
+                            }}
+                          >
+                            <Text style={{ fontSize: 11, fontWeight: "700", color: getStatusColor(labResult.bunRiskCategory || getBunRiskCategory(labResult.bun)) }}>
+                              {labResult.bunRiskCategory || getBunRiskCategory(labResult.bun)}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+                  ) : null}
+
+                  {typeof labResult.albumin === "number" ? (
+                    <View style={styles.measurementRow}>
+                      <Ionicons name="nutrition-outline" size={20} color="#4A90E2" />
+                      <View style={styles.measurementContent}>
+                        <Text style={styles.measurementLabel}>Albumin</Text>
+                        <Text style={styles.measurementValue}>{labResult.albumin.toFixed(2)} g/dL</Text>
+                      </View>
+                    </View>
+                  ) : null}
+                </View>
+              </View>
+            )}
+          </View>
+
+          {/* MIDDLE COLUMN - Ultrasound */}
+          <View style={styles.gridColumn}>
+            <View style={styles.uploadSection}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="scan" size={24} color="#4A90E2" />
+                <Text style={styles.sectionTitle}>Ultrasound</Text>
+              </View>
+
+              {ultrasoundImage && (
+                <View style={styles.imagePreviewContainer}>
+                  <Image 
+                    source={{ uri: ultrasoundImage.uri }} 
+                    style={styles.imagePreview} 
+                  />
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => {
+                      setUltrasoundImage(null);
+                      setScanResult(null);
+                    }}
+                  >
+                    <Ionicons name="close-circle" size={24} color="#FF3B30" />
+                  </TouchableOpacity>
+                </View>
+              )}
+{ultrasoundImage && !(scanResult && scanResult.success) && (
+  <TouchableOpacity
+    style={styles.analyzeButton}
+    onPress={analyzeUltrasound}
+    disabled={scanLoading}
+  >
+    {scanLoading ? (
+      <ActivityIndicator color="#FFFFFF" />
+    ) : (
+      <>
+        <Text style={styles.analyzeButtonText}>Analyze Ultrasound</Text>
+        <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+      </>
+    )}
+  </TouchableOpacity>
+)}
+{scanResult && scanResult.success && (
+  <View style={styles.resultsContainer}>
+    <View style={styles.inlineResultHeader}>
+      <Text style={styles.inlineResultTitle}>Ultrasound Result</Text>
+      <TouchableOpacity
+        style={styles.inlineDeleteButton}
+        onPress={confirmClearUltrasoundPreview}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="trash" size={18} color="#FF3B30" />
+      </TouchableOpacity>
+    </View>
+
+    <View
+      style={[
+        styles.statusCard,
+        {
+          borderLeftColor:
+            scanResult.status === "normal" ? "#50E3C2" : "#FF6B6B",
+        },
+      ]}
+    >
+      <View style={styles.statusHeader}>
+        <Ionicons
+          name={
+            scanResult.status === "normal"
+              ? "checkmark-circle"
+              : "alert-circle"
+          }
+          size={32}
+          color={scanResult.status === "normal" ? "#50E3C2" : "#FF6B6B"}
+        />
+        <Text
+          style={[
+            styles.statusText,
+            {
+              color:
+                scanResult.status === "normal"
+                  ? "#50E3C2"
+                  : "#FF6B6B",
+            },
+          ]}
+        >
+          {scanResult.status?.toUpperCase()}
+        </Text>
+      </View>
+    </View>
+
+    <View style={styles.resultCard}>
+      <Text style={styles.cardTitle}>Kidney Measurements</Text>
+
+      <View style={styles.measurementRow}>
+        <Ionicons name="resize-outline" size={20} color="#4A90E2" />
+        <View style={styles.measurementContent}>
+          <Text style={styles.measurementLabel}>Kidney Length</Text>
+          <Text style={styles.measurementValue}>
+            {scanResult.kidney_length_cm
+              ? scanResult.kidney_length_cm.toFixed(2)
+              : "N/A"}{" "}
+            cm
+          </Text>
+        </View>
+      </View>
+
+      {scanResult.kidney_width_cm && (
+        <View style={styles.measurementRow}>
+          <Ionicons name="resize-outline" size={20} color="#4A90E2" />
+          <View style={styles.measurementContent}>
+            <Text style={styles.measurementLabel}>Kidney Width</Text>
+            <Text style={styles.measurementValue}>
+              {scanResult.kidney_width_cm.toFixed(2)} cm
+            </Text>
           </View>
         </View>
+      )}
+    </View>
 
+    {scanResult.interpretation && (
+      <View style={styles.resultCard}>
+        <Text style={styles.cardTitle}>Interpretation</Text>
+        <Text style={styles.interpretationText}>
+          {scanResult.interpretation}
+        </Text>
+      </View>
+    )}
+  </View>
+)}
+              <TouchableOpacity
+                style={[styles.uploadButton, ultrasoundImage && styles.uploadButtonSecondary]}
+                onPress={() => pickImage("ultrasound")}
+                activeOpacity={0.8}
+                disabled={loading}
+              >
+                <Ionicons 
+                  name={ultrasoundImage ? "refresh" : "cloud-upload-outline"} 
+                  size={24} 
+                  color={ultrasoundImage ? "#50E3C2" : "#4A90E2"} 
+                />
+                <Text style={[styles.uploadButtonText, ultrasoundImage && styles.uploadButtonTextSecondary]}>
+                  {ultrasoundImage ? "Change" : "Upload"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+        </View>
+
+         
         {/* Analyze Button */}
         <TouchableOpacity
           style={[
@@ -1409,6 +1854,134 @@ const styles = StyleSheet.create({
     color: "#8E8E93",
     textAlign: "right",
   },
+  inlineAnalyzeButton: {
+    backgroundColor: "#4A90E2",
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: -4,
+    marginBottom: 12,
+  },
+  inlineAnalyzeButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  inlineResultHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  inlineResultTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1C1C1E",
+  },
+  inlineDeleteButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    backgroundColor: "#FFF1F2",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  labStageCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderLeftWidth: 6,
+  },
+  analyzeButton: {
+  backgroundColor: "#4A90E2",
+  borderRadius: 16,
+  padding: 18,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  marginTop: 10,
+  marginBottom: 24,
+  shadowColor: "#4A90E2",
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.3,
+  shadowRadius: 8,
+  elevation: 5,
+},
+
+analyzeButtonText: {
+  color: "#FFFFFF",
+  fontSize: 16,
+  fontWeight: "700",
+  marginRight: 8,
+},
+
+resultsContainer: {
+  marginTop: 10,
+},
+
+statusCard: {
+  backgroundColor: "#FFFFFF",
+  borderRadius: 16,
+  padding: 20,
+  marginBottom: 16,
+  borderLeftWidth: 6,
+},
+
+statusHeader: {
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+statusText: {
+  fontSize: 24,
+  fontWeight: "700",
+  marginLeft: 12,
+},
+
+resultCard: {
+  backgroundColor: "#FFFFFF",
+  borderRadius: 16,
+  padding: 20,
+  marginBottom: 16,
+},
+
+cardTitle: {
+  fontSize: 16,
+  fontWeight: "700",
+  marginBottom: 16,
+},
+
+measurementRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 12,
+},
+
+measurementContent: {
+  marginLeft: 12,
+},
+
+measurementLabel: {
+  fontSize: 14,
+  color: "#8E8E93",
+},
+
+measurementValue: {
+  fontSize: 18,
+  fontWeight: "700",
+},
+
+interpretationText: {
+  fontSize: 15,
+  lineHeight: 22,
+},
 });
 
 export default FutureCKDStageScreen;

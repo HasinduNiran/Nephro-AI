@@ -34,6 +34,13 @@ const stageProgressionRecordSchema = new mongoose.Schema(
     },
     prediction_lab_only: mongoose.Schema.Types.Mixed,
     prediction_with_us: mongoose.Schema.Types.Mixed,
+    ultrasound_info: {
+      kidney_length_cm: Number,
+      kidney_width_cm: Number,
+      area_px: Number,
+      length_px: Number,
+      echogenicity: Number,
+    },
     eGFR_info: {
       value: Number,
       source: String,
@@ -70,6 +77,7 @@ const stageProgressionRecordSchema = new mongoose.Schema(
         probability_percentage: Number,
       },
     ],
+    prediction_context: mongoose.Schema.Types.Mixed,
   },
   { timestamps: true }
 );
