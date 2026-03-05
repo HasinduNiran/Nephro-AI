@@ -33,7 +33,7 @@ const ASYNC_KEYS = {
   AUTO_SYNC_ENABLED: "bp_auto_sync_enabled",
 };
 
-const DEFAULT_INTERVAL = 15;
+const DEFAULT_INTERVAL = 1;
 
 const todayStr = () => {
   const d = new Date();
@@ -81,6 +81,15 @@ const BPHistoryScreen = ({ navigation, route }) => {
 
   // --- health connect ---
   const [syncing, setSyncing] = useState(false);
+
+  // --- sync check panel ---
+  const [syncPanelVisible, setSyncPanelVisible] = useState(false);
+  const [triggerLoading, setTriggerLoading] = useState(false);
+  const [triggerResult, setTriggerResult] = useState(null); // { ok, message }
+  const [syncSummaries, setSyncSummaries] = useState([]);
+  const [syncSummariesLoading, setSyncSummariesLoading] = useState(false);
+  const [syncMonthlyAvg, setSyncMonthlyAvg] = useState(null);
+  const [syncMonthlyLoading, setSyncMonthlyLoading] = useState(false);
 
   // --- settings modal ---
   const [settingsVisible, setSettingsVisible] = useState(false);
@@ -331,6 +340,78 @@ const BPHistoryScreen = ({ navigation, route }) => {
     } finally {
       setSavingManual(false);
     }
+  };
+
+  // ── sync check helpers ────────────────────────────────────
+
+  const triggerSyncNow = async () => {
+    setTriggerLoading(true);
+    setTriggerResult(null);
+    try {
+      const res = await axios.post("/health-sync/trigger");
+      setTriggerResult({
+        ok: true,
+        message: res.data?.message || "Sync completed.",
+      });
+    } catch (err) {
+      setTriggerResult({
+        ok: false,
+        message:
+          err?.response?.data?.message || err?.message || "Trigger failed.",
+      });
+    } finally {
+      setTriggerLoading(false);
+    }
+  };
+
+  const fetchSyncSummaries = async () => {
+    setSyncSummariesLoading(true);
+    try {
+      const uid = await resolvedUserId();
+      if (!uid) return;
+      const now = new Date();
+      // fetch last 7 days
+      const to = now.toISOString().slice(0, 10);
+      const from = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10);
+      const res = await axios.get(
+        `/health-sync/${uid}/daily?from=${from}&to=${to}`,
+      );
+      setSyncSummaries(res.data?.summaries || []);
+    } catch (err) {
+      console.error("fetchSyncSummaries error:", err);
+      setSyncSummaries([]);
+    } finally {
+      setSyncSummariesLoading(false);
+    }
+  };
+
+  const fetchSyncMonthlyAvg = async () => {
+    setSyncMonthlyLoading(true);
+    try {
+      const uid = await resolvedUserId();
+      if (!uid) return;
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+      const res = await axios.get(
+        `/health-sync/${uid}/monthly-average?month=${month}&year=${year}`,
+      );
+      setSyncMonthlyAvg(res.data);
+    } catch (err) {
+      console.error("fetchSyncMonthlyAvg error:", err);
+      setSyncMonthlyAvg(null);
+    } finally {
+      setSyncMonthlyLoading(false);
+    }
+  };
+
+  const openSyncPanel = () => {
+    setSyncPanelVisible(true);
+    setTriggerResult(null);
+    fetchSyncSummaries();
+    fetchSyncMonthlyAvg();
   };
 
   // ── health connect sync ──────────────────────────────────
@@ -638,6 +719,165 @@ const BPHistoryScreen = ({ navigation, route }) => {
                 )}
               </TouchableOpacity>
             </View>
+          </View>
+        )}
+
+        {/* ── Sync Check Panel ── */}
+        <TouchableOpacity
+          style={styles.syncCheckToggle}
+          onPress={() =>
+            syncPanelVisible ? setSyncPanelVisible(false) : openSyncPanel()
+          }
+        >
+          <Ionicons
+            name={syncPanelVisible ? "chevron-up" : "shield-checkmark-outline"}
+            size={16}
+            color="#7C3AED"
+          />
+          <Text style={styles.syncCheckToggleText}>
+            {syncPanelVisible ? "Hide Sync Check" : "Check Sync Service"}
+          </Text>
+        </TouchableOpacity>
+
+        {syncPanelVisible && (
+          <View style={styles.syncCheckPanel}>
+            <Text style={styles.syncCheckTitle}>
+              Background Sync Verification
+            </Text>
+
+            {/* 1 – Trigger button */}
+            <TouchableOpacity
+              style={[
+                styles.syncTriggerBtn,
+                triggerLoading && { opacity: 0.6 },
+              ]}
+              onPress={triggerSyncNow}
+              disabled={triggerLoading}
+            >
+              {triggerLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <>
+                  <Ionicons name="flash-outline" size={15} color="#fff" />
+                  <Text style={styles.syncTriggerBtnText}>
+                    Trigger Sync Now
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            {/* Trigger result badge */}
+            {triggerResult && (
+              <View
+                style={[
+                  styles.syncResultBadge,
+                  triggerResult.ok
+                    ? styles.syncResultBadgeOk
+                    : styles.syncResultBadgeFail,
+                ]}
+              >
+                <Ionicons
+                  name={triggerResult.ok ? "checkmark-circle" : "close-circle"}
+                  size={14}
+                  color={triggerResult.ok ? "#059669" : "#DC2626"}
+                />
+                <Text
+                  style={[
+                    styles.syncResultText,
+                    { color: triggerResult.ok ? "#059669" : "#DC2626" },
+                  ]}
+                >
+                  {triggerResult.message}
+                </Text>
+              </View>
+            )}
+
+            {/* 2 – Monthly average from deduplicated data */}
+            <Text style={styles.syncSectionLabel}>
+              Monthly Avg (Deduplicated)
+            </Text>
+            {syncMonthlyLoading ? (
+              <ActivityIndicator
+                color="#7C3AED"
+                style={{ marginVertical: 8 }}
+              />
+            ) : syncMonthlyAvg?.recordCount > 0 ? (
+              <View style={styles.syncAvgRow}>
+                <Text style={styles.syncAvgValue}>
+                  {syncMonthlyAvg.avgSystolic}
+                  <Text style={styles.syncAvgSlash}> / </Text>
+                  {syncMonthlyAvg.avgDiastolic}
+                  <Text style={styles.syncAvgUnit}> mmHg</Text>
+                </Text>
+                <Text style={styles.syncAvgCount}>
+                  {syncMonthlyAvg.recordCount} unique day
+                  {syncMonthlyAvg.recordCount !== 1 ? "s" : ""}
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.syncEmpty}>No synced data this month.</Text>
+            )}
+
+            {/* 3 – Deduplicated daily summaries (last 7 days) */}
+            <Text style={styles.syncSectionLabel}>
+              Deduplicated Readings (last 7 days)
+            </Text>
+            <Text style={styles.syncHint}>
+              Each row = the LATEST reading kept per day by the sync service.
+            </Text>
+            {syncSummariesLoading ? (
+              <ActivityIndicator
+                color="#7C3AED"
+                style={{ marginVertical: 8 }}
+              />
+            ) : syncSummaries.length === 0 ? (
+              <Text style={styles.syncEmpty}>
+                No summaries yet. Push data and trigger sync.
+              </Text>
+            ) : (
+              syncSummaries.map((s) => (
+                <View key={s._id || s.date} style={styles.syncRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.syncRowDate}>{s.date}</Text>
+                    <Text style={styles.syncRowTime}>
+                      {s.measuredAt
+                        ? new Date(s.measuredAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "—"}
+                    </Text>
+                  </View>
+                  <Text style={styles.syncRowBP}>
+                    {s.systolic != null ? (
+                      <>
+                        <Text style={{ color: "#FF4757" }}>{s.systolic}</Text>
+                        <Text style={{ color: "#8E8E93" }}> / </Text>
+                        <Text style={{ color: "#4A90E2" }}>{s.diastolic}</Text>
+                        <Text style={{ color: "#8E8E93", fontSize: 11 }}>
+                          {" "}
+                          mmHg
+                        </Text>
+                      </>
+                    ) : (
+                      "BP: —"
+                    )}
+                  </Text>
+                </View>
+              ))
+            )}
+
+            {/* Refresh button */}
+            <TouchableOpacity
+              style={styles.syncRefreshBtn}
+              onPress={() => {
+                fetchSyncSummaries();
+                fetchSyncMonthlyAvg();
+              }}
+            >
+              <Ionicons name="refresh-outline" size={14} color="#7C3AED" />
+              <Text style={styles.syncRefreshBtnText}>Refresh Results</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -1071,6 +1311,154 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#8E8E93",
     marginTop: 4,
+  },
+
+  // ── Sync Check Panel ──────────────────────────────────────
+  syncCheckToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    marginBottom: 4,
+  },
+  syncCheckToggleText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#7C3AED",
+  },
+  syncCheckPanel: {
+    backgroundColor: "#FAF5FF",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#DDD6FE",
+    padding: 16,
+    marginBottom: 16,
+    gap: 6,
+  },
+  syncCheckTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#5B21B6",
+    marginBottom: 8,
+  },
+  syncTriggerBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: "#7C3AED",
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  syncTriggerBtnText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  syncResultBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 4,
+  },
+  syncResultBadgeOk: {
+    backgroundColor: "#D1FAE5",
+  },
+  syncResultBadgeFail: {
+    backgroundColor: "#FEE2E2",
+  },
+  syncResultText: {
+    fontSize: 13,
+    fontWeight: "600",
+    flex: 1,
+  },
+  syncSectionLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#5B21B6",
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  syncHint: {
+    fontSize: 11,
+    color: "#8E8E93",
+    marginBottom: 6,
+    fontStyle: "italic",
+  },
+  syncAvgRow: {
+    backgroundColor: "#EDE9FE",
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 4,
+  },
+  syncAvgValue: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#4C1D95",
+  },
+  syncAvgSlash: {
+    color: "#8E8E93",
+    fontSize: 16,
+  },
+  syncAvgUnit: {
+    fontSize: 12,
+    color: "#8E8E93",
+  },
+  syncAvgCount: {
+    fontSize: 12,
+    color: "#7C3AED",
+    marginTop: 2,
+  },
+  syncRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 4,
+    borderWidth: 1,
+    borderColor: "#EDE9FE",
+  },
+  syncRowDate: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#1C1C1E",
+  },
+  syncRowTime: {
+    fontSize: 11,
+    color: "#8E8E93",
+    marginTop: 2,
+  },
+  syncRowBP: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  syncEmpty: {
+    fontSize: 12,
+    color: "#8E8E93",
+    fontStyle: "italic",
+    marginBottom: 4,
+  },
+  syncRefreshBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+    marginTop: 10,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#DDD6FE",
+  },
+  syncRefreshBtnText: {
+    fontSize: 13,
+    color: "#7C3AED",
+    fontWeight: "600",
   },
 });
 
