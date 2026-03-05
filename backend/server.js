@@ -13,6 +13,8 @@ const labRoutes = require("./routes/lab");
 const riskHistoryRoutes = require("./routes/riskHistory");
 const stageProgressionRoutes = require("./routes/stageProgression");
 const bpRoutes = require("./routes/bp");
+const healthSyncRoutes = require("./routes/healthSync");
+const { startSyncJob } = require("./services/healthSyncService");
 
 const app = express();
 
@@ -70,7 +72,11 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("MongoDB Connected Successfully"))
+  .then(() => {
+    console.log("MongoDB Connected Successfully");
+    // Start the background health-data sync cron job
+    startSyncJob();
+  })
   .catch((err) => console.error("MongoDB Connection Error:", err));
 
 // Routes
@@ -85,6 +91,7 @@ app.use("/api/kidneyus", kidneyusRoutes);
 app.use("/api/lab", labRoutes);
 app.use("/api/stage-progression", stageProgressionRoutes);
 app.use("/api/bp-records", bpRoutes);
+app.use("/api/health-sync", healthSyncRoutes);
 
 // Ultrasound upload endpoint
 app.post("/api/upload-ultrasound", upload.single("ultrasound"), (req, res) => {
