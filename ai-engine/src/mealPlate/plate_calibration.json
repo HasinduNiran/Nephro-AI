@@ -3,41 +3,41 @@
     "width": 1524,
     "height": 1557
   },
-  "total_plate_pixels": 1557107,
   "plate_center": {
-    "x": 762,
+    "x": 761,
     "y": 778
   },
+  "total_plate_pixels": 2120672,
   "compartments": {
     "main_carb": {
-      "pixel_area": 877670,
+      "pixel_area": 911005,
       "centroid": {
-        "x": 455,
-        "y": 764
+        "x": 449,
+        "y": 777
       },
-      "percentage_of_plate": 56.37
+      "percentage_of_plate": 42.96
     },
     "side_1": {
-      "pixel_area": 422955,
+      "pixel_area": 406813,
       "centroid": {
-        "x": 1134,
-        "y": 1034
+        "x": 1144,
+        "y": 1019
       },
-      "percentage_of_plate": 27.16
+      "percentage_of_plate": 19.18
     },
     "side_2": {
-      "pixel_area": 256482,
+      "pixel_area": 262181,
       "centroid": {
-        "x": 1123,
-        "y": 349
+        "x": 1128,
+        "y": 353
       },
-      "percentage_of_plate": 16.47
+      "percentage_of_plate": 12.36
     }
   },
   "volume_ml": {
-    "main_carb": 350,
-    "side_1": 200,
-    "side_2": 200,
-    "NOTE": "Measured actual compartment volumes with water"
+    "main_carb": 580,
+    "side_1": 250,
+    "side_2": 165,
+    "NOTE": "Measure your plate compartments with water and update these values!"
   }
 }
