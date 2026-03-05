@@ -8,6 +8,8 @@ import re  # <--- NEW IMPORT FOR CLEANING TEXT
 import struct
 import wave
 import io
+import random
+import itertools
 from pathlib import Path
 import aiofiles
 
@@ -25,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from src.chatbot.rag_engine import RAGEngine
 from src.chatbot.patient_input import PatientInputHandler
-from src.chatbot.config import GOOGLE_API_KEY, GOOGLE_TTS_MODEL, GOOGLE_TTS_VOICE, TTS_PHONETIC_ENABLED
+from src.chatbot.config import GOOGLE_API_KEY, GOOGLE_API_KEYS, GOOGLE_TTS_MODEL, GOOGLE_TTS_VOICE, TTS_PHONETIC_ENABLED
 from src.chatbot.nlg_glossary import NLGGlossary
 from src.utils.logger import ConsoleLogger as Log
 
@@ -63,14 +65,24 @@ try:
     rag_engine = RAGEngine()
     stt_engine = PatientInputHandler(model_size="small")
 
-    # Initialize Gemini TTS Client
-    gemini_client = None
-    if GOOGLE_API_KEY:
+    # Initialize Gemini TTS Client Pool (API Key Rotation)
+    gemini_clients = []
+    if GOOGLE_API_KEYS:
+        for i, key in enumerate(GOOGLE_API_KEYS):
+            try:
+                client = genai.Client(api_key=key)
+                gemini_clients.append(client)
+                Log.success(f"Gemini TTS Client #{i+1} initialized (key ...{key[-6:]})")
+            except Exception as e:
+                Log.warning(f"Gemini TTS client #{i+1} failed: {e}")
+        if gemini_clients:
+            Log.success(f"🔄 API Key Rotation: {len(gemini_clients)} keys loaded (free-tier limit x{len(gemini_clients)})")
+    elif GOOGLE_API_KEY:
         try:
-            gemini_client = genai.Client(api_key=GOOGLE_API_KEY)
-            Log.success("Gemini TTS Client Initialized (Sinhala Voice: Kore)")
+            gemini_clients.append(genai.Client(api_key=GOOGLE_API_KEY))
+            Log.success("Gemini TTS Client Initialized (single key)")
         except Exception as e:
-            Log.warning(f"Gemini TTS client failed to initialize: {e}")
+            Log.warning(f"Gemini TTS client failed: {e}")
     else:
         Log.warning("GOOGLE_API_KEY not set - Gemini TTS disabled, using Edge-TTS fallback")
 
@@ -86,6 +98,9 @@ except Exception as e:
 
 Path("temp_inputs").mkdir(exist_ok=True)
 Path("tts_cache").mkdir(exist_ok=True)
+
+# Round-Robin iterator — guarantees no two concurrent asyncio.gather calls share the same key
+client_cycle = itertools.cycle(gemini_clients) if gemini_clients else None
 
 # --- PRE-GENERATION CACHE for emergency phrases (populated once at startup) ---
 EMERGENCY_PHRASES = {
@@ -109,9 +124,8 @@ def cleanup_file(path: str):
 
 def split_into_sentences(text: str) -> list:
     """
-    Split text into TTS-sized chunks at sentence boundaries.
-    Groups 2-3 sentences into ~80-char chunks to reduce API calls
-    and avoid Gemini free-tier rate limits (429 RESOURCE_EXHAUSTED).
+    Split text into chunks, merging small sentences to SAVE API QUOTA.
+    Groups sentences until buffer hits 80 chars — 1 API request per chunk.
     """
     # Split at sentence-ending punctuation (Sinhala \u0964 = danda, English . ! ?)
     parts = re.split(r'(?<=[.!?\u0964\n])\s+', text.strip())
@@ -122,15 +136,20 @@ def split_into_sentences(text: str) -> list:
         if not part:
             continue
         buffer = (buffer + " " + part).strip() if buffer else part
-        if len(buffer) >= 80:  # INCREASED FROM 15 TO 80: Group sentences to save API Quota!
+        # Wait until we have a good-sized chunk before spending 1 precious API request
+        if len(buffer) >= 80:
             merged.append(buffer)
             buffer = ""
-    if buffer:
-        if merged:
-            merged[-1] += " " + buffer
-        else:
-            merged.append(buffer)
+    if buffer:  # flush remainder as its own chunk (NOT merged into last)
+        merged.append(buffer)
     return merged if merged else [text]
+
+
+def get_gemini_client():
+    """Pick the NEXT Gemini client sequentially (Round-Robin) to prevent concurrent key collisions."""
+    if not client_cycle:
+        return None
+    return next(client_cycle)
 
 
 def clean_text_for_tts(text: str) -> str:
@@ -177,7 +196,7 @@ async def generate_tts_file(text: str) -> Path:
     if is_sinhala:
         # Try Gemini TTS first
         success = False
-        if gemini_client:
+        if gemini_clients:
             loop = asyncio.get_event_loop()
             success = await loop.run_in_executor(None, _generate_gemini_tts, clean_text, output_path)
 
@@ -216,7 +235,7 @@ def _generate_gemini_tts(text: str, output_path: Path) -> bool:
     Returns True on success, False on failure.
     """
     try:
-        response = gemini_client.models.generate_content(
+        response = get_gemini_client().models.generate_content(
             model=GOOGLE_TTS_MODEL,
             contents=text,
             config=types.GenerateContentConfig(
@@ -257,7 +276,7 @@ def _generate_gemini_tts_bytes(text: str):
     Returns raw WAV bytes instantly (NO PYDUB TRANSCODING).
     """
     try:
-        response = gemini_client.models.generate_content(
+        response = get_gemini_client().models.generate_content(
             model=GOOGLE_TTS_MODEL,
             contents=text,
             config=types.GenerateContentConfig(
@@ -400,7 +419,7 @@ async def text_to_speech_stream(request: TTSRequest):
     async def generate_sentence_bytes(idx: int, sentence: str):
         print(f"   \u21b3 [S{idx+1}/{len(sentences)}] {sentence[:60]}...")
         mp3_bytes = None
-        if is_sinhala and gemini_client:
+        if is_sinhala and gemini_clients:
             mp3_bytes = await loop.run_in_executor(
                 None, _generate_gemini_tts_bytes, sentence
             )
