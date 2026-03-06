@@ -1,129 +1,184 @@
 """
 Patient Data Handler for Nephro-AI
-Manages retrieval of patient records (Mock implementation for prototype).
-In production, this would connect to a MongoDB database.
+Retrieves live patient records from MongoDB across four collections:
+  users       → core identity (name, birthday, gender, district, email)
+  labtests    → kidney function (eGFR, creatinine, bun, albumin, ckdStage)
+  riskrecords → risk level & comorbidity flags (hypertension, diabetes)
+  bprecords   → blood pressure (systolic, diastolic) & HbA1c
 """
 
-from typing import Dict, Optional
+import sys
+from pathlib import Path
+from typing import Dict
 from datetime import datetime
+
+# Allow `from chatbot import config` when running as __main__ or via server
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
+from bson.objectid import ObjectId
+from bson.errors import InvalidId
+
+from chatbot import config
 
 
 class PatientDataManager:
     def __init__(self):
-        """Initialize with mock data"""
-        self.mock_db = {
-            "default_patient": {
-                "id": "P001",
-                "name": "John Doe",
-                "age": 58,
-                "diagnosis": "Chronic Kidney Disease",
-                "stage": "Stage 3b",
-                "egfr": 38,
-                "comorbidities": ["Hypertension", "Type 2 Diabetes"],
-                "medications": ["Lisinopril", "Metformin", "Atorvastatin"],
-                "recent_labs": {
-                    "creatinine": 1.8,
-                    "potassium": 4.8,
-                    "sodium": 138,
-                    "calcium": 9.2,
-                    "phosphorus": 3.9,
-                    "albumin": 4.0
-                },
-                "dietary_restrictions": ["Moderate Sodium", "Monitor Potassium"],
-                "last_updated": datetime.now().strftime("%Y-%m-%d") # Mock timestamp
-            },
-            "lasal": {
-                "id": "6958e269f3b8652cceae2abd",
-                "name": "Lasal",
-                "email": "l@gmail.com",
-                "age": 24,
-                "gender": "Male",
-                "district": "Anuradhapura",
-                "diagnosis": "High Risk (CKD Suspect)",
-                "stage": "Observation",
-                "egfr": 95, # Inferred Normal for Age 24
-                "comorbidities": ["Uncontrolled Hypertension", "Diabetes Mellitus"],
-                "medications": ["Metformin", "Losartan"],
-                "recent_labs": {
-                    "creatinine": 0.9, # Normal
-                    "potassium": 4.2,
-                    "sodium": 140,
-                    "calcium": 9.5,
-                    "phosphorus": 3.5,
-                    "albumin": 4.5
-                },
-                "dietary_restrictions": ["Low Sugar", "Low Salt"],
-                "last_updated": datetime.now().strftime("%Y-%m-%d")
-            }
-        }
-    
+        """Connect to MongoDB. A short server-selection timeout means the AI
+        server starts quickly even when MongoDB is temporarily unreachable."""
+        try:
+            self._client = MongoClient(
+                config.MONGODB_URI,
+                serverSelectionTimeoutMS=3000,
+            )
+            # Lightweight ping to validate the connection at startup
+            self._client.admin.command("ping")
+            self._db = self._client[config.MONGODB_DB_NAME]
+            print(f"✅ PatientDataManager: Connected to MongoDB ({config.MONGODB_DB_NAME})")
+        except (ConnectionFailure, ServerSelectionTimeoutError) as e:
+            print(f"⚠️ PatientDataManager: MongoDB unavailable — {e}")
+            self._client = None
+            self._db = None
+
+    # ------------------------------------------------------------------
+    # Public interface (same signatures as the old mock implementation)
+    # ------------------------------------------------------------------
+
     def get_patient_record(self, patient_id: str = "default_patient") -> Dict:
-        """
-        Retrieve patient record by ID (Case-Insensitive & robust).
-        """
-        pid = patient_id.lower().strip()
-        
-        # 1. Direct Key Match (e.g., "lasal")
-        if pid in self.mock_db:
-            return self.mock_db[pid]
-            
-        # 2. Check for Alias/Value Match (e.g., if ID matches ID field, Name or Email)
-        for key, record in self.mock_db.items():
-            # Check if patient_id matches the record's id, name or email (case-insensitive)
-            if (record.get("id", "").lower() == pid) or \
-               (record.get("name", "").lower() == pid) or \
-               (record.get("email", "").lower() == pid):
-                return record
-                
-        # 3. Fallback
-        print(f"⚠️ Patient ID '{patient_id}' not found. Using default.")
-        return self.mock_db.get("default_patient", {})
+        """Retrieve a live patient record by MongoDB ObjectId string."""
+        if self._db is None:
+            print("⚠️ PatientDataManager: No DB connection — returning empty record.")
+            return {}
+
+        # 1. Resolve patient ObjectId
+        try:
+            user_obj_id = ObjectId(patient_id.strip())
+        except (InvalidId, AttributeError):
+            print(f"⚠️ PatientDataManager: '{patient_id}' is not a valid ObjectId.")
+            return {}
+
+        # 2. Core identity (users collection)
+        user = self._db.users.find_one({"_id": user_obj_id})
+        if not user:
+            print(f"⚠️ PatientDataManager: No user found for id '{patient_id}'.")
+            return {}
+
+        age = "Unknown"
+        if user.get("birthday"):
+            age = datetime.now().year - user["birthday"].year
+
+        # 3. Most recent lab result (labtests — FK is userEmail)
+        lab = self._db.labtests.find_one(
+            {"userEmail": user.get("email", "")},
+            sort=[("createdAt", -1)],
+        ) or {}
+
+        # 4. Most recent risk assessment (riskrecords — FK is userId ObjectId)
+        risk = self._db.riskrecords.find_one(
+            {"userId": user_obj_id},
+            sort=[("createdAt", -1)],
+        ) or {}
+
+        # 5. Most recent BP reading (bprecords — FK is userId ObjectId)
+        bp = self._db.bprecords.find_one(
+            {"userId": user_obj_id},
+            sort=[("createdAt", -1)],
+        ) or {}
+
+        # 6. Comorbidities from riskrecord vitalSigns boolean flags
+        vitals = risk.get("vitalSigns", {})
+        comorbidities = []
+        if vitals.get("hypertension"):
+            comorbidities.append("Hypertension")
+        if vitals.get("diabetes"):
+            comorbidities.append("Diabetes Mellitus")
+
+        # 7. BP values: prefer dedicated bprecords, fall back to vitalSigns
+        systolic  = bp.get("systolic")  or vitals.get("bpSystolic")
+        diastolic = bp.get("diastolic") or vitals.get("bpDiastolic")
+        hba1c     = bp.get("hba1c")     or vitals.get("hba1cLevel")
+
+        # 8. last_updated from the most recent document createdAt across all collections
+        timestamps = [
+            d.get("createdAt")
+            for d in (lab, risk, bp)
+            if d.get("createdAt")
+        ]
+        last_updated = (
+            max(timestamps).strftime("%Y-%m-%d")
+            if timestamps
+            else datetime.now().strftime("%Y-%m-%d")
+        )
+
+        return {
+            "id":       str(user["_id"]),
+            "name":     user.get("name", "Unknown"),
+            "email":    user.get("email", ""),
+            "age":      age,
+            "gender":   user.get("gender", "Unknown"),
+            "district": user.get("district", ""),
+
+            "diagnosis": risk.get("riskLevel", "Assessment Pending"),
+            "stage":     lab.get("ckdStage", "Unknown"),
+            "egfr":      lab.get("eGFR", "N/A"),
+
+            "comorbidities": comorbidities if comorbidities else ["None detected"],
+            "medications":   [],  # No medication schema yet — extend later
+
+            "recent_labs": {
+                "creatinine": lab.get("creatinine", "N/A"),
+                "bun":        lab.get("bun", "N/A"),
+                "albumin":    lab.get("albumin", "N/A"),
+                "hba1c":      hba1c     if hba1c     is not None else "N/A",
+                "systolic":   systolic  if systolic  is not None else "N/A",
+                "diastolic":  diastolic if diastolic is not None else "N/A",
+            },
+
+            "dietary_restrictions": ["Check Nutrient Wallet limits"],
+            "last_updated": last_updated,
+        }
 
     def get_last_update_timestamp(self, patient_id: str = "default_patient") -> str:
-        """
-        Get the last updated timestamp for a patient's data.
-        Used for cache invalidation.
-        """
+        """Return last_updated string used as a cache-key component in rag_engine.py."""
         record = self.get_patient_record(patient_id)
-        if not record:
-            return "unknown_version"
         return record.get("last_updated", "unknown_version")
 
     def get_patient_context_string(self, patient_id: str = "default_patient") -> str:
-        """
-        Get a formatted string summary of patient context for the LLM
-        """
+        """Formatted patient summary injected into the LLM system prompt."""
         record = self.get_patient_record(patient_id)
         if not record:
             return "No patient record found."
-            
-        # Calculate data age
-        last_updated = record.get('last_updated', 'Unknown')
+
+        last_updated = record.get("last_updated", "Unknown")
         data_age_warning = ""
         try:
-            last_date = datetime.strptime(last_updated, "%Y-%m-%d")
-            days_old = (datetime.now() - last_date).days
-            if days_old > 0:
-                data_age_warning = f" (Data is {days_old} days old)"
-            else:
-                data_age_warning = " (Data is from today)"
-        except:
+            days_old = (datetime.now() - datetime.strptime(last_updated, "%Y-%m-%d")).days
+            data_age_warning = " (Data is from today)" if days_old == 0 else f" (Data is {days_old} days old)"
+        except Exception:
             pass
 
-        context = (
+        labs = record["recent_labs"]
+        labs_str = ", ".join(
+            f"{k.capitalize()}: {v}"
+            for k, v in labs.items()
+            if v != "N/A"
+        )
+
+        return (
             f"--- CRITICAL: CURRENT PATIENT STATE (As of {last_updated}{data_age_warning}) ---\n"
             f"Patient Profile:\n"
-            f"- Name: {record['name']} ({record['age']} years)\n"
-            f"- Diagnosis: {record['diagnosis']} ({record['stage']})\n"
+            f"- Name: {record['name']} ({record['age']} years, {record['gender']})\n"
+            f"- Diagnosis / Risk: {record['diagnosis']}\n"
+            f"- CKD Stage: {record['stage']}\n"
             f"- eGFR: {record['egfr']} mL/min\n"
             f"- Comorbidities: {', '.join(record['comorbidities'])}\n"
-            f"- Current Medications: {', '.join(record['medications'])}\n"
-            f"- Recent Labs: Potassium {record['recent_labs']['potassium']}, "
-            f"Creatinine {record['recent_labs']['creatinine']}\n"
+            f"- Recent Labs & Vitals: {labs_str if labs_str else 'No data available'}\n"
         )
-        return context
+
 
 if __name__ == "__main__":
-    # Test
+    # Smoke-test: replace with a real ObjectId from your DB
     mgr = PatientDataManager()
-    print(mgr.get_patient_context_string())
+    TEST_ID = "6958e269f3b8652cceae2abd"
+    print(mgr.get_patient_context_string(TEST_ID))
