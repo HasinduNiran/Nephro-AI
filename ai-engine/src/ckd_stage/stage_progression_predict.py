@@ -9,6 +9,7 @@ import pandas as pd
 import tensorflow as tf
 import pickle
 from datetime import datetime
+from functools import lru_cache
 
 try:
     from sklearn.exceptions import InconsistentVersionWarning
@@ -25,6 +26,7 @@ warnings.filterwarnings(
 # LOAD MODEL + ASSETS
 # ==========================================================
 
+@lru_cache(maxsize=2)
 def load_ckd_model(mode="lab"):
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
     models_dir = os.path.join(base_dir, "models")
