@@ -232,80 +232,98 @@ def _generate_gemini_tts(text: str, output_path: Path) -> bool:
     """
     Generate TTS audio using Gemini API (synchronous, runs in thread pool).
     Outputs PCM -> WAV directly (NO PYDUB TRANSCODING).
+    Retries across all keys in the pool before giving up.
     Returns True on success, False on failure.
     """
-    try:
-        response = get_gemini_client().models.generate_content(
-            model=GOOGLE_TTS_MODEL,
-            contents=text,
-            config=types.GenerateContentConfig(
-                response_modalities=["AUDIO"],
-                speech_config=types.SpeechConfig(
-                    voice_config=types.VoiceConfig(
-                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                            voice_name=GOOGLE_TTS_VOICE,
+    attempts = max(len(gemini_clients), 1)
+    for attempt in range(attempts):
+        client = get_gemini_client()
+        try:
+            response = client.models.generate_content(
+                model=GOOGLE_TTS_MODEL,
+                contents=text,
+                config=types.GenerateContentConfig(
+                    response_modalities=["AUDIO"],
+                    speech_config=types.SpeechConfig(
+                        voice_config=types.VoiceConfig(
+                            prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                voice_name=GOOGLE_TTS_VOICE,
+                            )
                         )
-                    )
+                    ),
                 ),
-            ),
-        )
+            )
 
-        pcm_data = response.candidates[0].content.parts[0].inline_data.data
+            pcm_data = response.candidates[0].content.parts[0].inline_data.data
 
-        # Write PCM directly into a WAV file — zero transcoding
-        wav_path = output_path.with_suffix(".wav")
-        with wave.open(str(wav_path), "wb") as wf:
-            wf.setnchannels(1)
-            wf.setsampwidth(2)       # 16-bit
-            wf.setframerate(24000)   # 24kHz
-            wf.writeframes(pcm_data)
+            # Write PCM directly into a WAV file — zero transcoding
+            wav_path = output_path.with_suffix(".wav")
+            with wave.open(str(wav_path), "wb") as wf:
+                wf.setnchannels(1)
+                wf.setsampwidth(2)       # 16-bit
+                wf.setframerate(24000)   # 24kHz
+                wf.writeframes(pcm_data)
 
-        # Move to output_path so the cache key resolves correctly
-        wav_path.replace(output_path)
+            # Move to output_path so the cache key resolves correctly
+            wav_path.replace(output_path)
 
-        print(f"   ✅ Gemini TTS generation successful (model: {GOOGLE_TTS_MODEL}, voice: {GOOGLE_TTS_VOICE})")
-        return True
+            print(f"   ✅ Gemini TTS successful (attempt {attempt + 1}/{attempts}, model: {GOOGLE_TTS_MODEL}, voice: {GOOGLE_TTS_VOICE})")
+            return True
 
-    except Exception as e:
-        print(f"   ❌ Gemini TTS failed: {e}")
-        return False
+        except Exception as e:
+            print(f"   ⚠️ Gemini TTS attempt {attempt + 1}/{attempts} failed: {e}")
+            if attempt < attempts - 1:
+                print(f"   🔄 Retrying with next key in pool...")
+
+    print(f"   ❌ Gemini TTS failed after {attempts} attempt(s) — all keys exhausted.")
+    return False
 
 def _generate_gemini_tts_bytes(text: str):
     """
     Generate TTS audio using Gemini API.
     Returns raw WAV bytes instantly (NO PYDUB TRANSCODING).
+    Retries across all keys in the pool before giving up.
+    Returns None only after all keys are exhausted.
     """
-    try:
-        response = get_gemini_client().models.generate_content(
-            model=GOOGLE_TTS_MODEL,
-            contents=text,
-            config=types.GenerateContentConfig(
-                response_modalities=["AUDIO"],
-                speech_config=types.SpeechConfig(
-                    voice_config=types.VoiceConfig(
-                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                            voice_name=GOOGLE_TTS_VOICE,
+    attempts = max(len(gemini_clients), 1)
+    for attempt in range(attempts):
+        client = get_gemini_client()
+        try:
+            response = client.models.generate_content(
+                model=GOOGLE_TTS_MODEL,
+                contents=text,
+                config=types.GenerateContentConfig(
+                    response_modalities=["AUDIO"],
+                    speech_config=types.SpeechConfig(
+                        voice_config=types.VoiceConfig(
+                            prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                voice_name=GOOGLE_TTS_VOICE,
+                            )
                         )
-                    )
+                    ),
                 ),
-            ),
-        )
+            )
 
-        pcm_data = response.candidates[0].content.parts[0].inline_data.data
+            pcm_data = response.candidates[0].content.parts[0].inline_data.data
 
-        # Instantly wrap the raw PCM in a WAV header — no pydub/ffmpeg
-        wav_buffer = io.BytesIO()
-        with wave.open(wav_buffer, "wb") as wf:
-            wf.setnchannels(1)
-            wf.setsampwidth(2)      # 16-bit
-            wf.setframerate(24000)  # 24kHz
-            wf.writeframes(pcm_data)
+            # Instantly wrap the raw PCM in a WAV header — no pydub/ffmpeg
+            wav_buffer = io.BytesIO()
+            with wave.open(wav_buffer, "wb") as wf:
+                wf.setnchannels(1)
+                wf.setsampwidth(2)      # 16-bit
+                wf.setframerate(24000)  # 24kHz
+                wf.writeframes(pcm_data)
 
-        return wav_buffer.getvalue()
+            print(f"   ✅ Gemini TTS bytes successful (attempt {attempt + 1}/{attempts})")
+            return wav_buffer.getvalue()
 
-    except Exception as e:
-        print(f"   \u274c Gemini TTS bytes failed: {e}")
-        return None
+        except Exception as e:
+            print(f"   ⚠️ Gemini TTS bytes attempt {attempt + 1}/{attempts} failed: {e}")
+            if attempt < attempts - 1:
+                print(f"   🔄 Retrying with next key in pool...")
+
+    print(f"   ❌ Gemini TTS bytes failed after {attempts} attempt(s) — all keys exhausted.")
+    return None
 
 
 async def _pregen_emergency_audio():
@@ -410,6 +428,25 @@ async def text_to_speech_stream(request: TTSRequest):
     if is_sinhala and TTS_PHONETIC_ENABLED:
         clean_text = nlg_glossary.apply_tts_phonetics(clean_text)
 
+    # ⚡ LAYER 1 CACHE CHECK: Return saved stream binary if this exact text was generated before
+    flag_types = [f.get("flag") for f in request.urgency_flags]
+    _has_critical = "CRITICAL_URGENCY" in flag_types
+    _cache_src = f"{clean_text}_{'urgent' if _has_critical else 'normal'}"
+    stream_cache_path = Path("tts_cache") / f"{hashlib.md5(_cache_src.encode()).hexdigest()}_stream.bin"
+    if stream_cache_path.exists():
+        cached_data = stream_cache_path.read_bytes()
+        pos, seg_count = 0, 0
+        while pos + 4 <= len(cached_data):
+            seg_len = struct.unpack_from(">I", cached_data, pos)[0]
+            pos += 4 + seg_len
+            seg_count += 1
+        print(f"   ⚡ Server Cache Hit! Returning {seg_count} cached segment(s) for: {clean_text[:40]}...")
+        return Response(
+            content=cached_data,
+            media_type="application/octet-stream",
+            headers={"X-Segment-Count": str(seg_count), "X-Cache": "HIT"},
+        )
+
     sentences = split_into_sentences(clean_text)
     Log.step("\U0001f50a", "PARALLEL STREAM TTS",
              f"{len(sentences)} sentences | {'SINHALA' if is_sinhala else 'ENGLISH'}")
@@ -447,7 +484,6 @@ async def text_to_speech_stream(request: TTSRequest):
     valid = 0
 
     # 🚨 CRITICAL_URGENCY fast-path: prepend pre-cached emergency phrase (0ms disk read)
-    flag_types = [f.get("flag") for f in request.urgency_flags]
     if "CRITICAL_URGENCY" in flag_types:
         pregen_key = "si" if is_sinhala else "en"
         pregen_path = PREGEN_CACHE.get(pregen_key)
@@ -469,6 +505,12 @@ async def text_to_speech_stream(request: TTSRequest):
     data = output.getvalue()
     if not data:
         raise HTTPException(status_code=500, detail="All TTS segments failed")
+
+    # 💾 LAYER 1 CACHE SAVE: Persist the framed binary so future calls skip Gemini entirely
+    try:
+        stream_cache_path.write_bytes(data)
+    except Exception as _cache_err:
+        print(f"   ⚠️ Could not save stream to cache: {_cache_err}")
 
     print(f"   \u2705 Returning {valid} segment(s) \u2014 {len(data):,} bytes total")
     return Response(

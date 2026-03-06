@@ -382,6 +382,10 @@ class LLMEngine:
             "පැතිකඩ": "වර්තමාන තත්ත්වය",
             "වත්මන් පැතිකඩ": "වර්තමාන තත්ත්වය",
             "අසමත්": "පාලනය නොකළ",
+            # FIX: Natural phrasing for uncontrolled diseases
+            "පාලනය නොකළ Pressure": "කන්ට්‍රෝල් නැති Pressure",
+            "පාලනය නොකළ රුධිර පීඩනය": "කන්ට්‍රෝල් නැති Pressure",
+            "පාලනය නොකළ දියවැඩියාව": "කන්ට්‍රෝල් නැති ඩයබිටීස්",
             "අවාසනාවන්තයි": "කණගාටුයි",
             "දොස්තර": "Doctor",
             "සායනය": "Clinic එක",
@@ -392,6 +396,11 @@ class LLMEngine:
         
         # Apply the full glossary (sorted longest-first inside enforce_glossary)
         text = self.glossary.enforce_glossary(text, register)
+        
+        # SAFETY SWEEP: Fix stuttering caused by glossary overlaps
+        text = text.replace("එක එක", "එක")
+        text = text.replace("අගය අගය", "අගය")
+        text = text.replace("Risk එක එක", "Risk එක")
         
         return text
 
@@ -440,8 +449,9 @@ class LLMEngine:
             "2. **Empathy:** Translate 'I'm sorry to hear' as 'ඒක අහන්න ලැබීමත් කණගාටුයි'.\n"
             "3. **Anatomy:** Do NOT use 'පිටුපස' (Back) for 'Stomach'. Use 'බඩේ' for stomach.\n"
             "4. **Tone:** Use warm words like 'පුළුවන් නම්' (If possible), 'වගේ දේවල්' (Things like).\n"
-            "5. **Code-Mixing:** Keep English medical terms (Dietitian, Kiwi) in brackets or plain English.\n"
-            "6. **Formatting:** Use Bullet points for lists.\n\n"
+            "5. **Code-Mixing (CRITICAL):** Use English medical terms naturally, but DO NOT put them in brackets as translations. NEVER write 'අවදානම් (High Risk)' or 'ඩයබිටීස් (දියවැඩියාව)'. Choose ONE language. Write 'අවදානම් තත්ත්වයක්' or 'ඩයබිටීස්'.\n"
+            "6. **Natural Phrasing:** Avoid literal translations like 'පාලනය නොකළ Pressure'. Instead, say 'Pressure එක කන්ට්\u200dරෝල් නැහැ' or 'Pressure එක වැඩියි'.\n"
+            "7. **Formatting:** Use Bullet points for lists.\n\n"
 
             "💡 GOLDEN EXAMPLE (MIMIC THIS EXACTLY):\n"
             "--------------------------------------------------\n"
