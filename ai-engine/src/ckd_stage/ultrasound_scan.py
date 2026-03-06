@@ -9,6 +9,7 @@ from tensorflow.keras.utils import custom_object_scope
 from PIL import Image
 import io
 import base64
+from functools import lru_cache
 
 def load_grayscale_image(image_path_or_data):
     if isinstance(image_path_or_data, str) and image_path_or_data.startswith('data:image'):
@@ -71,6 +72,7 @@ def get_auto_calibration(image_path_or_data, fallback_ratio=0.045):
     except Exception:
         return fallback_ratio, "error_fallback"
 
+@lru_cache(maxsize=1)
 def load_model():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     model_path = os.path.join(script_dir, "..", "..", "models", "kidney_unet.h5")

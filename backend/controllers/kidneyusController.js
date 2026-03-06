@@ -1,6 +1,7 @@
 const { spawn } = require("child_process");
 const path = require("path");
 const KidneyScan = require("../models/KidneyScan");
+const { analyzeUltrasoundViaFastApi } = require("../utils/inferenceClient");
 
 // Kidney Ultrasound Analysis only
 exports.analyzeKidneyUltrasound = async (req, res) => {
@@ -14,7 +15,20 @@ exports.analyzeKidneyUltrasound = async (req, res) => {
     return res.status(400).json({ message: "Name is required" });
   }
 
-  // Path to ultrasound analysis script
+  const fastApiResult = await analyzeUltrasoundViaFastApi(imagePath);
+  if (fastApiResult?.success) {
+    await KidneyScan.create({
+      name,
+      kidneyLengthCm: fastApiResult.kidney_length_cm,
+      kidneyWidthCm: fastApiResult.kidney_width_cm,
+      interpretation: fastApiResult.interpretation,
+      status: fastApiResult.status,
+      imagePath,
+    });
+    return res.json(fastApiResult);
+  }
+
+  // Fallback: legacy Python spawn path
   const scriptPath = path.join(__dirname, "..", "..", "ai-engine", "src", "ckd_stage", "ultrasound_scan.py");
   const pythonProcess = spawn("python", [scriptPath, imagePath]);
 
