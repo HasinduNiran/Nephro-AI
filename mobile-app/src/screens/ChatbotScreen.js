@@ -269,13 +269,6 @@ const ChatbotScreen = ({ route, navigation }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const typingDots = useRef(new Animated.Value(0)).current;
 
-  const suggestions = [
-    { text: "Diet Plan", icon: "nutrition", color: COLORS.accent },
-    { text: "Lab Results", icon: "flask", color: COLORS.primary },
-    { text: "Symptoms", icon: "fitness", color: COLORS.warning },
-    { text: "Medications", icon: "medical", color: COLORS.secondary },
-  ];
-
   const markdownStyles = {
     body: { color: COLORS.textDark, fontSize: 15, lineHeight: 22 },
     bullet_list: { marginTop: 5, marginBottom: 5 },
@@ -1322,39 +1315,6 @@ const ChatbotScreen = ({ route, navigation }) => {
         />
 
         <View>
-          {/* Quick Suggestion Chips */}
-          <View style={styles.suggestionsContainer}>
-            <FlatList
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              data={suggestions}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[styles.chip, { borderColor: item.color }]}
-                  onPress={async () => {
-                    await Haptics.impactAsync(
-                      Haptics.ImpactFeedbackStyle.Light,
-                    );
-                    sendTextMessage(item.text);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons
-                    name={item.icon}
-                    size={16}
-                    color={item.color}
-                    style={{ marginRight: 6 }}
-                  />
-                  <Text style={[styles.chipText, { color: item.color }]}>
-                    {item.text}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              keyExtractor={(item) => item.text}
-              contentContainerStyle={{ paddingHorizontal: 16 }}
-            />
-          </View>
-
           <View
             style={[
               styles.inputContainer,
@@ -1732,16 +1692,8 @@ const styles = StyleSheet.create({
   },
 
   // ═══════════════════════════════════════════════════════
-  // INPUT & SUGGESTIONS
+  // INPUT
   // ═══════════════════════════════════════════════════════
-  suggestionsContainer: {
-    height: 55,
-    marginBottom: 8,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.cardBorder,
-    paddingTop: 8,
-  },
-
   inputContainer: {
     flexDirection: "row",
     padding: 12,
@@ -1819,27 +1771,6 @@ const styles = StyleSheet.create({
     transform: [{ scale: 1.1 }],
     shadowColor: COLORS.danger,
     shadowOpacity: 0.5,
-  },
-
-  chip: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 22,
-    marginRight: 10,
-    borderWidth: 1.5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-
-  chipText: {
-    fontWeight: "600",
-    fontSize: 14,
   },
 
   // ═══════════════════════════════════════════════════════
