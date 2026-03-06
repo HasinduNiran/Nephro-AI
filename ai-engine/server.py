@@ -154,13 +154,18 @@ def get_gemini_client():
 
 
 def clean_text_for_tts(text: str) -> str:
-    """Removes Markdown symbols and unsupported characters."""
-    # Remove bold/italic markers (*, _)
-    text = re.sub(r'[\*_#]', '', text) 
+    """Removes Markdown symbols, unsupported characters, and English brackets."""
+    # Remove bold/italic/heading markers (*, _, #)
+    text = re.sub(r'[\*_#]', '', text)
     # Remove markdown links [text](url) -> text
     text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
+    # Remove English words in parentheses — these crash the Sinhala TTS voice
+    # e.g. "(medical history)", "(cognitive impairment)", "(Stage 3)"
+    text = re.sub(r'\([a-zA-Z0-9\s\-]+\)', '', text)
     # Remove emojis and unsupported chars (keep only Sinhala, English, numbers, punctuation)
     text = re.sub(r'[^\w\s\u0D80-\u0DFF\.,\?!a-zA-Z0-9]', '', text)
+    # Clean up double spaces left behind by removals
+    text = re.sub(r'\s+', ' ', text).strip()
     return text
 
 async def generate_tts_file(text: str) -> Path:
