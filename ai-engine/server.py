@@ -550,7 +550,14 @@ async def clear_chat(request: ChatRequest):
 async def text_chat(request: ChatRequest):
     patient_id = request.patient_id
     Log.step("📨", "REQUEST RECEIVED", f"Patient ID: '{patient_id}'")
-    
+
+    # 🏥 Live MongoDB context dump — shows exactly what the AI will read
+    print("\n" + "═"*60)
+    print("🏥 MONGODB FETCH: LIVE PATIENT CONTEXT FOR AI")
+    print("═"*60)
+    print(rag_engine.patient_data.get_patient_context_string(patient_id))
+    print("═"*60 + "\n")
+
     # --- ZOMBIE CONTEXT FIX ---
     # Detect session starters and wipe memory
     GREETINGS = ["hi", "hello", "ayubowan", "start over", "help", "hey", "good morning", "good evening"]
@@ -595,7 +602,14 @@ async def audio_chat(
     patient_id: str = Form("default_patient")
 ):
     Log.step("🎙️", "AUDIO REQUEST", f"Patient: {patient_id}")
-    
+
+    # 🏥 Live MongoDB context dump — shows exactly what the AI will read
+    print("\n" + "═"*60)
+    print("🏥 MONGODB FETCH: LIVE PATIENT CONTEXT FOR AI (AUDIO)")
+    print("═"*60)
+    print(rag_engine.patient_data.get_patient_context_string(patient_id))
+    print("═"*60 + "\n")
+
     temp_filename = f"temp_{hashlib.md5(file.filename.encode()).hexdigest()}.wav"
     input_path = Path("temp_inputs") / temp_filename
     
