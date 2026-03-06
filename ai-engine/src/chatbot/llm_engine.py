@@ -402,6 +402,18 @@ class LLMEngine:
         text = text.replace("අගය අගය", "අගය")
         text = text.replace("Risk එක එක", "Risk එක")
 
+        # SAFETY SWEEP: Remove redundant bracket duplicates produced by LLM hallucination
+        # e.g. "හමුවෙන්න (හමුවෙන්න)" → "හමුවෙන්න"
+        text = re.sub(r'([\w\u0D80-\u0DFF]+)\s*\(\1\)', r'\1', text)
+        # e.g. "Test එක (Test එක)" → "Test එක"
+        text = re.sub(r'(\S+\s+එක)\s*\(\1\)', r'\1', text)
+        # generic multi-word: "phrase (phrase)" both sides identical (case-insensitive)
+        text = re.sub(
+            r'([a-zA-Z\u0D80-\u0DFF][\w\u0D80-\u0DFF\s]{1,30})\s*\(\1\)',
+            r'\1', text, flags=re.IGNORECASE
+        )
+        text = re.sub(r'  +', ' ', text).strip()
+
         # 🛡️ Empathy guard: strip accidental sympathy openers for non-symptom intents
         if user_intent not in {"ask_symptoms", "ask_emergency"}:
             for phrase in [
@@ -469,7 +481,10 @@ class LLMEngine:
             "2. **Empathy:** " + empathy_rule + "\n"
             "3. **Anatomy:** Do NOT use 'පිටුපස' (Back) for 'Stomach'. Use 'බඩේ' for stomach.\n"
             "4. **Tone:** Use warm words like 'පුළුවන් නම්' (If possible), 'වගේ දේවල්' (Things like).\n"
-            "5. **Code-Mixing (CRITICAL):** Use English medical terms naturally, but DO NOT put them in brackets as translations. NEVER write 'අවදානම් (High Risk)' or 'ඩයබිටීස් (දියවැඩියාව)'. Choose ONE language. Write 'අවදානම් තත්ත්වයක්' or 'ඩයබිටීස්'.\n"
+            "5. **Code-Mixing (CRITICAL):** Use English medical terms naturally, but NEVER put them in brackets as a second translation.\n"
+            "   BAD (FORBIDDEN): 'Test එක (Test එක)', 'හමුවෙන්න (හමුවෙන්න)', 'CKD රෝගය (CKD)', 'අවදානම් (High Risk)', 'ස්කෑන් එක (Scan එක)'\n"
+            "   GOOD: 'Test කරලා', 'හමුවෙන්න', 'CKD රෝගය', 'High Risk තත්ත්වය', 'ස්කෑන් එක'\n"
+            "   RULE: Choose ONE form — Sinhala OR English. Never write both side-by-side in brackets.\n"
             "6. **Natural Phrasing:** Avoid literal translations like 'පාලනය නොකළ Pressure'. Instead, say 'Pressure එක කන්ට්\u200dරෝල් නැහැ' or 'Pressure එක වැඩියි'.\n"
             "7. **Formatting:** Use Bullet points for lists.\n\n"
 
