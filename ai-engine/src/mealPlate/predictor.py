@@ -31,6 +31,9 @@ except Exception as e:
 # ---------------------------------------------------------
 # LOAD PORTION ESTIMATOR (module-level functions)
 # ---------------------------------------------------------
+DEBUG_OUTPUT_DIR = os.path.join(BASE_DIR, "debug_output")
+DEBUG_VIS_PATH  = os.path.join(DEBUG_OUTPUT_DIR, "latest_scan.jpg")
+
 try:
     from .portion_estimator import (
         standardize_image,
@@ -132,7 +135,7 @@ def predict_image_with_portions(image_bytes):
                     {"food": d["food"], "bbox": d["bbox"], "confidence": d["confidence"]}
                     for d in detected_items
                 ]
-                estimates = estimate_all_portions(cv_img, yolo_boxes)
+                estimates = estimate_all_portions(cv_img, yolo_boxes, debug_save_path=DEBUG_VIS_PATH)
                 
                 # Merge estimation results back into detected_items
                 for item, est in zip(detected_items, estimates):

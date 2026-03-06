@@ -23,6 +23,22 @@ import { Ionicons } from "@expo/vector-icons";
 import PlateCamera from "../components/PlateCamera";
 
 // --- LOCAL DATABASE ---
+// Case-insensitive lookup helper — handles "beans curry" matching "Beans curry"
+const _foodDBKeys = {}; // built lazily after foodNutrientDB is defined
+const lookupFood = (name) => {
+  if (!name) return null;
+  // Exact match first (fast path)
+  if (foodNutrientDB[name]) return foodNutrientDB[name];
+  // Case-insensitive fallback
+  const lower = name.toLowerCase();
+  if (!_foodDBKeys._built) {
+    Object.keys(foodNutrientDB).forEach((k) => { _foodDBKeys[k.toLowerCase()] = k; });
+    _foodDBKeys._built = true;
+  }
+  const canonical = _foodDBKeys[lower];
+  return canonical ? foodNutrientDB[canonical] : null;
+};
+
 const foodNutrientDB = {
   avacado: {
     protein: 2,
@@ -195,6 +211,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [imageSource, setImageSource] = useState(null); // 'camera' or 'gallery'
   const [showPlateCamera, setShowPlateCamera] = useState(false); // Custom camera with overlay
+  const [debugImageUri, setDebugImageUri] = useState(null); // SAM segmentation debug image
 
   useEffect(() => {
     const loadUserId = async () => {
@@ -343,11 +360,17 @@ const MealAnalysisScreen = ({ route, navigation }) => {
 
       console.log("Backend Response:", response.data);
 
+      // Store SAM debug visualization url (append timestamp to force Image reload)
+      if (response.data.debug_image_url) {
+        setDebugImageUri(response.data.debug_image_url + "?t=" + Date.now());
+      }
+
       const detectedData = response.data.portions || response.data.detected_foods || response.data.detected || [];
       const hasAutoPortions = true;
 
       const initialItems = detectedData.map((item) => {
-        let foodName = item.food;
+        // Normalize YOLO names: "Beans_curry" → "Beans curry"
+        let foodName = item.food.replace(/_/g, " ");
         const variants = getFoodVariants(foodName);
 
         // If this food has variants, use the first one as default
@@ -361,7 +384,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
           units.length === 0 ||
           (units.length === 1 && units[0] === "grams")
         ) {
-          const localFood = foodNutrientDB[foodName];
+          const localFood = lookupFood(foodName);
           if (localFood && localFood.units) {
             units = Object.keys(localFood.units).filter(
               (u) => u && u !== "undefined",
@@ -385,7 +408,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
           item.estimated_grams > 0
         ) {
           // Convert grams to the best matching unit
-          const localFood = foodNutrientDB[foodName];
+          const localFood = lookupFood(foodName);
           if (localFood && localFood.units) {
             // Find the unit whose weight best matches the estimated grams
             let bestUnit = null;
@@ -434,7 +457,8 @@ const MealAnalysisScreen = ({ route, navigation }) => {
           hasVariants: variants !== null,
           variants: variants || [],
           autoEstimated: hasAutoPortions && item.estimated_grams > 0,
-          autoPortionGrams: item.estimated_grams || null,
+          autoPortionGrams: item.estimated_grams || null, // raw AI grams — source of truth
+          manuallyEdited: false,                          // set true when user changes amount/unit
           compartment: item.compartment || null,
         };
       });
@@ -471,30 +495,43 @@ const MealAnalysisScreen = ({ route, navigation }) => {
     let breakdown = [];
 
     items.forEach((item) => {
-      const foodData = foodNutrientDB[item.food];
-      if (foodData) {
-        const unitWeight = foodData.units[item.unit] || 100;
-        const totalGrams = unitWeight * parseFloat(item.amount || 0);
+      // Case-insensitive lookup handles "Beans_curry" → "Beans curry" → "Beans curry" DB key
+      const normalizedName = item.food.replace(/_/g, " ");
+      const foodData = lookupFood(normalizedName);
+      if (!foodData) return;
 
-        const itemNutrients = {
-          sodium: (foodData.sodium * totalGrams) / 100,
-          potassium: (foodData.potassium * totalGrams) / 100,
-          phosphorus: (foodData.phosphorus * totalGrams) / 100,
-          protein: (foodData.protein * totalGrams) / 100,
-        };
-
-        totalNutrients.sodium += itemNutrients.sodium;
-        totalNutrients.potassium += itemNutrients.potassium;
-        totalNutrients.phosphorus += itemNutrients.phosphorus;
-        totalNutrients.protein += itemNutrients.protein;
-
-        breakdown.push({
-          food: item.food,
-          amount: `${item.amount} ${item.unit}`,
-          grams: totalGrams,
-          ...itemNutrients,
-        });
+      let totalGrams;
+      if (!item.manuallyEdited && item.autoPortionGrams && item.autoPortionGrams > 0) {
+        // AI-estimated grams — most accurate, use directly
+        totalGrams = item.autoPortionGrams;
+      } else if (item.unit === "grams") {
+        // Manual entry already in grams
+        totalGrams = parseFloat(item.amount || 0);
+      } else {
+        // Manual household unit (e.g. 2 tbsp, 1 serving_spoon)
+        totalGrams = (foodData.units[item.unit] || 100) * parseFloat(item.amount || 0);
       }
+
+      const itemNutrients = {
+        sodium:     (foodData.sodium     * totalGrams) / 100,
+        potassium:  (foodData.potassium  * totalGrams) / 100,
+        phosphorus: (foodData.phosphorus * totalGrams) / 100,
+        protein:    (foodData.protein    * totalGrams) / 100,
+      };
+
+      totalNutrients.sodium     += itemNutrients.sodium;
+      totalNutrients.potassium  += itemNutrients.potassium;
+      totalNutrients.phosphorus += itemNutrients.phosphorus;
+      totalNutrients.protein    += itemNutrients.protein;
+
+      breakdown.push({
+        food: normalizedName,
+        amount: item.manuallyEdited
+          ? `${item.amount} ${item.unit}`
+          : `${totalGrams.toFixed(0)}g (AI)`,
+        grams: totalGrams,
+        ...itemNutrients,
+      });
     });
     return { totalNutrients, breakdown };
   };
@@ -747,6 +784,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                 setItems([]);
                 setAnalysisResult(null);
                 setHasScanned(false);
+                setDebugImageUri(null);
               }}
             >
               <Ionicons name="close-circle" size={32} color="#dc3545" />
@@ -755,6 +793,20 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         ) : (
           <View style={styles.placeholder}>
             <Text>No Image Selected</Text>
+          </View>
+        )}
+
+        {/* SAM Segmentation Debug View */}
+        {debugImageUri && (
+          <View style={{ marginTop: 12, marginBottom: 4, alignItems: "center" }}>
+            <Text style={{ fontSize: 12, color: "#555", marginBottom: 4, fontWeight: "600" }}>
+              🔬 SAM Segmentation Preview
+            </Text>
+            <Image
+              source={{ uri: debugImageUri }}
+              style={{ width: "100%", height: 220, borderRadius: 10, borderWidth: 1, borderColor: "#ddd" }}
+              resizeMode="contain"
+            />
           </View>
         )}
 
@@ -860,7 +912,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                       style={styles.amountInput}
                       keyboardType="numeric"
                       value={item.amount}
-                      onChangeText={(text) => updateRow(index, "amount", text)}
+                      onChangeText={(text) => { updateRow(index, "amount", text); updateRow(index, "manuallyEdited", true); }}
                       placeholder="1"
                     />
                   </View>
@@ -870,7 +922,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                       <Picker
                         selectedValue={item.unit || "grams"}
                         style={styles.unitPicker}
-                        onValueChange={(val) => updateRow(index, "unit", val)}
+                        onValueChange={(val) => { updateRow(index, "unit", val); updateRow(index, "manuallyEdited", true); }}
                       >
                         {(item.availableUnits || ["grams"])
                           .filter(

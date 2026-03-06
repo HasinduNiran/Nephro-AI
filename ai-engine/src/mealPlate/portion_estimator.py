@@ -316,9 +316,62 @@ def _confidence(fill_ratio, food_pixels):
 # HIGH-LEVEL API  (called by predictor.py)
 # ══════════════════════════════════════════════════════════════
 
-def estimate_all_portions(cv_img, yolo_boxes):
+# Distinct BGR colours for each detected food item
+_MASK_COLORS = [
+    (0, 220, 0),      # green
+    (0, 140, 255),    # orange
+    (255, 60, 60),    # blue
+    (0, 255, 255),    # yellow
+    (255, 0, 200),    # magenta
+    (60, 180, 255),   # light orange
+    (180, 0, 180),    # purple
+]
+
+
+def save_debug_visualization(std_img, debug_items, save_path):
+    """
+    Save a colour overlay image showing SAM masks, bboxes and labels.
+    debug_items: list of (food_mask, est_dict, (bx1, by1, bx2, by2))
+    """
+    vis = std_img.copy()
+    # Build a single colour overlay for all masks
+    overlay = std_img.copy()
+    for idx, (food_mask, est, _bbox) in enumerate(debug_items):
+        color = _MASK_COLORS[idx % len(_MASK_COLORS)]
+        overlay[food_mask == 255] = color
+    cv2.addWeighted(overlay, 0.45, vis, 0.55, 0, vis)
+
+    # Draw compartment boundary lines
+    cv2.line(vis, (COMPARTMENT_X_SPLIT, 0), (COMPARTMENT_X_SPLIT, STANDARD_H), (255, 255, 255), 3)
+    cv2.line(vis, (COMPARTMENT_X_SPLIT, COMPARTMENT_Y_SPLIT), (STANDARD_W, COMPARTMENT_Y_SPLIT), (255, 255, 255), 3)
+
+    # Draw bboxes and labels
+    for idx, (food_mask, est, (bx1, by1, bx2, by2)) in enumerate(debug_items):
+        color = _MASK_COLORS[idx % len(_MASK_COLORS)]
+        cv2.rectangle(vis, (bx1, by1), (bx2, by2), color, 3)
+        food = est.get('food', '?')
+        grams = est.get('estimated_grams', 0)
+        comp = est.get('compartment', '')
+        fill = est.get('fill_ratio', 0)
+        line1 = f"{food}  {grams}g"
+        line2 = f"[{comp}] fill={fill:.2f}"
+        ty = max(by1 - 8, 30)
+        # Black background for readability
+        (tw1, th1), _ = cv2.getTextSize(line1, cv2.FONT_HERSHEY_SIMPLEX, 0.65, 2)
+        (tw2, th2), _ = cv2.getTextSize(line2, cv2.FONT_HERSHEY_SIMPLEX, 0.50, 1)
+        cv2.rectangle(vis, (bx1, ty - th1 - 4), (bx1 + max(tw1, tw2) + 4, ty + th2 + 6), (0, 0, 0), -1)
+        cv2.putText(vis, line1, (bx1 + 2, ty), cv2.FONT_HERSHEY_SIMPLEX, 0.65, color, 2)
+        cv2.putText(vis, line2, (bx1 + 2, ty + th2 + 4), cv2.FONT_HERSHEY_SIMPLEX, 0.50, (220, 220, 220), 1)
+
+    os.makedirs(os.path.dirname(os.path.abspath(save_path)), exist_ok=True)
+    cv2.imwrite(save_path, vis)
+    print(f"[PortionEstimator] Debug visualization saved → {save_path}")
+
+
+def estimate_all_portions(cv_img, yolo_boxes, debug_save_path=None):
     """
     Estimate portions for every YOLO detection in one call.
+    Optionally saves a colour debug visualization to debug_save_path.
     """
     std_img = standardize_image(cv_img)
     h, w = std_img.shape[:2]
@@ -326,6 +379,8 @@ def estimate_all_portions(cv_img, yolo_boxes):
     sx, sy = w / orig_w, h / orig_h
 
     results = []
+    debug_items = []  # (food_mask, est, scaled_bbox)
+
     for det in yolo_boxes:
         food_name = det["food"]
         ox1, oy1, ox2, oy2 = det["bbox"]
@@ -336,7 +391,7 @@ def estimate_all_portions(cv_img, yolo_boxes):
         bx2 = int(ox2 * sx)
         by2 = int(oy2 * sy)
 
-        # Precise food mask via GrabCut
+        # Precise food mask via MobileSAM
         food_mask = create_food_mask(std_img, bx1, by1, bx2, by2)
 
         # Bbox centre at standard resolution
@@ -348,6 +403,13 @@ def estimate_all_portions(cv_img, yolo_boxes):
         est["detection_confidence"] = det.get("confidence", 0)
         est["bbox"] = [ox1, oy1, ox2, oy2]
         results.append(est)
+        debug_items.append((food_mask, est, (bx1, by1, bx2, by2)))
+
+    if debug_save_path and debug_items:
+        try:
+            save_debug_visualization(std_img, debug_items, debug_save_path)
+        except Exception as e:
+            print(f"[PortionEstimator] Debug visualization failed: {e}")
 
     return results
 
