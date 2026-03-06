@@ -66,15 +66,28 @@ def build_sequence(history, assets):
     df["charttime"] = pd.to_datetime(df["charttime"])
     df = df.sort_values("charttime")
 
-    # Time gap
-    df["time_gap"] = df["charttime"].diff().dt.days.fillna(0)
+    # eGFR as numeric
+    df["egfr"] = pd.to_numeric(df.get("egfr"), errors="coerce")
+    if df["egfr"].isna().all():
+        raise ValueError("Required feature column missing or invalid: egfr")
+    df["egfr"] = df["egfr"].ffill().bfill()
 
-    # eGFR slope
-    df["egfr_slope"] = df["egfr"].diff().fillna(0)
+    # 1) Time gap in days (use 1 day for first visit)
+    df["time_gap"] = df["charttime"].diff().dt.days.astype(float)
+    df["time_gap"] = df["time_gap"].fillna(1.0)
+    df["time_gap"] = df["time_gap"].replace(0, 1.0)
+
+    # 2) eGFR dynamics
+    df["egfr_delta"] = df["egfr"].diff().fillna(0.0)
+    df["egfr_velocity"] = df["egfr_delta"] / df["time_gap"].replace(0, 1.0)
+    df["egfr_slope"] = df["egfr_delta"]
 
     # Forward fill kidney_length if exists
     if "kidney_length" in df.columns:
-        df["kidney_length"] = df["kidney_length"].ffill()
+        df["kidney_length"] = pd.to_numeric(df["kidney_length"], errors="coerce")
+        df["kidney_length"] = df["kidney_length"].ffill().bfill()
+        if "kidney_length_delta" in assets.get("dynamic_cols", []):
+            df["kidney_length_delta"] = df["kidney_length"].diff().fillna(0.0)
 
     # Optional labs: fill missing with 0.0 so model can still run
     optional_cols = ["bun", "BUN", "albumin", "Albumin", "hemoglobin", "Hemoglobin", "haemoglobin", "Haemoglobin"]
@@ -111,8 +124,21 @@ def build_sequence(history, assets):
     static_vals = df[assets["static_cols"]].iloc[0].values.reshape(1, -1)
     static_vals = assets["scaler_stat"].transform(static_vals)
 
-    # Dynamic features
-    dynamic_vals = df[assets["dynamic_cols"]].values
+    # Dynamic features: prefer velocity-aware feature when model/scaler support it.
+    base_dynamic_cols = list(assets.get("dynamic_cols", []))
+    if not base_dynamic_cols:
+        raise ValueError("Model assets missing dynamic_cols")
+
+    dynamic_features = ["egfr", "time_gap"]
+    if "egfr_velocity" in base_dynamic_cols:
+        dynamic_features.append("egfr_velocity")
+    dynamic_features.extend([c for c in base_dynamic_cols if c not in dynamic_features])
+
+    # Keep exact length/order expected by trained scaler/model.
+    if len(dynamic_features) != len(base_dynamic_cols):
+        dynamic_features = base_dynamic_cols
+
+    dynamic_vals = df[dynamic_features].values
     dynamic_vals = assets["scaler_dyn"].transform(dynamic_vals)
 
     # Build padded sequence
@@ -148,6 +174,188 @@ def calculate_risks(next_probs, sixm_probs, current_stage_idx):
         "risk_severe_progression_next_visit": round(float(severe_next), 4),
         "risk_severe_progression_6_month": round(float(severe_6m), 4)
     }
+
+
+def _extract_recent_egfr_delta(history):
+    values = []
+    for point in history:
+        raw = point.get("egfr", point.get("gfr"))
+        try:
+            if raw is None:
+                continue
+            v = float(raw)
+            if np.isfinite(v):
+                values.append(v)
+        except Exception:
+            continue
+
+    if len(values) < 2:
+        return None
+
+    return values[-1] - values[-2]
+
+
+def _apply_egfr_trend_guardrail(next_probs, sixm_probs, current_idx, history):
+    delta = _extract_recent_egfr_delta(history)
+    if delta is None or delta <= 0:
+        return next_probs, sixm_probs, {
+            "applied": False,
+            "reason": "no-positive-egfr-delta",
+            "egfr_delta": delta,
+            "damp_factor": 1.0,
+        }
+
+    if current_idx >= len(next_probs) - 1:
+        return next_probs, sixm_probs, {
+            "applied": False,
+            "reason": "final-stage",
+            "egfr_delta": delta,
+            "damp_factor": 1.0,
+        }
+
+    if delta >= 10:
+        damp_factor = 0.60
+    elif delta >= 5:
+        damp_factor = 0.75
+    else:
+        damp_factor = 0.90
+
+    def damp_one(dist):
+        adjusted = np.array(dist, dtype=float, copy=True)
+        worse_slice = adjusted[current_idx + 1:]
+        worse_before = float(np.sum(worse_slice))
+        adjusted[current_idx + 1:] = worse_slice * damp_factor
+        worse_after = float(np.sum(adjusted[current_idx + 1:]))
+        reclaimed = max(0.0, worse_before - worse_after)
+        adjusted[current_idx] += reclaimed
+
+        total = float(np.sum(adjusted))
+        if total > 0:
+            adjusted = adjusted / total
+        return adjusted
+
+    next_adj = damp_one(next_probs)
+    sixm_adj = damp_one(sixm_probs)
+
+    return next_adj, sixm_adj, {
+        "applied": True,
+        "reason": "positive-egfr-delta",
+        "egfr_delta": float(delta),
+        "damp_factor": float(damp_factor),
+    }
+
+
+def _normalize_distribution(probs):
+    arr = np.array(probs, dtype=float, copy=True)
+    arr = np.nan_to_num(arr, nan=0.0, posinf=0.0, neginf=0.0)
+    arr[arr < 0] = 0.0
+    total = float(np.sum(arr))
+    if total <= 0:
+        if len(arr) == 0:
+            return arr
+        return np.ones_like(arr) / float(len(arr))
+    return arr / total
+
+
+def _apply_temperature_scaling(probs, temperature):
+    temp = float(temperature)
+    if not np.isfinite(temp) or temp <= 0:
+        return _normalize_distribution(probs)
+
+    arr = _normalize_distribution(probs)
+    eps = 1e-12
+    logits = np.log(np.clip(arr, eps, 1.0))
+    scaled = logits / temp
+    scaled -= np.max(scaled)
+    exp_scaled = np.exp(scaled)
+    return _normalize_distribution(exp_scaled)
+
+
+def _maybe_calibrate_distribution(probs, assets, horizon_key):
+    config = assets.get("temperature_scaling", {}) if isinstance(assets, dict) else {}
+    temperature = None
+
+    if isinstance(config, dict):
+        temperature = config.get(horizon_key, config.get("default"))
+    elif config is not None:
+        temperature = config
+
+    if temperature is None and isinstance(assets, dict):
+        temperature = assets.get(f"temperature_{horizon_key}")
+
+    if temperature is None:
+        return _normalize_distribution(probs), {
+            "applied": False,
+            "method": "none",
+        }
+
+    calibrated = _apply_temperature_scaling(probs, temperature)
+    return calibrated, {
+        "applied": True,
+        "method": "temperature",
+        "temperature": float(temperature),
+    }
+
+
+def _compute_prediction_quality(stages, probs):
+    arr = _normalize_distribution(probs)
+    if len(arr) == 0:
+        return {
+            "top_stage": None,
+            "top_probability": 0.0,
+            "second_probability": 0.0,
+            "margin": 0.0,
+            "entropy": 0.0,
+            "normalized_entropy": 1.0,
+            "is_flat_distribution": True,
+            "confidence": 0.0,
+            "uncertainty": 1.0,
+        }
+
+    order = np.argsort(arr)[::-1]
+    top_idx = int(order[0])
+    top_prob = float(arr[top_idx])
+    second_prob = float(arr[order[1]]) if len(arr) > 1 else 0.0
+    margin = max(0.0, top_prob - second_prob)
+
+    eps = 1e-12
+    entropy = float(-np.sum(arr * np.log(np.clip(arr, eps, 1.0))))
+    max_entropy = float(np.log(len(arr))) if len(arr) > 1 else 1.0
+    normalized_entropy = entropy / max_entropy if max_entropy > 0 else 0.0
+    normalized_entropy = min(max(normalized_entropy, 0.0), 1.0)
+
+    is_flat = bool(normalized_entropy >= 0.90 or margin <= 0.10)
+
+    return {
+        "top_stage": str(stages[top_idx]) if len(stages) > top_idx else None,
+        "top_probability": top_prob,
+        "second_probability": second_prob,
+        "margin": margin,
+        "entropy": entropy,
+        "normalized_entropy": normalized_entropy,
+        "is_flat_distribution": is_flat,
+        "confidence": top_prob,
+        "uncertainty": normalized_entropy,
+    }
+
+
+def _risk_level_from_probability(value):
+    if value < 0.20:
+        return "low"
+    if value < 0.50:
+        return "moderate"
+    return "high"
+
+
+def _stage_metadata():
+    return [
+        {"key": "1", "label": "G1", "description": "Kidney damage with normal or high function", "egfr_range": ">=90"},
+        {"key": "2", "label": "G2", "description": "Kidney damage with mild loss of function", "egfr_range": "60-89"},
+        {"key": "3.1", "label": "G3a", "description": "Mild to moderate loss of function", "egfr_range": "45-59"},
+        {"key": "3.2", "label": "G3b", "description": "Moderate to severe loss of function", "egfr_range": "30-44"},
+        {"key": "4", "label": "G4", "description": "Severe loss of function", "egfr_range": "15-29"},
+        {"key": "5", "label": "G5", "description": "Kidney failure", "egfr_range": "<15"},
+    ]
 
 
 def _stage_from_egfr(egfr_value):
@@ -205,31 +413,70 @@ def _resolve_stage_index(current_stage_raw, stages, egfr_value):
 # ==========================================================
 
 def predict_progression(history, mode="lab"):
-
     model, assets = load_ckd_model(mode)
     if model is None:
         return {"success": False, "error": "Model not found"}
 
     seq, static_vals = build_sequence(history, assets)
 
-    # Predict
+    # Predict from trained LSTM heads
     next_pred, sixm_pred = model.predict([seq, static_vals], verbose=0)
 
-    next_probs = next_pred[0]
-    sixm_probs = sixm_pred[0]
+    next_probs = _normalize_distribution(next_pred[0])
+    sixm_probs = _normalize_distribution(sixm_pred[0])
 
-    # Current stage = last visit stage
-    stages = assets["stages"]
+    # Optional calibration if temperature settings are provided in assets.
+    next_probs, next_calibration = _maybe_calibrate_distribution(next_probs, assets, "next_visit")
+    sixm_probs, sixm_calibration = _maybe_calibrate_distribution(sixm_probs, assets, "six_month")
+
+    # Current stage = latest visit stage (fallback to eGFR-based stage if not provided)
+    stages = list(assets.get("stages", ["1", "2", "3.1", "3.2", "4", "5"]))
     current_stage_raw = history[-1].get("ckd_stage")
     egfr_value = history[-1].get("egfr", history[-1].get("gfr"))
     current_stage, current_idx = _resolve_stage_index(current_stage_raw, stages, egfr_value)
 
+    # Guardrail: if recent eGFR trend improves, reduce worsening risk distribution
+    next_probs, sixm_probs, trend_adjustment = _apply_egfr_trend_guardrail(
+        next_probs,
+        sixm_probs,
+        current_idx,
+        history,
+    )
+
+    next_probs = _normalize_distribution(next_probs)
+    sixm_probs = _normalize_distribution(sixm_probs)
+
     risks = calculate_risks(next_probs, sixm_probs, current_idx)
+    quality = _compute_prediction_quality(stages, next_probs)
+
+    try:
+        egfr_numeric = float(egfr_value)
+    except Exception:
+        egfr_numeric = None
+
+    overall_progression_risk = float(risks["risk_progression_next_visit"])
 
     return {
         "success": True,
         "mode": mode,
+        "used_ultrasound": mode == "lab+us",
         "current_stage": current_stage,
+        "egfr_value": egfr_numeric,
+        "stage_reference": _stage_metadata(),
+        "confidence": round(float(quality["confidence"]), 4),
+        "uncertainty": round(float(quality["uncertainty"]), 4),
+        "prediction_quality": {
+            "top_stage": quality["top_stage"],
+            "top_probability": round(float(quality["top_probability"]), 4),
+            "second_probability": round(float(quality["second_probability"]), 4),
+            "margin": round(float(quality["margin"]), 4),
+            "normalized_entropy": round(float(quality["normalized_entropy"]), 4),
+            "is_flat_distribution": bool(quality["is_flat_distribution"]),
+        },
+        "calibration": {
+            "next_visit": next_calibration,
+            "six_month": sixm_calibration,
+        },
         "next_visit_stage_probabilities": {
             stage: round(float(prob), 4)
             for stage, prob in zip(stages, next_probs)
@@ -238,6 +485,9 @@ def predict_progression(history, mode="lab"):
             stage: round(float(prob), 4)
             for stage, prob in zip(stages, sixm_probs)
         },
+        "trend_adjustment": trend_adjustment,
+        "overall_progression_risk": round(overall_progression_risk, 4),
+        "overall_risk_level": _risk_level_from_probability(overall_progression_risk),
         **risks
     }
 
