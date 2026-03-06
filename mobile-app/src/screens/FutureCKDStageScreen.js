@@ -466,7 +466,8 @@ const analyzeUltrasound = async () => {
     setScanLoading(false);
   }
 };
-  const analyzeData = async () => {
+
+const analyzeData = async () => {
     // Check if we have either lab report image OR manual values
     const hasLabReport = !!labReportImage;
     const hasManualValues = !!(creatinine || egfr);

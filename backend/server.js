@@ -15,6 +15,7 @@ const stageProgressionRoutes = require("./routes/stageProgression");
 const bpRoutes = require("./routes/bp");
 const healthSyncRoutes = require("./routes/healthSync");
 const { startSyncJob } = require("./services/healthSyncService");
+const { analyzeUltrasoundViaFastApi } = require("./utils/inferenceClient");
 
 const app = express();
 
@@ -109,125 +110,142 @@ app.post("/api/upload-ultrasound", upload.single("ultrasound"), (req, res) => {
   const { spawn } = require("child_process");
   const imagePath = req.file.path;
 
-  // Path to ultrasound analysis script
-  const scriptPath = path.join(
-    __dirname,
-    "..",
-    "ai-engine",
-    "src",
-    "ckd_stage",
-    "ultrasound_scan.py",
-  );
-
-  console.log("=== ULTRASOUND ANALYSIS START ===");
-  console.log("Image path:", imagePath);
-  console.log("Script path:", scriptPath);
-  console.log("Script exists:", fs.existsSync(scriptPath));
-
-  // Check if script exists
-  if (!fs.existsSync(scriptPath)) {
-    fs.unlink(imagePath, () => {});
-    console.error("Python script not found at:", scriptPath);
-    return res.status(500).json({
-      message: "Ultrasound analysis script not found. Please contact support.",
-      error: `Script path: ${scriptPath}`,
-    });
-  }
-
-  const pythonProcess = spawn("python", [scriptPath, imagePath]);
-
-  let dataString = "";
-  let errorString = "";
-
-  pythonProcess.stdout.on("data", (data) => {
-    const output = data.toString();
-    console.log("Python stdout:", output);
-    dataString += output;
-  });
-
-  pythonProcess.stderr.on("data", (data) => {
-    const output = data.toString();
-    console.error("Python stderr:", output);
-    errorString += output;
-  });
-
-  pythonProcess.on("error", (err) => {
-    console.error("=== PYTHON PROCESS ERROR ===");
-    console.error("Error:", err.message);
-    fs.unlink(imagePath, () => {});
-    return res.status(500).json({
-      message: "Failed to spawn Python process",
-      error: err.message,
-    });
-  });
-
-  pythonProcess.on("close", async (code) => {
-    console.log("Python process exited with code:", code);
-
-    // Clean up uploaded file
-    fs.unlink(imagePath, (err) => {
-      if (err) console.error("Error deleting file:", err);
-    });
-
-    if (code !== 0) {
-      console.error(`Python script exited with code ${code}`);
-      console.error(`Stderr: ${errorString}`);
-      return res.status(500).json({
-        message: "Error analyzing ultrasound",
-        error: errorString || `Process exited with code ${code}`,
-      });
-    }
-
-    try {
-      // Some debug lines may come from stdout; grab the last JSON-looking line
-      const lines = dataString.trim().split(/\r?\n/);
-      const jsonLine = [...lines]
-        .reverse()
-        .find((line) => line.trim().startsWith("{"));
-
-      if (!jsonLine) {
-        console.error("No JSON output found. Raw output:", dataString);
-        return res.status(500).json({
-          message: "Python script did not return valid analysis result",
-          error: "No JSON in output",
-        });
-      }
-
-      const result = JSON.parse(jsonLine);
-      if (!result.success) {
-        return res.status(400).json({
-          message: result.error || "Failed to analyze ultrasound",
-          success: false,
-        });
-      }
-
-      // Save kidney scan measurement
-      try {
+  // Fast path: call persistent FastAPI inference service first.
+  analyzeUltrasoundViaFastApi(imagePath)
+    .then(async (fastApiResult) => {
+      if (fastApiResult?.success) {
+        fs.unlink(imagePath, () => {});
         await KidneyScan.create({
           name,
-          kidneyLengthCm: result.kidney_length_cm,
-          kidneyWidthCm: result.kidney_width_cm,
-          interpretation: result.interpretation,
-          status: result.status || "unknown",
+          kidneyLengthCm: fastApiResult.kidney_length_cm,
+          kidneyWidthCm: fastApiResult.kidney_width_cm,
+          interpretation: fastApiResult.interpretation,
+          status: fastApiResult.status,
           imagePath,
         });
-      } catch (dbErr) {
-        console.error("Error saving kidney scan:", dbErr);
-        // Continue responding even if save fails
+        return res.json(fastApiResult);
       }
 
-      console.log("=== ULTRASOUND ANALYSIS COMPLETE ===");
-      res.json(result);
-    } catch (e) {
-      console.error("=== ERROR PARSING PYTHON OUTPUT ===");
-      console.error("Parse error:", e.message);
-      console.error("Raw output:", dataString);
-      res.status(500).json({
-        message: "Error parsing ultrasound analysis result",
-        error: e.message,
+      // Path to ultrasound analysis script
+      const scriptPath = path.join(
+        __dirname,
+        "..",
+        "ai-engine",
+        "src",
+        "ckd_stage",
+        "ultrasound_scan.py",
+      );
+
+      console.log("=== ULTRASOUND ANALYSIS START ===");
+      console.log("Image path:", imagePath);
+      console.log("Script path:", scriptPath);
+      console.log("Script exists:", fs.existsSync(scriptPath));
+
+      if (!fs.existsSync(scriptPath)) {
+        fs.unlink(imagePath, () => {});
+        console.error("Python script not found at:", scriptPath);
+        return res.status(500).json({
+          message: "Ultrasound analysis script not found. Please contact support.",
+          error: `Script path: ${scriptPath}`,
+        });
+      }
+
+      const pythonProcess = spawn("python", [scriptPath, imagePath]);
+
+      let dataString = "";
+      let errorString = "";
+
+      pythonProcess.stdout.on("data", (data) => {
+        const output = data.toString();
+        console.log("Python stdout:", output);
+        dataString += output;
       });
-    }
-  });
+
+      pythonProcess.stderr.on("data", (data) => {
+        const output = data.toString();
+        console.error("Python stderr:", output);
+        errorString += output;
+      });
+
+      pythonProcess.on("error", (err) => {
+        console.error("=== PYTHON PROCESS ERROR ===");
+        console.error("Error:", err.message);
+        fs.unlink(imagePath, () => {});
+        return res.status(500).json({
+          message: "Failed to spawn Python process",
+          error: err.message,
+        });
+      });
+
+      pythonProcess.on("close", async (code) => {
+        console.log("Python process exited with code:", code);
+
+        fs.unlink(imagePath, (err) => {
+          if (err) console.error("Error deleting file:", err);
+        });
+
+        if (code !== 0) {
+          console.error(`Python script exited with code ${code}`);
+          console.error(`Stderr: ${errorString}`);
+          return res.status(500).json({
+            message: "Error analyzing ultrasound",
+            error: errorString || `Process exited with code ${code}`,
+          });
+        }
+
+        try {
+          const lines = dataString.trim().split(/\r?\n/);
+          const jsonLine = [...lines]
+            .reverse()
+            .find((line) => line.trim().startsWith("{"));
+
+          if (!jsonLine) {
+            console.error("No JSON output found. Raw output:", dataString);
+            return res.status(500).json({
+              message: "Invalid output from analysis script",
+              raw: dataString,
+            });
+          }
+
+          const result = JSON.parse(jsonLine);
+
+          if (!result.success) {
+            return res.status(400).json({
+              message: result.error || "Ultrasound analysis failed",
+              success: false,
+            });
+          }
+
+          await KidneyScan.create({
+            name,
+            kidneyLengthCm: result.kidney_length_cm,
+            kidneyWidthCm: result.kidney_width_cm,
+            interpretation: result.interpretation,
+            status: result.status,
+            imagePath,
+          });
+
+          res.json(result);
+        } catch (error) {
+          console.error("JSON Parse Error:", error.message);
+          console.error("Raw output:", dataString);
+          res.status(500).json({
+            message: "Failed to parse analysis result",
+            error: error.message,
+            raw: dataString,
+          });
+        }
+      });
+    })
+    .catch((error) => {
+      fs.unlink(imagePath, () => {});
+      return res.status(500).json({
+        message: "Ultrasound analysis failed",
+        error: error.message,
+      });
+    });
+
+  return;
 });
 app.use("/api/risk-history", riskHistoryRoutes);
 
