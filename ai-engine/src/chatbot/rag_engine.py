@@ -165,6 +165,11 @@ class RAGEngine:
                     "tell me", "help me", "what is", "is it", "yes", "no",
                     "and", "or", "but", "the", "a", "an", "my", "your",
                     "good", "bad", "okay", "not", "enough",
+                    # generic health/status words that are not clinical terms
+                    "health", "condition", "status", "how", "how is",
+                    "how?", "condition?", "health?", "status?",
+                    "name", "district", "area", "details", "records",
+                    "information", "data", "normal", "problem",
                 }
 
                 # ── Extract clean medical entities from NLU ───────────────────
@@ -196,7 +201,10 @@ class RAGEngine:
                 all_entities = list(dict.fromkeys(entity_terms + meddict_terms[:3]))
 
                 template = INTENT_TEMPLATES.get(nlu_intent)
-                if template and all_entities:
+                if nlu_intent == "ask_general_health" and not all_entities:
+                    # No real medical entities — user is asking about their own health status
+                    english_query = "What is my current health status based on my latest medical records?"
+                elif template and all_entities:
                     # Fill template with top 3 entities (e.g. "Kidney disease, eGFR, Risk")
                     entity_str = ", ".join(all_entities[:3])
                     english_query = template.format(entities=entity_str)
@@ -233,20 +241,28 @@ class RAGEngine:
         search_query = self.llm.contextualize_query(english_query, chat_history)
 
         # 4. RAG RETRIEVAL (Use REWRITTEN query)
-        Log.step("📡", "RAG: Searching Vector DB", f"Query: '{search_query}'")
-        t_retrieval_start = time.time()
-        search_results = self.vector_db.query_with_nlu(search_query) # <--- Use Search Query
-        t_retrieval_end = time.time()
-        
-        if search_results and 'results' in search_results:
-             count = len(search_results['results'])
-             Log.step("📥", "DB Retrieval", f"Found {count} candidates")
-             for idx, res in enumerate(search_results['results']):
-                 doc_id = res.get('metadata', {}).get('source', 'Unknown')
-                 score = res.get('score', 0)
-                 # print(f"      [{idx+1}] {doc_id} (Score: {score:.4f})") 
+        # Personal-status queries bypass Vector DB — patient MongoDB record covers everything
+        _PERSONAL_STATUS_QUERIES = {
+            "what is my current health status based on my latest medical records",
+        }
+        if search_query.lower().strip().rstrip("?") in _PERSONAL_STATUS_QUERIES:
+            Log.step("⚡", "PERSONAL QUERY", "Bypassing Vector DB — using MongoDB record only")
+            search_results = None
         else:
-             Log.warning("DB Retrieval: No chunks found")
+            Log.step("📡", "RAG: Searching Vector DB", f"Query: '{search_query}'")
+            t_retrieval_start = time.time()
+            search_results = self.vector_db.query_with_nlu(search_query) # <--- Use Search Query
+            t_retrieval_end = time.time()
+
+            if search_results and 'results' in search_results:
+                count = len(search_results['results'])
+                Log.step("📥", "DB Retrieval", f"Found {count} candidates")
+                for idx, res in enumerate(search_results['results']):
+                    doc_id = res.get('metadata', {}).get('source', 'Unknown')
+                    score = res.get('score', 0)
+                    # print(f"      [{idx+1}] {doc_id} (Score: {score:.4f})")
+            else:
+                Log.warning("DB Retrieval: No chunks found")
         
         context_documents = []
         source_metadata = []
