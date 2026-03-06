@@ -21,8 +21,15 @@ import json
 import os
 import io
 from PIL import Image as PILImage, ImageOps
+from ultralytics import SAM
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Initialize MobileSAM globally so it only loads into RAM once.
+# It will automatically download 'mobile_sam.pt' on the first run.
+print("[PortionEstimator] Loading MobileSAM Foundation Model...")
+_SAM_PATH = os.path.join(BASE_DIR, "..", "mobile_sam.pt")
+sam_model = SAM(_SAM_PATH)
 
 # Set to True when running standalone to visualise GrabCut masks.
 # ALWAYS False in production (cv2.waitKey blocks the server).
@@ -70,7 +77,7 @@ COMPARTMENT_Y_SPLIT = 778
 # FOOD_DENSITY (g / ml) ← bulk density at LEVEL FILL
 FOOD_DENSITY = {
     # ── Rice & Starches ──────────────────────────────────────
-    "white rice":     0.80,
+    "white rice":     1,
     "red rice":       0.85,
     "fried rice":     0.75,
     "roti":           0.55,
@@ -79,9 +86,9 @@ FOOD_DENSITY = {
     "hoppers":        0.38,
 
     # ── Curries & Protein ────────────────────────────────────
-    "chicken":         0.75,
+    "chicken":         1.5,
     "fish curry":      0.80,
-    "dahl curry":      1.05,
+    "dahl curry":      1.25,
     "Beans curry":     0.65,
     "egg":             0.95,
     "cutlet":          0.60,
@@ -97,7 +104,7 @@ FOOD_DENSITY = {
     "beetroot":                 0.70,
     "Pol sambol":               0.45,
     "Pol sambol - tempered":    0.45,
-    "Pol sambol - lime added":  0.45,
+    "Pol sambol - lime added":  0.75,
 
     # ── Fruits ───────────────────────────────────────────────
     "avacado":   0.90,
@@ -180,8 +187,8 @@ def standardize_incoming_image(image_bytes):
 
 def create_food_mask(cv_img, x1, y1, x2, y2):
     """
-    Create a precise binary food mask inside a bounding box using GrabCut.
-    Falls back to the raw bbox if GrabCut fails.
+    Create a precise binary food mask using MobileSAM with YOLO bbox as a spatial prompt.
+    Falls back to the raw bbox if SAM fails.
     """
     h, w = cv_img.shape[:2]
     x1, y1 = max(0, x1), max(0, y1)
@@ -195,21 +202,27 @@ def create_food_mask(cv_img, x1, y1, x2, y2):
         return mask
 
     try:
-        gc_mask = np.zeros((h, w), dtype=np.uint8)
-        bgd = np.zeros((1, 65), np.float64)
-        fgd = np.zeros((1, 65), np.float64)
-        cv2.grabCut(cv_img, gc_mask, (x1, y1, bw, bh),
-                    bgd, fgd, 5, cv2.GC_INIT_WITH_RECT)
-        mask = np.where((gc_mask == cv2.GC_FGD) | (gc_mask == cv2.GC_PR_FGD),
-                        255, 0).astype(np.uint8)
+        # Pass the YOLO bounding box as a spatial prompt to MobileSAM
+        results = sam_model.predict(cv_img, bboxes=[[x1, y1, x2, y2]], verbose=False)
+
+        if results and results[0].masks is not None:
+            sam_mask = results[0].masks.data[0].cpu().numpy()
+
+            if sam_mask.shape != (h, w):
+                sam_mask = cv2.resize(sam_mask, (w, h), interpolation=cv2.INTER_NEAREST)
+
+            mask[sam_mask > 0] = 255
+        else:
+            mask[y1:y2, x1:x2] = 255
 
         if DEBUG_SHOW_MASKS:
             preview = mask[y1:y2, x1:x2]
-            cv2.imshow("GrabCut Mask - What the AI sees", preview)
+            cv2.imshow("SAM Mask - What the AI sees", preview)
             cv2.waitKey(0)
-            cv2.destroyWindow("GrabCut Mask - What the AI sees")
+            cv2.destroyWindow("SAM Mask - What the AI sees")
 
-    except Exception:
+    except Exception as e:
+        print(f"[PortionEstimator] SAM Segmentation error: {e}. Falling back to bbox.")
         mask[y1:y2, x1:x2] = 255
 
     return mask

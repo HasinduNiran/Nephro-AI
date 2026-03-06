@@ -86,6 +86,34 @@ const getWallet = async (userId) => {
 };
 
 // ---------------------------------------------------------
+// ROUTE 0: DETECT-FOODS — proxy to FastAPI AI engine (port 8001)
+// ---------------------------------------------------------
+router.post('/detect-foods', upload.single('image'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: "No image provided" });
+
+        const form = new FormData();
+        form.append('image', req.file.buffer, {
+            filename: 'meal.jpg',
+            contentType: 'image/jpeg',
+        });
+
+        console.log("🔍 Forwarding image to FastAPI AI engine (port 8001)...");
+        const aiResponse = await axios.post('http://127.0.0.1:8001/mealPlate/detect-foods', form, {
+            headers: { ...form.getHeaders() },
+            timeout: 120000,
+        });
+
+        console.log("✅ FastAPI response received:", JSON.stringify(aiResponse.data).slice(0, 200));
+        res.json(aiResponse.data);
+
+    } catch (err) {
+        console.error("❌ FastAPI AI Engine Error:", err.message);
+        res.status(500).json({ error: "AI Engine Unavailable", detail: err.message });
+    }
+});
+
+// ---------------------------------------------------------
 // ROUTE 1: DETECT FOODS (with auto portion estimation)
 // ---------------------------------------------------------
 router.post('/detect', upload.single('image'), async (req, res) => {

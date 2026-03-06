@@ -335,14 +335,16 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         });
       }
 
-      const response = await axios.post("/mealPlate/detect", formData, {
+      const response = await axios.post("http://127.0.0.1:5001/predict_meal_with_portions", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
-      const detectedData = response.data.detected || [];
-      const hasAutoPortions = response.data.hasAutoPortions || false;
+      console.log("Backend Response:", response.data);
+
+      const detectedData = response.data.portions || response.data.detected_foods || response.data.detected || [];
+      const hasAutoPortions = true;
 
       const initialItems = detectedData.map((item) => {
         let foodName = item.food;
@@ -379,8 +381,8 @@ const MealAnalysisScreen = ({ route, navigation }) => {
 
         if (
           hasAutoPortions &&
-          item.autoPortionGrams &&
-          item.autoPortionGrams > 0
+          item.estimated_grams &&
+          item.estimated_grams > 0
         ) {
           // Convert grams to the best matching unit
           const localFood = foodNutrientDB[foodName];
@@ -395,12 +397,12 @@ const MealAnalysisScreen = ({ route, navigation }) => {
             )) {
               if (!unitName || unitName === "undefined") continue;
               // How many of this unit = estimated grams?
-              const count = item.autoPortionGrams / unitGrams;
+              const count = item.estimated_grams / unitGrams;
               // Round to nearest 0.5
               const rounded = Math.round(count * 2) / 2;
               if (rounded >= 0.5) {
                 const diff = Math.abs(
-                  rounded * unitGrams - item.autoPortionGrams,
+                  rounded * unitGrams - item.estimated_grams,
                 );
                 if (diff < bestDiff) {
                   bestDiff = diff;
@@ -417,7 +419,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
           } else {
             // No unit conversion possible, use grams directly
             autoUnit = "grams";
-            autoAmount = String(item.autoPortionGrams);
+            autoAmount = String(item.estimated_grams);
             if (!units.includes("grams")) {
               units = ["grams", ...units];
             }
@@ -431,8 +433,8 @@ const MealAnalysisScreen = ({ route, navigation }) => {
           availableUnits: units && units.length > 0 ? units : ["grams"],
           hasVariants: variants !== null,
           variants: variants || [],
-          autoEstimated: hasAutoPortions && item.autoPortionGrams > 0,
-          autoPortionGrams: item.autoPortionGrams || null,
+          autoEstimated: hasAutoPortions && item.estimated_grams > 0,
+          autoPortionGrams: item.estimated_grams || null,
           compartment: item.compartment || null,
         };
       });

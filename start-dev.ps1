@@ -32,6 +32,7 @@ Write-Host "axiosConfig.js patched." -ForegroundColor Green
 # ── Step 2: adb reverse ───────────────────────────────────────────────────────
 Write-Host "`n[2/4] Running adb reverse..." -ForegroundColor Cyan
 & $ADB reverse tcp:5000 tcp:5000
+& $ADB reverse tcp:5001 tcp:5001
 & $ADB reverse tcp:8001 tcp:8001
 Write-Host "adb reverse done." -ForegroundColor Green
 
