@@ -41,7 +41,9 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
   const { prediction_with_us, prediction_lab_only, eGFR_info } = result;
   const visitNumber = Number.isFinite(Number(result?.submissionIndex))
     ? Number(result.submissionIndex)
-    : null;
+    : Number.isFinite(Number(result?.prediction_context?.current_visit_number))
+      ? Number(result.prediction_context.current_visit_number)
+      : null;
 
   const primaryPrediction = prediction_with_us || prediction_lab_only;
   const primaryLabel = prediction_with_us ? "Lab + Ultrasound" : "Lab Only";
@@ -133,6 +135,27 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
     return "#FF3B30";
   };
 
+  const toPercent = (value, fallback = "N/A") => {
+    if (typeof value === "number") return `${(value * 100).toFixed(1)}%`;
+    return fallback;
+  };
+
+  const ultrasoundToDisplay = prediction_with_us && result?.current_visit_ultrasound_uploaded
+    ? {
+        prediction: prediction_with_us,
+        ultrasoundInfo: result?.ultrasound_info || null,
+        sourceText: `From current visit${visitNumber ? ` (Visit #${visitNumber})` : ""}`,
+      }
+    : null;
+  const usedPriorUltrasoundFallback = !!prediction_with_us && !result?.current_visit_ultrasound_uploaded;
+  const predictionContext = result?.prediction_context || {};
+  const visitNumbersUsed = Array.isArray(predictionContext.visit_numbers_used)
+    ? predictionContext.visit_numbers_used
+    : [];
+  const visitWindowText = visitNumbersUsed.length
+    ? visitNumbersUsed.map((v) => `Visit ${v}`).join(" + ")
+    : null;
+
   const renderPredictionCard = (prediction, title, icon, color, hasUltrasound = false, progressionByStage = []) => {
     if (!prediction) return null;
 
@@ -183,6 +206,17 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
         ? `${(probabilityNum6Month * 100).toFixed(1)}%`
         : "N/A";
 
+    const anyDeclinePercent = (() => {
+      if (typeof nextProgression?.any_decline_percentage === "string") {
+        const num = parseFloat(String(nextProgression.any_decline_percentage).replace("%", ""));
+        return Number.isNaN(num) ? null : `${num.toFixed(1)}%`;
+      }
+      if (typeof nextProgression?.any_decline_probability === "number") {
+        return `${(nextProgression.any_decline_probability * 100).toFixed(1)}%`;
+      }
+      return null;
+    })();
+
     return (
       <View style={styles.resultCard}>
         {/* Card Header */}
@@ -214,6 +248,12 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
               <Text style={styles.progressionMetricLabel}>Next 6-month progression probability</Text>
               <Text style={styles.progressionMetricValue}>{nextStageProb6Month}</Text>
             </View>
+            {anyDeclinePercent ? (
+              <View style={[styles.progressionMetricRow, styles.progressionMetricRowSecondary]}>
+                <Text style={styles.progressionMetricLabel}>Any decline risk (worsening to any higher stage)</Text>
+                <Text style={styles.progressionMetricValue}>{anyDeclinePercent}</Text>
+              </View>
+            ) : null}
           </View>
         </View>
 
@@ -274,22 +314,27 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
       >
         <Text style={styles.welcomeText}>CKD Stage Progression Analysis</Text>
         <Text style={styles.subtitle}>Patient: {userName || userEmail}</Text>
-        <Text style={styles.emailText}>Visit #{visitNumber ?? "N/A"}</Text>
+        <Text style={styles.emailText}>Visit:{visitNumber ?? "N/A"}</Text>
         {userEmail ? (
           <Text style={styles.emailText}>Email: {userEmail}</Text>
         ) : (
           <Text style={styles.emailText}>Email not provided</Text>
         )}
 
-        {/* Info Box */}
+        {/* Info Box
         <View style={styles.infoBox}>
           <Ionicons name="information-circle" size={20} color="#007AFF" />
           <Text style={styles.infoText}>
-            {prediction_with_us
+            {usedPriorUltrasoundFallback
+              ? "Showing Lab + Ultrasound prediction using prior-visit ultrasound fallback for modeling. Current visit ultrasound was not uploaded."
+              : prediction_with_us
               ? "Showing the Lab + Ultrasound prediction (most comprehensive)."
               : "Showing the Lab-only prediction (no ultrasound provided)."}
           </Text>
-        </View>
+        </View> */}
+        {visitWindowText ? (
+          <Text style={styles.emailText}>Trend window used: {visitWindowText}</Text>
+        ) : null}
 
         {/* Main Content Grid - Left and Right */}
         <View style={styles.gridContainer}>
@@ -334,6 +379,34 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
                 </View>
               </View>
             )}
+
+            {ultrasoundToDisplay?.prediction && (() => {
+              const p = ultrasoundToDisplay.prediction || {};
+              // Attempt common keys for kidney length
+              const kidneyLength =
+                ultrasoundToDisplay.ultrasoundInfo?.kidney_length_cm ||
+                p.kidney_length_cm ||
+                (p.ultrasound && p.ultrasound.kidney_length_cm) ||
+                (p.kidney && (p.kidney.length_cm || p.kidney.length)) ||
+                null;
+
+              if (!kidneyLength) return null; // hide block entirely when no kidney length available
+
+              return (
+                <View style={styles.egfrInfoBox}>
+                  <View style={styles.egfrHeader}>
+                    <Ionicons name="scan" size={24} color="#4A90E2" />
+                    <Text style={styles.egfrTitle}>Ultrasound Result</Text>
+                  </View>
+
+                  <View style={styles.egfrValueContainer}>
+                    <Text style={styles.egfrLabel}>Kidney Length</Text>
+                    <Text style={styles.egfrValue}>{Number(kidneyLength).toFixed(2)} cm</Text>
+                    <Text style={styles.egfrUnit}>{ultrasoundToDisplay.sourceText}</Text>
+                  </View>
+                </View>
+              );
+            })()}
 
             {/* Recommendations driven by progression probability */}
             <View style={styles.recommendationsCard}>

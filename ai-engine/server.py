@@ -5,17 +5,20 @@ import hashlib
 import base64
 import asyncio
 import re  # <--- NEW IMPORT FOR CLEANING TEXT
+import struct
 import wave
 import io
+import random
+import itertools
 from pathlib import Path
 import aiofiles
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 import edge_tts
-from pydub import AudioSegment
+from pydub import AudioSegment  # still used for STT audio normalization
 from google import genai
 from google.genai import types
 
@@ -24,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from src.chatbot.rag_engine import RAGEngine
 from src.chatbot.patient_input import PatientInputHandler
-from src.chatbot.config import GOOGLE_API_KEY, GOOGLE_TTS_MODEL, GOOGLE_TTS_VOICE, TTS_PHONETIC_ENABLED
+from src.chatbot.config import GOOGLE_API_KEY, GOOGLE_API_KEYS, GOOGLE_TTS_MODEL, GOOGLE_TTS_VOICE, TTS_PHONETIC_ENABLED
 from src.chatbot.nlg_glossary import NLGGlossary
 from src.utils.logger import ConsoleLogger as Log
 
@@ -42,6 +45,7 @@ class ChatRequest(BaseModel):
 
 class TTSRequest(BaseModel):
     text: str
+    urgency_flags: list = []  # list of {flag, term, ...} dicts from NLG engine
 
 app.add_middleware(
     CORSMiddleware,
@@ -61,14 +65,24 @@ try:
     rag_engine = RAGEngine()
     stt_engine = PatientInputHandler(model_size="small")
 
-    # Initialize Gemini TTS Client
-    gemini_client = None
-    if GOOGLE_API_KEY:
+    # Initialize Gemini TTS Client Pool (API Key Rotation)
+    gemini_clients = []
+    if GOOGLE_API_KEYS:
+        for i, key in enumerate(GOOGLE_API_KEYS):
+            try:
+                client = genai.Client(api_key=key)
+                gemini_clients.append(client)
+                Log.success(f"Gemini TTS Client #{i+1} initialized (key ...{key[-6:]})")
+            except Exception as e:
+                Log.warning(f"Gemini TTS client #{i+1} failed: {e}")
+        if gemini_clients:
+            Log.success(f"🔄 API Key Rotation: {len(gemini_clients)} keys loaded (free-tier limit x{len(gemini_clients)})")
+    elif GOOGLE_API_KEY:
         try:
-            gemini_client = genai.Client(api_key=GOOGLE_API_KEY)
-            Log.success("Gemini TTS Client Initialized (Sinhala Voice: Kore)")
+            gemini_clients.append(genai.Client(api_key=GOOGLE_API_KEY))
+            Log.success("Gemini TTS Client Initialized (single key)")
         except Exception as e:
-            Log.warning(f"Gemini TTS client failed to initialize: {e}")
+            Log.warning(f"Gemini TTS client failed: {e}")
     else:
         Log.warning("GOOGLE_API_KEY not set - Gemini TTS disabled, using Edge-TTS fallback")
 
@@ -85,6 +99,17 @@ except Exception as e:
 Path("temp_inputs").mkdir(exist_ok=True)
 Path("tts_cache").mkdir(exist_ok=True)
 
+# Round-Robin iterator — guarantees no two concurrent asyncio.gather calls share the same key
+client_cycle = itertools.cycle(gemini_clients) if gemini_clients else None
+
+# --- PRE-GENERATION CACHE for emergency phrases (populated once at startup) ---
+EMERGENCY_PHRASES = {
+    # Sinhala: "Go to a hospital right now! This is a medical emergency."
+    "si": "\u0dafැන් රෝහලයට යන්න! මෙය හදිසි වැද්\u200dය අවස්අාවකි.",
+    "en": "This sounds urgent. Please go to a hospital immediately.",
+}
+PREGEN_CACHE: dict = {}  # {"si": Path(...), "en": Path(...)}
+
 # -----------------------------------------------------------------------------
 # HELPERS
 # -----------------------------------------------------------------------------
@@ -96,6 +121,36 @@ def cleanup_file(path: str):
             print(f"🧹 Cleaned up: {path}")
     except Exception as e:
         print(f"⚠️ Cleanup warning: {e}")
+
+def split_into_sentences(text: str) -> list:
+    """
+    Split text into chunks, merging small sentences to SAVE API QUOTA.
+    Groups sentences until buffer hits 80 chars — 1 API request per chunk.
+    """
+    # Split at sentence-ending punctuation (Sinhala \u0964 = danda, English . ! ?)
+    parts = re.split(r'(?<=[.!?\u0964\n])\s+', text.strip())
+    merged = []
+    buffer = ""
+    for part in parts:
+        part = part.strip()
+        if not part:
+            continue
+        buffer = (buffer + " " + part).strip() if buffer else part
+        # Wait until we have a good-sized chunk before spending 1 precious API request
+        if len(buffer) >= 80:
+            merged.append(buffer)
+            buffer = ""
+    if buffer:  # flush remainder as its own chunk (NOT merged into last)
+        merged.append(buffer)
+    return merged if merged else [text]
+
+
+def get_gemini_client():
+    """Pick the NEXT Gemini client sequentially (Round-Robin) to prevent concurrent key collisions."""
+    if not client_cycle:
+        return None
+    return next(client_cycle)
+
 
 def clean_text_for_tts(text: str) -> str:
     """Removes Markdown symbols and unsupported characters."""
@@ -141,7 +196,7 @@ async def generate_tts_file(text: str) -> Path:
     if is_sinhala:
         # Try Gemini TTS first
         success = False
-        if gemini_client:
+        if gemini_clients:
             loop = asyncio.get_event_loop()
             success = await loop.run_in_executor(None, _generate_gemini_tts, clean_text, output_path)
 
@@ -176,11 +231,11 @@ async def generate_tts_file(text: str) -> Path:
 def _generate_gemini_tts(text: str, output_path: Path) -> bool:
     """
     Generate TTS audio using Gemini API (synchronous, runs in thread pool).
-    Outputs PCM -> WAV in memory -> MP3 via pydub.
+    Outputs PCM -> WAV directly (NO PYDUB TRANSCODING).
     Returns True on success, False on failure.
     """
     try:
-        response = gemini_client.models.generate_content(
+        response = get_gemini_client().models.generate_content(
             model=GOOGLE_TTS_MODEL,
             contents=text,
             config=types.GenerateContentConfig(
@@ -197,18 +252,16 @@ def _generate_gemini_tts(text: str, output_path: Path) -> bool:
 
         pcm_data = response.candidates[0].content.parts[0].inline_data.data
 
-        # Write PCM data to a WAV buffer in memory
-        wav_buffer = io.BytesIO()
-        with wave.open(wav_buffer, "wb") as wf:
+        # Write PCM directly into a WAV file — zero transcoding
+        wav_path = output_path.with_suffix(".wav")
+        with wave.open(str(wav_path), "wb") as wf:
             wf.setnchannels(1)
             wf.setsampwidth(2)       # 16-bit
             wf.setframerate(24000)   # 24kHz
             wf.writeframes(pcm_data)
-        wav_buffer.seek(0)
 
-        # Convert WAV to MP3 using pydub
-        audio_segment = AudioSegment.from_wav(wav_buffer)
-        audio_segment.export(str(output_path), format="mp3")
+        # Move to output_path so the cache key resolves correctly
+        wav_path.replace(output_path)
 
         print(f"   ✅ Gemini TTS generation successful (model: {GOOGLE_TTS_MODEL}, voice: {GOOGLE_TTS_VOICE})")
         return True
@@ -216,6 +269,73 @@ def _generate_gemini_tts(text: str, output_path: Path) -> bool:
     except Exception as e:
         print(f"   ❌ Gemini TTS failed: {e}")
         return False
+
+def _generate_gemini_tts_bytes(text: str):
+    """
+    Generate TTS audio using Gemini API.
+    Returns raw WAV bytes instantly (NO PYDUB TRANSCODING).
+    """
+    try:
+        response = get_gemini_client().models.generate_content(
+            model=GOOGLE_TTS_MODEL,
+            contents=text,
+            config=types.GenerateContentConfig(
+                response_modalities=["AUDIO"],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name=GOOGLE_TTS_VOICE,
+                        )
+                    )
+                ),
+            ),
+        )
+
+        pcm_data = response.candidates[0].content.parts[0].inline_data.data
+
+        # Instantly wrap the raw PCM in a WAV header — no pydub/ffmpeg
+        wav_buffer = io.BytesIO()
+        with wave.open(wav_buffer, "wb") as wf:
+            wf.setnchannels(1)
+            wf.setsampwidth(2)      # 16-bit
+            wf.setframerate(24000)  # 24kHz
+            wf.writeframes(pcm_data)
+
+        return wav_buffer.getvalue()
+
+    except Exception as e:
+        print(f"   \u274c Gemini TTS bytes failed: {e}")
+        return None
+
+
+async def _pregen_emergency_audio():
+    """
+    Called once at startup. Pre-generates WAV/MP3 files for each emergency
+    phrase so CRITICAL_URGENCY responses hit the local disk instead of waiting
+    for a Gemini API call.
+    """
+    global PREGEN_CACHE
+    for lang, phrase in EMERGENCY_PHRASES.items():
+        try:
+            path = await generate_tts_file(phrase)
+            if path.exists() and path.stat().st_size > 0:
+                PREGEN_CACHE[lang] = path
+                print(f"   \u2705 Emergency audio ready [{lang}]: {path.name} ({path.stat().st_size:,} bytes)")
+            else:
+                print(f"   \u26a0\ufe0f  Emergency pre-gen returned empty file [{lang}]")
+        except Exception as e:
+            print(f"   \u26a0\ufe0f  Emergency pre-gen failed [{lang}]: {e}")
+
+
+@app.on_event("startup")
+async def startup_event():
+    Log.step("\U0001f6a8", "Pre-generating emergency audio phrases...")
+    await _pregen_emergency_audio()
+    if PREGEN_CACHE:
+        Log.success(f"Emergency audio cache ready ({len(PREGEN_CACHE)} phrase(s) cached)")
+    else:
+        Log.warning("Emergency audio pre-gen skipped — will generate on first hit")
+
 
 # -----------------------------------------------------------------------------
 # ENDPOINTS
@@ -270,6 +390,93 @@ async def text_to_speech(request: TTSRequest):
     except Exception as e:
         print(f"❌ TTS endpoint error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# --- STREAMING TTS ENDPOINT (parallel sentence-by-sentence generation) ---
+@app.post("/chat/tts/stream")
+@app.post("/api/chat/tts/stream")
+async def text_to_speech_stream(request: TTSRequest):
+    """
+    Parallel TTS: splits text into sentences, generates each in parallel,
+    returns all MP3 segments as a length-framed binary blob.
+    Frame format per segment: [4-byte big-endian uint32 length][MP3 bytes]
+    Client decodes and plays segments sequentially for faster perceived start.
+    """
+    if not request.text or not request.text.strip():
+        raise HTTPException(status_code=400, detail="Text is required")
+
+    clean_text = clean_text_for_tts(request.text)
+    is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in request.text)
+
+    if is_sinhala and TTS_PHONETIC_ENABLED:
+        clean_text = nlg_glossary.apply_tts_phonetics(clean_text)
+
+    sentences = split_into_sentences(clean_text)
+    Log.step("\U0001f50a", "PARALLEL STREAM TTS",
+             f"{len(sentences)} sentences | {'SINHALA' if is_sinhala else 'ENGLISH'}")
+
+    loop = asyncio.get_event_loop()
+
+    async def generate_sentence_bytes(idx: int, sentence: str):
+        print(f"   \u21b3 [S{idx+1}/{len(sentences)}] {sentence[:60]}...")
+        mp3_bytes = None
+        if is_sinhala and gemini_clients:
+            mp3_bytes = await loop.run_in_executor(
+                None, _generate_gemini_tts_bytes, sentence
+            )
+        else:
+            voice = "si-LK-ThiliniNeural" if is_sinhala else "en-US-AriaNeural"
+            try:
+                tmp_path = Path("tts_cache") / f"stmp_{hashlib.md5(sentence.encode()).hexdigest()}.mp3"
+                communicate = edge_tts.Communicate(sentence, voice)
+                await communicate.save(str(tmp_path))
+                mp3_bytes = tmp_path.read_bytes()
+                tmp_path.unlink(missing_ok=True)
+            except Exception as e:
+                print(f"   \u274c [S{idx+1}] Edge-TTS failed: {e}")
+        if mp3_bytes:
+            print(f"   \u2705 [S{idx+1}] Ready — {len(mp3_bytes):,} bytes")
+        return mp3_bytes
+
+    # Fire all sentences in parallel
+    results = await asyncio.gather(
+        *[generate_sentence_bytes(i, s) for i, s in enumerate(sentences)]
+    )
+
+    # Pack as length-framed binary: <uint32 len><wav/mp3 bytes> per segment
+    output = io.BytesIO()
+    valid = 0
+
+    # 🚨 CRITICAL_URGENCY fast-path: prepend pre-cached emergency phrase (0ms disk read)
+    flag_types = [f.get("flag") for f in request.urgency_flags]
+    if "CRITICAL_URGENCY" in flag_types:
+        pregen_key = "si" if is_sinhala else "en"
+        pregen_path = PREGEN_CACHE.get(pregen_key)
+        if pregen_path and pregen_path.exists():
+            emergency_bytes = pregen_path.read_bytes()
+            output.write(struct.pack(">I", len(emergency_bytes)))
+            output.write(emergency_bytes)
+            valid += 1
+            print(f"   \U0001f6a8 CRITICAL_URGENCY: prepended emergency phrase ({len(emergency_bytes):,} bytes, 0ms)")
+        else:
+            print("   \u26a0\ufe0f  CRITICAL_URGENCY: pre-cache miss \u2014 emergency phrase not available")
+
+    for wav_bytes in results:
+        if wav_bytes:
+            output.write(struct.pack(">I", len(wav_bytes)))
+            output.write(wav_bytes)
+            valid += 1
+
+    data = output.getvalue()
+    if not data:
+        raise HTTPException(status_code=500, detail="All TTS segments failed")
+
+    print(f"   \u2705 Returning {valid} segment(s) \u2014 {len(data):,} bytes total")
+    return Response(
+        content=data,
+        media_type="application/octet-stream",
+        headers={"X-Segment-Count": str(valid)},
+    )
+
 
 # --- CLEAR CACHE ENDPOINT ---
 @app.post("/chat/clear")
@@ -330,7 +537,8 @@ async def text_chat(request: ChatRequest):
     return {
         "response": result["response"],
         "sources": result.get("source_metadata", []),
-        "nlu_analysis": result.get("nlu_analysis", {})
+        "nlu_analysis": result.get("nlu_analysis", {}),
+        "urgency_flags": result.get("urgency_flags", []),
     }
 
 @app.post("/chat/audio")

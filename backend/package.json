@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "predev": "node -e \"const{execFileSync}=require('child_process'),p=require('path').join(process.env.LOCALAPPDATA,'Android','Sdk','platform-tools','adb.exe');try{execFileSync(p,['reverse','tcp:5000','tcp:5000'],{stdio:'inherit'});execFileSync(p,['reverse','tcp:8001','tcp:8001'],{stdio:'inherit'})}catch(e){console.log('adb reverse skipped')}\"",
     "dev": "nodemon server.js"
   },
   "dependencies": {

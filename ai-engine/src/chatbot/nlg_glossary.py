@@ -302,11 +302,19 @@ class NLGGlossary:
     def enforce_glossary(self, text: str, register: str = "spoken_mixed") -> str:
         """
         Deterministic word-level replacement using the glossary.
-        Replaces enforce_spoken_sinhala() in llm_engine.py.
 
-        Applies longest-first matching (N-gram rule) and case-insensitive
-        replacement for ASCII keys, str.replace for Sinhala Unicode keys.
+        Uses a SINGLE-PASS SPAN approach (longest-first) to prevent the
+        "stuttering bracket" bug where replacement output gets re-scanned
+        by shorter keys (e.g. "Blood Pressure" → "Pressure එක" → "Pressure එක එක").
+
+        Phase 1: Walk all keys longest-first, claim non-overlapping spans.
+        Phase 2: Reconstruct the string once from the collected spans.
+        Replacement output is NEVER re-scanned.
         """
+        # Phase 1: collect non-overlapping (start, end, translation) spans
+        occupied: set = set()   # character positions already claimed
+        replacements = []       # (start, end, translation)
+
         for key in self._sorted_keys:
             translation = self.get(key, register)
             if not translation:
@@ -314,11 +322,36 @@ class NLGGlossary:
 
             if key.isascii():
                 pattern = re.compile(re.escape(key), re.IGNORECASE)
-                text = pattern.sub(translation, text)
+                for m in pattern.finditer(text):
+                    span_positions = range(m.start(), m.end())
+                    if not any(pos in occupied for pos in span_positions):
+                        replacements.append((m.start(), m.end(), translation))
+                        occupied.update(span_positions)
             else:
-                text = text.replace(key, translation)
+                start = 0
+                while True:
+                    idx = text.find(key, start)
+                    if idx == -1:
+                        break
+                    span_positions = range(idx, idx + len(key))
+                    if not any(pos in occupied for pos in span_positions):
+                        replacements.append((idx, idx + len(key), translation))
+                        occupied.update(span_positions)
+                    start = idx + 1  # advance past this position regardless
 
-        return text
+        # Phase 2: reconstruct string in a single left-to-right pass
+        if not replacements:
+            return text
+
+        replacements.sort(key=lambda x: x[0])
+        result = []
+        prev_end = 0
+        for start, end, translation in replacements:
+            result.append(text[prev_end:start])   # unchanged segment before match
+            result.append(translation)             # the replacement
+            prev_end = end
+        result.append(text[prev_end:])             # remainder after last match
+        return ''.join(result)
 
 
 # ── Self-Test ────────────────────────────────────────────────────────────────

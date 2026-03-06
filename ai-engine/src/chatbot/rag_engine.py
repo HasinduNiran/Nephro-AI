@@ -139,17 +139,40 @@ class RAGEngine:
                 # ============ FAST PATH: NLU + MedDict ============
                 translation_method = "sinhala_nlu"
                 Log.step("⚡", "FAST PATH", "Using Sinhala NLU + MedDict (no API call)")
-                
-                # Start with NLU's translated query
-                english_query = si_analysis['translated_query']
-                
-                # Extract entities from NLU
+
+                # ── Intent → Natural English Query Templates ─────────────────
+                # Maps NLU intent labels to natural question templates.
+                # {entities} is replaced with top medical entity terms.
+                # This produces coherent ChromaDB search queries instead of
+                # the old bag-of-words "ask general health Do I have? / ..." bug.
+                INTENT_TEMPLATES = {
+                    "ask_diet":           "What foods can I eat or should I avoid for {entities}?",
+                    "ask_symptoms":       "What are the symptoms and signs of {entities}?",
+                    "ask_medication":     "What medications are used to treat {entities}?",
+                    "ask_general_health": "What is the health risk assessment and management for {entities}?",
+                    "ask_lab_results":    "What do abnormal {entities} lab values mean for kidney disease?",
+                    "ask_lifestyle":      "What lifestyle changes help with {entities}?",
+                    "ask_emergency":      "When should a patient with {entities} go to the hospital?",
+                    "ask_stage":          "What are the stages and progression of {entities}?",
+                }
+
+                # ── Function-word filter: discard non-medical dictionary values ──
+                # These are sentence fragments / pronouns from the dict, not medical terms.
+                NOISE_VALUES = {
+                    "me", "to me", "i want", "i do not want", "i don't want",
+                    "have", "there is", "do i have? / is there?",
+                    "tell me", "help me", "what is", "is it", "yes", "no",
+                    "and", "or", "but", "the", "a", "an", "my", "your",
+                    "good", "bad", "okay", "not", "enough",
+                }
+
+                # ── Extract clean medical entities from NLU ───────────────────
                 nlu_entities = si_analysis.get('entities', {})
                 entity_terms = []
                 for category, terms in nlu_entities.items():
                     entity_terms.extend(terms)
-                
-                # Enrich with MedDict entities (parse the hints string)
+
+                # ── Extract clean medical terms from MedDict hints ────────────
                 meddict_terms = []
                 if dict_hints_raw:
                     for hint in dict_hints_raw.split(','):
@@ -158,22 +181,32 @@ class RAGEngine:
                                 parts = hint.strip().split('=')
                                 if len(parts) == 2:
                                     en_term = parts[1].strip().strip("'\"")
-                                    if en_term and en_term not in meddict_terms:
+                                    # Filter out noise values and duplicates
+                                    if (en_term
+                                            and en_term.lower() not in NOISE_VALUES
+                                            and en_term not in meddict_terms
+                                            and en_term not in entity_terms):
                                         meddict_terms.append(en_term)
-                            except:
+                            except Exception:
                                 pass
-                
-                # Build enhanced query: Intent + MedDict terms + NLU entities
-                query_parts = [nlu_intent.replace('_', ' ')]
-                query_parts.extend(meddict_terms[:5])  # Limit to top 5 MedDict terms
-                query_parts.extend(entity_terms[:3])    # Add NLU entities
-                
-                # Construct final English query
-                english_query = ' '.join(query_parts)
-                
-                # Clean up duplicates and format
-                english_query = ' '.join(dict.fromkeys(english_query.split()))
-                
+
+                # ── Build the natural English search query ────────────────────
+                # Combine NLU entities + filtered MedDict terms (deduplicated)
+                all_entities = list(dict.fromkeys(entity_terms + meddict_terms[:3]))
+
+                template = INTENT_TEMPLATES.get(nlu_intent)
+                if template and all_entities:
+                    # Fill template with top 3 entities (e.g. "Kidney disease, eGFR, Risk")
+                    entity_str = ", ".join(all_entities[:3])
+                    english_query = template.format(entities=entity_str)
+                elif all_entities:
+                    # No template match: compose a clean natural sentence
+                    entity_str = ", ".join(all_entities[:3])
+                    english_query = f"kidney disease {entity_str} management and risk assessment"
+                else:
+                    # Final fallback: use NLU's own translated query (never the intent label)
+                    english_query = si_analysis['translated_query']
+
                 Log.step("  ", "Built Query", f"'{english_query}'")
                 
             else:

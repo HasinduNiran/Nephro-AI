@@ -29,6 +29,9 @@ OPENROUTER_API_URL = "https://openrouter.ai/api/v1/embeddings"
 
 # Google GenAI API Settings
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GOOGLE_API_KEYS = [k.strip() for k in os.getenv("GOOGLE_API_KEYS", "").split(",") if k.strip()]
+if GOOGLE_API_KEY and GOOGLE_API_KEY not in GOOGLE_API_KEYS:
+    GOOGLE_API_KEYS.insert(0, GOOGLE_API_KEY)
 GOOGLE_TTS_MODEL = "gemini-2.5-flash-preview-tts" # Optimised for low-latency single-speaker TTS
 GOOGLE_TTS_VOICE = "Aoede"                               # Clear, professional pre-built voice
 
