@@ -4,6 +4,7 @@ Orchestrates the flow between NLU, VectorDB, Patient Data, and LLM.
 """
 
 import sys
+import json
 import hashlib
 import time
 from pathlib import Path
@@ -258,8 +259,11 @@ class RAGEngine:
         
         # 5. RETRIEVE PATIENT DATA (WITH NEW LOGS)
         # -----------------------------------------------------------------
+        _raw_record = self.patient_data.get_patient_record(patient_id)
         patient_context = self.patient_data.get_patient_context_string(patient_id)
         Log.step("👤", "Patient Data", f"Loaded record for '{patient_id}'")
+        print(json.dumps(_raw_record, indent=2, default=str))
+        print(patient_context)
         # -----------------------------------------------------------------
 
         # 6. GENERATE RESPONSE (Brain Layer)

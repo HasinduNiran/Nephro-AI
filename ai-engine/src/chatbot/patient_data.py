@@ -127,9 +127,9 @@ class PatientDataManager:
             "medications":   [],  # No medication schema yet — extend later
 
             "recent_labs": {
-                "creatinine": lab.get("creatinine", "N/A"),
-                "bun":        lab.get("bun", "N/A"),
-                "albumin":    lab.get("albumin", "N/A"),
+                "creatinine": lab.get("creatinine") or "N/A",
+                "bun":        lab.get("bun")        or "N/A",
+                "albumin":    lab.get("albumin")    or "N/A",
                 "hba1c":      hba1c     if hba1c     is not None else "N/A",
                 "systolic":   systolic  if systolic  is not None else "N/A",
                 "diastolic":  diastolic if diastolic is not None else "N/A",
@@ -162,7 +162,7 @@ class PatientDataManager:
         labs_str = ", ".join(
             f"{k.capitalize()}: {v}"
             for k, v in labs.items()
-            if v != "N/A"
+            if v not in ("N/A", None, "")
         )
 
         return (
