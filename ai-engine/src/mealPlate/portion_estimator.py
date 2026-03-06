@@ -1,4 +1,4 @@
-﻿"""
+"""
 PORTION ESTIMATOR MODULE  -  Direct Proportion + Heaping Factor
 ====================================================================
 The camera overlay locks the plate to a FIXED size and distance, so
