@@ -280,7 +280,7 @@ class RAGEngine:
         
         if target_lang == 'si':
             Log.step("🎨", "STYLE: Sinhala Localization...")
-            final_response = self.llm.translate_to_sinhala_fallback(llm_response)
+            final_response = self.llm.translate_to_sinhala_fallback(llm_response, user_intent=nlu_intent)
             Log.success(f"Final Output: {final_response[:50]}...")
         else:
             Log.step("ℹ️", "STYLE: Skipped (English Mode)")

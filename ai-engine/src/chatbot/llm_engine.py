@@ -368,7 +368,7 @@ class LLMEngine:
             
         return text
 
-    def enforce_spoken_sinhala(self, text: str) -> str:
+    def enforce_spoken_sinhala(self, text: str, user_intent: str = None) -> str:
         """
         [SAFETY NET] Deterministic glossary replacement using NLGGlossary.
         Uses the 'spoken_mixed' register (code-mixed Sinhala) by default.
@@ -401,10 +401,23 @@ class LLMEngine:
         text = text.replace("එක එක", "එක")
         text = text.replace("අගය අගය", "අගය")
         text = text.replace("Risk එක එක", "Risk එක")
-        
+
+        # 🛡️ Empathy guard: strip accidental sympathy openers for non-symptom intents
+        if user_intent not in {"ask_symptoms", "ask_emergency"}:
+            for phrase in [
+                "ඒක අහන්න ලැබීමත් කණගාටුයි.",
+                "ඒක අහන්න ලැබීමත් කණගාටුයි",
+                "මට කණගාටුයි.",
+                "මට කණගාටුයි",
+                "ඒ ගැන කණගාටුයි.",
+                "ඒ ගැන කණගාටුයි",
+            ]:
+                text = text.replace(phrase, "")
+            text = re.sub(r'  +', ' ', text).strip()
+
         return text
 
-    def translate_to_sinhala_fallback(self, text: str) -> str:
+    def translate_to_sinhala_fallback(self, text: str, user_intent: str = None) -> str:
         """
         [STYLE LAYER] Translates medical advice to Natural Spoken Sinhala.
         
@@ -429,6 +442,13 @@ class LLMEngine:
         hint_str = "\n   ".join(hint_strings) if hint_strings else "(No specific terms detected)"
         print(f"   💡 Style Hints ({len(hint_strings)} terms matched)")
         
+        # Empathy rule: only symptomatic intents get the "I'm sorry to hear" phrase
+        empathy_rule = (
+            "Translate 'I'm sorry to hear' as 'ඒක අහන්න ලැබීමත් කණගාටුයි'."
+            if user_intent in {"ask_symptoms", "ask_emergency"}
+            else "Do NOT add 'I'm sorry to hear that' or any sympathy opener. The user asked a factual question. Be warm but direct."
+        )
+
         # 2. REGISTER-AWARE PROMPT WITH STRUCTURED HINTS
         system_prompt = (
             "You are a compassionate Sri Lankan medical assistant who speaks like a real \n"
@@ -446,7 +466,7 @@ class LLMEngine:
             
             "🔥 STYLE RULES:\n"
             "1. **Opener:** Start with 'ඔයාගේ තත්ත්වයත් එක්ක බලද්දී...' (Considering your condition...).\n"
-            "2. **Empathy:** Translate 'I'm sorry to hear' as 'ඒක අහන්න ලැබීමත් කණගාටුයි'.\n"
+            "2. **Empathy:** " + empathy_rule + "\n"
             "3. **Anatomy:** Do NOT use 'පිටුපස' (Back) for 'Stomach'. Use 'බඩේ' for stomach.\n"
             "4. **Tone:** Use warm words like 'පුළුවන් නම්' (If possible), 'වගේ දේවල්' (Things like).\n"
             "5. **Code-Mixing (CRITICAL):** Use English medical terms naturally, but DO NOT put them in brackets as translations. NEVER write 'අවදානම් (High Risk)' or 'ඩයබිටීස් (දියවැඩියාව)'. Choose ONE language. Write 'අවදානම් තත්ත්වයක්' or 'ඩයබිටීස්'.\n"
@@ -497,7 +517,7 @@ class LLMEngine:
                 
                 # 🛡️ SAFETY NET: Apply full glossary deterministic sweep
                 # This catches LLM mistakes (e.g. "මැදුරු රෝගය" for Diabetes)
-                translation = self.enforce_spoken_sinhala(translation)
+                translation = self.enforce_spoken_sinhala(translation, user_intent=user_intent)
                 
                 print(f"✅ Natural Output: {translation}") 
                 return translation
