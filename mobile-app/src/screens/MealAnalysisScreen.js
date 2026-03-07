@@ -862,7 +862,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                           onValueChange={(val) => {
                             const updated = [...items];
                             updated[index].food = val;
-                            const localFood = foodNutrientDB[val];
+                            const localFood = lookupFood(val);
                             if (localFood && localFood.units) {
                               const newUnits = Object.keys(
                                 localFood.units,
@@ -896,52 +896,22 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                     <Ionicons name="close-circle" size={24} color="#dc3545" />
                   </TouchableOpacity>
                 </View>
-                {item.autoEstimated && (
-                  <View style={styles.autoEstimateBadge}>
-                    <Ionicons name="sparkles" size={14} color="#007BFF" />
-                    <Text style={styles.autoEstimateText}>
-                      Auto-estimated: ~{item.autoPortionGrams}g (
-                      {item.compartment?.replace("_", " ")})
+
+                {/* Grams display — AI estimate or manual */}
+                <View style={styles.gramsRow}>
+                  <Ionicons name="scale-outline" size={16} color="#007BFF" />
+                  <Text style={styles.gramsText}>
+                    {item.autoPortionGrams && !item.manuallyEdited
+                      ? `${item.autoPortionGrams}g`
+                      : item.unit === "grams"
+                      ? `${item.amount}g`
+                      : `${item.amount} ${item.unit?.replace(/_/g, " ")}`}
+                  </Text>
+                  {item.autoEstimated && !item.manuallyEdited && (
+                    <Text style={styles.gramsSubLabel}>
+                      {" "}· AI · {item.compartment?.replace(/_/g, " ")}
                     </Text>
-                  </View>
-                )}
-                <View style={styles.portionRow}>
-                  <View style={styles.portionControl}>
-                    <Text style={styles.portionLabel}>Amount</Text>
-                    <TextInput
-                      style={styles.amountInput}
-                      keyboardType="numeric"
-                      value={item.amount}
-                      onChangeText={(text) => { updateRow(index, "amount", text); updateRow(index, "manuallyEdited", true); }}
-                      placeholder="1"
-                    />
-                  </View>
-                  <View style={styles.portionControl}>
-                    <Text style={styles.portionLabel}>Unit</Text>
-                    <View style={styles.unitPickerWrapper}>
-                      <Picker
-                        selectedValue={item.unit || "grams"}
-                        style={styles.unitPicker}
-                        onValueChange={(val) => { updateRow(index, "unit", val); updateRow(index, "manuallyEdited", true); }}
-                      >
-                        {(item.availableUnits || ["grams"])
-                          .filter(
-                            (u) =>
-                              u &&
-                              u !== "undefined" &&
-                              u !== null &&
-                              typeof u === "string",
-                          )
-                          .map((u, idx) => (
-                            <Picker.Item
-                              key={`${u}-${idx}`}
-                              label={u.replace(/_/g, " ")}
-                              value={u}
-                            />
-                          ))}
-                      </Picker>
-                    </View>
-                  </View>
+                  )}
                 </View>
               </View>
             ))}
@@ -1406,6 +1376,22 @@ const styles = StyleSheet.create({
     textTransform: "capitalize",
   },
   deleteIcon: { padding: 5 },
+  gramsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 6,
+  },
+  gramsText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#007BFF",
+    marginLeft: 6,
+  },
+  gramsSubLabel: {
+    fontSize: 12,
+    color: "#6c757d",
+    fontWeight: "400",
+  },
   autoEstimateBadge: {
     flexDirection: "row",
     alignItems: "center",
