@@ -1273,16 +1273,13 @@ const ChatbotScreen = ({ route, navigation }) => {
   };
 
   return (
-    <SafeAreaView
-      style={styles.container}
-      edges={["top", "left", "right", "bottom"]}
-    >
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.card} />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 30}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
         {/* Enhanced Header */}
         <View style={styles.header}>
@@ -1318,6 +1315,7 @@ const ChatbotScreen = ({ route, navigation }) => {
         </View>
 
         <FlatList
+          style={{ flex: 1 }}
           ref={flatListRef}
           data={messages}
           renderItem={renderItem}
@@ -1388,11 +1386,11 @@ const ChatbotScreen = ({ route, navigation }) => {
           }
         />
 
-        <View>
+        <View style={{ backgroundColor: COLORS.card }}>
           <View
             style={[
               styles.inputContainer,
-              { paddingBottom: Platform.OS === "ios" ? 24 : 12 },
+              { paddingBottom: Platform.OS === "ios" ? 34 : 20 },
             ]}
           >
             <View style={styles.inputWrapper}>
