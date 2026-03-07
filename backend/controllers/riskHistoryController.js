@@ -90,7 +90,7 @@ const calculateLinearRegression = (records) => {
  */
 exports.saveRiskRecord = async (req, res) => {
   try {
-    const { userId, riskLevel, riskScore, vitalSigns } = req.body;
+    const { userId, riskLevel, riskScore, vitalSigns, shapValues } = req.body;
 
     if (!userId || !riskLevel || riskScore === undefined) {
       return res.status(400).json({ message: "Missing required fields" });
@@ -108,6 +108,7 @@ exports.saveRiskRecord = async (req, res) => {
       existingRecord.riskLevel = riskLevel;
       existingRecord.riskScore = riskScore;
       existingRecord.vitalSigns = vitalSigns;
+      existingRecord.shapValues = shapValues || null;
       existingRecord.recordDate = now;
       await existingRecord.save();
 
@@ -124,6 +125,7 @@ exports.saveRiskRecord = async (req, res) => {
       riskLevel,
       riskScore,
       vitalSigns,
+      shapValues: shapValues || null,
       month,
       year,
       recordDate: now,
@@ -179,6 +181,9 @@ exports.getRiskHistory = async (req, res) => {
 
     const trendAnalysis = calculateLinearRegression(records);
 
+    // Calculate per-feature SHAP trends (y=mx+c for each core feature over months)
+    const shapTrends = calculateShapTrends(records);
+
     // Format records for display
     const formattedRecords = records.map((record) => ({
       ...record,
@@ -189,6 +194,7 @@ exports.getRiskHistory = async (req, res) => {
     res.json({
       records: formattedRecords,
       trendAnalysis,
+      shapTrends,
     });
   } catch (error) {
     console.error("Error fetching risk history:", error);
@@ -214,6 +220,62 @@ exports.deleteRiskRecord = async (req, res) => {
     console.error("Error deleting risk record:", error);
     res.status(500).json({ message: "Failed to delete record", error: error.message });
   }
+};
+
+/**
+ * Calculate per-feature SHAP trend lines (y=mx+c) across monthly records.
+ * Returns slope, values, and regression line for each core feature.
+ */
+const calculateShapTrends = (records) => {
+  const coreFeatures = ["age", "gender", "bp_systolic", "bp_diastolic", "hba1c_level"];
+  const shapTrends = {};
+
+  // Filter records that have SHAP data
+  const shapRecords = records.filter(
+    (r) => r.shapValues && r.shapValues.age !== undefined
+  );
+
+  if (shapRecords.length < 2) {
+    // Not enough data for trend analysis
+    for (const feat of coreFeatures) {
+      shapTrends[feat] = {
+        slope: 0,
+        values: shapRecords.map((r) => r.shapValues?.[feat] ?? 0),
+        hasData: shapRecords.length > 0,
+      };
+    }
+    return shapTrends;
+  }
+
+  for (const feat of coreFeatures) {
+    const values = shapRecords.map((r, idx) => ({
+      x: idx,
+      y: r.shapValues?.[feat] ?? 0,
+    }));
+
+    const n = values.length;
+    const sumX = values.reduce((s, p) => s + p.x, 0);
+    const sumY = values.reduce((s, p) => s + p.y, 0);
+    const meanX = sumX / n;
+    const meanY = sumY / n;
+
+    let num = 0;
+    let den = 0;
+    for (const p of values) {
+      num += (p.x - meanX) * (p.y - meanY);
+      den += (p.x - meanX) * (p.x - meanX);
+    }
+
+    const slope = den !== 0 ? num / den : 0;
+
+    shapTrends[feat] = {
+      slope: parseFloat(slope.toFixed(4)),
+      values: values.map((v) => v.y),
+      hasData: true,
+    };
+  }
+
+  return shapTrends;
 };
 
 /**

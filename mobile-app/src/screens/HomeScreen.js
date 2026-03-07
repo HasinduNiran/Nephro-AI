@@ -73,7 +73,7 @@ const HomeScreen = ({ navigation, route }) => {
       subtitle: "Analyze early signs",
       icon: "pulse",
       color: "#4A90E2", // Blue
-      onPress: () => navigation.navigate("RiskPrediction"),
+      onPress: () => navigation.navigate("RiskPrediction", { userID }),
     },
     {
       id: 2,

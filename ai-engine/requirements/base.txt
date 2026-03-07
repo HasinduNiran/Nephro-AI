@@ -16,3 +16,6 @@ requests>=2.31.0
 # Utilities
 tqdm>=4.66.1
 langdetect>=1.0.9
+
+# Model Explainability
+shap>=0.42.0

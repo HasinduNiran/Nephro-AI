@@ -30,6 +30,15 @@ const riskRecordSchema = new mongoose.Schema(
       diabetes: { type: Boolean },
       hypertension: { type: Boolean },
     },
+    // SHAP feature contributions for explainability
+    shapValues: {
+      age: { type: Number },
+      gender: { type: Number },
+      bp_systolic: { type: Number },
+      bp_diastolic: { type: Number },
+      hba1c_level: { type: Number },
+      baseValue: { type: Number },
+    },
     // Month and year for tracking
     month: {
       type: Number,

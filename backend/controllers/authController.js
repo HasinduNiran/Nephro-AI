@@ -41,6 +41,8 @@ exports.register = async (req, res) => {
         id: newUser._id,
         name: newUser.name,
         email: newUser.email,
+        gender: newUser.gender,
+        birthday: newUser.birthday,
       },
     });
   } catch (error) {

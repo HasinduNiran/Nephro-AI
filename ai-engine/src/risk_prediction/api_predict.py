@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import json
 import os
+import shap
 
 def load_artifacts():
     """Load the trained model and label encoder"""
@@ -17,6 +18,82 @@ def load_artifacts():
         return model, label_encoder
     except FileNotFoundError as e:
         return None, None
+
+# Mapping from each of the 20 engineered features to their parent core features.
+# Interaction terms are split 50/50 between both parent features.
+FEATURE_TO_CORE = {
+    'age':                    {'age': 1.0},
+    'gender':                 {'gender': 1.0},
+    'bp_systolic':            {'bp_systolic': 1.0},
+    'bp_diastolic':           {'bp_diastolic': 1.0},
+    'hba1c_level':            {'hba1c_level': 1.0},
+    'age_bp_sys':             {'age': 0.5, 'bp_systolic': 0.5},
+    'age_bp_dia':             {'age': 0.5, 'bp_diastolic': 0.5},
+    'age_hba1c':              {'age': 0.5, 'hba1c_level': 0.5},
+    'bp_sys_hba1c':           {'bp_systolic': 0.5, 'hba1c_level': 0.5},
+    'bp_dia_hba1c':           {'bp_diastolic': 0.5, 'hba1c_level': 0.5},
+    'bp_sys_dia':             {'bp_systolic': 0.5, 'bp_diastolic': 0.5},
+    'gender_age':             {'gender': 0.5, 'age': 0.5},
+    'gender_bp_sys':          {'gender': 0.5, 'bp_systolic': 0.5},
+    'gender_hba1c':           {'gender': 0.5, 'hba1c_level': 0.5},
+    'pulse_pressure':         {'bp_systolic': 0.5, 'bp_diastolic': 0.5},
+    'mean_arterial_pressure': {'bp_systolic': 0.33, 'bp_diastolic': 0.67},
+    'bp_sys_category':        {'bp_systolic': 1.0},
+    'bp_dia_category':        {'bp_diastolic': 1.0},
+    'age_group':              {'age': 1.0},
+    'hba1c_category':         {'hba1c_level': 1.0},
+}
+
+FEATURE_ORDER = [
+    "age", "gender", "bp_systolic", "bp_diastolic", "hba1c_level",
+    "age_bp_sys", "age_bp_dia", "age_hba1c", "bp_sys_hba1c", "bp_dia_hba1c", "bp_sys_dia",
+    "gender_age", "gender_bp_sys", "gender_hba1c",
+    "pulse_pressure", "mean_arterial_pressure",
+    "bp_sys_category", "bp_dia_category", "age_group", "hba1c_category"
+]
+
+def compute_shap_values(model, features_df, predicted_class, label_encoder):
+    """
+    Compute SHAP values using TreeExplainer, then aggregate
+    the 20 engineered feature SHAP values into 5 core patient-facing features.
+    Returns dict with aggregated shap_values and base_value for the predicted class.
+    """
+    try:
+        explainer = shap.TreeExplainer(model)
+        raw_shap = explainer.shap_values(features_df)
+        
+        # raw_shap can be:
+        #   list of arrays: [n_classes][n_samples, n_features] (older SHAP)
+        #   3D ndarray: (n_samples, n_features, n_classes)   (newer SHAP >=0.42)
+        #   2D ndarray: (n_samples, n_features)              (binary/single output)
+        if isinstance(raw_shap, list):
+            class_shap = np.array(raw_shap[predicted_class])[0]
+        elif isinstance(raw_shap, np.ndarray) and raw_shap.ndim == 3:
+            class_shap = raw_shap[0, :, predicted_class]
+        else:
+            class_shap = np.array(raw_shap)[0]
+        
+        # Get base value (expected value)
+        base_value = explainer.expected_value
+        if isinstance(base_value, (list, np.ndarray)):
+            base_value = float(base_value[predicted_class])
+        else:
+            base_value = float(base_value)
+        
+        # Aggregate 20 features → 5 core features
+        core_shap = {'age': 0.0, 'gender': 0.0, 'bp_systolic': 0.0, 'bp_diastolic': 0.0, 'hba1c_level': 0.0}
+        for i, feat_name in enumerate(FEATURE_ORDER):
+            mapping = FEATURE_TO_CORE.get(feat_name, {})
+            for core_feat, weight in mapping.items():
+                core_shap[core_feat] += float(class_shap[i]) * weight
+        
+        # Round for cleaner output
+        core_shap = {k: round(v, 4) for k, v in core_shap.items()}
+        
+        return {"shap_values": core_shap, "base_value": round(base_value, 4)}
+    except Exception:
+        # Graceful degradation — prediction still works without SHAP
+        return {"shap_values": {}, "base_value": 0}
 
 def predict(data):
     """
@@ -193,9 +270,15 @@ def predict(data):
         else:
             risk_level = 'High'
         
+        # --- SHAP Explainability ---
+        # Compute per-feature SHAP values and aggregate 20 engineered features → 5 core features
+        shap_result = compute_shap_values(model, features, prediction, label_encoder)
+        
         return {
             "risk_level": risk_level,
-            "risk_score": risk_score
+            "risk_score": risk_score,
+            "shap_values": shap_result.get("shap_values", {}),
+            "shap_base_value": shap_result.get("base_value", 0)
         }
         
     except Exception as e:

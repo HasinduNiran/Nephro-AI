@@ -30,7 +30,11 @@ const LoginScreen = ({ navigation }) => {
 
       Alert.alert("Success", "Logged in successfully");
       console.log("Navigating to Home with:", { userName, userID, userEmail });
-      navigation.navigate("Home", { userName, userID, userEmail });
+      // Reset the entire navigation stack so old screens (with stale userId) are destroyed
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Home", params: { userName, userID, userEmail } }],
+      });
     } catch (error) {
       console.error("Login Error:", error);
       const errorMessage =

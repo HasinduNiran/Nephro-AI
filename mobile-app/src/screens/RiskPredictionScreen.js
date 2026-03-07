@@ -14,8 +14,9 @@ import CustomButton from "../components/CustomButton";
 import axios from "../api/axiosConfig";
 
 const RiskPredictionScreen = ({ navigation, route }) => {
-  // Get userId from route params or use a default for testing
-  const userId = route?.params?.userId || "test-user-id";
+  // Resolve actual user ID from route params or AsyncStorage
+  const paramUserId = route?.params?.userId || route?.params?.userID;
+  const [userId, setUserId] = useState(paramUserId || null);
 
   const [bpSystolic, setBpSystolic] = useState("");
   const [bpDiastolic, setBpDiastolic] = useState("");
@@ -26,9 +27,30 @@ const RiskPredictionScreen = ({ navigation, route }) => {
   const [saving, setSaving] = useState(false);
   const [riskLevel, setRiskLevel] = useState(null);
   const [riskScore, setRiskScore] = useState(null);
+  const [shapValues, setShapValues] = useState(null);
+  const [shapBaseValue, setShapBaseValue] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
   const [bpAvgLoading, setBpAvgLoading] = useState(true);
   const [bpAvgData, setBpAvgData] = useState(null); // { avgSystolic, avgDiastolic, recordCount }
+
+  // Keep userId in sync when route params change (e.g. different user logs in)
+  useEffect(() => {
+    const newParamId = route?.params?.userId || route?.params?.userID;
+    if (newParamId && newParamId !== userId) {
+      setUserId(newParamId);
+    }
+  }, [route?.params?.userId, route?.params?.userID]);
+
+  // Resolve userId from AsyncStorage if not in route params
+  useEffect(() => {
+    const resolveUserId = async () => {
+      if (!userId) {
+        const storedId = await AsyncStorage.getItem("userID");
+        if (storedId) setUserId(storedId);
+      }
+    };
+    resolveUserId();
+  }, []);
 
   // Fetch user data on component mount
   useEffect(() => {
@@ -72,10 +94,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
   useEffect(() => {
     const loadMonthlyBPAvg = async () => {
       try {
-        const uid =
-          userId !== "test-user-id"
-            ? userId
-            : await AsyncStorage.getItem("userID");
+        const uid = userId || (await AsyncStorage.getItem("userID"));
         if (!uid) return;
         const now = new Date();
         const month = now.getMonth() + 1;
@@ -312,6 +331,8 @@ const RiskPredictionScreen = ({ navigation, route }) => {
     setLoading(true);
     setRiskLevel(null);
     setRiskScore(null);
+    setShapValues(null);
+    setShapBaseValue(null);
     setIsSaved(false);
 
     try {
@@ -335,6 +356,12 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         response.data.risk_score ||
         calculateRiskScore(response.data.risk_level);
       setRiskScore(score);
+
+      // Capture SHAP values from prediction response
+      if (response.data.shap_values) {
+        setShapValues(response.data.shap_values);
+        setShapBaseValue(response.data.shap_base_value || 0);
+      }
     } catch (error) {
       console.error("Prediction Error:", error);
       Alert.alert("Error", "Failed to predict risk. Please try again.");
@@ -353,6 +380,10 @@ const RiskPredictionScreen = ({ navigation, route }) => {
   };
 
   const onSavePressed = async () => {
+    if (!userId) {
+      Alert.alert("Error", "User not identified. Please log in again.");
+      return;
+    }
     if (!riskLevel || riskScore === null) {
       Alert.alert("Error", "Please predict risk first before saving.");
       return;
@@ -372,6 +403,16 @@ const RiskPredictionScreen = ({ navigation, route }) => {
           gender,
           hba1cLevel: hba1cLevel ? parseFloat(hba1cLevel) : null,
         },
+        shapValues: shapValues
+          ? {
+              age: shapValues.age,
+              gender: shapValues.gender,
+              bp_systolic: shapValues.bp_systolic,
+              bp_diastolic: shapValues.bp_diastolic,
+              hba1c_level: shapValues.hba1c_level,
+              baseValue: shapBaseValue || 0,
+            }
+          : null,
       });
 
       setIsSaved(true);
