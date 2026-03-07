@@ -525,6 +525,17 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         protein:    (foodData.protein    * totalGrams) / 100,
       };
 
+      // --- PORTION VERIFICATION LOG ---
+      const portionSource = !item.manuallyEdited && item.autoPortionGrams && item.autoPortionGrams > 0
+        ? "AI-auto"
+        : item.isManuallyAdded
+        ? "manual-add"
+        : "manual-edit";
+      console.log(
+        `[Portion] ${normalizedName.padEnd(20)} | compartment: ${(item.compartment || "n/a").padEnd(12)} | source: ${portionSource.padEnd(11)} | ${totalGrams.toFixed(1)}g` +
+        ` → Na:${itemNutrients.sodium.toFixed(1)}mg  K:${itemNutrients.potassium.toFixed(1)}mg  P:${itemNutrients.phosphorus.toFixed(1)}mg  Pro:${itemNutrients.protein.toFixed(1)}g`
+      );
+
       totalNutrients.sodium     += itemNutrients.sodium;
       totalNutrients.potassium  += itemNutrients.potassium;
       totalNutrients.phosphorus += itemNutrients.phosphorus;
@@ -539,6 +550,13 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         ...itemNutrients,
       });
     });
+
+    // --- TOTALS SUMMARY LOG ---
+    console.log(
+      `[Portion] ${"── TOTALS ──".padEnd(20)} | items: ${items.length}` +
+      ` → Na:${totalNutrients.sodium.toFixed(1)}mg  K:${totalNutrients.potassium.toFixed(1)}mg  P:${totalNutrients.phosphorus.toFixed(1)}mg  Pro:${totalNutrients.protein.toFixed(1)}g`
+    );
+
     return { totalNutrients, breakdown };
   };
 
