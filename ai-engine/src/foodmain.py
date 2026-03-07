@@ -8,7 +8,7 @@ import os
 # Helper to ensure imports work regardless of where you run the command from
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from mealPlate.predictor import predict_image_yolo, predict_image_with_portions, DEBUG_VIS_PATH
+from mealPlate.predictor import predict_image_yolo, predict_image_with_portions, DEBUG_VIS_PATH, ALIGNMENT_CHECK_PATH
 
 app = FastAPI()
 
@@ -79,10 +79,12 @@ async def predict_meal_with_portions(image: UploadFile = File(...)):
         print(f"Detected with portions: {[(i['food'], i['estimated_grams']) for i in detected_items]}")
         
         debug_url = "http://127.0.0.1:5001/debug_image" if os.path.exists(DEBUG_VIS_PATH) else None
+        align_url = "http://127.0.0.1:5001/debug_alignment" if os.path.exists(ALIGNMENT_CHECK_PATH) else None
         return {
             "foods": food_names,
             "portions": detected_items,
-            "debug_image_url": debug_url
+            "debug_image_url": debug_url,
+            "alignment_check_url": align_url
         }
         
     except Exception as e:
@@ -95,6 +97,14 @@ def get_debug_image():
     if not os.path.exists(DEBUG_VIS_PATH):
         raise HTTPException(status_code=404, detail="No debug image yet. Scan a plate first.")
     return FileResponse(DEBUG_VIS_PATH, media_type="image/jpeg")
+
+
+@app.get("/debug_alignment")
+def get_debug_alignment():
+    """Serve the calibration-mask overlay alignment check image."""
+    if not os.path.exists(ALIGNMENT_CHECK_PATH):
+        raise HTTPException(status_code=404, detail="No alignment check yet. Scan a plate first.")
+    return FileResponse(ALIGNMENT_CHECK_PATH, media_type="image/jpeg")
 
 
 if __name__ == "__main__":

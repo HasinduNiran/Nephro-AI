@@ -31,10 +31,15 @@ import { Ionicons } from "@expo/vector-icons";
 // The overlay image generated from actual plate calibration masks
 const PLATE_OVERLAY = require("../../assets/plate_overlay_camera.png");
 
-// Deterministic Viewport Sizing — exact pixels, no flex ambiguity.
-// Matches the 4:3 portrait ratio of the 1524×1557 Python calibration.
+// ── Dimension Constants ────────────────────────────────────────────
+// The UI box matches the Python calibration plate exactly (1524 × 1557).
+// The CameraView renders at its native 4:3 ratio to avoid black bars,
+// then gets pulled upward by VERTICAL_OFFSET so its center aligns with
+// the box center — mirroring the center-crop Python does on the backend.
 const SCREEN_WIDTH = Dimensions.get("window").width;
-const CAMERA_HEIGHT = Math.round(SCREEN_WIDTH * (4 / 3));
+const BOX_HEIGHT = Math.round(SCREEN_WIDTH * (1557 / 1524));  // ~1.0217 — calibration ratio
+const CAMERA_FEED_HEIGHT = Math.round(SCREEN_WIDTH * (4 / 3)); // native 4:3 feed, no black bars
+const VERTICAL_OFFSET = (CAMERA_FEED_HEIGHT - BOX_HEIGHT) / 2; // pixels to pull feed upward
 
 // ─── Main Component ─────────────────────────────────────────────────
 const PlateCamera = ({ visible, onCapture, onClose }) => {
@@ -123,28 +128,41 @@ const PlateCamera = ({ visible, onCapture, onClose }) => {
           </TouchableOpacity>
         </View>
 
-        {/* ---- CAMERA AREA (deterministic 4:3 portrait — matches 1524×1557 calibration) ---- */}
+        {/* ---- CAMERA AREA ---- */}
         <View style={styles.cameraSection}>
-          <View style={[styles.cameraBox, { width: SCREEN_WIDTH, height: CAMERA_HEIGHT }]}>
-            {/* 1. Camera feed locked to exact pixel dimensions */}
+          {/*
+            BOX is shaped to 1524×1557 (calibration ratio).
+            CameraView renders at 4:3 and is pulled up by VERTICAL_OFFSET
+            so its optical centre aligns with the box centre —
+            identical to the Python centre-crop on the backend.
+            overflow:hidden in cameraBox clips the excess top and bottom.
+          */}
+          <View style={[styles.cameraBox, { width: SCREEN_WIDTH, height: BOX_HEIGHT }]}>
+            {/* Camera feed: full 4:3, floated so its centre matches the box centre */}
             <CameraView
               ref={cameraRef}
-              style={{ width: SCREEN_WIDTH, height: CAMERA_HEIGHT }}
+              style={{
+                position: "absolute",
+                width: SCREEN_WIDTH,
+                height: CAMERA_FEED_HEIGHT,
+                top: -VERTICAL_OFFSET,
+                left: 0,
+              }}
               facing={facing}
               ratio="4:3"
             />
 
-            {/* 2. Overlay locked to the exact same pixel dimensions */}
+            {/* Overlay: stretched pixel-perfect to the 1524×1557 box */}
             <Image
               source={PLATE_OVERLAY}
               style={{
                 position: "absolute",
                 width: SCREEN_WIDTH,
-                height: CAMERA_HEIGHT,
+                height: BOX_HEIGHT,
                 top: 0,
                 left: 0,
               }}
-              resizeMode="contain"
+              resizeMode="stretch"
               pointerEvents="none"
             />
           </View>

@@ -31,8 +31,9 @@ except Exception as e:
 # ---------------------------------------------------------
 # LOAD PORTION ESTIMATOR (module-level functions)
 # ---------------------------------------------------------
-DEBUG_OUTPUT_DIR = os.path.join(BASE_DIR, "debug_output")
-DEBUG_VIS_PATH  = os.path.join(DEBUG_OUTPUT_DIR, "latest_scan.jpg")
+DEBUG_OUTPUT_DIR      = os.path.join(BASE_DIR, "debug_output")
+DEBUG_VIS_PATH        = os.path.join(DEBUG_OUTPUT_DIR, "latest_scan.jpg")
+ALIGNMENT_CHECK_PATH  = os.path.join(DEBUG_OUTPUT_DIR, "debug_alignment_check.jpg")
 
 try:
     from .portion_estimator import (

@@ -21,6 +21,7 @@ import os
 import io
 from PIL import Image as PILImage, ImageOps
 from ultralytics import SAM
+from dotenv import load_dotenv
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -147,15 +148,36 @@ def standardize_image(cv_img):
 
 def standardize_incoming_image(image_bytes):
     """
-    EXIF Failsafe + Resize - run on every image received from the mobile app.
-    Strips hidden EXIF rotation, converts to BGR, and forces to 1524x1557.
+    Center-Crop + Resize - run on every image received from the mobile app.
+
+    Guarantees zero geometric distortion:
+      1. Fix EXIF rotation so portrait is always portrait.
+      2. Smart center-crop to the 1524:1557 calibration aspect ratio -
+         slices off background pixels the user never saw inside the overlay.
+      3. Scale the cropped region to exactly 1524x1557 (pure scaling, no stretch).
     """
     pil_img = PILImage.open(io.BytesIO(image_bytes))
     pil_img = ImageOps.exif_transpose(pil_img)
     cv_img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
-    cv_img = cv2.resize(cv_img, (STANDARD_W, STANDARD_H),
-                        interpolation=cv2.INTER_AREA)
-    return cv_img
+
+    h, w = cv_img.shape[:2]
+    target_aspect = STANDARD_W / STANDARD_H   # 1524 / 1557 ~= 0.9788
+    current_aspect = w / h
+
+    if current_aspect > target_aspect:
+        # Image is too wide -> crop left and right edges
+        new_w = int(h * target_aspect)
+        offset = (w - new_w) // 2
+        cropped = cv_img[:, offset:offset + new_w]
+    else:
+        # Image is too tall (standard phone portrait) -> crop top and bottom
+        new_h = int(w / target_aspect)
+        offset = (h - new_h) // 2
+        cropped = cv_img[offset:offset + new_h, :]
+
+    final_img = cv2.resize(cropped, (STANDARD_W, STANDARD_H),
+                           interpolation=cv2.INTER_AREA)
+    return final_img
 
 
 def create_food_mask(cv_img, x1, y1, x2, y2):
@@ -261,6 +283,63 @@ def _confidence(fill_ratio, food_pixels):
 
 
 # ======================================================
+# ALIGNMENT VERIFICATION  (run on every scan)
+# ======================================================
+
+def verify_plate_alignment(std_img, save_path=None):
+    """
+    Overlays the pre-calibrated compartment masks onto the standardised
+    incoming image and saves the result as a JPEG.
+
+    HOW TO USE:
+      1. Place an empty plate on the table.
+      2. Align it with the green overlay and hit Scan.
+      3. Open debug_alignment_check.jpg from the backend folder.
+      4. If the coloured zones land exactly inside the plate compartments
+         the geometry is locked.  If they spill over, something is off.
+    """
+    if save_path is None:
+        save_path = os.path.join(BASE_DIR, "debug_output", "debug_alignment_check.jpg")
+
+    os.makedirs(os.path.dirname(os.path.abspath(save_path)), exist_ok=True)
+
+    vis = std_img.copy()
+
+    # Distinct BGR colours for each compartment
+    comp_colors = {
+        "main_carb": (0,   150, 255),  # orange
+        "side_1":    (0,   220,   0),  # green
+        "side_2":    (255,  80,   0),  # blue
+    }
+
+    for comp_name, mask in _masks.items():
+        color = comp_colors.get(comp_name, (200, 200, 200))
+        color_layer = np.zeros_like(vis)
+        color_layer[mask > 0] = color
+        cv2.addWeighted(vis, 1.0, color_layer, 0.4, 0, vis)
+
+    # Draw calibration split lines so the compartment boundaries are explicit
+    cv2.line(vis, (COMPARTMENT_X_SPLIT, 0),
+             (COMPARTMENT_X_SPLIT, STANDARD_H), (255, 255, 255), 2)
+    cv2.line(vis, (COMPARTMENT_X_SPLIT, COMPARTMENT_Y_SPLIT),
+             (STANDARD_W, COMPARTMENT_Y_SPLIT), (255, 255, 255), 2)
+
+    # Legend
+    legend = [("main_carb", comp_colors["main_carb"]),
+              ("side_1",    comp_colors["side_1"]),
+              ("side_2",    comp_colors["side_2"])]
+    for i, (label, color) in enumerate(legend):
+        y = 30 + i * 28
+        cv2.rectangle(vis, (10, y - 16), (26, y), color, -1)
+        cv2.putText(vis, label, (32, y - 2),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+
+    cv2.imwrite(save_path, vis)
+    print(f"[PortionEstimator] Alignment check saved -> {save_path}")
+    return save_path
+
+
+# ======================================================
 # HIGH-LEVEL API  (called by predictor.py)
 # ======================================================
 
@@ -319,11 +398,22 @@ def estimate_all_portions(cv_img, yolo_boxes, debug_save_path=None):
     """
     Estimate portions for every YOLO detection in one call.
     Optionally saves a colour debug visualization to debug_save_path.
+    Always saves an alignment verification image alongside it.
     """
     std_img = standardize_image(cv_img)
     h, w = std_img.shape[:2]
     orig_h, orig_w = cv_img.shape[:2]
     sx, sy = w / orig_w, h / orig_h
+
+    # --- ALIGNMENT VERIFICATION (proof that masks match the live feed) ---
+    try:
+        align_dir = os.path.dirname(os.path.abspath(debug_save_path)) if debug_save_path else \
+                    os.path.join(BASE_DIR, "debug_output")
+        verify_plate_alignment(std_img,
+                               save_path=os.path.join(align_dir, "debug_alignment_check.jpg"))
+    except Exception as _e:
+        print(f"[PortionEstimator] Alignment check failed: {_e}")
+    # ----------------------------------------------------------------------
 
     results = []
     debug_items = []
@@ -348,9 +438,16 @@ def estimate_all_portions(cv_img, yolo_boxes, debug_save_path=None):
         results.append(est)
         debug_items.append((food_mask, est, (bx1, by1, bx2, by2)))
 
-    if debug_save_path and debug_items:
+    if debug_save_path:
         try:
-            save_debug_visualization(std_img, debug_items, debug_save_path)
+            os.makedirs(os.path.dirname(os.path.abspath(debug_save_path)), exist_ok=True)
+            if debug_items:
+                save_debug_visualization(std_img, debug_items, debug_save_path)
+            else:
+                # No food detected — overwrite the file with the plain standardised
+                # image so the frontend never shows a stale result from a previous scan.
+                cv2.imwrite(debug_save_path, std_img)
+                print(f"[PortionEstimator] No detections — plain image saved -> {debug_save_path}")
         except Exception as e:
             print(f"[PortionEstimator] Debug visualization failed: {e}")
 

@@ -212,6 +212,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   const [imageSource, setImageSource] = useState(null); // 'camera' or 'gallery'
   const [showPlateCamera, setShowPlateCamera] = useState(false); // Custom camera with overlay
   const [debugImageUri, setDebugImageUri] = useState(null); // SAM segmentation debug image
+  const [alignmentImageUri, setAlignmentImageUri] = useState(null); // mask alignment check
 
   useEffect(() => {
     const loadUserId = async () => {
@@ -363,6 +364,9 @@ const MealAnalysisScreen = ({ route, navigation }) => {
       // Store SAM debug visualization url (append timestamp to force Image reload)
       if (response.data.debug_image_url) {
         setDebugImageUri(response.data.debug_image_url + "?t=" + Date.now());
+      }
+      if (response.data.alignment_check_url) {
+        setAlignmentImageUri(response.data.alignment_check_url + "?t=" + Date.now());
       }
 
       const detectedData = response.data.portions || response.data.detected_foods || response.data.detected || [];
@@ -785,6 +789,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                 setAnalysisResult(null);
                 setHasScanned(false);
                 setDebugImageUri(null);
+                setAlignmentImageUri(null);
               }}
             >
               <Ionicons name="close-circle" size={32} color="#dc3545" />
@@ -805,6 +810,23 @@ const MealAnalysisScreen = ({ route, navigation }) => {
             <Image
               source={{ uri: debugImageUri }}
               style={{ width: "100%", height: 220, borderRadius: 10, borderWidth: 1, borderColor: "#ddd" }}
+              resizeMode="contain"
+            />
+          </View>
+        )}
+
+        {/* Alignment Verification View */}
+        {alignmentImageUri && (
+          <View style={{ marginTop: 8, marginBottom: 4, alignItems: "center" }}>
+            <Text style={{ fontSize: 12, color: "#555", marginBottom: 4, fontWeight: "600" }}>
+              📐 Calibration Mask Alignment Check
+            </Text>
+            <Text style={{ fontSize: 10, color: "#888", marginBottom: 4, textAlign: "center" }}>
+              Orange = main carb · Green = side 1 · Blue = side 2{"\n"}Zones should land exactly inside the plate compartments
+            </Text>
+            <Image
+              source={{ uri: alignmentImageUri }}
+              style={{ width: "100%", height: 220, borderRadius: 10, borderWidth: 1, borderColor: "#c3e6cb" }}
               resizeMode="contain"
             />
           </View>
