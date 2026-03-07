@@ -562,7 +562,10 @@ def save_calibration(compartments, center, plate_area):
         json.dump(cal_data, f, indent=2)
     print(f"\n  Saved: {CALIBRATION_JSON}")
     
-    # Save masks
+    # Save raw (undilated) masks.
+    # Ridge-gap dilation is applied at load time in portion_estimator.py via
+    # MASK_DILATION_PX so the expansion amount can be retuned without
+    # re-running calibration. Do NOT pre-dilate here.
     np.savez_compressed(MASKS_NPZ, **masks_dict)
     print(f"  Saved: {MASKS_NPZ}")
     
