@@ -742,6 +742,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         amount: "1",
         unit: units[0] || "grams",
         availableUnits: units.length > 0 ? units : ["grams"],
+        isManuallyAdded: true,
       };
       setItems([...items, newItem]);
       setSearchModalVisible(false);
@@ -919,22 +920,55 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                   </TouchableOpacity>
                 </View>
 
-                {/* Grams display — AI estimate or manual */}
-                <View style={styles.gramsRow}>
-                  <Ionicons name="scale-outline" size={16} color="#007BFF" />
-                  <Text style={styles.gramsText}>
-                    {item.autoPortionGrams && !item.manuallyEdited
-                      ? `${item.autoPortionGrams}g`
-                      : item.unit === "grams"
-                      ? `${item.amount}g`
-                      : `${item.amount} ${item.unit?.replace(/_/g, " ")}`}
-                  </Text>
-                  {item.autoEstimated && !item.manuallyEdited && (
-                    <Text style={styles.gramsSubLabel}>
-                      {" "}· AI · {item.compartment?.replace(/_/g, " ")}
+                {/* Amount + Unit inputs for manually added items; grams display for AI-estimated */}
+                {item.isManuallyAdded ? (
+                  <View style={styles.portionRow}>
+                    <View style={styles.portionControl}>
+                      <Text style={styles.portionLabel}>Amount</Text>
+                      <TextInput
+                        style={styles.amountInput}
+                        value={item.amount}
+                        onChangeText={(val) => updateRow(index, "amount", val)}
+                        keyboardType="numeric"
+                        placeholder="1"
+                      />
+                    </View>
+                    <View style={styles.portionControl}>
+                      <Text style={styles.portionLabel}>Unit</Text>
+                      <View style={styles.unitPickerWrapper}>
+                        <Picker
+                          selectedValue={item.unit}
+                          style={styles.unitPicker}
+                          onValueChange={(val) => updateRow(index, "unit", val)}
+                        >
+                          {item.availableUnits.map((u, uIdx) => (
+                            <Picker.Item
+                              key={`${u}-${uIdx}`}
+                              label={u.replace(/_/g, " ")}
+                              value={u}
+                            />
+                          ))}
+                        </Picker>
+                      </View>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={styles.gramsRow}>
+                    <Ionicons name="scale-outline" size={16} color="#007BFF" />
+                    <Text style={styles.gramsText}>
+                      {item.autoPortionGrams && !item.manuallyEdited
+                        ? `${item.autoPortionGrams}g`
+                        : item.unit === "grams"
+                        ? `${item.amount}g`
+                        : `${item.amount} ${item.unit?.replace(/_/g, " ")}`}
                     </Text>
-                  )}
-                </View>
+                    {item.autoEstimated && !item.manuallyEdited && (
+                      <Text style={styles.gramsSubLabel}>
+                        {" "}· AI · {item.compartment?.replace(/_/g, " ")}
+                      </Text>
+                    )}
+                  </View>
+                )}
               </View>
             ))}
 
