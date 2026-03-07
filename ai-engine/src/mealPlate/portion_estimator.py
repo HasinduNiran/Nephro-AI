@@ -14,11 +14,11 @@ ALGORITHM:
        corrected_ratio = raw_fill_ratio ^ TAPER_EXPONENT
        (TAPER_EXPONENT > 1 penalises low fill ratios because the sloped
         base is physically smaller than the top-rim area)
-  6. MiDaS Monocular Depth Estimation -> depth map of the scene
-       dynamic_height_factor = median(food_depth_values) / reference_rim_depth
-       (replaces static heaping factor with real-time 3D height sensing;
-        clamped to [DEPTH_HEIGHT_MIN, DEPTH_HEIGHT_MAX] for robustness)
-  7. food_volume_ml = corrected_ratio x compartment_volume_ml x dynamic_height_factor
+  6. Gemini Vision LLM -> visual height judge
+       dynamic_heaping = get_dynamic_heaping_gemini(image_crop, bbox, food_name)
+       (Gemini classifies heaping level from a cropped food image as a
+        float multiplier in [0.4, 1.8]; falls back to HEAPING_FACTOR dict)
+  7. food_volume_ml = corrected_ratio x compartment_volume_ml x dynamic_heaping
   8. food_grams     = food_volume_ml x food_density_g_per_ml
 """
 
@@ -27,8 +27,8 @@ import numpy as np
 import os
 import io
 import math
-import torch
 from PIL import Image as PILImage, ImageOps
+from google import genai as _genai
 from ultralytics import SAM
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -38,12 +38,12 @@ print("[PortionEstimator] Loading MobileSAM Foundation Model...")
 _SAM_PATH = os.path.join(BASE_DIR, "..", "mobile_sam.pt")
 sam_model = SAM(_SAM_PATH)
 
-print("[PortionEstimator] Loading MiDaS Depth Estimation Model...")
-midas_model = torch.hub.load("intel-isl/MiDaS", "MiDaS_small", trust_repo=True)
-midas_model.eval()
-midas_transforms = torch.hub.load("intel-isl/MiDaS", "transforms", trust_repo=True)
-transform_depth = midas_transforms.small_transform
-print("[PortionEstimator] MiDaS loaded successfully.")
+_GEMINI_API_KEY = os.environ.get("GOOGLE_API_KEY", "")
+_gemini_client = _genai.Client(api_key=_GEMINI_API_KEY) if _GEMINI_API_KEY else None
+if _gemini_client:
+    print("[PortionEstimator] Gemini Vision client initialised.")
+else:
+    print("[PortionEstimator] WARNING: GOOGLE_API_KEY not set — Gemini height judge disabled.")
 
 DEBUG_SHOW_MASKS = False
 
@@ -91,11 +91,6 @@ TAPER_EXPONENT = 1.25
 # without re-running calibration.
 # At 1524x1557 resolution, 15 px ≈ 7–8 mm of physical plate surface.
 MASK_DILATION_PX = 15
-
-# MiDaS height factor bounds: clamp dynamic_height_factor to this range.
-# Values below 0.3 indicate near-empty or liquid; above 1.5 indicate unreasonable heaping.
-DEPTH_HEIGHT_MIN = 0.3
-DEPTH_HEIGHT_MAX = 1.5
 
 # ======================================================
 # FOOD DENSITY & HEAPING DATABASE
@@ -207,32 +202,45 @@ def standardize_incoming_image(image_bytes):
     return cv_img
 
 
-def generate_depth_map(cv_img):
+def get_dynamic_heaping_gemini(cv_img, bbox, food_name):
     """
-    Run MiDaS on a BGR image and return an inverse-depth map (float32 array)
-    at the same resolution as the input (STANDARD_H x STANDARD_W).
-    Higher values = closer to camera (i.e. taller / more food).
+    Ask Gemini Vision to classify the heaping level of a food item.
+    Returns a float multiplier in [0.4, 1.8].
+    Falls back to HEAPING_FACTOR dict if Gemini is unavailable or errors.
     """
-    img_rgb = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-    input_batch = transform_depth(img_rgb)
-    with torch.no_grad():
-        prediction = midas_model(input_batch)
-        prediction = torch.nn.functional.interpolate(
-            prediction.unsqueeze(1),
-            size=(STANDARD_H, STANDARD_W),
-            mode="bicubic",
-            align_corners=False,
-        ).squeeze()
-    return prediction.cpu().numpy()
-
-
-def _get_reference_rim_depth(depth_map):
-    """
-    Return the 95th-percentile depth value from the full scene as the
-    reference 'plate rim level'. Food that rises above the rim will have
-    depth values higher than this reference, yielding a ratio > 1.
-    """
-    return float(np.percentile(depth_map, 95))
+    fallback = HEAPING_FACTOR.get(food_name, HEAPING_FACTOR["_default"])
+    if _gemini_client is None:
+        return fallback
+    try:
+        bx1, by1, bx2, by2 = bbox
+        PAD = 10
+        h, w = cv_img.shape[:2]
+        cx1 = max(0, bx1 - PAD)
+        cy1 = max(0, by1 - PAD)
+        cx2 = min(w,  bx2 + PAD)
+        cy2 = min(h,  by2 + PAD)
+        crop_bgr = cv_img[cy1:cy2, cx1:cx2]
+        crop_rgb = cv2.cvtColor(crop_bgr, cv2.COLOR_BGR2RGB)
+        pil_crop = PILImage.fromarray(crop_rgb)
+        prompt = (
+            f"You are a food volume estimation assistant. The image shows '{food_name}' "
+            f"on a plate compartment.\n"
+            f"Estimate the heaping/volume multiplier as a single decimal number:\n"
+            f"  0.4 = nearly empty  |  0.6 = sparse fill  |  1.0 = level full  "
+            f"|  1.3 = slightly heaped  |  1.5 = well heaped  |  1.8 = very heaped\n"
+            f"Respond with ONLY the number, nothing else."
+        )
+        response = _gemini_client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[pil_crop, prompt],
+        )
+        factor = float(response.text.strip())
+        factor = max(0.4, min(factor, 1.8))
+        print(f"[PortionEstimator] Gemini heaping '{food_name}': {factor}")
+        return factor
+    except Exception as e:
+        print(f"[PortionEstimator] Gemini height judge error: {e}. Using fallback={fallback}.")
+        return fallback
 
 
 def create_food_mask(cv_img, x1, y1, x2, y2):
@@ -292,8 +300,8 @@ def _count_food_pixels(food_mask, compartment):
     return int(cv2.countNonZero(food_mask))
 
 
-def estimate_portion(food_name, food_mask, depth_map, reference_rim_depth):
-    """Multi-modal 3D volume estimation: Frustum correction + MiDaS depth."""
+def estimate_portion(food_name, food_mask, dynamic_heaping):
+    """Multi-modal 3D volume estimation: Frustum correction + Gemini Vision height judge."""
     compartment = map_food_by_max_overlap(food_mask)
     food_pixels = _count_food_pixels(food_mask, compartment)
 
@@ -308,7 +316,6 @@ def estimate_portion(food_name, food_mask, depth_map, reference_rim_depth):
     comp_total_px = COMPARTMENT_PIXELS[compartment]
     comp_volume   = COMPARTMENT_VOLUME_ML[compartment]
     density       = FOOD_DENSITY.get(food_name, FOOD_DENSITY["_default"])
-    static_heap   = HEAPING_FACTOR.get(food_name, HEAPING_FACTOR["_default"])
 
     # Step 4: Raw 2D pixel fill ratio
     raw_fill_ratio = food_pixels / comp_total_px
@@ -318,35 +325,27 @@ def estimate_portion(food_name, food_mask, depth_map, reference_rim_depth):
     # because the compartment base is narrower than the open top.
     corrected_ratio = math.pow(raw_fill_ratio, TAPER_EXPONENT)
 
-    # Step 6: Dynamic 3D height via MiDaS depth map.
-    # Median depth inside the food mask is compared to the scene reference
-    # (95th-percentile = plate rim level) to derive a real-time height factor.
-    # Falls back to the static heaping factor when depth data is unavailable.
-    food_depth_pixels = depth_map[food_mask == 255]
-    if len(food_depth_pixels) > 0 and reference_rim_depth > 0:
-        dynamic_height_factor = float(np.median(food_depth_pixels)) / reference_rim_depth
-        dynamic_height_factor = max(DEPTH_HEIGHT_MIN, min(dynamic_height_factor, DEPTH_HEIGHT_MAX))
-    else:
-        dynamic_height_factor = static_heap
+    # Step 6: Dynamic 3D height via Gemini Vision LLM.
+    # dynamic_heaping is the multiplier returned by get_dynamic_heaping_gemini()
+    # (already clamped to [0.4, 1.8]; fallback = HEAPING_FACTOR entry for this food)
 
     # Steps 7–8: Volume and mass
-    food_volume_ml = corrected_ratio * comp_volume * dynamic_height_factor
+    food_volume_ml = corrected_ratio * comp_volume * dynamic_heaping
     food_grams     = food_volume_ml * density
 
     return {
-        "food":                  food_name,
-        "compartment":           compartment,
-        "food_pixels":           food_pixels,
-        "compartment_pixels":    comp_total_px,
-        "raw_fill_ratio":        round(raw_fill_ratio, 4),
-        "corrected_ratio":       round(corrected_ratio, 4),
-        "taper_exponent":        TAPER_EXPONENT,
-        "dynamic_height_factor": round(dynamic_height_factor, 3),
-        "static_heaping_factor": static_heap,
-        "food_volume_ml":        round(food_volume_ml, 1),
-        "density_g_per_ml":      density,
-        "estimated_grams":       round(food_grams, 1),
-        "confidence":            _confidence(raw_fill_ratio, food_pixels),
+        "food":               food_name,
+        "compartment":        compartment,
+        "food_pixels":        food_pixels,
+        "compartment_pixels": comp_total_px,
+        "raw_fill_ratio":     round(raw_fill_ratio, 4),
+        "corrected_ratio":    round(corrected_ratio, 4),
+        "taper_exponent":     TAPER_EXPONENT,
+        "dynamic_heaping":    round(dynamic_heaping, 3),
+        "food_volume_ml":     round(food_volume_ml, 1),
+        "density_g_per_ml":   density,
+        "estimated_grams":    round(food_grams, 1),
+        "confidence":         _confidence(raw_fill_ratio, food_pixels),
     }
 
 
@@ -426,18 +425,14 @@ def save_debug_visualization(std_img, debug_items, save_path):
 def estimate_all_portions(cv_img, yolo_boxes, debug_save_path=None):
     """
     Estimate portions for every YOLO detection in one call.
-    Generates a single MiDaS depth map for the whole scene and passes it
-    to each estimate_portion call to avoid redundant model inference.
+    Calls Gemini Vision once per detection to obtain the dynamic heaping
+    factor and passes it to estimate_portion.
     Optionally saves a colour debug visualization to debug_save_path.
     """
     std_img = standardize_image(cv_img)
     h, w = std_img.shape[:2]
     orig_h, orig_w = cv_img.shape[:2]
     sx, sy = w / orig_w, h / orig_h
-
-    # Run MiDaS once for the entire scene.
-    depth_map = generate_depth_map(std_img)
-    reference_rim_depth = _get_reference_rim_depth(depth_map)
 
     results = []
     debug_items = []
@@ -453,7 +448,8 @@ def estimate_all_portions(cv_img, yolo_boxes, debug_save_path=None):
 
         food_mask = create_food_mask(std_img, bx1, by1, bx2, by2)
 
-        est = estimate_portion(food_name, food_mask, depth_map, reference_rim_depth)
+        dynamic_heaping = get_dynamic_heaping_gemini(std_img, [bx1, by1, bx2, by2], food_name)
+        est = estimate_portion(food_name, food_mask, dynamic_heaping)
         est["detection_confidence"] = det.get("confidence", 0)
         est["bbox"] = [ox1, oy1, ox2, oy2]
         results.append(est)
