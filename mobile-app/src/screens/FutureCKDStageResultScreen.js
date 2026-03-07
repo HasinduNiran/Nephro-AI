@@ -116,6 +116,52 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
     };
   })();
 
+  const toPercentText = (item) => {
+    if (!item) return "N/A";
+    if (typeof item.probability === "number") return `${(item.probability * 100).toFixed(1)}%`;
+    if (typeof item.probability_percentage === "string") {
+      const raw = item.probability_percentage.trim();
+      if (!raw) return "N/A";
+      return raw.includes("%") ? raw : `${raw}%`;
+    }
+    return "N/A";
+  };
+
+  const sharpInsight = (() => {
+    if (!primaryPrediction) {
+      return "No prediction details are available yet to generate a sharp patient insight.";
+    }
+
+    const stage = primaryPrediction?.predicted_stage ?? "N/A";
+    const nextStage = nextProgression?.next_stage ?? "N/A";
+    const currentHistoryProb = toPercentText(nextProgression);
+    const sixMonthProb = toPercentText(nextProgression6Month);
+    const sourceText = prediction_with_us
+      ? result?.current_visit_ultrasound_uploaded
+        ? "lab + current ultrasound"
+        : "lab + prior ultrasound fallback"
+      : "lab-only data";
+
+    const stageCandidates = Array.isArray(primaryProgressionByStage) ? primaryProgressionByStage : [];
+    const mostLikelyNext = stageCandidates.length
+      ? [...stageCandidates].sort(
+          (a, b) => Number(b?.probability_percentage || 0) - Number(a?.probability_percentage || 0)
+        )[0]
+      : null;
+
+    const mostLikelyText = mostLikelyNext
+      ? `Most likely next stage from distribution: ${mostLikelyNext.stage_display || mostLikelyNext.stage} (${Number(
+          mostLikelyNext.probability_percentage || 0
+        ).toFixed(1)}%).`
+      : "No per-stage distribution available for strongest-next-stage comparison.";
+
+    const egfrText = Number.isFinite(Number(eGFR_info?.value))
+      ? `Current eGFR is ${Number(eGFR_info.value).toFixed(1)} mL/min/1.73m2.`
+      : "Current eGFR is not available in this result.";
+
+    return `Using ${sourceText}, the model predicts Stage ${stage}. Next likely stage is ${nextStage} with ${currentHistoryProb} progression probability from current history and ${sixMonthProb} for the next 6 months. ${mostLikelyText} ${egfrText}`;
+  })();
+
   const getRiskColor = (riskLevel) => {
     switch (riskLevel?.toLowerCase()) {
       case "low":
@@ -423,6 +469,14 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
                   </View>
                 ))}
               </View>
+            </View>
+
+            <View style={styles.sharpInsightCard}>
+              <View style={styles.sharpInsightHeader}>
+                <Ionicons name="sparkles" size={20} color="#4A90E2" />
+                <Text style={styles.sharpInsightTitle}></Text>
+              </View>
+              <Text style={styles.sharpInsightText}>{sharpInsight}</Text>
             </View>
           </View>
         </View>
@@ -827,6 +881,30 @@ const styles = StyleSheet.create({
     color: "#1C1C1E",
     marginLeft: 8,
     lineHeight: 20,
+  },
+  sharpInsightCard: {
+    backgroundColor: "#F8FAFF",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#D6E8FF",
+  },
+  sharpInsightHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+    gap: 8,
+  },
+  sharpInsightTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1C1C1E",
+  },
+  sharpInsightText: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#374151",
   },
   actionButton: {
     flexDirection: "row",
