@@ -13,6 +13,8 @@ import {
   FlatList,
   Platform,
   KeyboardAvoidingView,
+  Dimensions,
+  StatusBar,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
@@ -561,7 +563,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
       if (percentage > 100) {
         isSafe = false;
         warnings.push(
-          `🚫 ${name}: ${total.toFixed(0)}/${limit}mg (${percentage.toFixed(0)}%) - EXCEEDED!`,
+          `${name}: ${total.toFixed(0)}/${limit}mg (${percentage.toFixed(0)}%) - EXCEEDED`,
         );
 
         // Find food contributing most to this nutrient
@@ -585,7 +587,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
       } else if (percentage > 80) {
         hasWarnings = true;
         warnings.push(
-          `⚠️ ${name}: ${total.toFixed(0)}/${limit}mg (${percentage.toFixed(0)}%) - Getting high`,
+          `${name}: ${total.toFixed(0)}/${limit}mg (${percentage.toFixed(0)}%) - High`,
         );
       }
     };
@@ -638,7 +640,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         }
       }
 
-      Alert.alert("Success ✅", "Meal confirmed and saved!", [
+      Alert.alert("Meal Saved", "Meal confirmed and saved!", [
         { text: "OK", onPress: () => navigation.goBack() },
       ]);
     } else {
@@ -806,7 +808,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         {debugImageUri && (
           <View style={{ marginTop: 12, marginBottom: 4, alignItems: "center" }}>
             <Text style={{ fontSize: 12, color: "#555", marginBottom: 4, fontWeight: "600" }}>
-              🔬 SAM Segmentation Preview
+              SAM Segmentation Preview
             </Text>
             <Image
               source={{ uri: debugImageUri }}
@@ -820,7 +822,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         {alignmentImageUri && (
           <View style={{ marginTop: 8, marginBottom: 4, alignItems: "center" }}>
             <Text style={{ fontSize: 12, color: "#555", marginBottom: 4, fontWeight: "600" }}>
-              📐 Calibration Mask Alignment Check
+              Calibration Mask Alignment Check
             </Text>
             <Text style={{ fontSize: 10, color: "#888", marginBottom: 4, textAlign: "center" }}>
               Orange = main carb · Green = side 1 · Blue = side 2{"\n"}Zones should land exactly inside the plate compartments
@@ -842,16 +844,11 @@ const MealAnalysisScreen = ({ route, navigation }) => {
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.btnText}>📸 Camera</Text>
+              <View style={styles.btnInner}>
+                <Ionicons name="camera-outline" size={20} color="#fff" />
+                <Text style={[styles.btnText, { marginLeft: 8 }]}>Scan Meal</Text>
+              </View>
             )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.scanBtn, styles.galleryBtn]}
-            onPress={handleGalleryPress}
-            disabled={loading}
-          >
-            <Text style={styles.btnText}>🖼️ Gallery</Text>
           </TouchableOpacity>
         </View>
 
@@ -1000,22 +997,41 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                   : styles.unsafeModal,
             ]}
           >
-            <Text
-              style={[
-                styles.analysisModalTitle,
-                analysisResult?.status === "safe"
-                  ? styles.safeTitle
+            <View style={styles.analysisModalTitleRow}>
+              <Ionicons
+                name={
+                  analysisResult?.status === "safe"
+                    ? "checkmark-circle"
+                    : analysisResult?.status === "warning"
+                    ? "warning-outline"
+                    : "close-circle"
+                }
+                size={28}
+                color={
+                  analysisResult?.status === "safe"
+                    ? "#28a745"
+                    : analysisResult?.status === "warning"
+                    ? "#e08f00"
+                    : "#dc3545"
+                }
+              />
+              <Text
+                style={[
+                  styles.analysisModalTitle,
+                  analysisResult?.status === "safe"
+                    ? styles.safeTitle
+                    : analysisResult?.status === "warning"
+                      ? styles.warningTitle
+                      : styles.unsafeTitle,
+                ]}
+              >
+                {analysisResult?.status === "safe"
+                  ? "Meal is Safe"
                   : analysisResult?.status === "warning"
-                    ? styles.warningTitle
-                    : styles.unsafeTitle,
-              ]}
-            >
-              {analysisResult?.status === "safe"
-                ? "✅ Meal is Safe"
-                : analysisResult?.status === "warning"
-                  ? "⚠️ Warning"
-                  : "🚫 Unsafe Meal"}
-            </Text>
+                  ? "Caution"
+                  : "Unsafe Meal"}
+              </Text>
+            </View>
 
             <ScrollView
               style={styles.modalScrollView}
@@ -1057,9 +1073,12 @@ const MealAnalysisScreen = ({ route, navigation }) => {
 
               {analysisResult?.foodSuggestions?.length > 0 && (
                 <View style={styles.suggestionsBox}>
-                  <Text style={styles.suggestionsTitle}>
-                    💡 Tips to Make This Meal Safer:
-                  </Text>
+                  <View style={styles.suggestionsTitleRow}>
+                    <Ionicons name="bulb-outline" size={15} color="#cc0000" />
+                    <Text style={[styles.suggestionsTitle, { marginLeft: 6 }]}>
+                      Dietary Suggestions
+                    </Text>
+                  </View>
                   {analysisResult.foodSuggestions.map((suggestion, i) => (
                     <View key={i} style={styles.suggestionItem}>
                       <Text style={styles.suggestionText}>
@@ -1101,7 +1120,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         </View>
       </Modal>
 
-      {/* --- PROTOCOL MODAL (UPDATED) --- */}
+      {/* --- PHOTO INSTRUCTIONS MODAL --- */}
       <Modal
         visible={showGuidelines}
         transparent={true}
@@ -1110,114 +1129,31 @@ const MealAnalysisScreen = ({ route, navigation }) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.guidelineBox}>
-            <Text style={styles.guideTitle}>📸 Photo Instructions</Text>
+            <Text style={styles.guideTitle}>Before You Scan</Text>
+            <Text style={styles.guideSubtitle}>3 quick tips for accurate results</Text>
 
-            {/* STEP 1: USE STANDARD PLATE */}
-            <Text style={styles.sectionTitle}>
-              1. Use the Standard 3-Compartment Plate
-            </Text>
-            <View
-              style={[
-                styles.guideRow,
-                { flexDirection: "column", alignItems: "center" },
-              ]}
-            >
-              <Image
-                source={require("../../assets/plate_overlay_camera.png")}
-                style={{
-                  width: 120,
-                  height: 120,
-                  resizeMode: "contain",
-                  marginBottom: 8,
-                }}
-              />
-              <Text style={styles.guideDesc}>
-                Place your food in the standard 3-compartment plate. Put
-                rice/carbs in the large section, curry/protein in one side, and
-                vegetables in the other.
-              </Text>
-            </View>
-
-            <View style={styles.dividerLight} />
-
-            {/* STEP 2: SEPARATION */}
-            <Text style={styles.sectionTitle}>2. Food Arrangement</Text>
-            <View style={styles.guideRow}>
-              {/* Bad Example */}
-              <View style={styles.guideItem}>
-                <View
-                  style={[
-                    styles.plateCircle,
-                    { backgroundColor: "#ffe6e6", borderColor: "#ffcccc" },
-                  ]}
-                >
-                  <View style={styles.pileOfFood}>
-                    <Ionicons name="alert-circle" size={40} color="#ff4d4d" />
-                  </View>
-                </View>
-                <Text style={styles.badLabel}>Don't Pile</Text>
-                <Text style={styles.guideDesc}>
-                  We can't see food hidden under curry.
-                </Text>
-              </View>
-
-              {/* Good Example */}
-              <View style={styles.guideItem}>
-                <View
-                  style={[
-                    styles.plateCircle,
-                    { backgroundColor: "#e6fffa", borderColor: "#ccffeb" },
-                  ]}
-                >
-                  <View style={{ flexDirection: "row" }}>
-                    <View
-                      style={[styles.miniFood, { backgroundColor: "#ddd" }]}
-                    />
-                    <View
-                      style={[styles.miniFood, { backgroundColor: "#ffb366" }]}
-                    />
-                  </View>
-                </View>
-                <Text style={styles.goodLabel}>Spread Out</Text>
-                <Text style={styles.guideDesc}>Serve items side-by-side.</Text>
-              </View>
-            </View>
-
-            <View style={styles.dividerLight} />
-
-            {/* STEP 3: CAMERA ANGLE */}
-            <Text style={styles.sectionTitle}>
-              3. Camera Angle — Align with Overlay
-            </Text>
-            <View style={styles.guideRow}>
-              {/* Bad Angle */}
-              <View style={styles.guideItem}>
-                <Ionicons
-                  name="phone-portrait-outline"
-                  size={40}
-                  color="#dc3545"
-                  style={{ transform: [{ rotate: "45deg" }] }}
+            {/* Tip row */}
+            <View style={styles.tipRow}>
+              <View style={styles.tipCard}>
+                <Image
+                  source={require("../../assets/plate_overlay_camera.png")}
+                  style={styles.tipImage}
                 />
-                <Text style={styles.badLabel}>Side View ❌</Text>
-                <Text style={styles.guideDesc}>Don't shoot from the side.</Text>
+                <Text style={styles.tipLabel}>Use the standard{"\n"}3-section plate</Text>
               </View>
 
-              {/* Good Angle */}
-              <View style={styles.guideItem}>
-                <View
-                  style={{
-                    borderWidth: 2,
-                    borderColor: "#28a745",
-                    padding: 5,
-                    borderRadius: 8,
-                  }}
-                >
-                  <Ionicons name="camera-outline" size={30} color="#28a745" />
+              <View style={styles.tipCard}>
+                <View style={styles.tipIconBox}>
+                  <Ionicons name="apps-outline" size={32} color="#1a6fe0" />
                 </View>
-                <Text style={styles.goodLabel}>Top View ✅</Text>
-                <Text style={styles.guideDesc}>
-                  Hold camera directly above plate.
-                </Text>
+              <Text style={styles.tipLabel}>{"Spread food\ndon't pile it"}</Text>
+              </View>
+
+              <View style={styles.tipCard}>
+                <View style={styles.tipIconBox}>
+                  <Ionicons name="phone-portrait-outline" size={32} color="#1a6fe0" />
+                </View>
+                <Text style={styles.tipLabel}>Hold camera{"\n"}directly above</Text>
               </View>
             </View>
 
@@ -1225,7 +1161,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
               style={styles.iUnderstandBtn}
               onPress={confirmAndProceed}
             >
-              <Text style={styles.btnText}>I Understand, Continue</Text>
+              <Text style={styles.btnText}>Continue</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setShowGuidelines(false)}>
@@ -1285,6 +1221,8 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   );
 };
 
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   container: {
     padding: 20,
@@ -1297,8 +1235,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingTop: 50,
-    paddingBottom: 15,
+    paddingTop: (StatusBar.currentHeight || 44) + 8,
+    paddingBottom: 14,
     paddingHorizontal: 15,
     backgroundColor: "#fff",
     borderBottomWidth: 1,
@@ -1342,12 +1280,15 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     width: "100%",
-    height: 150,
-    backgroundColor: "#eee",
-    borderRadius: 12,
+    height: 160,
+    backgroundColor: "#EEF2F8",
+    borderRadius: 14,
     marginBottom: 15,
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#D4DCE8",
+    borderStyle: "dashed",
   },
   buttonRow: {
     flexDirection: "row",
@@ -1355,20 +1296,28 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   scanBtn: {
-    backgroundColor: "#007BFF",
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: "#E8A000",
+    paddingVertical: 16,
+    paddingHorizontal: 10,
+    borderRadius: 14,
     alignItems: "center",
-    width: "48%",
+    justifyContent: "center",
+    flexDirection: "row",
+    width: "100%",
+    shadowColor: "#b87800",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  galleryBtn: { backgroundColor: "#5D3FD3" },
   checkBtn: {
-    backgroundColor: "#6c757d",
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: "#4A5568",
+    paddingVertical: 14,
+    borderRadius: 12,
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 12,
   },
+  btnInner: { flexDirection: "row", alignItems: "center" },
   eatBtn: {
     backgroundColor: "#28a745",
     padding: 15,
@@ -1378,28 +1327,30 @@ const styles = StyleSheet.create({
   },
   btnText: { color: "white", fontSize: 16, fontWeight: "bold" },
   addFoodBtn: {
-    backgroundColor: "#E7F9EE",
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: "#F0FBF4",
+    paddingVertical: 13,
+    borderRadius: 12,
     alignItems: "center",
-    marginTop: 5,
+    marginTop: 6,
     marginBottom: 15,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: "#28a745",
   },
-  addFoodText: { color: "#28a745", fontSize: 16, fontWeight: "600" },
+  addFoodText: { color: "#1e8a3e", fontSize: 15, fontWeight: "700", letterSpacing: 0.3 },
   listContainer: { marginTop: 10 },
   itemCard: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 15,
+    borderRadius: 14,
+    padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
-    shadowColor: "#000",
+    borderColor: "#E8EDF2",
+    borderLeftWidth: 4,
+    borderLeftColor: "#1a6fe0",
+    shadowColor: "#0a1932",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
     elevation: 2,
   },
   foodRow: {
@@ -1553,19 +1504,70 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   guidelineBox: {
-    width: "90%",
+    width: SCREEN_W * 0.88,
+    maxHeight: SCREEN_H * 0.72,
     backgroundColor: "white",
-    borderRadius: 20,
-    padding: 20,
+    borderRadius: 22,
+    paddingHorizontal: 22,
+    paddingTop: 26,
+    paddingBottom: 20,
     alignItems: "center",
-    elevation: 20,
+    elevation: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
   },
   guideTitle: {
     fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 15,
-    color: "#051C60",
+    fontWeight: "700",
+    marginBottom: 4,
+    color: "#0B2560",
     textAlign: "center",
+    letterSpacing: 0.3,
+  },
+  guideSubtitle: {
+    fontSize: 13,
+    color: "#7A8499",
+    marginBottom: 22,
+    textAlign: "center",
+  },
+  tipRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginBottom: 22,
+    gap: 10,
+  },
+  tipCard: {
+    flex: 1,
+    alignItems: "center",
+    backgroundColor: "#F4F8FF",
+    borderRadius: 14,
+    paddingVertical: 20,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: "#D8E8FF",
+  },
+  tipImage: {
+    width: 64,
+    height: 64,
+    resizeMode: "contain",
+    marginBottom: 12,
+  },
+  tipIconBox: {
+    width: 64,
+    height: 64,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  tipLabel: {
+    fontSize: 12,
+    color: "#2D4A70",
+    textAlign: "center",
+    fontWeight: "600",
+    lineHeight: 17,
   },
   sectionTitle: {
     width: "100%",
@@ -1637,26 +1639,33 @@ const styles = StyleSheet.create({
   },
 
   iUnderstandBtn: {
-    backgroundColor: "#007BFF",
-    paddingVertical: 12,
+    backgroundColor: "#E8A000",
+    paddingVertical: 15,
     paddingHorizontal: 30,
-    borderRadius: 25,
-    marginTop: 10,
-    marginBottom: 10,
+    borderRadius: 14,
+    marginTop: 6,
+    marginBottom: 6,
     width: "100%",
     alignItems: "center",
+    shadowColor: "#b87800",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
   },
   cancelText: {
-    color: "#888",
+    color: "#9AA5B4",
     fontSize: 14,
-    padding: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    fontWeight: "500",
   },
 
   // Search Modal
   modalContainer: {
     flex: 1,
     padding: 20,
-    paddingTop: 50,
+    paddingTop: (StatusBar.currentHeight || 44) + 10,
     backgroundColor: "#fff",
   },
   modalHeader: {
@@ -1693,16 +1702,23 @@ const styles = StyleSheet.create({
 
   // Analysis Result Modal
   analysisModalBox: {
-    width: "85%",
-    maxHeight: "75%",
+    width: "88%",
+    maxHeight: "78%",
     backgroundColor: "white",
-    borderRadius: 16,
-    padding: 20,
-    elevation: 20,
+    borderRadius: 20,
+    padding: 22,
+    elevation: 24,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+  },
+  analysisModalTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    marginBottom: 18,
   },
   modalScrollView: {
     maxHeight: "100%",
@@ -1723,10 +1739,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff5f5",
   },
   analysisModalTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
+    fontSize: 21,
+    fontWeight: "700",
     textAlign: "center",
-    marginBottom: 15,
+    letterSpacing: 0.3,
   },
   safeTitle: {
     color: "#28a745",
@@ -1738,16 +1754,20 @@ const styles = StyleSheet.create({
     color: "#dc3545",
   },
   nutrientSummary: {
-    backgroundColor: "#f8f9fa",
-    padding: 12,
-    borderRadius: 10,
+    backgroundColor: "#F4F8FF",
+    padding: 14,
+    borderRadius: 12,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#D8E8FF",
   },
   nutrientSummaryTitle: {
-    fontWeight: "bold",
-    fontSize: 15,
-    marginBottom: 8,
-    color: "#333",
+    fontWeight: "700",
+    fontSize: 14,
+    marginBottom: 10,
+    color: "#1a3060",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   nutrientDetail: {
     fontSize: 14,
@@ -1755,17 +1775,19 @@ const styles = StyleSheet.create({
     color: "#495057",
   },
   warningsBox: {
-    backgroundColor: "#fff3cd",
-    padding: 12,
-    borderRadius: 10,
+    backgroundColor: "#fffbf0",
+    padding: 14,
+    borderRadius: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#ffc107",
+    borderColor: "#f5d66a",
+    borderLeftWidth: 4,
+    borderLeftColor: "#e08f00",
   },
   warningsTitle: {
-    fontWeight: "bold",
-    fontSize: 15,
-    color: "#856404",
+    fontWeight: "700",
+    fontSize: 14,
+    color: "#7d5800",
     marginBottom: 6,
   },
   warningText: {
@@ -1774,18 +1796,24 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   suggestionsBox: {
-    backgroundColor: "#ffe6e6",
-    padding: 12,
-    borderRadius: 10,
+    backgroundColor: "#fff5f5",
+    padding: 14,
+    borderRadius: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#ff9999",
+    borderColor: "#ffc0c0",
+    borderLeftWidth: 4,
+    borderLeftColor: "#dc3545",
+  },
+  suggestionsTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
   },
   suggestionsTitle: {
-    fontWeight: "bold",
-    fontSize: 15,
+    fontWeight: "700",
+    fontSize: 14,
     color: "#cc0000",
-    marginBottom: 8,
   },
   suggestionItem: {
     marginBottom: 8,
@@ -1813,21 +1841,21 @@ const styles = StyleSheet.create({
   },
   modalCancelBtn: {
     flex: 1,
-    backgroundColor: "#6c757d",
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: "#4A5568",
+    paddingVertical: 13,
+    borderRadius: 10,
     alignItems: "center",
   },
   modalCancelText: {
     color: "white",
     fontSize: 15,
-    fontWeight: "bold",
+    fontWeight: "600",
   },
   modalConfirmBtn: {
     flex: 1,
-    backgroundColor: "#28a745",
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: "#1e8a3e",
+    paddingVertical: 13,
+    borderRadius: 10,
     alignItems: "center",
   },
 });
