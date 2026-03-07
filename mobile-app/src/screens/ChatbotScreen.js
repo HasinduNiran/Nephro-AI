@@ -18,6 +18,7 @@ import {
   Easing,
   Linking,
   Keyboard, // Import Keyboard for handling keyboard events
+  Modal,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -303,6 +304,7 @@ const ChatbotScreen = ({ route, navigation }) => {
   const [metering, setMetering] = useState(-160);
   const [inputFocused, setInputFocused] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [showTip, setShowTip] = useState(true);
   const [isTTSLoading, setIsTTSLoading] = useState(false);
   const [currentlyPlayingId, setCurrentlyPlayingId] = useState(null);
   const soundRef = useRef(null);
@@ -1178,7 +1180,7 @@ const ChatbotScreen = ({ route, navigation }) => {
             style={{
               flexDirection: "row",
               justifyContent:
-                item.sender === "user" ? "flex-end" : "space-between",
+                item.sender === "user" ? "flex-end" : "flex-start",
               alignItems: "center",
               marginTop: 4,
               marginHorizontal: 8,
@@ -1191,7 +1193,7 @@ const ChatbotScreen = ({ route, navigation }) => {
             )}
             {item.sender === "bot" && (
               <TouchableOpacity
-                style={{ paddingLeft: 10 }}
+                style={{ paddingLeft: 6 }}
                 onPress={() =>
                   playServerTTS(item.text, item.id, item.urgencyFlags || [])
                 }
@@ -1234,15 +1236,41 @@ const ChatbotScreen = ({ route, navigation }) => {
   };
 
   // Welcome Tips Component
-  const WelcomeTips = () => (
-    <View style={styles.tipsContainer}>
-      <Text style={styles.tipsTitle}>💡 Quick Tip</Text>
-      <View style={styles.tipItem}>
-        <Ionicons name="mic" size={16} color={COLORS.accent} />
-        <Text style={styles.tipText}>Hold the mic button to speak</Text>
+  const WelcomeTips = () => {
+    if (!showTip) return null;
+    return (
+      <View style={styles.tipsContainer}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 8,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: "700",
+              color: COLORS.primaryDark,
+            }}
+          >
+            💡 Quick Tip
+          </Text>
+          <TouchableOpacity
+            onPress={() => setShowTip(false)}
+            style={{ padding: 4 }}
+          >
+            <Ionicons name="close" size={18} color={COLORS.textMedium} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.tipItem}>
+          <Ionicons name="mic" size={16} color={COLORS.accent} />
+          <Text style={styles.tipText}>Hold the mic button to speak</Text>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView
@@ -1405,63 +1433,67 @@ const ChatbotScreen = ({ route, navigation }) => {
               </TouchableOpacity>
             )}
           </View>
-
-          {/* Enhanced Recording Overlay */}
-          {isRecording && (
-            <View style={styles.recordingOverlay}>
-              <View style={styles.recordingCard}>
-                <View style={styles.recordingIconContainer}>
-                  <View style={styles.recordingPulse} />
-                  <Ionicons name="mic" size={52} color={COLORS.danger} />
-                </View>
-                <Text style={styles.recordingTitle}>🎤 Listening...</Text>
-                <Text style={styles.recordingSubtitle}>
-                  Speak clearly about your health
-                </Text>
-
-                <View style={styles.meterTrack}>
-                  <View
-                    style={[
-                      styles.meterFill,
-                      {
-                        width: `${Math.min(
-                          100,
-                          Math.max(5, (metering + 160) / 1.0),
-                        )}%`,
-                        backgroundColor:
-                          metering > -30 ? COLORS.accent : COLORS.danger,
-                      },
-                    ]}
-                  />
-                </View>
-                <View style={styles.volumeFeedback}>
-                  <Ionicons
-                    name={
-                      metering > -30
-                        ? "checkmark-circle"
-                        : "alert-circle-outline"
-                    }
-                    size={16}
-                    color={metering > -30 ? COLORS.accent : COLORS.warning}
-                  />
-                  <Text
-                    style={[
-                      styles.recordingHint,
-                      {
-                        color: metering > -30 ? COLORS.accent : COLORS.warning,
-                      },
-                    ]}
-                  >
-                    {metering > -30 ? "Perfect Volume ✓" : "Speak a bit louder"}
-                  </Text>
-                </View>
-
-                <Text style={styles.releaseHint}>Release to send</Text>
-              </View>
-            </View>
-          )}
         </View>
       </KeyboardAvoidingView>
+
+      {/* Enhanced Recording Overlay — rendered as a Modal so it covers the
+          full screen including the Android system navigation bar */}
+      <Modal
+        visible={isRecording}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <View style={styles.recordingOverlay}>
+          <View style={styles.recordingCard}>
+            <View style={styles.recordingIconContainer}>
+              <View style={styles.recordingPulse} />
+              <Ionicons name="mic" size={52} color={COLORS.danger} />
+            </View>
+            <Text style={styles.recordingTitle}>🎤 Listening...</Text>
+            <Text style={styles.recordingSubtitle}>
+              Speak clearly about your health
+            </Text>
+
+            <View style={styles.meterTrack}>
+              <View
+                style={[
+                  styles.meterFill,
+                  {
+                    width: `${Math.min(
+                      100,
+                      Math.max(5, (metering + 160) / 1.0),
+                    )}%`,
+                    backgroundColor:
+                      metering > -30 ? COLORS.accent : COLORS.danger,
+                  },
+                ]}
+              />
+            </View>
+            <View style={styles.volumeFeedback}>
+              <Ionicons
+                name={
+                  metering > -30 ? "checkmark-circle" : "alert-circle-outline"
+                }
+                size={16}
+                color={metering > -30 ? COLORS.accent : COLORS.warning}
+              />
+              <Text
+                style={[
+                  styles.recordingHint,
+                  {
+                    color: metering > -30 ? COLORS.accent : COLORS.warning,
+                  },
+                ]}
+              >
+                {metering > -30 ? "Perfect Volume ✓" : "Speak a bit louder"}
+              </Text>
+            </View>
+
+            <Text style={styles.releaseHint}>Release to send</Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
