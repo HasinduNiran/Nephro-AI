@@ -296,8 +296,8 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
             </View>
             {anyDeclinePercent ? (
               <View style={[styles.progressionMetricRow, styles.progressionMetricRowSecondary]}>
-                <Text style={styles.progressionMetricLabel}>Any decline risk (worsening to any higher stage)</Text>
-                <Text style={styles.progressionMetricValue}>{anyDeclinePercent}</Text>
+                {/* <Text style={styles.progressionMetricLabel}>Any decline risk (worsening to any higher stage)</Text> */}
+                {/* <Text style={styles.progressionMetricValue}>{anyDeclinePercent}</Text> */}
               </View>
             ) : null}
           </View>

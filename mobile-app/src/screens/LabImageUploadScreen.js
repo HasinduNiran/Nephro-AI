@@ -35,7 +35,10 @@ const LabImageUploadScreen = ({ navigation, route }) => {
     const today = new Date();
     let calculatedAge = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
       calculatedAge--;
     }
     return calculatedAge.toString();
@@ -87,11 +90,21 @@ const LabImageUploadScreen = ({ navigation, route }) => {
           if (userData.gender) {
             const convertedGender = convertGenderFormat(userData.gender);
             setGender(convertedGender);
-            console.log("User gender:", userData.gender, "-> Converted:", convertedGender);
+            console.log(
+              "User gender:",
+              userData.gender,
+              "-> Converted:",
+              convertedGender,
+            );
           }
         }
 
-        console.log("User loaded - Name:", storedUserName || route.params?.userName, "Email:", storedUserEmail || route.params?.userEmail);
+        console.log(
+          "User loaded - Name:",
+          storedUserName || route.params?.userName,
+          "Email:",
+          storedUserEmail || route.params?.userEmail,
+        );
       } catch (error) {
         console.error("Error loading user data from AsyncStorage:", error);
       } finally {
@@ -105,12 +118,13 @@ const LabImageUploadScreen = ({ navigation, route }) => {
   const pickImage = async () => {
     try {
       // Request permission
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
       if (status !== "granted") {
         Alert.alert(
           "Permission Required",
-          "Please grant camera roll permissions to upload images"
+          "Please grant camera roll permissions to upload images",
         );
         return;
       }
@@ -142,7 +156,7 @@ const LabImageUploadScreen = ({ navigation, route }) => {
       const formData = new FormData();
       const fileUri = selectedImage.uri;
       const fileName = fileUri.split("/").pop() || "lab-report.jpg";
-      
+
       // Determine file type
       let fileType = "image/jpeg";
       if (fileName.endsWith(".png")) {
@@ -157,7 +171,7 @@ const LabImageUploadScreen = ({ navigation, route }) => {
         const fileResponse = await fetch(fileUri);
         const blob = await fileResponse.blob();
         console.log("Blob size:", blob.size, "type:", blob.type);
-        
+
         // Create a File object from blob
         const file = new File([blob], fileName, { type: fileType });
         formData.append("reportImage", file, fileName);
@@ -169,7 +183,7 @@ const LabImageUploadScreen = ({ navigation, route }) => {
           name: fileName,
         });
       }
-      
+
       // Add patient name and email
       formData.append("name", userName || userEmail || "Unknown");
       if (userEmail) {
@@ -182,18 +196,22 @@ const LabImageUploadScreen = ({ navigation, route }) => {
       formData.append("gender", gender);
 
       console.log("Platform:", Platform.OS);
-      console.log("Uploading lab report for:", userName || userEmail || "Unknown");
+      console.log(
+        "Uploading lab report for:",
+        userName || userEmail || "Unknown",
+      );
       console.log("File name:", fileName);
 
       // Use centralized API URL from axiosConfig
-      const BACKEND_URL = Platform.OS === "web" 
-        ? "http://localhost:5000/api" 
-        : API_URL;
-      
+      const BACKEND_URL =
+        Platform.OS === "web" ? "http://localhost:5000/api" : API_URL;
+
       console.log("Connecting to:", BACKEND_URL);
-      
+
+      const token = await AsyncStorage.getItem("authToken");
       const uploadResponse = await fetch(`${BACKEND_URL}/lab/upload`, {
         method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
         // Don't set Content-Type header - let browser set it with boundary
       });
@@ -203,7 +221,7 @@ const LabImageUploadScreen = ({ navigation, route }) => {
       if (!uploadResponse.ok) {
         const contentType = uploadResponse.headers.get("content-type");
         let errorMessage = `Server error (${uploadResponse.status})`;
-        
+
         if (contentType && contentType.includes("application/json")) {
           const errorData = await uploadResponse.json();
           errorMessage = errorData.message || errorMessage;
@@ -212,7 +230,7 @@ const LabImageUploadScreen = ({ navigation, route }) => {
           console.error("Server error:", errorText);
           errorMessage = `Backend error - check server console`;
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -223,7 +241,12 @@ const LabImageUploadScreen = ({ navigation, route }) => {
       if (responseData.success || responseData.labTest) {
         Alert.alert("Success", "Lab report processed successfully!");
         // Navigate to results page with all user details
-        navigation.navigate("LabResult", { result: responseData, userName, userEmail, userID });
+        navigation.navigate("LabResult", {
+          result: responseData,
+          userName,
+          userEmail,
+          userID,
+        });
       } else {
         throw new Error(responseData.message || "Processing failed");
       }
@@ -231,7 +254,8 @@ const LabImageUploadScreen = ({ navigation, route }) => {
       console.error("Upload/Processing error:", error);
       Alert.alert(
         "Error",
-        error.message || "Failed to process lab report. Check if backend is running."
+        error.message ||
+          "Failed to process lab report. Check if backend is running.",
       );
     } finally {
       setLoading(false);
@@ -251,7 +275,7 @@ const LabImageUploadScreen = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F5F7FA" />
-      
+
       {/* Header with Back Button */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -271,10 +295,11 @@ const LabImageUploadScreen = ({ navigation, route }) => {
         showsVerticalScrollIndicator={true}
       >
         <Text style={styles.sectionTitle}>Upload Lab Report Image</Text>
-        <Text style={styles.patientInfo}>Patient: {userName || userEmail || "Unknown"}</Text>
+        <Text style={styles.patientInfo}>
+          Patient: {userName || userEmail || "Unknown"}
+        </Text>
 
         {/* Info Card */}
-       
 
         {/* Patient Information (Auto-filled from profile) */}
         <Text style={styles.sectionTitle}>Patient Information</Text>
@@ -283,7 +308,11 @@ const LabImageUploadScreen = ({ navigation, route }) => {
           <View style={styles.halfInputGroup}>
             <Text style={styles.label}>Age</Text>
             <TextInput
-              style={[styles.input, age ? styles.inputFilled : null, styles.inputReadOnly]}
+              style={[
+                styles.input,
+                age ? styles.inputFilled : null,
+                styles.inputReadOnly,
+              ]}
               value={age}
               editable={false}
               placeholder="From profile"
@@ -294,7 +323,13 @@ const LabImageUploadScreen = ({ navigation, route }) => {
 
           <View style={styles.halfInputGroup}>
             <Text style={styles.label}>Gender</Text>
-            <View style={[styles.pickerContainer, styles.pickerFilled, styles.pickerReadOnly]}>
+            <View
+              style={[
+                styles.pickerContainer,
+                styles.pickerFilled,
+                styles.pickerReadOnly,
+              ]}
+            >
               <Picker
                 selectedValue={gender}
                 enabled={false}
@@ -310,7 +345,10 @@ const LabImageUploadScreen = ({ navigation, route }) => {
         {/* Image Preview */}
         {selectedImage && (
           <View style={styles.imagePreviewContainer}>
-            <Image source={{ uri: selectedImage.uri }} style={styles.imagePreview} />
+            <Image
+              source={{ uri: selectedImage.uri }}
+              style={styles.imagePreview}
+            />
           </View>
         )}
 

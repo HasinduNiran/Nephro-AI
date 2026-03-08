@@ -69,10 +69,10 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
   const userName = route.params?.userName || userFromRoute?.name || "User";
   const [userEmail, setUserEmail] = useState(
     route.params?.userEmail ||
-    route.params?.email ||
-    userFromRoute?.email ||
-    userFromRoute?.userEmail ||
-    ""
+      route.params?.email ||
+      userFromRoute?.email ||
+      userFromRoute?.userEmail ||
+      "",
   );
 
   // Load userEmail from AsyncStorage if not available
@@ -117,7 +117,9 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
             setAge(calculatedAge.toString());
           }
 
-          const routeGenderCode = normalizeGenderCode(route.params?.user?.gender);
+          const routeGenderCode = normalizeGenderCode(
+            route.params?.user?.gender,
+          );
           const storedGenderCode = normalizeGenderCode(userData.gender);
           const genderCode = storedGenderCode || routeGenderCode;
           if (genderCode) {
@@ -131,7 +133,7 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
 
     loadUserData();
   }, []);
-  
+
   const [ultrasoundImage, setUltrasoundImage] = useState(null);
   const [labReportImage, setLabReportImage] = useState(null);
   const [scanResult, setScanResult] = useState(null);
@@ -158,11 +160,19 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
   const [historyError, setHistoryError] = useState("");
 
   const bunNumber = bun ? parseFloat(bun) : null;
-  const bunRiskCategory = bunNumber !== null && !Number.isNaN(bunNumber) && bunNumber >= 0
-    ? getBunRiskCategory(bunNumber)
-    : "";
+  const bunRiskCategory =
+    bunNumber !== null && !Number.isNaN(bunNumber) && bunNumber >= 0
+      ? getBunRiskCategory(bunNumber)
+      : "";
   const hasManualInput = !!(creatinine || egfr || bun || albumin || hemoglobin);
-  const hasLabInputForPreview = !!(labReportImage || creatinine || egfr || bun || albumin || hemoglobin);
+  const hasLabInputForPreview = !!(
+    labReportImage ||
+    creatinine ||
+    egfr ||
+    bun ||
+    albumin ||
+    hemoglobin
+  );
 
   const getLabStageColor = (stage) => {
     const text = String(stage || "");
@@ -216,7 +226,7 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
       [
         { text: "Cancel", style: "cancel" },
         { text: "Delete", style: "destructive", onPress: clearLabPreview },
-      ]
+      ],
     );
   };
 
@@ -234,18 +244,24 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
             setUltrasoundImage(null);
           },
         },
-      ]
+      ],
     );
   };
 
   const analyzeLabInPage = async () => {
     if (!hasLabInputForPreview) {
-      Alert.alert("No Lab Input", "Upload a lab report or enter manual lab values first.");
+      Alert.alert(
+        "No Lab Input",
+        "Upload a lab report or enter manual lab values first.",
+      );
       return;
     }
 
     if (!egfr && !creatinine && !labReportImage) {
-      Alert.alert("Validation Error", "Creatinine is required when eGFR is not provided.");
+      Alert.alert(
+        "Validation Error",
+        "Creatinine is required when eGFR is not provided.",
+      );
       return;
     }
 
@@ -277,8 +293,10 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
         if (age) formData.append("age", age);
         if (gender) formData.append("gender", gender);
 
+        const token = await AsyncStorage.getItem("authToken");
         const uploadResponse = await fetch(`${API_URL}/lab/upload`, {
           method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: formData,
         });
 
@@ -287,7 +305,8 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
         }
 
         const responseData = await uploadResponse.json();
-        parsedLabData = responseData?.data || responseData?.labTest || responseData;
+        parsedLabData =
+          responseData?.data || responseData?.labTest || responseData;
       } else {
         const payload = {
           name: userName || userEmail || "Unknown",
@@ -300,7 +319,8 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
           albumin: albumin ? parseFloat(albumin) : undefined,
         };
         const response = await axios.post("/lab", payload);
-        parsedLabData = response?.data?.data || response?.data?.labTest || response?.data;
+        parsedLabData =
+          response?.data?.data || response?.data?.labTest || response?.data;
       }
 
       if (!parsedLabData) {
@@ -338,7 +358,9 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
     try {
       setHistoryLoading(true);
       setHistoryError("");
-      const response = await axios.get(`/stage-progression/history/${encodeURIComponent(userEmail)}`);
+      const response = await axios.get(
+        `/stage-progression/history/${encodeURIComponent(userEmail)}`,
+      );
       if (response.data?.success) {
         setHistory(response.data.records || []);
       } else {
@@ -356,13 +378,16 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
   useFocusEffect(
     useCallback(() => {
       fetchHistory();
-    }, [fetchHistory])
+    }, [fetchHistory]),
   );
 
   const pickImage = async (type) => {
     try {
       // Check if user is trying to upload lab report while manual data exists
-      if (type === "lab" && (creatinine || egfr || bun || albumin || hemoglobin)) {
+      if (
+        type === "lab" &&
+        (creatinine || egfr || bun || albumin || hemoglobin)
+      ) {
         Alert.alert(
           "Remove Manual Data First",
           "You have already entered manual lab values. Please clear them before uploading a lab report.\n\nTap the Manual Values section to collapse it and remove the data.",
@@ -371,19 +396,20 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
               text: "OK",
               onPress: () => setShowManualEntry(true), // Auto-expand manual entry section
             },
-            { text: "Cancel" }
-          ]
+            { text: "Cancel" },
+          ],
         );
         return;
       }
 
       // Request permission
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
       if (status !== "granted") {
         Alert.alert(
           "Permission Required",
-          "Please grant camera roll permissions to upload images"
+          "Please grant camera roll permissions to upload images",
         );
         return;
       }
@@ -411,70 +437,71 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
       Alert.alert("Error", "Failed to pick image");
     }
   };
-const analyzeUltrasound = async () => {
-  if (!ultrasoundImage) {
-    Alert.alert("No Image", "Please upload an ultrasound image first");
-    return;
-  }
+  const analyzeUltrasound = async () => {
+    if (!ultrasoundImage) {
+      Alert.alert("No Image", "Please upload an ultrasound image first");
+      return;
+    }
 
-  try {
-    setScanLoading(true);
+    try {
+      setScanLoading(true);
 
-    const formData = new FormData();
-    const fileUri = ultrasoundImage.uri;
-    const fileName = fileUri.split("/").pop() || "ultrasound.jpg";
+      const formData = new FormData();
+      const fileUri = ultrasoundImage.uri;
+      const fileName = fileUri.split("/").pop() || "ultrasound.jpg";
 
-    let fileType = "image/jpeg";
-    if (fileName.endsWith(".png")) fileType = "image/png";
+      let fileType = "image/jpeg";
+      if (fileName.endsWith(".png")) fileType = "image/png";
 
-    if (Platform.OS === "web") {
-      const response = await fetch(fileUri);
-      const blob = await response.blob();
-      const file = new File([blob], fileName, { type: fileType });
-      formData.append("ultrasound", file);
-    } else {
-      formData.append("ultrasound", {
-        uri: fileUri,
-        type: fileType,
-        name: fileName,
+      if (Platform.OS === "web") {
+        const response = await fetch(fileUri);
+        const blob = await response.blob();
+        const file = new File([blob], fileName, { type: fileType });
+        formData.append("ultrasound", file);
+      } else {
+        formData.append("ultrasound", {
+          uri: fileUri,
+          type: fileType,
+          name: fileName,
+        });
+      }
+
+      formData.append("name", userName || userEmail || "Unknown");
+
+      const token = await AsyncStorage.getItem("authToken");
+      const uploadResponse = await fetch(`${API_URL}/upload-ultrasound`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
       });
+
+      if (!uploadResponse.ok) {
+        throw new Error("Ultrasound analysis failed");
+      }
+
+      const data = await uploadResponse.json();
+
+      if (data.success) {
+        setScanResult(data);
+      } else {
+        throw new Error(data.message || "Analysis failed");
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", error.message);
+    } finally {
+      setScanLoading(false);
     }
+  };
 
-    formData.append("name", userName || userEmail || "Unknown");
-
-    const uploadResponse = await fetch(`${API_URL}/upload-ultrasound`, {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!uploadResponse.ok) {
-      throw new Error("Ultrasound analysis failed");
-    }
-
-    const data = await uploadResponse.json();
-
-    if (data.success) {
-      setScanResult(data);
-    } else {
-      throw new Error(data.message || "Analysis failed");
-    }
-
-  } catch (error) {
-    console.error(error);
-    Alert.alert("Error", error.message);
-  } finally {
-    setScanLoading(false);
-  }
-};
-
-const analyzeData = async () => {
+  const analyzeData = async () => {
     // Check if we have either lab report image OR manual values
     const hasLabReport = !!labReportImage;
     const hasManualValues = !!(creatinine || egfr);
     if (!hasLabReport && !hasManualValues) {
       Alert.alert(
         "Lab Data Required",
-        "Please either upload a lab report image OR enter manual lab values (Creatinine or eGFR)."
+        "Please either upload a lab report image OR enter manual lab values (Creatinine or eGFR).",
       );
       return;
     }
@@ -484,17 +511,14 @@ const analyzeData = async () => {
       if (!egfr && !creatinine) {
         Alert.alert(
           "Insufficient Data",
-          "Creatinine is required when eGFR is not provided."
+          "Creatinine is required when eGFR is not provided.",
         );
         return;
       }
 
       const egfrValue = egfr ? parseFloat(egfr) : null;
       if (egfr && (Number.isNaN(egfrValue) || egfrValue < 0)) {
-        Alert.alert(
-          "Validation Error",
-          "eGFR cannot be less than 0."
-        );
+        Alert.alert("Validation Error", "eGFR cannot be less than 0.");
         return;
       }
 
@@ -502,17 +526,20 @@ const analyzeData = async () => {
       if (creatinine && Number.isNaN(creatinineValue)) {
         Alert.alert(
           "Validation Error",
-          "Please enter a valid Creatinine value."
+          "Please enter a valid Creatinine value.",
         );
         return;
       }
 
       if (creatinineValue !== null) {
         const creatinineRange = getCreatinineRangeByGender(gender);
-        if (creatinineValue < creatinineRange.min || creatinineValue > creatinineRange.max) {
+        if (
+          creatinineValue < creatinineRange.min ||
+          creatinineValue > creatinineRange.max
+        ) {
           Alert.alert(
             "Validation Error",
-            `Creatinine for ${gender === "F" ? "female" : "male"} should be within ${creatinineRange.label}.`
+            `Creatinine for ${gender === "F" ? "female" : "male"} should be within ${creatinineRange.label}.`,
           );
           return;
         }
@@ -521,19 +548,16 @@ const analyzeData = async () => {
       if (bun) {
         const bunValue = parseFloat(bun);
         if (Number.isNaN(bunValue) || bunValue < 0) {
-          Alert.alert(
-            "Validation Error",
-            "BUN cannot be less than 0."
-          );
+          Alert.alert("Validation Error", "BUN cannot be less than 0.");
           return;
         }
       }
-      
+
       // Age and gender required for eGFR calculation
       if (!egfr && creatinine && (!age || !gender)) {
         Alert.alert(
           "Additional Info Required",
-          "Age and Gender are required to calculate eGFR from Creatinine."
+          "Age and Gender are required to calculate eGFR from Creatinine.",
         );
         return;
       }
@@ -543,7 +567,7 @@ const analyzeData = async () => {
 
     try {
       const formData = new FormData();
-      
+
       // Add lab report if provided
       if (labReportImage) {
         const labFileUri = labReportImage.uri;
@@ -556,7 +580,9 @@ const analyzeData = async () => {
         if (Platform.OS === "web") {
           const labFileResponse = await fetch(labFileUri);
           const labBlob = await labFileResponse.blob();
-          const labFile = new File([labBlob], labFileName, { type: labFileType });
+          const labFile = new File([labBlob], labFileName, {
+            type: labFileType,
+          });
           formData.append("labReport", labFile, labFileName);
         } else {
           formData.append("labReport", {
@@ -596,7 +622,7 @@ const analyzeData = async () => {
       formData.append("age", age);
       formData.append("gender", gender);
       formData.append("visitDate", visitDate || getTodayDateString());
-      
+
       // Add manual lab values if provided
       if (creatinine) formData.append("creatinine", creatinine);
       if (egfr) formData.append("egfr", egfr);
@@ -607,29 +633,46 @@ const analyzeData = async () => {
 
       console.log("Platform:", Platform.OS);
       if (labReportImage) {
-        console.log("Uploading lab report:", labReportImage.uri.split("/").pop());
+        console.log(
+          "Uploading lab report:",
+          labReportImage.uri.split("/").pop(),
+        );
       } else {
         console.log("Using manual lab values only");
       }
       if (ultrasoundImage) {
-        console.log("Uploading ultrasound:", ultrasoundImage.uri.split("/").pop());
+        console.log(
+          "Uploading ultrasound:",
+          ultrasoundImage.uri.split("/").pop(),
+        );
       }
-      console.log("Manual lab values:", { creatinine, egfr, bun, albumin, hemoglobin });
-      
-      console.log("Connecting to:", API_URL);
-      
-      const uploadResponse = await fetch(`${API_URL}/stage-progression/upload`, {
-        method: "POST",
-        body: formData,
-        timeout: 30000,
+      console.log("Manual lab values:", {
+        creatinine,
+        egfr,
+        bun,
+        albumin,
+        hemoglobin,
       });
+
+      console.log("Connecting to:", API_URL);
+
+      const token = await AsyncStorage.getItem("authToken");
+      const uploadResponse = await fetch(
+        `${API_URL}/stage-progression/upload`,
+        {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: formData,
+          timeout: 30000,
+        },
+      );
 
       console.log("Response status:", uploadResponse.status);
 
       if (!uploadResponse.ok) {
         const contentType = uploadResponse.headers.get("content-type");
         let errorMessage = `Server error (${uploadResponse.status})`;
-        
+
         if (contentType && contentType.includes("application/json")) {
           const errorData = await uploadResponse.json();
           errorMessage = errorData.message || errorMessage;
@@ -638,7 +681,7 @@ const analyzeData = async () => {
           console.error("Server error:", errorText);
           errorMessage = `Backend error - check server console`;
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -650,12 +693,15 @@ const analyzeData = async () => {
 
         fetchHistory();
         // Navigate to results page
-        navigation.navigate("FutureCKDStageResult", { 
+        navigation.navigate("FutureCKDStageResult", {
           result: responseData,
           userName,
           userEmail,
         });
-      } else if (responseData.message && responseData.message.includes("extraction")) {
+      } else if (
+        responseData.message &&
+        responseData.message.includes("extraction")
+      ) {
         // Data extraction from lab report failed
         Alert.alert(
           "Unable to Extract Data",
@@ -668,20 +714,25 @@ const analyzeData = async () => {
                 setShowManualEntry(true); // Auto-expand manual entry section
               },
             },
-          ]
+          ],
         );
       } else {
         throw new Error(responseData.message || "Analysis failed");
       }
     } catch (error) {
       console.error("Analysis error:", error);
-      
+
       // Handle network request failures
-      if (error.message.includes("Network") || error.message.includes("fetch") || error.message.includes("ERR_")) {
+      if (
+        error.message.includes("Network") ||
+        error.message.includes("fetch") ||
+        error.message.includes("ERR_")
+      ) {
         Alert.alert(
           "Network Connection Error",
-          "Failed to connect to the server. Please check your internet connection and try again.\n\nError: " + error.message,
-          [{ text: "OK" }]
+          "Failed to connect to the server. Please check your internet connection and try again.\n\nError: " +
+            error.message,
+          [{ text: "OK" }],
         );
       } else if (error.message.includes("extraction")) {
         Alert.alert(
@@ -695,12 +746,12 @@ const analyzeData = async () => {
                 setShowManualEntry(true); // Auto-expand manual entry section
               },
             },
-          ]
+          ],
         );
       } else {
         Alert.alert(
           "Error",
-          error.message || "Failed to process data. Please try again."
+          error.message || "Failed to process data. Please try again.",
         );
       }
     } finally {
@@ -718,7 +769,7 @@ const analyzeData = async () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F5F7FA" />
-      
+
       {/* Header with Back Button */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -745,7 +796,6 @@ const analyzeData = async () => {
           * Ultrasound is optional (enhances prediction accuracy){"\n"}
           * Age & Gender help calculate eGFR if not provided
         </Text> */}
-  
 
         {/* Main Grid Layout - 3 Columns */}
         <View style={styles.gridContainer}>
@@ -769,7 +819,7 @@ const analyzeData = async () => {
                 />
               </View>
 
-              <View style={[styles.ageGenderField, { marginTop: 12 }]}> 
+              <View style={[styles.ageGenderField, { marginTop: 12 }]}>
                 <Text style={styles.fieldLabel}>Visit Date</Text>
                 {Platform.OS === "web" ? (
                   <TextInput
@@ -786,8 +836,14 @@ const analyzeData = async () => {
                     onPress={() => setShowDatePicker(true)}
                     activeOpacity={0.8}
                   >
-                    <Ionicons name="calendar-outline" size={18} color="#4A90E2" />
-                    <Text style={styles.datePickerButtonText}>{visitDate || "Select date"}</Text>
+                    <Ionicons
+                      name="calendar-outline"
+                      size={18}
+                      color="#4A90E2"
+                    />
+                    <Text style={styles.datePickerButtonText}>
+                      {visitDate || "Select date"}
+                    </Text>
                   </TouchableOpacity>
                 )}
 
@@ -806,7 +862,11 @@ const analyzeData = async () => {
                 <Text style={styles.fieldLabel}>Gender</Text>
                 <View style={styles.readOnlyInput}>
                   <Text style={styles.readOnlyText}>
-                    {gender === "F" ? "Female" : gender === "M" ? "Male" : "Not set"}
+                    {gender === "F"
+                      ? "Female"
+                      : gender === "M"
+                        ? "Male"
+                        : "Not set"}
                   </Text>
                 </View>
               </View>
@@ -822,16 +882,20 @@ const analyzeData = async () => {
                 <Text style={styles.sectionTitle}>Lab Report</Text>
               </View>
               {labReportImage ? (
-                <Text style={styles.optionalLabel}>✅ Lab Report mode selected (Manual entry locked)</Text>
+                <Text style={styles.optionalLabel}>
+                  ✅ Lab Report mode selected (Manual entry locked)
+                </Text>
               ) : (
-                <Text style={styles.optionalLabel}>(Optional if Manual Values entered)</Text>
+                <Text style={styles.optionalLabel}>
+                  (Optional if Manual Values entered)
+                </Text>
               )}
-              
+
               {labReportImage && (
                 <View style={styles.imagePreviewContainer}>
-                  <Image 
-                    source={{ uri: labReportImage.uri }} 
-                    style={styles.imagePreview} 
+                  <Image
+                    source={{ uri: labReportImage.uri }}
+                    style={styles.imagePreview}
                   />
                   <TouchableOpacity
                     style={styles.removeButton}
@@ -843,32 +907,40 @@ const analyzeData = async () => {
               )}
 
               <TouchableOpacity
-                style={[styles.uploadButton, labReportImage && styles.uploadButtonSecondary]}
+                style={[
+                  styles.uploadButton,
+                  labReportImage && styles.uploadButtonSecondary,
+                ]}
                 onPress={() => pickImage("lab")}
                 activeOpacity={0.8}
                 disabled={loading}
               >
-                <Ionicons 
-                  name={labReportImage ? "refresh" : "cloud-upload-outline"} 
-                  size={24} 
-                  color={labReportImage ? "#50E3C2" : "#F5A623"} 
+                <Ionicons
+                  name={labReportImage ? "refresh" : "cloud-upload-outline"}
+                  size={24}
+                  color={labReportImage ? "#50E3C2" : "#F5A623"}
                 />
-                <Text style={[styles.uploadButtonText, labReportImage && styles.uploadButtonTextSecondary]}>
+                <Text
+                  style={[
+                    styles.uploadButtonText,
+                    labReportImage && styles.uploadButtonTextSecondary,
+                  ]}
+                >
                   {labReportImage ? "Change" : "Upload"}
                 </Text>
               </TouchableOpacity>
             </View>
           </View>
- {/* RIGHT COLUMN - Manual Lab Values */}
+          {/* RIGHT COLUMN - Manual Lab Values */}
           <View style={styles.gridColumn}>
             <View style={styles.uploadSection}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.sectionHeader}
                 onPress={() => {
                   if (labReportImage) {
                     Alert.alert(
                       "Manual Entry Locked",
-                      "Lab report mode is selected. Remove the uploaded lab report to enable manual entry."
+                      "Lab report mode is selected. Remove the uploaded lab report to enable manual entry.",
                     );
                     return;
                   }
@@ -877,10 +949,10 @@ const analyzeData = async () => {
               >
                 <Ionicons name="create" size={24} color="#FF9500" />
                 <Text style={styles.sectionTitle}>Manual Values</Text>
-                <Ionicons 
-                  name={showManualEntry ? "chevron-up" : "chevron-down"} 
-                  size={24} 
-                  color="#8E8E93" 
+                <Ionicons
+                  name={showManualEntry ? "chevron-up" : "chevron-down"}
+                  size={24}
+                  color="#8E8E93"
                   style={{ marginLeft: "auto" }}
                 />
               </TouchableOpacity>
@@ -890,14 +962,19 @@ const analyzeData = async () => {
                 </Text>
               )}
               {!labReportImage && hasManualInput && (
-                <Text style={styles.optionalLabel}>✅ Manual Entry mode selected</Text>
+                <Text style={styles.optionalLabel}>
+                  ✅ Manual Entry mode selected
+                </Text>
               )}
               {!labReportImage && !hasManualInput && (
-                <Text style={styles.optionalLabel}>(Optional if Lab Report uploaded)</Text>
+                <Text style={styles.optionalLabel}>
+                  (Optional if Lab Report uploaded)
+                </Text>
               )}
-              
+
               <Text style={styles.manualEntryHint}>
-                If eGFR is entered, Creatinine is optional. If eGFR is empty, Creatinine is required.
+                If eGFR is entered, Creatinine is optional. If eGFR is empty,
+                Creatinine is required.
               </Text>
 
               {showManualEntry && (
@@ -931,7 +1008,9 @@ const analyzeData = async () => {
                       placeholderTextColor="#8E8E93"
                       keyboardType="decimal-pad"
                     />
-                    <Text style={styles.validationHint}>Must be 0 or greater</Text>
+                    <Text style={styles.validationHint}>
+                      Must be 0 or greater
+                    </Text>
                   </View>
 
                   {/* BUN */}
@@ -946,9 +1025,13 @@ const analyzeData = async () => {
                       placeholderTextColor="#8E8E93"
                       keyboardType="decimal-pad"
                     />
-                    <Text style={styles.validationHint}>Must be 0 or greater</Text>
+                    <Text style={styles.validationHint}>
+                      Must be 0 or greater
+                    </Text>
                     {bunRiskCategory ? (
-                      <Text style={styles.bunRiskText}>{`BUN Category: ${bunRiskCategory}`}</Text>
+                      <Text
+                        style={styles.bunRiskText}
+                      >{`BUN Category: ${bunRiskCategory}`}</Text>
                     ) : null}
                   </View>
 
@@ -995,7 +1078,9 @@ const analyzeData = async () => {
                 ) : (
                   <>
                     <Ionicons name="flask" size={20} color="#FFFFFF" />
-                    <Text style={styles.inlineAnalyzeButtonText}>Analyze Lab</Text>
+                    <Text style={styles.inlineAnalyzeButtonText}>
+                      Analyze Lab
+                    </Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -1004,7 +1089,9 @@ const analyzeData = async () => {
             {labResult && (
               <View style={styles.resultsContainer}>
                 <View style={styles.inlineResultHeader}>
-                  <Text style={styles.inlineResultTitle}>Lab Analysis Result</Text>
+                  <Text style={styles.inlineResultTitle}>
+                    Lab Analysis Result
+                  </Text>
                   <TouchableOpacity
                     style={styles.inlineDeleteButton}
                     onPress={confirmClearLabPreview}
@@ -1014,7 +1101,12 @@ const analyzeData = async () => {
                   </TouchableOpacity>
                 </View>
 
-                <View style={[styles.labStageCard, { borderLeftColor: getLabStageColor(labResult.ckdStage) }]}>
+                <View
+                  style={[
+                    styles.labStageCard,
+                    { borderLeftColor: getLabStageColor(labResult.ckdStage) },
+                  ]}
+                >
                   <View style={styles.statusHeader}>
                     <Ionicons
                       name={getLabStageIcon(labResult.ckdStage)}
@@ -1022,14 +1114,26 @@ const analyzeData = async () => {
                       color={getLabStageColor(labResult.ckdStage)}
                     />
                     <View style={{ marginLeft: 10, flex: 1 }}>
-                      <Text style={[styles.statusText, { color: getLabStageColor(labResult.ckdStage), fontSize: 20 }]}>
+                      <Text
+                        style={[
+                          styles.statusText,
+                          {
+                            color: getLabStageColor(labResult.ckdStage),
+                            fontSize: 20,
+                          },
+                        ]}
+                      >
                         {labResult.ckdStage || "Unknown Stage"}
                       </Text>
-                      <Text style={styles.measurementLabel}>eGFR: {labResult.eGFRRange || "N/A"}</Text>
+                      <Text style={styles.measurementLabel}>
+                        eGFR: {labResult.eGFRRange || "N/A"}
+                      </Text>
                     </View>
                   </View>
                   {labResult.stageDescription ? (
-                    <Text style={styles.interpretationText}>{labResult.stageDescription}</Text>
+                    <Text style={styles.interpretationText}>
+                      {labResult.stageDescription}
+                    </Text>
                   ) : null}
                 </View>
 
@@ -1041,28 +1145,49 @@ const analyzeData = async () => {
                     <View style={styles.measurementContent}>
                       <Text style={styles.measurementLabel}>eGFR</Text>
                       <Text style={styles.measurementValue}>
-                        {typeof labResult.eGFR === "number" ? labResult.eGFR.toFixed(2) : "N/A"} mL/min/1.73m²
+                        {typeof labResult.eGFR === "number"
+                          ? labResult.eGFR.toFixed(2)
+                          : "N/A"}{" "}
+                        mL/min/1.73m²
                       </Text>
                     </View>
                   </View>
 
                   {typeof labResult.creatinine === "number" ? (
                     <View style={styles.measurementRow}>
-                      <Ionicons name="flask-outline" size={20} color="#4A90E2" />
+                      <Ionicons
+                        name="flask-outline"
+                        size={20}
+                        color="#4A90E2"
+                      />
                       <View style={styles.measurementContent}>
                         <Text style={styles.measurementLabel}>Creatinine</Text>
-                        <Text style={styles.measurementValue}>{labResult.creatinine.toFixed(2)} mg/dL</Text>
+                        <Text style={styles.measurementValue}>
+                          {labResult.creatinine.toFixed(2)} mg/dL
+                        </Text>
                       </View>
                     </View>
                   ) : null}
 
                   {typeof labResult.bun === "number" ? (
                     <View style={styles.measurementRow}>
-                      <Ionicons name="fitness-outline" size={20} color="#4A90E2" />
+                      <Ionicons
+                        name="fitness-outline"
+                        size={20}
+                        color="#4A90E2"
+                      />
                       <View style={styles.measurementContent}>
                         <Text style={styles.measurementLabel}>BUN</Text>
-                        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                          <Text style={styles.measurementValue}>{labResult.bun.toFixed(2)} mg/dL</Text>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          <Text style={styles.measurementValue}>
+                            {labResult.bun.toFixed(2)} mg/dL
+                          </Text>
                           <View
                             style={{
                               paddingHorizontal: 8,
@@ -1071,8 +1196,18 @@ const analyzeData = async () => {
                               backgroundColor: `${getStatusColor(labResult.bunRiskCategory || getBunRiskCategory(labResult.bun))}20`,
                             }}
                           >
-                            <Text style={{ fontSize: 11, fontWeight: "700", color: getStatusColor(labResult.bunRiskCategory || getBunRiskCategory(labResult.bun)) }}>
-                              {labResult.bunRiskCategory || getBunRiskCategory(labResult.bun)}
+                            <Text
+                              style={{
+                                fontSize: 11,
+                                fontWeight: "700",
+                                color: getStatusColor(
+                                  labResult.bunRiskCategory ||
+                                    getBunRiskCategory(labResult.bun),
+                                ),
+                              }}
+                            >
+                              {labResult.bunRiskCategory ||
+                                getBunRiskCategory(labResult.bun)}
                             </Text>
                           </View>
                         </View>
@@ -1082,10 +1217,16 @@ const analyzeData = async () => {
 
                   {typeof labResult.albumin === "number" ? (
                     <View style={styles.measurementRow}>
-                      <Ionicons name="nutrition-outline" size={20} color="#4A90E2" />
+                      <Ionicons
+                        name="nutrition-outline"
+                        size={20}
+                        color="#4A90E2"
+                      />
                       <View style={styles.measurementContent}>
                         <Text style={styles.measurementLabel}>Albumin</Text>
-                        <Text style={styles.measurementValue}>{labResult.albumin.toFixed(2)} g/dL</Text>
+                        <Text style={styles.measurementValue}>
+                          {labResult.albumin.toFixed(2)} g/dL
+                        </Text>
                       </View>
                     </View>
                   ) : null}
@@ -1104,9 +1245,9 @@ const analyzeData = async () => {
 
               {ultrasoundImage && (
                 <View style={styles.imagePreviewContainer}>
-                  <Image 
-                    source={{ uri: ultrasoundImage.uri }} 
-                    style={styles.imagePreview} 
+                  <Image
+                    source={{ uri: ultrasoundImage.uri }}
+                    style={styles.imagePreview}
                   />
                   <TouchableOpacity
                     style={styles.removeButton}
@@ -1119,135 +1260,166 @@ const analyzeData = async () => {
                   </TouchableOpacity>
                 </View>
               )}
-{ultrasoundImage && !(scanResult && scanResult.success) && (
-  <TouchableOpacity
-    style={styles.analyzeButton}
-    onPress={analyzeUltrasound}
-    disabled={scanLoading}
-  >
-    {scanLoading ? (
-      <ActivityIndicator color="#FFFFFF" />
-    ) : (
-      <>
-        <Text style={styles.analyzeButtonText}>Analyze Ultrasound</Text>
-        <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
-      </>
-    )}
-  </TouchableOpacity>
-)}
-{scanResult && scanResult.success && (
-  <View style={styles.resultsContainer}>
-    <View style={styles.inlineResultHeader}>
-      <Text style={styles.inlineResultTitle}>Ultrasound Result</Text>
-      <TouchableOpacity
-        style={styles.inlineDeleteButton}
-        onPress={confirmClearUltrasoundPreview}
-        activeOpacity={0.8}
-      >
-        <Ionicons name="trash" size={18} color="#FF3B30" />
-      </TouchableOpacity>
-    </View>
+              {ultrasoundImage && !(scanResult && scanResult.success) && (
+                <TouchableOpacity
+                  style={styles.analyzeButton}
+                  onPress={analyzeUltrasound}
+                  disabled={scanLoading}
+                >
+                  {scanLoading ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <>
+                      <Text style={styles.analyzeButtonText}>
+                        Analyze Ultrasound
+                      </Text>
+                      <Ionicons
+                        name="arrow-forward"
+                        size={20}
+                        color="#FFFFFF"
+                      />
+                    </>
+                  )}
+                </TouchableOpacity>
+              )}
+              {scanResult && scanResult.success && (
+                <View style={styles.resultsContainer}>
+                  <View style={styles.inlineResultHeader}>
+                    <Text style={styles.inlineResultTitle}>
+                      Ultrasound Result
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.inlineDeleteButton}
+                      onPress={confirmClearUltrasoundPreview}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="trash" size={18} color="#FF3B30" />
+                    </TouchableOpacity>
+                  </View>
 
-    <View
-      style={[
-        styles.statusCard,
-        {
-          borderLeftColor:
-            scanResult.status === "normal" ? "#50E3C2" : "#FF6B6B",
-        },
-      ]}
-    >
-      <View style={styles.statusHeader}>
-        <Ionicons
-          name={
-            scanResult.status === "normal"
-              ? "checkmark-circle"
-              : "alert-circle"
-          }
-          size={32}
-          color={scanResult.status === "normal" ? "#50E3C2" : "#FF6B6B"}
-        />
-        <Text
-          style={[
-            styles.statusText,
-            {
-              color:
-                scanResult.status === "normal"
-                  ? "#50E3C2"
-                  : "#FF6B6B",
-            },
-          ]}
-        >
-          {scanResult.status?.toUpperCase()}
-        </Text>
-      </View>
-    </View>
+                  <View
+                    style={[
+                      styles.statusCard,
+                      {
+                        borderLeftColor:
+                          scanResult.status === "normal"
+                            ? "#50E3C2"
+                            : "#FF6B6B",
+                      },
+                    ]}
+                  >
+                    <View style={styles.statusHeader}>
+                      <Ionicons
+                        name={
+                          scanResult.status === "normal"
+                            ? "checkmark-circle"
+                            : "alert-circle"
+                        }
+                        size={32}
+                        color={
+                          scanResult.status === "normal" ? "#50E3C2" : "#FF6B6B"
+                        }
+                      />
+                      <Text
+                        style={[
+                          styles.statusText,
+                          {
+                            color:
+                              scanResult.status === "normal"
+                                ? "#50E3C2"
+                                : "#FF6B6B",
+                          },
+                        ]}
+                      >
+                        {scanResult.status?.toUpperCase()}
+                      </Text>
+                    </View>
+                  </View>
 
-    <View style={styles.resultCard}>
-      <Text style={styles.cardTitle}>Kidney Measurements</Text>
+                  <View style={styles.resultCard}>
+                    <Text style={styles.cardTitle}>Kidney Measurements</Text>
 
-      <View style={styles.measurementRow}>
-        <Ionicons name="resize-outline" size={20} color="#4A90E2" />
-        <View style={styles.measurementContent}>
-          <Text style={styles.measurementLabel}>Kidney Length</Text>
-          <Text style={styles.measurementValue}>
-            {scanResult.kidney_length_cm
-              ? scanResult.kidney_length_cm.toFixed(2)
-              : "N/A"}{" "}
-            cm
-          </Text>
-        </View>
-      </View>
+                    <View style={styles.measurementRow}>
+                      <Ionicons
+                        name="resize-outline"
+                        size={20}
+                        color="#4A90E2"
+                      />
+                      <View style={styles.measurementContent}>
+                        <Text style={styles.measurementLabel}>
+                          Kidney Length
+                        </Text>
+                        <Text style={styles.measurementValue}>
+                          {scanResult.kidney_length_cm
+                            ? scanResult.kidney_length_cm.toFixed(2)
+                            : "N/A"}{" "}
+                          cm
+                        </Text>
+                      </View>
+                    </View>
 
-      {scanResult.kidney_width_cm && (
-        <View style={styles.measurementRow}>
-          <Ionicons name="resize-outline" size={20} color="#4A90E2" />
-          <View style={styles.measurementContent}>
-            <Text style={styles.measurementLabel}>Kidney Width</Text>
-            <Text style={styles.measurementValue}>
-              {scanResult.kidney_width_cm.toFixed(2)} cm
-            </Text>
-          </View>
-        </View>
-      )}
-    </View>
+                    {scanResult.kidney_width_cm && (
+                      <View style={styles.measurementRow}>
+                        <Ionicons
+                          name="resize-outline"
+                          size={20}
+                          color="#4A90E2"
+                        />
+                        <View style={styles.measurementContent}>
+                          <Text style={styles.measurementLabel}>
+                            Kidney Width
+                          </Text>
+                          <Text style={styles.measurementValue}>
+                            {scanResult.kidney_width_cm.toFixed(2)} cm
+                          </Text>
+                        </View>
+                      </View>
+                    )}
+                  </View>
 
-    {scanResult.interpretation && (
-      <View style={styles.resultCard}>
-        <Text style={styles.cardTitle}>Interpretation</Text>
-        <Text style={styles.interpretationText}>
-          {scanResult.interpretation}
-        </Text>
-      </View>
-    )}
-  </View>
-)}
+                  {scanResult.interpretation && (
+                    <View style={styles.resultCard}>
+                      <Text style={styles.cardTitle}>Interpretation</Text>
+                      <Text style={styles.interpretationText}>
+                        {scanResult.interpretation}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              )}
               <TouchableOpacity
-                style={[styles.uploadButton, ultrasoundImage && styles.uploadButtonSecondary]}
+                style={[
+                  styles.uploadButton,
+                  ultrasoundImage && styles.uploadButtonSecondary,
+                ]}
                 onPress={() => pickImage("ultrasound")}
                 activeOpacity={0.8}
                 disabled={loading}
               >
-                <Ionicons 
-                  name={ultrasoundImage ? "refresh" : "cloud-upload-outline"} 
-                  size={24} 
-                  color={ultrasoundImage ? "#50E3C2" : "#4A90E2"} 
+                <Ionicons
+                  name={ultrasoundImage ? "refresh" : "cloud-upload-outline"}
+                  size={24}
+                  color={ultrasoundImage ? "#50E3C2" : "#4A90E2"}
                 />
-                <Text style={[styles.uploadButtonText, ultrasoundImage && styles.uploadButtonTextSecondary]}>
+                <Text
+                  style={[
+                    styles.uploadButtonText,
+                    ultrasoundImage && styles.uploadButtonTextSecondary,
+                  ]}
+                >
                   {ultrasoundImage ? "Change" : "Upload"}
                 </Text>
               </TouchableOpacity>
             </View>
           </View>
-
         </View>
 
-         
         {/* Analyze Button */}
         <TouchableOpacity
           style={[
             styles.analyzeButton,
-            ((!labReportImage && !creatinine && !egfr) || loading) && styles.analyzeButtonDisabled,
+            ((!labReportImage && !creatinine && !egfr) || loading) &&
+              styles.analyzeButtonDisabled,
           ]}
           onPress={analyzeData}
           activeOpacity={0.8}
@@ -1273,7 +1445,12 @@ const analyzeData = async () => {
         <View style={styles.historySection}>
           <TouchableOpacity
             style={styles.historyHeader}
-            onPress={() => navigation.navigate("FutureCKDStageHistory", { userEmail, userName })}
+            onPress={() =>
+              navigation.navigate("FutureCKDStageHistory", {
+                userEmail,
+                userName,
+              })
+            }
             activeOpacity={0.8}
           >
             <View style={styles.historyHeaderLeft}>
@@ -1299,15 +1476,20 @@ const analyzeData = async () => {
             ) : (
               <>
                 {history.slice(0, 2).map((record, index) => {
-                  const stageWithUS = record.prediction_with_us?.predicted_stage;
-                  const stageLabOnly = record.prediction_lab_only?.predicted_stage;
+                  const stageWithUS =
+                    record.prediction_with_us?.predicted_stage;
+                  const stageLabOnly =
+                    record.prediction_lab_only?.predicted_stage;
                   const inputs = record.inputs || {};
                   const labs = inputs.labs || {};
                   const uploaded = inputs.uploaded || {};
                   const visitNumber = index + 1;
 
                   return (
-                    <View key={record._id || record.id || index} style={styles.historyCard}>
+                    <View
+                      key={record._id || record.id || index}
+                      style={styles.historyCard}
+                    >
                       <View style={styles.historyCardHeader}>
                         <View>
                           <Text style={styles.historyCardTitle}>
@@ -1315,8 +1497,16 @@ const analyzeData = async () => {
                               ? `Stage ${stageWithUS || stageLabOnly}`
                               : "Result saved"}
                           </Text>
-                          <Text style={styles.historyCardDate}>{formatDateTime(record.visitDate || record.inputs?.visitDate || record.createdAt)}</Text>
-                          <Text style={styles.historyCardDate}>Visit #{visitNumber}</Text>
+                          <Text style={styles.historyCardDate}>
+                            {formatDateTime(
+                              record.visitDate ||
+                                record.inputs?.visitDate ||
+                                record.createdAt,
+                            )}
+                          </Text>
+                          <Text style={styles.historyCardDate}>
+                            Visit #{visitNumber}
+                          </Text>
                         </View>
                         {/* <View style={styles.badgeRow}>
                           {uploaded.labReport && (
@@ -1339,7 +1529,7 @@ const analyzeData = async () => {
                     </View>
                   );
                 })}
-                {history.length > 2 }
+                {history.length > 2}
               </>
             )}
           </View>
@@ -1901,88 +2091,88 @@ const styles = StyleSheet.create({
     borderLeftWidth: 6,
   },
   analyzeButton: {
-  backgroundColor: "#4A90E2",
-  borderRadius: 16,
-  padding: 18,
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-  marginTop: 10,
-  marginBottom: 24,
-  shadowColor: "#4A90E2",
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.3,
-  shadowRadius: 8,
-  elevation: 5,
-},
+    backgroundColor: "#4A90E2",
+    borderRadius: 16,
+    padding: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+    marginBottom: 24,
+    shadowColor: "#4A90E2",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
 
-analyzeButtonText: {
-  color: "#FFFFFF",
-  fontSize: 16,
-  fontWeight: "700",
-  marginRight: 8,
-},
+  analyzeButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
+    marginRight: 8,
+  },
 
-resultsContainer: {
-  marginTop: 10,
-},
+  resultsContainer: {
+    marginTop: 10,
+  },
 
-statusCard: {
-  backgroundColor: "#FFFFFF",
-  borderRadius: 16,
-  padding: 20,
-  marginBottom: 16,
-  borderLeftWidth: 6,
-},
+  statusCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderLeftWidth: 6,
+  },
 
-statusHeader: {
-  flexDirection: "row",
-  alignItems: "center",
-},
+  statusHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
-statusText: {
-  fontSize: 24,
-  fontWeight: "700",
-  marginLeft: 12,
-},
+  statusText: {
+    fontSize: 24,
+    fontWeight: "700",
+    marginLeft: 12,
+  },
 
-resultCard: {
-  backgroundColor: "#FFFFFF",
-  borderRadius: 16,
-  padding: 20,
-  marginBottom: 16,
-},
+  resultCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+  },
 
-cardTitle: {
-  fontSize: 16,
-  fontWeight: "700",
-  marginBottom: 16,
-},
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 16,
+  },
 
-measurementRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginBottom: 12,
-},
+  measurementRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
 
-measurementContent: {
-  marginLeft: 12,
-},
+  measurementContent: {
+    marginLeft: 12,
+  },
 
-measurementLabel: {
-  fontSize: 14,
-  color: "#8E8E93",
-},
+  measurementLabel: {
+    fontSize: 14,
+    color: "#8E8E93",
+  },
 
-measurementValue: {
-  fontSize: 18,
-  fontWeight: "700",
-},
+  measurementValue: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
 
-interpretationText: {
-  fontSize: 15,
-  lineHeight: 22,
-},
+  interpretationText: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
 });
 
 export default FutureCKDStageScreen;
