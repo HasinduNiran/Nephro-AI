@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const axios = require('axios');
 const FormData = require('form-data');
+const authMiddleware = require('../middleware/auth');
 const { foodDatabase } = require('../mealPlate/foodData'); 
 const NutrientWallet = require('../models/NutrientWallet');
 const { getCKDLimits } = require('../utils/nutrientLimits'); 
@@ -88,7 +89,7 @@ const getWallet = async (userId) => {
 // ---------------------------------------------------------
 // ROUTE 1: DETECT FOODS (with auto portion estimation)
 // ---------------------------------------------------------
-router.post('/detect', upload.single('image'), async (req, res) => {
+router.post('/detect', authMiddleware, upload.single('image'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: "No image provided" });
 
@@ -160,7 +161,7 @@ router.post('/detect', upload.single('image'), async (req, res) => {
 // ---------------------------------------------------------
 // ROUTE 2: CALCULATE & CONFIRM MEAL
 // ---------------------------------------------------------
-router.post('/confirm-meal', async (req, res) => {
+router.post('/confirm-meal', authMiddleware, async (req, res) => {
     const { userId, items, confirm } = req.body; 
 
     if (!userId) return res.status(400).json({ error: "User ID required" });
@@ -250,7 +251,7 @@ router.post('/confirm-meal', async (req, res) => {
 // ---------------------------------------------------------
 // ROUTE 3: STATUS (For Dashboard)
 // ---------------------------------------------------------
-router.get('/status/:userId', async (req, res) => {
+router.get('/status/:userId', authMiddleware, async (req, res) => {
     try {
         const wallet = await getWallet(req.params.userId);
         res.json({

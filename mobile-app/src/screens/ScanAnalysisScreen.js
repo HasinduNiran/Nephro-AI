@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import api, { API_URL } from "../api/axiosConfig";
 
 const ScanAnalysisScreen = ({ navigation, route }) => {
@@ -25,12 +26,13 @@ const ScanAnalysisScreen = ({ navigation, route }) => {
   const pickImage = async () => {
     try {
       // Request permission
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
       if (status !== "granted") {
         Alert.alert(
           "Permission Required",
-          "Please grant camera roll permissions to upload images"
+          "Please grant camera roll permissions to upload images",
         );
         return;
       }
@@ -64,7 +66,7 @@ const ScanAnalysisScreen = ({ navigation, route }) => {
       const formData = new FormData();
       const fileUri = selectedImage.uri;
       const fileName = fileUri.split("/").pop() || "ultrasound.jpg";
-      
+
       // Determine file type
       let fileType = "image/jpeg";
       if (fileName.endsWith(".png")) {
@@ -79,7 +81,7 @@ const ScanAnalysisScreen = ({ navigation, route }) => {
         const fileResponse = await fetch(fileUri);
         const blob = await fileResponse.blob();
         console.log("Blob size:", blob.size, "type:", blob.type);
-        
+
         // Create a File object from blob (more compatible with multer)
         const file = new File([blob], fileName, { type: fileType });
         formData.append("ultrasound", file, fileName);
@@ -91,7 +93,7 @@ const ScanAnalysisScreen = ({ navigation, route }) => {
           name: fileName,
         });
       }
-      
+
       // Add patient name
       formData.append("name", userName || userEmail || "Unknown");
 
@@ -99,10 +101,12 @@ const ScanAnalysisScreen = ({ navigation, route }) => {
       console.log("Uploading with name:", userName || userEmail || "Unknown");
       console.log("File name:", fileName);
       console.log("Connecting to:", API_URL);
-      
+
+      const authToken = await AsyncStorage.getItem("authToken");
       const uploadResponse = await fetch(`${API_URL}/upload-ultrasound`, {
         method: "POST",
         body: formData,
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
         // Don't set Content-Type header - let browser set it with boundary
       });
 
@@ -112,7 +116,7 @@ const ScanAnalysisScreen = ({ navigation, route }) => {
         // Try to get error message, might be JSON or HTML
         const contentType = uploadResponse.headers.get("content-type");
         let errorMessage = `Server error (${uploadResponse.status})`;
-        
+
         if (contentType && contentType.includes("application/json")) {
           const errorData = await uploadResponse.json();
           errorMessage = errorData.message || errorMessage;
@@ -121,7 +125,7 @@ const ScanAnalysisScreen = ({ navigation, route }) => {
           console.error("Server error HTML:", errorText);
           errorMessage = `Backend error - check server console`;
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -132,7 +136,11 @@ const ScanAnalysisScreen = ({ navigation, route }) => {
       if (responseData.success) {
         Alert.alert("Success", "Ultrasound analysis completed successfully!");
         // Navigate to results page
-        navigation.navigate("ScanResult", { result: responseData, userName, userEmail });
+        navigation.navigate("ScanResult", {
+          result: responseData,
+          userName,
+          userEmail,
+        });
       } else {
         throw new Error(responseData.message || "Analysis failed");
       }
@@ -140,7 +148,8 @@ const ScanAnalysisScreen = ({ navigation, route }) => {
       console.error("Upload/Analysis error:", error);
       Alert.alert(
         "Error",
-        error.message || "Failed to process ultrasound. Check if Python script exists."
+        error.message ||
+          "Failed to process ultrasound. Check if Python script exists.",
       );
     } finally {
       setLoading(false);
@@ -150,7 +159,7 @@ const ScanAnalysisScreen = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F5F7FA" />
-      
+
       {/* Header with Back Button */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -175,7 +184,10 @@ const ScanAnalysisScreen = ({ navigation, route }) => {
         {/* Image Preview */}
         {selectedImage && (
           <View style={styles.imagePreviewContainer}>
-            <Image source={{ uri: selectedImage.uri }} style={styles.imagePreview} />
+            <Image
+              source={{ uri: selectedImage.uri }}
+              style={styles.imagePreview}
+            />
           </View>
         )}
 
@@ -393,12 +405,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F7FA",
   },
   modalHeader: {
-  analyzeButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
-    marginRight: 8,
+    analyzeButtonText: {
+      color: "#FFFFFF",
+      fontSize: 16,
+      fontWeight: "700",
+      marginRight: 8,
+    },
   },
-}});
+});
 
 export default ScanAnalysisScreen;

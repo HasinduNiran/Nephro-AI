@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -8,15 +8,21 @@ import {
   TouchableOpacity,
   StatusBar,
   Alert,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useWallet } from '../context/WalletContext';
-import { useFocusEffect } from '@react-navigation/native';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useWallet } from "../context/WalletContext";
+import { useFocusEffect } from "@react-navigation/native";
 
 const NutrientWalletScreen = ({ navigation }) => {
-  const { wallet, ckdStage, limits, resetWallet: resetWalletContext, reloadWallet } = useWallet();
+  const {
+    wallet,
+    ckdStage,
+    limits,
+    resetWallet: resetWalletContext,
+    reloadWallet,
+  } = useWallet();
   const [currentDate, setCurrentDate] = React.useState(new Date());
-  
+
   // Update date every minute
   useEffect(() => {
     const timer = setInterval(() => {
@@ -24,22 +30,25 @@ const NutrientWalletScreen = ({ navigation }) => {
     }, 60000); // Update every minute
     return () => clearInterval(timer);
   }, []);
-  
+
   // Reload wallet data when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
-      console.log('💳 [NutrientWallet] Screen focused - reloading wallet');
+      console.log("💳 [NutrientWallet] Screen focused - reloading wallet");
       if (reloadWallet) {
         reloadWallet();
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []),
   );
 
   useEffect(() => {
-    console.log('💳 [NutrientWallet] Wallet updated:', JSON.stringify(wallet, null, 2));
-    console.log('💳 [NutrientWallet] CKD Stage:', ckdStage);
-    console.log('💳 [NutrientWallet] Limits:', JSON.stringify(limits, null, 2));
+    console.log(
+      "💳 [NutrientWallet] Wallet updated:",
+      JSON.stringify(wallet, null, 2),
+    );
+    console.log("💳 [NutrientWallet] CKD Stage:", ckdStage);
+    console.log("💳 [NutrientWallet] Limits:", JSON.stringify(limits, null, 2));
   }, [wallet, ckdStage, limits]);
 
   // Calculate percentage for each nutrient
@@ -49,33 +58,33 @@ const NutrientWalletScreen = ({ navigation }) => {
 
   // Get status color based on percentage
   const getStatusColor = (percentage) => {
-    if (percentage >= 90) return '#E74C3C'; // Red - Danger
-    if (percentage >= 75) return '#F39C12'; // Orange - Warning
-    return '#27AE60'; // Green - Safe
+    if (percentage >= 90) return "#E74C3C"; // Red - Danger
+    if (percentage >= 75) return "#F39C12"; // Orange - Warning
+    return "#27AE60"; // Green - Safe
   };
 
   // Get status text
   const getStatusText = (percentage) => {
-    if (percentage >= 90) return 'DANGER';
-    if (percentage >= 75) return 'WARNING';
-    return 'SAFE';
+    if (percentage >= 90) return "DANGER";
+    if (percentage >= 75) return "WARNING";
+    return "SAFE";
   };
 
   // Reset wallet (for testing)
   const handleResetWallet = () => {
     Alert.alert(
-      'Reset Wallet',
-      'Are you sure you want to reset your nutrient wallet?',
+      "Reset Wallet",
+      "Are you sure you want to reset your nutrient wallet?",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Reset',
-          style: 'destructive',
+          text: "Reset",
+          style: "destructive",
           onPress: () => {
             resetWalletContext();
           },
         },
-      ]
+      ],
     );
   };
 
@@ -94,7 +103,12 @@ const NutrientWalletScreen = ({ navigation }) => {
             <Ionicons name={icon} size={24} color={statusColor} />
             <Text style={styles.nutrientName}>{name}</Text>
           </View>
-          <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
+          <View
+            style={[
+              styles.statusBadge,
+              { backgroundColor: statusColor + "20" },
+            ]}
+          >
             <Text style={[styles.statusText, { color: statusColor }]}>
               {statusText}
             </Text>
@@ -152,7 +166,10 @@ const NutrientWalletScreen = ({ navigation }) => {
           <Ionicons name="arrow-back" size={24} color="#1C1C1E" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Nutrient Wallet</Text>
-        <TouchableOpacity onPress={handleResetWallet} style={styles.resetButton}>
+        <TouchableOpacity
+          onPress={handleResetWallet}
+          style={styles.resetButton}
+        >
           <Ionicons name="refresh" size={24} color="#4A90E2" />
         </TouchableOpacity>
       </View>
@@ -167,11 +184,11 @@ const NutrientWalletScreen = ({ navigation }) => {
           <View style={styles.dateTextContainer}>
             <Text style={styles.dateLabel}>Today</Text>
             <Text style={styles.dateValue}>
-              {currentDate.toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+              {currentDate.toLocaleDateString("en-US", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
               })}
             </Text>
           </View>
@@ -189,15 +206,15 @@ const NutrientWalletScreen = ({ navigation }) => {
         </View>
 
         {/* Nutrient Cards */}
-        {renderNutrientCard('Sodium', 'water', 'sodium', 'mg')}
-        {renderNutrientCard('Potassium', 'nutrition', 'potassium', 'mg')}
-        {renderNutrientCard('Phosphorus', 'flash', 'phosphorus', 'mg')}
-        {renderNutrientCard('Protein', 'fitness', 'protein', 'g')}
+        {renderNutrientCard("Sodium", "water", "sodium", "mg")}
+        {renderNutrientCard("Potassium", "nutrition", "potassium", "mg")}
+        {renderNutrientCard("Phosphorus", "flash", "phosphorus", "mg")}
+        {renderNutrientCard("Protein", "fitness", "protein", "g")}
 
         {/* Action Button */}
         <TouchableOpacity
           style={styles.scanButton}
-          onPress={() => navigation.navigate('MealAnalysis')}
+          onPress={() => navigation.navigate("MealAnalysis")}
         >
           <Ionicons name="camera" size={24} color="#FFF" />
           <Text style={styles.scanButtonText}>Scan New Meal</Text>
@@ -205,7 +222,11 @@ const NutrientWalletScreen = ({ navigation }) => {
 
         {/* Info Note */}
         <View style={styles.infoNote}>
-          <Ionicons name="information-circle-outline" size={20} color="#8E8E93" />
+          <Ionicons
+            name="information-circle-outline"
+            size={20}
+            color="#8E8E93"
+          />
           <Text style={styles.infoNoteText}>
             Your wallet updates automatically when you scan and confirm meals
           </Text>
@@ -218,47 +239,47 @@ const NutrientWalletScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F7FA',
+    backgroundColor: "#F5F7FA",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+    borderBottomColor: "#E5E5EA",
   },
   backButton: {
     width: 40,
     height: 40,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+    justifyContent: "center",
+    alignItems: "flex-start",
   },
   resetButton: {
     width: 40,
     height: 40,
-    justifyContent: 'center',
-    alignItems: 'flex-end',
+    justifyContent: "center",
+    alignItems: "flex-end",
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#1C1C1E',
+    fontWeight: "700",
+    color: "#1C1C1E",
   },
   content: {
     padding: 20,
   },
   dateCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E3F2FD',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E3F2FD",
     borderRadius: 12,
     padding: 15,
     marginBottom: 15,
     borderLeftWidth: 4,
-    borderLeftColor: '#4A90E2',
+    borderLeftColor: "#4A90E2",
   },
   dateTextContainer: {
     marginLeft: 12,
@@ -266,62 +287,62 @@ const styles = StyleSheet.create({
   },
   dateLabel: {
     fontSize: 12,
-    color: '#666',
-    fontWeight: '600',
+    color: "#666",
+    fontWeight: "600",
     marginBottom: 2,
   },
   dateValue: {
     fontSize: 15,
-    color: '#1C1C1E',
-    fontWeight: '700',
+    color: "#1C1C1E",
+    fontWeight: "700",
   },
   stageCard: {
-    backgroundColor: '#E3F2FD',
+    backgroundColor: "#E3F2FD",
     padding: 16,
     borderRadius: 16,
     marginBottom: 20,
   },
   stageHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
   },
   stageTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#1C1C1E',
+    fontWeight: "700",
+    color: "#1C1C1E",
     marginLeft: 8,
   },
   stageDescription: {
     fontSize: 13,
-    color: '#5C5C5C',
+    color: "#5C5C5C",
     marginLeft: 32,
   },
   nutrientCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     padding: 20,
     borderRadius: 16,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 10,
     elevation: 2,
   },
   nutrientHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 16,
   },
   nutrientTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   nutrientName: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#1C1C1E',
+    fontWeight: "700",
+    color: "#1C1C1E",
     marginLeft: 8,
   },
   statusBadge: {
@@ -331,59 +352,59 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   progressBarContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
   progressBarBackground: {
     flex: 1,
     height: 10,
-    backgroundColor: '#E5E5EA',
+    backgroundColor: "#E5E5EA",
     borderRadius: 5,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   progressBarFill: {
-    height: '100%',
+    height: "100%",
     borderRadius: 5,
   },
   percentageText: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#1C1C1E',
+    fontWeight: "700",
+    color: "#1C1C1E",
     marginLeft: 12,
     width: 45,
   },
   valuesContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   valueItem: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   valueLabel: {
     fontSize: 12,
-    color: '#8E8E93',
+    color: "#8E8E93",
     marginBottom: 4,
   },
   valueAmount: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#1C1C1E',
+    fontWeight: "700",
+    color: "#1C1C1E",
   },
   scanButton: {
-    flexDirection: 'row',
-    backgroundColor: '#F5A623',
+    flexDirection: "row",
+    backgroundColor: "#F5A623",
     padding: 18,
     borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 8,
     marginBottom: 16,
-    shadowColor: '#F5A623',
+    shadowColor: "#F5A623",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -391,21 +412,21 @@ const styles = StyleSheet.create({
   },
   scanButtonText: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#FFF',
+    fontWeight: "700",
+    color: "#FFF",
     marginLeft: 8,
   },
   infoNote: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 16,
   },
   infoNoteText: {
     fontSize: 13,
-    color: '#8E8E93',
+    color: "#8E8E93",
     marginLeft: 8,
-    textAlign: 'center',
+    textAlign: "center",
     flex: 1,
   },
 });

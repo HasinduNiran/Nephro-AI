@@ -31,7 +31,7 @@ exports.register = async (req, res) => {
 
     // Create token
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "7d",
     });
 
     res.status(201).json({
@@ -70,7 +70,7 @@ exports.login = async (req, res) => {
 
     // Create token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "7d",
     });
 
     res.json({
@@ -87,5 +87,19 @@ exports.login = async (req, res) => {
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({ message: "Server error during login" });
+  }
+};
+
+// Get current user profile (requires auth)
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ user });
+  } catch (error) {
+    console.error("Get Profile Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

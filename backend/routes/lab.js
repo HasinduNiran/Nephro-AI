@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const authMiddleware = require("../middleware/auth");
 const labController = require("../controllers/labController");
 
 // Create uploads directory for lab reports if it doesn't exist
@@ -49,21 +50,21 @@ const upload = multer({
 });
 
 // POST: Add lab test results (manual entry)
-router.post("/", labController.addLabTest);
+router.post("/", authMiddleware, labController.addLabTest);
 
 // POST: Upload lab report and extract data via OCR
-router.post("/upload", upload.single("reportImage"), labController.uploadLabReport);
+router.post("/upload", authMiddleware, upload.single("reportImage"), labController.uploadLabReport);
 
 // GET: All lab tests
-router.get("/", labController.getAllLabTests);
+router.get("/", authMiddleware, labController.getAllLabTests);
 
 // GET: Lab tests by patient name
-router.get("/patient/:name", labController.getLabTestsByName);
+router.get("/patient/:name", authMiddleware, labController.getLabTestsByName);
 
 // GET: Latest lab test for a patient
-router.get("/patient/:name/latest", labController.getLatestLabTest);
+router.get("/patient/:name/latest", authMiddleware, labController.getLatestLabTest);
 
 // GET: Single lab test by ID
-router.get("/:id", labController.getLabTestById);
+router.get("/:id", authMiddleware, labController.getLabTestById);
 
 module.exports = router;

@@ -12,7 +12,14 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import axios from "../api/axiosConfig";
 
-const STAGE_COLORS = ["#34C759", "#34C759", "#F5A623", "#F5A623", "#FF3B30", "#FF3B30"];
+const STAGE_COLORS = [
+  "#34C759",
+  "#34C759",
+  "#F5A623",
+  "#F5A623",
+  "#FF3B30",
+  "#FF3B30",
+];
 
 const getStageColor = (stage) => {
   const s = parseInt(stage, 10);
@@ -33,15 +40,19 @@ const ScanLabScreen = ({ navigation, route }) => {
       try {
         setStageLoading(true);
         const response = await axios.get(
-          `/stage-progression/history/${encodeURIComponent(userEmail)}`
+          `/stage-progression/history/${encodeURIComponent(userEmail)}`,
         );
         if (response.data?.success) {
           const records = response.data.records || [];
           if (records.length > 0) {
             // Sort by date descending to get the most recent record
             const sorted = [...records].sort((a, b) => {
-              const da = new Date(a.visitDate || a.inputs?.visitDate || a.createdAt || 0);
-              const db = new Date(b.visitDate || b.inputs?.visitDate || b.createdAt || 0);
+              const da = new Date(
+                a.visitDate || a.inputs?.visitDate || a.createdAt || 0,
+              );
+              const db = new Date(
+                b.visitDate || b.inputs?.visitDate || b.createdAt || 0,
+              );
               return db - da;
             });
             const latest = sorted[0];
@@ -60,7 +71,7 @@ const ScanLabScreen = ({ navigation, route }) => {
     };
     loadLatestStage();
   }, [userEmail]);
-  
+
   const features = [
     {
       id: 1,
@@ -68,7 +79,8 @@ const ScanLabScreen = ({ navigation, route }) => {
       subtitle: "Kidney ultrasound",
       icon: "scan",
       color: "#4A90E2", // Blue
-      onPress: () => navigation.navigate("ScanAnalysis", { userName, userEmail }),
+      onPress: () =>
+        navigation.navigate("ScanAnalysis", { userName, userEmail }),
     },
     {
       id: 2,
@@ -76,7 +88,8 @@ const ScanLabScreen = ({ navigation, route }) => {
       subtitle: "Blood test results",
       icon: "flask",
       color: "#F5A623", // Orange
-      onPress: () => navigation.navigate("LabAnalysis", { userName, userEmail }),
+      onPress: () =>
+        navigation.navigate("LabAnalysis", { userName, userEmail }),
     },
     {
       id: 3,
@@ -84,7 +97,8 @@ const ScanLabScreen = ({ navigation, route }) => {
       subtitle: "Stage progression",
       icon: "trending-up",
       color: "#50E3C2", // Teal
-      onPress: () => navigation.navigate("FutureCKDStage", { userName, userEmail }),
+      onPress: () =>
+        navigation.navigate("FutureCKDStage", { userName, userEmail }),
     },
     {
       id: 4,
@@ -92,14 +106,15 @@ const ScanLabScreen = ({ navigation, route }) => {
       subtitle: "History graph",
       icon: "pulse",
       color: "#EF4444", // Red
-      onPress: () => navigation.navigate("MyProgressPath", { userName, userEmail }),
+      onPress: () =>
+        navigation.navigate("MyProgressPath", { userName, userEmail }),
     },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F5F7FA" />
-      
+
       {/* Back Button */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -129,9 +144,18 @@ const ScanLabScreen = ({ navigation, route }) => {
           <Ionicons name="medical" size={16} color="#4B5563" />
           <Text style={styles.stageLabel}>Current CKD Stage:</Text>
           {stageLoading ? (
-            <ActivityIndicator size="small" color="#4A90E2" style={{ marginLeft: 8 }} />
+            <ActivityIndicator
+              size="small"
+              color="#4A90E2"
+              style={{ marginLeft: 8 }}
+            />
           ) : currentStage !== null ? (
-            <View style={[styles.stagePill, { backgroundColor: getStageColor(currentStage) }]}>
+            <View
+              style={[
+                styles.stagePill,
+                { backgroundColor: getStageColor(currentStage) },
+              ]}
+            >
               <Text style={styles.stagePillText}>Stage {currentStage}</Text>
             </View>
           ) : (

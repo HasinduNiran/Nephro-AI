@@ -94,8 +94,10 @@ app.use("/api/stage-progression", stageProgressionRoutes);
 app.use("/api/bp-records", bpRoutes);
 app.use("/api/health-sync", healthSyncRoutes);
 
+const authMiddleware = require("./middleware/auth");
+
 // Ultrasound upload endpoint
-app.post("/api/upload-ultrasound", upload.single("ultrasound"), (req, res) => {
+app.post("/api/upload-ultrasound", authMiddleware, upload.single("ultrasound"), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: "No file uploaded" });
   }

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const authMiddleware = require("../middleware/auth");
 const stageProgressionController = require("../controllers/stageProgressionController");
 const multer = require("multer");
 const path = require("path");
@@ -61,6 +62,7 @@ const upload = multer({
  */
 router.post(
   "/upload",
+  authMiddleware,
   upload.any(), // accept any file field; controller will pick known ones
   stageProgressionController.predictStageProgressionWithImages
 );
@@ -68,22 +70,26 @@ router.post(
 // Get past stage progression records for a user (by email)
 router.get(
   "/history/:userEmail",
+  authMiddleware,
   stageProgressionController.getStageProgressionHistory
 );
 
 // Get all past stage progression records (admin/debug)
 router.get(
   "/history",
+  authMiddleware,
   stageProgressionController.getAllStageProgressionHistory
 );
 
 // Delete a specific stage progression record by ID (admin/debug)
 router.delete(
   "/history/:id",
+  authMiddleware,
   stageProgressionController.deleteStageProgressionRecord
 );
 router.get(
   "/future-rate/:userEmail",
+  authMiddleware,
   stageProgressionController.getFutureProgressionRate
 );
 /**
@@ -91,12 +97,6 @@ router.get(
  * Predict CKD stage progression using LSTM model
  * 
  * Request body:
-
-// Get future progression rate (latest record) for a user
-router.get(
-  "/future-rate/:userEmail",
-  stageProgressionController.getFutureProgressionRate
-);
  * {
  *   "lab_data": {
  *     "creatinine": number (required),
@@ -138,6 +138,6 @@ router.get(
  *   "message": string
  * }
  */
-router.post("/", stageProgressionController.predictStageProgression);
+router.post("/", authMiddleware, stageProgressionController.predictStageProgression);
 
 module.exports = router;

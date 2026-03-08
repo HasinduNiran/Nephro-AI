@@ -13,8 +13,12 @@ import { Ionicons } from "@expo/vector-icons";
 const FutureCKDStageResultScreen = ({ navigation, route }) => {
   const { result } = route.params || {};
   const userName = route.params?.userName || "User";
-  const userEmail = route.params?.userEmail || route.params?.email || route.params?.user?.email || "";
-  
+  const userEmail =
+    route.params?.userEmail ||
+    route.params?.email ||
+    route.params?.user?.email ||
+    "";
+
   if (!result || !result.success) {
     return (
       <SafeAreaView style={styles.container}>
@@ -70,16 +74,24 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
 
   const probabilityNum = (() => {
     if (!nextProgression) return null;
-    if (typeof nextProgression.probability === "number") return nextProgression.probability;
+    if (typeof nextProgression.probability === "number")
+      return nextProgression.probability;
     if (typeof nextProgression.probability_percentage === "string") {
-      const num = parseFloat(String(nextProgression.probability_percentage).replace("%", ""));
+      const num = parseFloat(
+        String(nextProgression.probability_percentage).replace("%", ""),
+      );
       if (!Number.isNaN(num)) return num / 100;
     }
     return null;
   })();
 
   const riskBucket = (() => {
-    if (probabilityNum === null) return { header: "Progression", text: "Progression probability unavailable", steps: [] };
+    if (probabilityNum === null)
+      return {
+        header: "Progression",
+        text: "Progression probability unavailable",
+        steps: [],
+      };
     if (probabilityNum < 0.3) {
       return {
         header: "Stable / Low Risk",
@@ -118,7 +130,8 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
 
   const toPercentText = (item) => {
     if (!item) return "N/A";
-    if (typeof item.probability === "number") return `${(item.probability * 100).toFixed(1)}%`;
+    if (typeof item.probability === "number")
+      return `${(item.probability * 100).toFixed(1)}%`;
     if (typeof item.probability_percentage === "string") {
       const raw = item.probability_percentage.trim();
       if (!raw) return "N/A";
@@ -142,16 +155,20 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
         : "lab + prior ultrasound fallback"
       : "lab-only data";
 
-    const stageCandidates = Array.isArray(primaryProgressionByStage) ? primaryProgressionByStage : [];
+    const stageCandidates = Array.isArray(primaryProgressionByStage)
+      ? primaryProgressionByStage
+      : [];
     const mostLikelyNext = stageCandidates.length
       ? [...stageCandidates].sort(
-          (a, b) => Number(b?.probability_percentage || 0) - Number(a?.probability_percentage || 0)
+          (a, b) =>
+            Number(b?.probability_percentage || 0) -
+            Number(a?.probability_percentage || 0),
         )[0]
       : null;
 
     const mostLikelyText = mostLikelyNext
       ? `Most likely next stage from distribution: ${mostLikelyNext.stage_display || mostLikelyNext.stage} (${Number(
-          mostLikelyNext.probability_percentage || 0
+          mostLikelyNext.probability_percentage || 0,
         ).toFixed(1)}%).`
       : "No per-stage distribution available for strongest-next-stage comparison.";
 
@@ -186,14 +203,16 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
     return fallback;
   };
 
-  const ultrasoundToDisplay = prediction_with_us && result?.current_visit_ultrasound_uploaded
-    ? {
-        prediction: prediction_with_us,
-        ultrasoundInfo: result?.ultrasound_info || null,
-        sourceText: `From current visit${visitNumber ? ` (Visit #${visitNumber})` : ""}`,
-      }
-    : null;
-  const usedPriorUltrasoundFallback = !!prediction_with_us && !result?.current_visit_ultrasound_uploaded;
+  const ultrasoundToDisplay =
+    prediction_with_us && result?.current_visit_ultrasound_uploaded
+      ? {
+          prediction: prediction_with_us,
+          ultrasoundInfo: result?.ultrasound_info || null,
+          sourceText: `From current visit${visitNumber ? ` (Visit #${visitNumber})` : ""}`,
+        }
+      : null;
+  const usedPriorUltrasoundFallback =
+    !!prediction_with_us && !result?.current_visit_ultrasound_uploaded;
   const predictionContext = result?.prediction_context || {};
   const visitNumbersUsed = Array.isArray(predictionContext.visit_numbers_used)
     ? predictionContext.visit_numbers_used
@@ -202,14 +221,17 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
     ? visitNumbersUsed.map((v) => `Visit ${v}`).join(" + ")
     : null;
 
-  const renderPredictionCard = (prediction, title, icon, color, hasUltrasound = false, progressionByStage = []) => {
+  const renderPredictionCard = (
+    prediction,
+    title,
+    icon,
+    color,
+    hasUltrasound = false,
+    progressionByStage = [],
+  ) => {
     if (!prediction) return null;
 
-    const {
-      predicted_stage,
-      confidence,
-      used_ultrasound,
-    } = prediction;
+    const { predicted_stage, confidence, used_ultrasound } = prediction;
 
     const nextProgression =
       prediction.next_stage_progression ||
@@ -225,23 +247,27 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
 
     const nextStageLabel = nextProgression?.next_stage || "N/A";
     const probabilityNum = (() => {
-      if (typeof nextProgression?.probability === "number") return nextProgression.probability;
+      if (typeof nextProgression?.probability === "number")
+        return nextProgression.probability;
       if (typeof nextProgression?.probability_percentage === "string") {
-        const num = parseFloat(String(nextProgression.probability_percentage).replace("%", ""));
+        const num = parseFloat(
+          String(nextProgression.probability_percentage).replace("%", ""),
+        );
         if (!Number.isNaN(num)) return num / 100;
       }
       return null;
     })();
 
     const nextStageProb =
-      probabilityNum !== null
-        ? `${(probabilityNum * 100).toFixed(1)}%`
-        : "N/A";
+      probabilityNum !== null ? `${(probabilityNum * 100).toFixed(1)}%` : "N/A";
 
     const probabilityNum6Month = (() => {
-      if (typeof nextProgression6Month?.probability === "number") return nextProgression6Month.probability;
+      if (typeof nextProgression6Month?.probability === "number")
+        return nextProgression6Month.probability;
       if (typeof nextProgression6Month?.probability_percentage === "string") {
-        const num = parseFloat(String(nextProgression6Month.probability_percentage).replace("%", ""));
+        const num = parseFloat(
+          String(nextProgression6Month.probability_percentage).replace("%", ""),
+        );
         if (!Number.isNaN(num)) return num / 100;
       }
       return null;
@@ -254,7 +280,9 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
 
     const anyDeclinePercent = (() => {
       if (typeof nextProgression?.any_decline_percentage === "string") {
-        const num = parseFloat(String(nextProgression.any_decline_percentage).replace("%", ""));
+        const num = parseFloat(
+          String(nextProgression.any_decline_percentage).replace("%", ""),
+        );
         return Number.isNaN(num) ? null : `${num.toFixed(1)}%`;
       }
       if (typeof nextProgression?.any_decline_probability === "number") {
@@ -274,7 +302,12 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
         {/* Predicted Stage */}
         <View style={styles.mainResult}>
           <Text style={styles.resultLabel}>Predicted CKD Stage</Text>
-          <View style={[styles.stageBadge, { backgroundColor: getStageColor(predicted_stage) }]}>
+          <View
+            style={[
+              styles.stageBadge,
+              { backgroundColor: getStageColor(predicted_stage) },
+            ]}
+          >
             <Text style={styles.stageText}>Stage {predicted_stage}</Text>
           </View>
           {/* <View style={styles.confidenceContainer}>
@@ -287,17 +320,37 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
           </View>
           <View style={styles.nextStageHighlight}>
             <View style={styles.progressionMetricRow}>
-              <Text style={styles.progressionMetricLabel}>Progression probability with current history</Text>
+              <Text style={styles.progressionMetricLabel}>
+                Progression probability with current history
+              </Text>
               <Text style={styles.progressionMetricValue}>{nextStageProb}</Text>
             </View>
-            <View style={[styles.progressionMetricRow, styles.progressionMetricRowSecondary]}>
-              <Text style={styles.progressionMetricLabel}>Next 6-month progression probability</Text>
-              <Text style={styles.progressionMetricValue}>{nextStageProb6Month}</Text>
+            <View
+              style={[
+                styles.progressionMetricRow,
+                styles.progressionMetricRowSecondary,
+              ]}
+            >
+              <Text style={styles.progressionMetricLabel}>
+                Next 6-month progression probability
+              </Text>
+              <Text style={styles.progressionMetricValue}>
+                {nextStageProb6Month}
+              </Text>
             </View>
             {anyDeclinePercent ? (
-              <View style={[styles.progressionMetricRow, styles.progressionMetricRowSecondary]}>
-                <Text style={styles.progressionMetricLabel}>Any decline risk (worsening to any higher stage)</Text>
-                <Text style={styles.progressionMetricValue}>{anyDeclinePercent}</Text>
+              <View
+                style={[
+                  styles.progressionMetricRow,
+                  styles.progressionMetricRowSecondary,
+                ]}
+              >
+                <Text style={styles.progressionMetricLabel}>
+                  Any decline risk (worsening to any higher stage)
+                </Text>
+                <Text style={styles.progressionMetricValue}>
+                  {anyDeclinePercent}
+                </Text>
               </View>
             ) : null}
           </View>
@@ -316,11 +369,18 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
         </View>
 
         <View style={styles.progressionByStageBox}>
-          <Text style={styles.progressionByStageTitle}>Probability by next stages</Text>
+          <Text style={styles.progressionByStageTitle}>
+            Probability by next stages
+          </Text>
           {progressionByStage.length ? (
             progressionByStage.map((item, idx) => (
-              <View key={`${title}-prog-${idx}`} style={styles.progressionByStageRow}>
-                <Text style={styles.progressionByStageStage}>{item.stage_display || item.stage}</Text>
+              <View
+                key={`${title}-prog-${idx}`}
+                style={styles.progressionByStageRow}
+              >
+                <Text style={styles.progressionByStageStage}>
+                  {item.stage_display || item.stage}
+                </Text>
                 <Text style={styles.progressionByStageArrow}>→</Text>
                 <Text style={styles.progressionByStagePercent}>
                   {Number(item.probability_percentage || 0).toFixed(1)}%
@@ -328,7 +388,9 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
               </View>
             ))
           ) : (
-            <Text style={styles.progressionByStageEmpty}>No per-stage probabilities available.</Text>
+            <Text style={styles.progressionByStageEmpty}>
+              No per-stage probabilities available.
+            </Text>
           )}
         </View>
       </View>
@@ -338,12 +400,14 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F5F7FA" />
-      
+
       {/* Header with Back Button */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.navigate("ScanLab", { userName, userEmail })}
+          onPress={() =>
+            navigation.navigate("ScanLab", { userName, userEmail })
+          }
           activeOpacity={0.7}
         >
           <Ionicons name="arrow-back" size={24} color="#1C1C1E" />
@@ -379,7 +443,9 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
           </Text>
         </View> */}
         {visitWindowText ? (
-          <Text style={styles.emailText}>Trend window used: {visitWindowText}</Text>
+          <Text style={styles.emailText}>
+            Trend window used: {visitWindowText}
+          </Text>
         ) : null}
 
         {/* Main Content Grid - Left and Right */}
@@ -393,7 +459,7 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
                 primaryIcon,
                 primaryColor,
                 !!prediction_with_us,
-                primaryProgressionByStage
+                primaryProgressionByStage,
               )}
           </View>
 
@@ -408,14 +474,22 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
                 </View>
                 <View style={styles.egfrValueContainer}>
                   <Text style={styles.egfrLabel}>Estimated GFR</Text>
-                  <Text style={styles.egfrValue}>{eGFR_info.value?.toFixed(1) || "N/A"}</Text>
+                  <Text style={styles.egfrValue}>
+                    {eGFR_info.value?.toFixed(1) || "N/A"}
+                  </Text>
                   <Text style={styles.egfrUnit}>mL/min/1.73m²</Text>
                 </View>
                 <View style={styles.egfrSourceContainer}>
                   <View style={styles.egfrSourceItem}>
-                    <Ionicons name="checkmark-circle" size={16} color="#50E3C2" />
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={16}
+                      color="#50E3C2"
+                    />
                     <Text style={styles.egfrSourceLabel}>Source:</Text>
-                    <Text style={styles.egfrSourceValue}>{eGFR_info.source || "Unknown"}</Text>
+                    <Text style={styles.egfrSourceValue}>
+                      {eGFR_info.source || "Unknown"}
+                    </Text>
                   </View>
                   <View style={styles.egfrSourceItem}>
                     <Ionicons name="info-circle" size={16} color="#8E8E93" />
@@ -426,45 +500,56 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
               </View>
             )}
 
-            {ultrasoundToDisplay?.prediction && (() => {
-              const p = ultrasoundToDisplay.prediction || {};
-              // Attempt common keys for kidney length
-              const kidneyLength =
-                ultrasoundToDisplay.ultrasoundInfo?.kidney_length_cm ||
-                p.kidney_length_cm ||
-                (p.ultrasound && p.ultrasound.kidney_length_cm) ||
-                (p.kidney && (p.kidney.length_cm || p.kidney.length)) ||
-                null;
+            {ultrasoundToDisplay?.prediction &&
+              (() => {
+                const p = ultrasoundToDisplay.prediction || {};
+                // Attempt common keys for kidney length
+                const kidneyLength =
+                  ultrasoundToDisplay.ultrasoundInfo?.kidney_length_cm ||
+                  p.kidney_length_cm ||
+                  (p.ultrasound && p.ultrasound.kidney_length_cm) ||
+                  (p.kidney && (p.kidney.length_cm || p.kidney.length)) ||
+                  null;
 
-              if (!kidneyLength) return null; // hide block entirely when no kidney length available
+                if (!kidneyLength) return null; // hide block entirely when no kidney length available
 
-              return (
-                <View style={styles.egfrInfoBox}>
-                  <View style={styles.egfrHeader}>
-                    <Ionicons name="scan" size={24} color="#4A90E2" />
-                    <Text style={styles.egfrTitle}>Ultrasound Result</Text>
+                return (
+                  <View style={styles.egfrInfoBox}>
+                    <View style={styles.egfrHeader}>
+                      <Ionicons name="scan" size={24} color="#4A90E2" />
+                      <Text style={styles.egfrTitle}>Ultrasound Result</Text>
+                    </View>
+
+                    <View style={styles.egfrValueContainer}>
+                      <Text style={styles.egfrLabel}>Kidney Length</Text>
+                      <Text style={styles.egfrValue}>
+                        {Number(kidneyLength).toFixed(2)} cm
+                      </Text>
+                      <Text style={styles.egfrUnit}>
+                        {ultrasoundToDisplay.sourceText}
+                      </Text>
+                    </View>
                   </View>
-
-                  <View style={styles.egfrValueContainer}>
-                    <Text style={styles.egfrLabel}>Kidney Length</Text>
-                    <Text style={styles.egfrValue}>{Number(kidneyLength).toFixed(2)} cm</Text>
-                    <Text style={styles.egfrUnit}>{ultrasoundToDisplay.sourceText}</Text>
-                  </View>
-                </View>
-              );
-            })()}
+                );
+              })()}
 
             {/* Recommendations driven by progression probability */}
             <View style={styles.recommendationsCard}>
               <View style={styles.recommendationsHeader}>
                 <Ionicons name="medical" size={24} color="#34C759" />
-                <Text style={styles.recommendationsTitle}>{riskBucket.header}</Text>
+                <Text style={styles.recommendationsTitle}>
+                  {riskBucket.header}
+                </Text>
               </View>
               <Text style={styles.recommendationText}>{riskBucket.text}</Text>
               <View style={{ marginTop: 12, gap: 10 }}>
                 {riskBucket.steps.map((step, idx) => (
                   <View key={idx} style={styles.recommendationItem}>
-                    <Ionicons name="checkmark-circle" size={16} color="#34C759" />
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={16}
+                      color="#34C759"
+                    />
                     <Text style={styles.recommendationText}>{step}</Text>
                   </View>
                 ))}
@@ -493,7 +578,12 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
 
         <TouchableOpacity
           style={[styles.actionButton, styles.secondaryButton]}
-          onPress={() => navigation.navigate("FutureCKDStageHistory", { userName, userEmail })}
+          onPress={() =>
+            navigation.navigate("FutureCKDStageHistory", {
+              userName,
+              userEmail,
+            })
+          }
           activeOpacity={0.8}
         >
           <Ionicons name="time-outline" size={24} color="#4A90E2" />
@@ -504,7 +594,9 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
 
         <TouchableOpacity
           style={[styles.actionButton, styles.secondaryButton]}
-          onPress={() => navigation.navigate("FutureCKDStage", { userName, userEmail })}
+          onPress={() =>
+            navigation.navigate("FutureCKDStage", { userName, userEmail })
+          }
           activeOpacity={0.8}
         >
           <Ionicons name="refresh" size={24} color="#4A90E2" />

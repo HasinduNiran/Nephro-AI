@@ -31,10 +31,10 @@ const formatDateTime = (isoString) => {
 const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
   const [userEmail, setUserEmail] = useState(
     route.params?.userEmail ||
-    route.params?.email ||
-    route.params?.user?.email ||
-    route.params?.user?.userEmail ||
-    ""
+      route.params?.email ||
+      route.params?.user?.email ||
+      route.params?.user?.userEmail ||
+      "",
   );
 
   const userName = route.params?.userName || route.params?.user?.name || "User";
@@ -69,7 +69,9 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
   // Re-assign visit numbers by date after a deletion and return newest-first
   const resequenceByDisplayOrder = (items) => {
     if (!items?.length) return [];
-    const hasAnySubmissionIndex = items.some((item) => Number.isFinite(Number(item?.submissionIndex)));
+    const hasAnySubmissionIndex = items.some((item) =>
+      Number.isFinite(Number(item?.submissionIndex)),
+    );
 
     // Prefer backend-assigned visit index ordering when available
     if (hasAnySubmissionIndex) {
@@ -77,8 +79,12 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
         const va = Number(a?.submissionIndex ?? -1);
         const vb = Number(b?.submissionIndex ?? -1);
         if (va !== vb) return vb - va; // newest visit first
-        const da = new Date(a.visitDate || a.inputs?.visitDate || a.createdAt || 0);
-        const db = new Date(b.visitDate || b.inputs?.visitDate || b.createdAt || 0);
+        const da = new Date(
+          a.visitDate || a.inputs?.visitDate || a.createdAt || 0,
+        );
+        const db = new Date(
+          b.visitDate || b.inputs?.visitDate || b.createdAt || 0,
+        );
         return db - da;
       });
 
@@ -92,11 +98,18 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
 
     // Fallback when submissionIndex is missing
     const sortedByDateAsc = [...items].sort((a, b) => {
-      const da = new Date(a.visitDate || a.inputs?.visitDate || a.createdAt || 0);
-      const db = new Date(b.visitDate || b.inputs?.visitDate || b.createdAt || 0);
+      const da = new Date(
+        a.visitDate || a.inputs?.visitDate || a.createdAt || 0,
+      );
+      const db = new Date(
+        b.visitDate || b.inputs?.visitDate || b.createdAt || 0,
+      );
       return da - db;
     });
-    const numbered = sortedByDateAsc.map((item, index) => ({ ...item, _visitNumber: index + 1 }));
+    const numbered = sortedByDateAsc.map((item, index) => ({
+      ...item,
+      _visitNumber: index + 1,
+    }));
     return [...numbered].reverse();
   };
 
@@ -110,7 +123,9 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
     try {
       setLoading(true);
       setError("");
-      const response = await axios.get(`/stage-progression/history/${encodeURIComponent(effectiveEmail)}`);
+      const response = await axios.get(
+        `/stage-progression/history/${encodeURIComponent(effectiveEmail)}`,
+      );
       if (response.data?.success) {
         const raw = response.data.records || [];
         setRecords(resequenceByDisplayOrder(raw));
@@ -129,25 +144,25 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
   useFocusEffect(
     useCallback(() => {
       fetchHistory();
-    }, [fetchHistory])
+    }, [fetchHistory]),
   );
 
   const confirmDelete = (recordId) => {
     console.log("=== CONFIRM DELETE CALLED ===");
     console.log("Record ID:", recordId);
     console.log("About to show Alert dialog...");
-    
+
     try {
       Alert.alert(
         "Delete record?",
         `This will remove the saved prediction for this visit. ID: ${recordId}`,
         [
-          { 
-            text: "Cancel", 
+          {
+            text: "Cancel",
             style: "cancel",
             onPress: () => {
               console.log("=== CANCEL PRESSED ===");
-            }
+            },
           },
           {
             text: "Delete",
@@ -159,7 +174,7 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
             },
           },
         ],
-        { cancelable: true }
+        { cancelable: true },
       );
       console.log("Alert.alert called successfully");
     } catch (err) {
@@ -175,14 +190,14 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
 
     try {
       setDeletingId(recordId);
-      
+
       const deleteUrl = `/stage-progression/history/${recordId}`;
       console.log("DELETE URL:", deleteUrl);
-      
+
       const response = await axios.delete(deleteUrl);
       console.log("Delete response status:", response.status);
       console.log("Delete response data:", response.data);
-      
+
       if (response.data?.success) {
         setRecords((prev) => {
           const remaining = (prev || []).filter((item, idx) => {
@@ -201,8 +216,11 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
       console.error("Error object:", err);
       console.error("Error response:", err.response);
       console.error("Error message:", err.message);
-      
-      const errorMsg = err.response?.data?.message || err.message || "Could not delete this record. Please try again.";
+
+      const errorMsg =
+        err.response?.data?.message ||
+        err.message ||
+        "Could not delete this record. Please try again.";
       Alert.alert("Delete failed", errorMsg);
     } finally {
       setDeletingId(null);
@@ -226,7 +244,7 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
             <Text style={styles.badgeText}>Ultrasound</Text>
           </View>
         ) : null}
-        {(labs.creatinine || labs.egfr) ? (
+        {labs.creatinine || labs.egfr ? (
           <View style={[styles.badge, styles.badgeMuted]}>
             <Text style={styles.badgeText}>Manual Labs</Text>
           </View>
@@ -237,15 +255,15 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
 
   const renderRecord = (record, idx) => {
     const recordId = record._id || record.id || `record-${idx}`;
-    
+
     // Debug: Log the record structure to console
-    console.log("Record data:", { 
-      _id: record._id, 
-      id: record.id, 
+    console.log("Record data:", {
+      _id: record._id,
+      id: record.id,
       recordId,
-      fullRecord: record 
+      fullRecord: record,
     });
-    
+
     const stageUS = record.prediction_with_us?.predicted_stage;
     const stageLab = record.prediction_lab_only?.predicted_stage;
     const confidenceUS = record.prediction_with_us?.confidence;
@@ -255,7 +273,10 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
     const kidneyLength = hasCurrentVisitUltrasound
       ? (record.ultrasound_info?.kidney_length_cm ?? null)
       : null;
-    const progression = record.progression_to_next_stage || record.prediction_with_us?.next_stage_progression || record.prediction_lab_only?.next_stage_progression;
+    const progression =
+      record.progression_to_next_stage ||
+      record.prediction_with_us?.next_stage_progression ||
+      record.prediction_lab_only?.next_stage_progression;
     const progression6Month =
       record.progression_to_next_stage_6_month ||
       record.prediction_with_us?.next_stage_progression_6_month ||
@@ -283,7 +304,9 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
       : null;
     const anyDeclinePercent = (() => {
       if (typeof progression?.any_decline_percentage === "string") {
-        const num = parseFloat(String(progression.any_decline_percentage).replace("%", ""));
+        const num = parseFloat(
+          String(progression.any_decline_percentage).replace("%", ""),
+        );
         return Number.isNaN(num) ? null : `${num.toFixed(1)}%`;
       }
       if (typeof progression?.any_decline_probability === "number") {
@@ -308,36 +331,56 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
               {displayStage ? `Stage ${displayStage}` : "Result saved"}
             </Text>
             <Text style={styles.cardMeta}>
-              {formatDateTime(record.visitDate || record.inputs?.visitDate || record.createdAt)} (Visit #{visitNumber})
+              {formatDateTime(
+                record.visitDate ||
+                  record.inputs?.visitDate ||
+                  record.createdAt,
+              )}{" "}
+              (Visit #{visitNumber})
             </Text>
-            {(age || gender) ? (
+            {age || gender ? (
               <Text style={styles.cardMeta}>
-                {[age ? `Age: ${age}` : null, gender ? `Gender: ${gender}` : null]
+                {[
+                  age ? `Age: ${age}` : null,
+                  gender ? `Gender: ${gender}` : null,
+                ]
                   .filter(Boolean)
                   .join(" | ")}
               </Text>
             ) : null}
             {kidneyLength ? (
-              <Text style={styles.cardMeta}>{`Kidney Length: ${Number(kidneyLength).toFixed(2)} cm`}</Text>
+              <Text
+                style={styles.cardMeta}
+              >{`Kidney Length: ${Number(kidneyLength).toFixed(2)} cm`}</Text>
             ) : null}
             {visitWindowText ? (
-              <Text style={styles.cardMeta}>{`Trend window: ${visitWindowText}`}</Text>
+              <Text
+                style={styles.cardMeta}
+              >{`Trend window: ${visitWindowText}`}</Text>
             ) : null}
             {anyDeclinePercent ? (
-              <Text style={styles.cardMeta}>{`Any decline risk: ${anyDeclinePercent}`}</Text>
+              <Text
+                style={styles.cardMeta}
+              >{`Any decline risk: ${anyDeclinePercent}`}</Text>
             ) : null}
             {progression?.next_stage ? (
               <Text style={[styles.cardMeta, styles.progressionHighlight]}>
-                → {parseFloat(
-                  progression.probability_percentage ?? (progression.probability || 0) * 100
-                ).toFixed(1)}% chance to Stage {progression.next_stage}
+                →{" "}
+                {parseFloat(
+                  progression.probability_percentage ??
+                    (progression.probability || 0) * 100,
+                ).toFixed(1)}
+                % chance to Stage {progression.next_stage}
               </Text>
             ) : null}
             {progression6Month?.next_stage ? (
               <Text style={[styles.cardMeta, styles.progressionHighlight]}>
-                (6 months) → {parseFloat(
-                  progression6Month.probability_percentage ?? (progression6Month.probability || 0) * 100
-                ).toFixed(1)}% chance to Stage {progression6Month.next_stage}
+                (6 months) →{" "}
+                {parseFloat(
+                  progression6Month.probability_percentage ??
+                    (progression6Month.probability || 0) * 100,
+                ).toFixed(1)}
+                % chance to Stage {progression6Month.next_stage}
               </Text>
             ) : null}
           </View>
@@ -362,7 +405,9 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
           onPress={() => setExpandedId(isExpanded ? null : recordId)}
           activeOpacity={0.8}
         >
-          <Text style={styles.expandToggleText}>{isExpanded ? "Hide details" : "See labs, US, and predictions"}</Text>
+          <Text style={styles.expandToggleText}>
+            {isExpanded ? "Hide details" : "See labs, US, and predictions"}
+          </Text>
           <Ionicons
             name={isExpanded ? "chevron-up" : "chevron-down"}
             size={18}
@@ -375,18 +420,23 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
             <Text style={styles.sectionLabel}>Predictions</Text>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>{displayLabel}</Text>
-              <Text style={styles.detailValue}>{displayStage ? `Stage ${displayStage}` : "N/A"}</Text>
+              <Text style={styles.detailValue}>
+                {displayStage ? `Stage ${displayStage}` : "N/A"}
+              </Text>
               {/* {displayConfidence !== undefined && displayConfidence !== null ? (
                 <Text style={styles.detailMeta}>{(displayConfidence * 100).toFixed(1)}%</Text>
               ) : null} */}
-              
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>eGFR</Text>
-              <Text style={styles.detailValue}>{egfrValue ? `${egfrValue.toFixed(1)} mL/min` : "N/A"}</Text>
+              <Text style={styles.detailValue}>
+                {egfrValue ? `${egfrValue.toFixed(1)} mL/min` : "N/A"}
+              </Text>
             </View>
 
-            <Text style={[styles.sectionLabel, { marginTop: 12 }]}>Labs used</Text>
+            <Text style={[styles.sectionLabel, { marginTop: 12 }]}>
+              Labs used
+            </Text>
             <View style={styles.labGrid}>
               {[
                 { label: "Creatinine", value: labs.creatinine, unit: "mg/dL" },
@@ -397,53 +447,77 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
               ].map((lab) => (
                 <View key={lab.label} style={styles.labItem}>
                   <Text style={styles.labLabel}>{lab.label}</Text>
-                  <Text style={styles.labValue}>{lab.value ? `${lab.value} ${lab.unit}` : "-"}</Text>
+                  <Text style={styles.labValue}>
+                    {lab.value ? `${lab.value} ${lab.unit}` : "-"}
+                  </Text>
                 </View>
               ))}
-              
             </View>
 
             <View style={styles.metaRow}>
-  {record.inputs?.age ? (
-    <Text style={styles.metaText}>Age: {record.inputs.age}</Text>
-  ) : null}
+              {record.inputs?.age ? (
+                <Text style={styles.metaText}>Age: {record.inputs.age}</Text>
+              ) : null}
 
-  {record.inputs?.gender ? (
-    <Text style={styles.metaText}>Gender: {record.inputs.gender}</Text>
-  ) : null}
-</View>
+              {record.inputs?.gender ? (
+                <Text style={styles.metaText}>
+                  Gender: {record.inputs.gender}
+                </Text>
+              ) : null}
+            </View>
 
-{/* Kidney Length */}
+            {/* Kidney Length */}
 
-
-            <Text style={[styles.sectionLabel, { marginTop: 12 }]}>Progression by stage</Text>
+            <Text style={[styles.sectionLabel, { marginTop: 12 }]}>
+              Progression by stage
+            </Text>
             {progressionByStage.length ? (
               <View style={styles.progressionList}>
                 {progressionByStage.map((item, pIdx) => (
-                  <View key={`${recordId}-prog-${pIdx}`} style={styles.progressionRow}>
-                    <Text style={styles.progressionStage}>{item.stage_display || item.stage}</Text>
+                  <View
+                    key={`${recordId}-prog-${pIdx}`}
+                    style={styles.progressionRow}
+                  >
+                    <Text style={styles.progressionStage}>
+                      {item.stage_display || item.stage}
+                    </Text>
                     <Text style={styles.progressionArrow}>→</Text>
-                    <Text style={styles.progressionPercent}>{Number(item.probability_percentage || 0).toFixed(1)}%</Text>
+                    <Text style={styles.progressionPercent}>
+                      {Number(item.probability_percentage || 0).toFixed(1)}%
+                    </Text>
                   </View>
                 ))}
               </View>
             ) : (
-              <Text style={styles.metaText}>No stage-wise progression breakdown available.</Text>
+              <Text style={styles.metaText}>
+                No stage-wise progression breakdown available.
+              </Text>
             )}
 
-            <Text style={[styles.sectionLabel, { marginTop: 12 }]}>Progression by stage (6 months)</Text>
+            <Text style={[styles.sectionLabel, { marginTop: 12 }]}>
+              Progression by stage (6 months)
+            </Text>
             {progressionByStage6Month.length ? (
               <View style={styles.progressionList}>
                 {progressionByStage6Month.map((item, pIdx) => (
-                  <View key={`${recordId}-prog6-${pIdx}`} style={styles.progressionRow}>
-                    <Text style={styles.progressionStage}>{item.stage_display || item.stage}</Text>
+                  <View
+                    key={`${recordId}-prog6-${pIdx}`}
+                    style={styles.progressionRow}
+                  >
+                    <Text style={styles.progressionStage}>
+                      {item.stage_display || item.stage}
+                    </Text>
                     <Text style={styles.progressionArrow}>→</Text>
-                    <Text style={styles.progressionPercent}>{Number(item.probability_percentage || 0).toFixed(1)}%</Text>
+                    <Text style={styles.progressionPercent}>
+                      {Number(item.probability_percentage || 0).toFixed(1)}%
+                    </Text>
                   </View>
                 ))}
               </View>
             ) : (
-              <Text style={styles.metaText}>No 6-month stage-wise progression breakdown available.</Text>
+              <Text style={styles.metaText}>
+                No 6-month stage-wise progression breakdown available.
+              </Text>
             )}
           </View>
         ) : null}
@@ -456,20 +530,31 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
       <StatusBar barStyle="dark-content" backgroundColor="#F5F7FA" />
 
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton} activeOpacity={0.7}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+          activeOpacity={0.7}
+        >
           <Ionicons name="arrow-back" size={24} color="#1C1C1E" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Past Future CKD Stages</Text>
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={true}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={true}
+      >
         <View style={styles.introCard}>
           <Text style={styles.introTitle}>History for {userName}</Text>
-          <Text style={styles.introMeta}>{effectiveEmail || "No email provided"}</Text>
+          <Text style={styles.introMeta}>
+            {effectiveEmail || "No email provided"}
+          </Text>
           {!effectiveEmail && (
             <View style={styles.emailCapture}>
-              <Text style={styles.emailLabel}>Enter your email to load history</Text>
+              <Text style={styles.emailLabel}>
+                Enter your email to load history
+              </Text>
               <View style={styles.emailRow}>
                 <TextInput
                   style={styles.emailInput}
@@ -493,7 +578,11 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
         </View>
 
         {loading ? (
-          <ActivityIndicator size="large" color="#4A90E2" style={{ marginTop: 24 }} />
+          <ActivityIndicator
+            size="large"
+            color="#4A90E2"
+            style={{ marginTop: 24 }}
+          />
         ) : error ? (
           <Text style={styles.errorText}>{error}</Text>
         ) : records.length === 0 ? (

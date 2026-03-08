@@ -192,9 +192,11 @@ const LabImageUploadScreen = ({ navigation, route }) => {
       
       console.log("Connecting to:", BACKEND_URL);
       
+      const authToken = await AsyncStorage.getItem("authToken");
       const uploadResponse = await fetch(`${BACKEND_URL}/lab/upload`, {
         method: "POST",
         body: formData,
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
         // Don't set Content-Type header - let browser set it with boundary
       });
 

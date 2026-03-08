@@ -17,12 +17,14 @@ const LoginScreen = ({ navigation }) => {
     try {
       const response = await axios.post("/auth/login", { email, password });
 
+      const token = response.data?.token;
       const userName = response.data?.user?.name || "User";
       const userID = response.data?.user?.id || email;
       const userEmail = response.data?.user?.email || email;
       const userData = response.data?.user || {};
 
-      // Store complete user data in AsyncStorage
+      // Store JWT token and user data in AsyncStorage
+      await AsyncStorage.setItem("authToken", token);
       await AsyncStorage.setItem("userData", JSON.stringify(userData));
       await AsyncStorage.setItem("userID", userID);
       await AsyncStorage.setItem("userName", userName);

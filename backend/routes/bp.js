@@ -1,10 +1,14 @@
 const express = require("express");
 const router = express.Router();
+const authMiddleware = require("../middleware/auth");
 const {
   upsertBPRecord,
   getBPHistory,
   getMonthlyAverage,
 } = require("../controllers/bpController");
+
+// Protect all BP routes
+router.use(authMiddleware);
 
 // POST /api/bp-records/upsert
 router.post("/upsert", upsertBPRecord);

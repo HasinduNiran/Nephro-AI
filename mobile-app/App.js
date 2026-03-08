@@ -4,6 +4,7 @@ import { SafeAreaView, StyleSheet } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { WalletProvider } from "./src/context/WalletContext";
+import { AuthProvider } from "./src/context/AuthContext";
 import LoginScreen from "./src/screens/LoginScreen";
 import SignupScreen from "./src/screens/SignupScreen";
 import HomeScreen from "./src/screens/HomeScreen";
@@ -31,6 +32,7 @@ const Stack = createStackNavigator();
 
 const App = () => {
   return (
+    <AuthProvider>
     <WalletProvider>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -95,6 +97,7 @@ const App = () => {
         </Stack.Navigator>
       </NavigationContainer>
     </WalletProvider>
+    </AuthProvider>
   );
 };
 

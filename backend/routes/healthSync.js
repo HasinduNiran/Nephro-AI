@@ -1,11 +1,15 @@
 const express = require("express");
 const router = express.Router();
+const authMiddleware = require("../middleware/auth");
 const {
   ingestHealthRecords,
   triggerSync,
   getDailySummaries,
   getMonthlyBPAverage,
 } = require("../controllers/healthSyncController");
+
+// Protect all health sync routes
+router.use(authMiddleware);
 
 // POST /api/health-sync/ingest   – push raw watch readings
 router.post("/ingest", ingestHealthRecords);

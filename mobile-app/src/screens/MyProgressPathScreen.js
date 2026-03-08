@@ -16,13 +16,13 @@ import Svg, { Line, Polyline, Circle, Text as SvgText } from "react-native-svg";
 import axios from "../api/axiosConfig";
 
 const STAGE_TO_EGFR = {
-  "1": 95,
-  "2": 75,
-  "3": 55,
-  "3.1": 52,
-  "3.2": 37,
-  "4": 22,
-  "5": 10,
+  1: 95,
+  2: 75,
+  3: 55,
+  3.1: 52,
+  3.2: 37,
+  4: 22,
+  5: 10,
   G1: 95,
   G2: 75,
   G3: 55,
@@ -34,7 +34,11 @@ const STAGE_TO_EGFR = {
 
 const normalizeStageKey = (value) => {
   if (!value) return null;
-  const text = String(value).trim().toUpperCase().replace("STAGE", "").replace(/\s+/g, "");
+  const text = String(value)
+    .trim()
+    .toUpperCase()
+    .replace("STAGE", "")
+    .replace(/\s+/g, "");
   if (text === "3A") return "3.1";
   if (text === "3B") return "3.2";
   if (text === "G3A") return "3.1";
@@ -43,7 +47,8 @@ const normalizeStageKey = (value) => {
   return text;
 };
 
-const getRecordDate = (record) => record?.visitDate || record?.inputs?.visitDate || record?.createdAt;
+const getRecordDate = (record) =>
+  record?.visitDate || record?.inputs?.visitDate || record?.createdAt;
 
 const formatDateOnly = (isoString) => {
   try {
@@ -89,10 +94,10 @@ const getOutlookZone = (egfr) => {
 const MyProgressPathScreen = ({ navigation, route }) => {
   const [userEmail, setUserEmail] = useState(
     route.params?.userEmail ||
-    route.params?.email ||
-    route.params?.user?.email ||
-    route.params?.user?.userEmail ||
-    ""
+      route.params?.email ||
+      route.params?.user?.email ||
+      route.params?.user?.userEmail ||
+      "",
   );
   const userName = route.params?.userName || route.params?.user?.name || "User";
 
@@ -118,7 +123,9 @@ const MyProgressPathScreen = ({ navigation, route }) => {
     try {
       setLoading(true);
       setError("");
-      const response = await axios.get(`/stage-progression/history/${encodeURIComponent(effectiveEmail)}`);
+      const response = await axios.get(
+        `/stage-progression/history/${encodeURIComponent(effectiveEmail)}`,
+      );
       if (response.data?.success) {
         setRecords(response.data.records || []);
       } else {
@@ -136,7 +143,7 @@ const MyProgressPathScreen = ({ navigation, route }) => {
   useFocusEffect(
     useCallback(() => {
       fetchHistory();
-    }, [fetchHistory])
+    }, [fetchHistory]),
   );
 
   const chartData = useMemo(() => {
@@ -144,11 +151,15 @@ const MyProgressPathScreen = ({ navigation, route }) => {
       return { points: [], predicted: null, labels: [] };
     }
 
-    const ordered = [...records].sort((a, b) => new Date(getRecordDate(a)) - new Date(getRecordDate(b)));
+    const ordered = [...records].sort(
+      (a, b) => new Date(getRecordDate(a)) - new Date(getRecordDate(b)),
+    );
 
     const points = ordered
       .map((record, index) => {
-        const egfr = Number(record?.inputs?.labs?.egfr ?? record?.eGFR_info?.value ?? NaN);
+        const egfr = Number(
+          record?.inputs?.labs?.egfr ?? record?.eGFR_info?.value ?? NaN,
+        );
         if (!Number.isFinite(egfr)) return null;
         const stage =
           record?.prediction_with_us?.predicted_stage ??
@@ -180,14 +191,19 @@ const MyProgressPathScreen = ({ navigation, route }) => {
     const nextStage = normalizeStageKey(
       latest?.progression_to_next_stage?.next_stage ||
         latest?.prediction_with_us?.next_stage_progression?.next_stage ||
-        latest?.prediction_lab_only?.next_stage_progression?.next_stage
+        latest?.prediction_lab_only?.next_stage_progression?.next_stage,
     );
     const predictedEgfr = STAGE_TO_EGFR[nextStage] ?? null;
 
     return {
       points,
       predicted: Number.isFinite(predictedEgfr)
-        ? { xLabel: latestVisitLabel, y: predictedEgfr, probabilityText: nextStageProbabilityText, stage: nextStage }
+        ? {
+            xLabel: latestVisitLabel,
+            y: predictedEgfr,
+            probabilityText: nextStageProbabilityText,
+            stage: nextStage,
+          }
         : null,
       labels: points.map((p) => p.xLabel),
       latestActualEgfr: points[points.length - 1]?.y ?? null,
@@ -201,7 +217,15 @@ const MyProgressPathScreen = ({ navigation, route }) => {
     const { points, predicted } = chartData;
 
     if (!points.length) {
-      return { width, height, yTicks: [], bluePolyline: "", blueDots: [], redSegment: null, xLabels: [] };
+      return {
+        width,
+        height,
+        yTicks: [],
+        bluePolyline: "",
+        blueDots: [],
+        redSegment: null,
+        xLabels: [],
+      };
     }
 
     const minY = 0;
@@ -214,10 +238,17 @@ const MyProgressPathScreen = ({ navigation, route }) => {
     const toX = (index) => padding + index * xStep;
     const toY = (value) => {
       const clamped = Math.max(minY, Math.min(maxY, Number(value)));
-      return height - padding - ((clamped - minY) / yRange) * (height - 2 * padding);
+      return (
+        height - padding - ((clamped - minY) / yRange) * (height - 2 * padding)
+      );
     };
 
-    const blueDots = points.map((p, i) => ({ x: toX(i), y: toY(p.y), label: p.xLabel, stage: p.stage }));
+    const blueDots = points.map((p, i) => ({
+      x: toX(i),
+      y: toY(p.y),
+      label: p.xLabel,
+      stage: p.stage,
+    }));
     const bluePolyline = blueDots.map((p) => `${p.x},${p.y}`).join(" ");
 
     let redSegment = null;
@@ -238,7 +269,10 @@ const MyProgressPathScreen = ({ navigation, route }) => {
       };
     }
 
-    const yTicks = [0, 30, 60, 90, 100].map((value) => ({ y: toY(value), value }));
+    const yTicks = [0, 30, 60, 90, 100].map((value) => ({
+      y: toY(value),
+      value,
+    }));
 
     const xLabels = blueDots.map((p) => ({ x: p.x, text: p.label }));
     if (redSegment) xLabels.push({ x: redSegment.toX, text: redSegment.label });
@@ -254,7 +288,16 @@ const MyProgressPathScreen = ({ navigation, route }) => {
       color: zone.color,
     }));
 
-    return { width, height, yTicks, bluePolyline, blueDots, redSegment, xLabels, zoneBands };
+    return {
+      width,
+      height,
+      yTicks,
+      bluePolyline,
+      blueDots,
+      redSegment,
+      xLabels,
+      zoneBands,
+    };
   }, [chartData]);
 
   const probabilityChartData = useMemo(() => {
@@ -262,7 +305,9 @@ const MyProgressPathScreen = ({ navigation, route }) => {
       return { points: [] };
     }
 
-    const ordered = [...records].sort((a, b) => new Date(getRecordDate(a)) - new Date(getRecordDate(b)));
+    const ordered = [...records].sort(
+      (a, b) => new Date(getRecordDate(a)) - new Date(getRecordDate(b)),
+    );
 
     const points = ordered
       .map((record) => {
@@ -275,7 +320,11 @@ const MyProgressPathScreen = ({ navigation, route }) => {
         const pctRaw = nextVisitProgression?.probability_percentage;
         let probabilityPercent = null;
 
-        if (pctRaw !== undefined && pctRaw !== null && String(pctRaw).trim() !== "") {
+        if (
+          pctRaw !== undefined &&
+          pctRaw !== null &&
+          String(pctRaw).trim() !== ""
+        ) {
           const parsedPct = Number(String(pctRaw).replace("%", "").trim());
           probabilityPercent = Number.isFinite(parsedPct) ? parsedPct : null;
         }
@@ -296,7 +345,10 @@ const MyProgressPathScreen = ({ navigation, route }) => {
           record?.prediction_lab_only?.current_stage ||
           null;
 
-        const stageText = stage !== null && stage !== undefined && String(stage).trim() !== "" ? `S${stage}` : null;
+        const stageText =
+          stage !== null && stage !== undefined && String(stage).trim() !== ""
+            ? `S${stage}`
+            : null;
         const contextText = stageText || "";
 
         return {
@@ -329,7 +381,9 @@ const MyProgressPathScreen = ({ navigation, route }) => {
     const toX = (index) => padding + index * xStep;
     const toY = (value) => {
       const clamped = Math.max(minY, Math.min(maxY, Number(value)));
-      return height - padding - ((clamped - minY) / yRange) * (height - 2 * padding);
+      return (
+        height - padding - ((clamped - minY) / yRange) * (height - 2 * padding)
+      );
     };
 
     const dots = probabilityChartData.points.map((p, i) => ({
@@ -341,7 +395,10 @@ const MyProgressPathScreen = ({ navigation, route }) => {
     }));
     const polyline = dots.map((p) => `${p.x},${p.y}`).join(" ");
 
-    const yTicks = [0, 20, 40, 60, 80, 100].map((value) => ({ y: toY(value), value }));
+    const yTicks = [0, 20, 40, 60, 80, 100].map((value) => ({
+      y: toY(value),
+      value,
+    }));
     const xLabels = dots.map((p) => ({ x: p.x, text: p.label }));
 
     return { width, height, yTicks, polyline, dots, xLabels };
@@ -373,7 +430,9 @@ const MyProgressPathScreen = ({ navigation, route }) => {
   const progressionRows = useMemo(() => {
     if (!records.length) return [];
 
-    const ordered = [...records].sort((a, b) => new Date(getRecordDate(a)) - new Date(getRecordDate(b)));
+    const ordered = [...records].sort(
+      (a, b) => new Date(getRecordDate(a)) - new Date(getRecordDate(b)),
+    );
     return ordered.map((record, index) => {
       const nextVisitProgression =
         record?.progression_to_next_stage ||
@@ -405,16 +464,26 @@ const MyProgressPathScreen = ({ navigation, route }) => {
 
   const latestStageInfo = useMemo(() => {
     if (!records.length) return null;
-    const ordered = [...records].sort((a, b) => new Date(getRecordDate(a)) - new Date(getRecordDate(b)));
+    const ordered = [...records].sort(
+      (a, b) => new Date(getRecordDate(a)) - new Date(getRecordDate(b)),
+    );
     const latest = ordered[ordered.length - 1];
     const stage =
       latest?.prediction_with_us?.predicted_stage ??
       latest?.prediction_lab_only?.predicted_stage ??
       null;
     if (stage === null) return null;
-    const egfr = Number(latest?.inputs?.labs?.egfr ?? latest?.eGFR_info?.value ?? NaN);
+    const egfr = Number(
+      latest?.inputs?.labs?.egfr ?? latest?.eGFR_info?.value ?? NaN,
+    );
     const zone = Number.isFinite(egfr) ? getOutlookZone(egfr) : "unknown";
-    const stageColorMap = { green: "#34C759", yellow: "#F5A623", orange: "#FF9500", red: "#FF3B30", unknown: "#8E8E93" };
+    const stageColorMap = {
+      green: "#34C759",
+      yellow: "#F5A623",
+      orange: "#FF9500",
+      red: "#FF3B30",
+      unknown: "#8E8E93",
+    };
     return {
       stage,
       color: stageColorMap[zone] || "#8E8E93",
@@ -439,7 +508,8 @@ const MyProgressPathScreen = ({ navigation, route }) => {
     let trendText = "Trend data is limited.";
     if (hasFirst && hasLast) {
       const delta = last - first;
-      const direction = delta > 0 ? "increased" : delta < 0 ? "decreased" : "stayed stable";
+      const direction =
+        delta > 0 ? "increased" : delta < 0 ? "decreased" : "stayed stable";
       const absDelta = Math.abs(delta).toFixed(1);
       trendText =
         direction === "stayed stable"
@@ -450,7 +520,8 @@ const MyProgressPathScreen = ({ navigation, route }) => {
     const nextPrediction = chartData?.predicted;
     const predictionText = nextPrediction
       ? `Predicted next visit: Stage ${nextPrediction.stage || "N/A"}, eGFR ${Number(nextPrediction.y).toFixed(1)} mL/min${
-          nextPrediction.probabilityText && nextPrediction.probabilityText !== "N/A"
+          nextPrediction.probabilityText &&
+          nextPrediction.probabilityText !== "N/A"
             ? ` (${nextPrediction.probabilityText} progression probability)`
             : ""
         }.`
@@ -479,9 +550,12 @@ const MyProgressPathScreen = ({ navigation, route }) => {
     if (hasFirst && hasLast) {
       const delta = last - first;
       const absDelta = Math.abs(delta).toFixed(1);
-      if (delta > 0) movementText = `Risk increased by ${absDelta}% from first to latest reading.`;
-      if (delta < 0) movementText = `Risk decreased by ${absDelta}% from first to latest reading.`;
-      if (delta === 0) movementText = "Risk remained stable from first to latest reading.";
+      if (delta > 0)
+        movementText = `Risk increased by ${absDelta}% from first to latest reading.`;
+      if (delta < 0)
+        movementText = `Risk decreased by ${absDelta}% from first to latest reading.`;
+      if (delta === 0)
+        movementText = "Risk remained stable from first to latest reading.";
     }
 
     const directionText = riskIncreasing
@@ -515,36 +589,69 @@ const MyProgressPathScreen = ({ navigation, route }) => {
         {latestStageInfo ? (
           <View style={styles.currentStageRow}>
             <View style={styles.currentStageLeft}>
-              <Ionicons name="medical" size={18} color={latestStageInfo.color} />
+              <Ionicons
+                name="medical"
+                size={18}
+                color={latestStageInfo.color}
+              />
               <Text style={styles.currentStageLabel}>Current CKD Stage</Text>
             </View>
             <View style={styles.currentStageRight}>
-              <View style={[styles.currentStagePill, { backgroundColor: latestStageInfo.color }]}>
-                <Text style={styles.currentStagePillText}>Stage {latestStageInfo.stage}</Text>
+              <View
+                style={[
+                  styles.currentStagePill,
+                  { backgroundColor: latestStageInfo.color },
+                ]}
+              >
+                <Text style={styles.currentStagePillText}>
+                  Stage {latestStageInfo.stage}
+                </Text>
               </View>
               {latestStageInfo.egfr ? (
-                <Text style={styles.currentStageEgfr}>eGFR {latestStageInfo.egfr} mL/min</Text>
+                <Text style={styles.currentStageEgfr}>
+                  eGFR {latestStageInfo.egfr} mL/min
+                </Text>
               ) : null}
-              <Text style={styles.currentStageDate}>as of {latestStageInfo.visitDate}</Text>
+              <Text style={styles.currentStageDate}>
+                as of {latestStageInfo.visitDate}
+              </Text>
             </View>
           </View>
         ) : null}
-           
+
         {!loading && !error ? (
           <View style={styles.segmentWrap}>
             <TouchableOpacity
-              style={[styles.segmentButton, activeGraph === "health" && styles.segmentButtonActive]}
+              style={[
+                styles.segmentButton,
+                activeGraph === "health" && styles.segmentButtonActive,
+              ]}
               onPress={() => setActiveGraph("health")}
               activeOpacity={0.8}
             >
-              <Text style={[styles.segmentText, activeGraph === "health" && styles.segmentTextActive]}>Health Trend</Text>
+              <Text
+                style={[
+                  styles.segmentText,
+                  activeGraph === "health" && styles.segmentTextActive,
+                ]}
+              >
+                Health Trend
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.segmentButton, activeGraph === "probability" && styles.segmentButtonActive]}
+              style={[
+                styles.segmentButton,
+                activeGraph === "probability" && styles.segmentButtonActive,
+              ]}
               onPress={() => setActiveGraph("probability")}
               activeOpacity={0.8}
             >
-              <Text style={[styles.segmentText, activeGraph === "probability" && styles.segmentTextActive]}>
+              <Text
+                style={[
+                  styles.segmentText,
+                  activeGraph === "probability" && styles.segmentTextActive,
+                ]}
+              >
                 Probability Trend
               </Text>
             </TouchableOpacity>
@@ -552,25 +659,35 @@ const MyProgressPathScreen = ({ navigation, route }) => {
         ) : null}
 
         {loading ? (
-          <ActivityIndicator size="large" color="#4A90E2" style={{ marginTop: 24 }} />
+          <ActivityIndicator
+            size="large"
+            color="#4A90E2"
+            style={{ marginTop: 24 }}
+          />
         ) : error ? (
           <Text style={styles.errorText}>{error}</Text>
         ) : activeGraph === "health" && chartData.points.length === 0 ? (
           <View style={styles.emptyBox}>
-            <Text style={styles.emptyText}>No usable Future CKD Stage history to draw graph yet.</Text>
+            <Text style={styles.emptyText}>
+              No usable Future CKD Stage history to draw graph yet.
+            </Text>
           </View>
-        ) : activeGraph === "probability" && probabilityChartData.points.length === 0 ? (
+        ) : activeGraph === "probability" &&
+          probabilityChartData.points.length === 0 ? (
           <View style={styles.emptyBox}>
-            <Text style={styles.emptyText}>No usable progression probabilities yet to draw probability graph.</Text>
+            <Text style={styles.emptyText}>
+              No usable progression probabilities yet to draw probability graph.
+            </Text>
           </View>
         ) : (
           <View style={styles.graphCard}>
-            {activeGraph === "health" ? <Text style={styles.graphTitle}>Health Trend</Text> : null}
+            {activeGraph === "health" ? (
+              <Text style={styles.graphTitle}>Health Trend</Text>
+            ) : null}
 
-            {activeGraph === "probability" ? <Text style={styles.graphTitle}>Risk Probability Trend</Text> : null}
-
-            
-             
+            {activeGraph === "probability" ? (
+              <Text style={styles.graphTitle}>Risk Probability Trend</Text>
+            ) : null}
 
             {activeGraph === "health" ? (
               <Svg width={chart.width} height={chart.height}>
@@ -586,12 +703,33 @@ const MyProgressPathScreen = ({ navigation, route }) => {
                   />
                 ))}
 
-                <Line x1={32} y1={chart.height - 32} x2={chart.width - 24} y2={chart.height - 32} stroke="#CBD5E1" strokeWidth="1" />
-                <Line x1={32} y1={20} x2={32} y2={chart.height - 32} stroke="#CBD5E1" strokeWidth="1" />
+                <Line
+                  x1={32}
+                  y1={chart.height - 32}
+                  x2={chart.width - 24}
+                  y2={chart.height - 32}
+                  stroke="#CBD5E1"
+                  strokeWidth="1"
+                />
+                <Line
+                  x1={32}
+                  y1={20}
+                  x2={32}
+                  y2={chart.height - 32}
+                  stroke="#CBD5E1"
+                  strokeWidth="1"
+                />
 
                 {chart.yTicks.map((tick, idx) => (
                   <React.Fragment key={`yt-${idx}`}>
-                    <Line x1={28} y1={tick.y} x2={chart.width - 24} y2={tick.y} stroke="#EEF2F7" strokeWidth="1" />
+                    <Line
+                      x1={28}
+                      y1={tick.y}
+                      x2={chart.width - 24}
+                      y2={tick.y}
+                      stroke="#EEF2F7"
+                      strokeWidth="1"
+                    />
                     <SvgText x={4} y={tick.y + 4} fontSize="10" fill="#64748B">
                       {tick.value}
                     </SvgText>
@@ -636,7 +774,12 @@ const MyProgressPathScreen = ({ navigation, route }) => {
                       strokeWidth="3"
                       strokeDasharray="6,6"
                     />
-                    <Circle cx={chart.redSegment.toX} cy={chart.redSegment.toY} r="4" fill="#DC2626" />
+                    <Circle
+                      cx={chart.redSegment.toX}
+                      cy={chart.redSegment.toY}
+                      r="4"
+                      fill="#DC2626"
+                    />
                     {chart.redSegment.stage ? (
                       <SvgText
                         x={chart.redSegment.toX}
@@ -649,7 +792,8 @@ const MyProgressPathScreen = ({ navigation, route }) => {
                         {`S${chart.redSegment.stage}`}
                       </SvgText>
                     ) : null}
-                    {chart.redSegment.probabilityText && chart.redSegment.probabilityText !== "N/A" ? (
+                    {chart.redSegment.probabilityText &&
+                    chart.redSegment.probabilityText !== "N/A" ? (
                       <SvgText
                         x={chart.redSegment.midX + 4}
                         y={chart.redSegment.midY - 6}
@@ -664,7 +808,13 @@ const MyProgressPathScreen = ({ navigation, route }) => {
                 ) : null}
 
                 {chart.xLabels.map((label, idx) => (
-                  <SvgText key={`xl-${idx}`} x={label.x - 8} y={chart.height - 10} fontSize="10" fill="#64748B">
+                  <SvgText
+                    key={`xl-${idx}`}
+                    x={label.x - 8}
+                    y={chart.height - 10}
+                    fontSize="10"
+                    fill="#64748B"
+                  >
                     {label.text}
                   </SvgText>
                 ))}
@@ -672,7 +822,10 @@ const MyProgressPathScreen = ({ navigation, route }) => {
             ) : null}
 
             {activeGraph === "probability" ? (
-              <Svg width={probabilityChart.width} height={probabilityChart.height}>
+              <Svg
+                width={probabilityChart.width}
+                height={probabilityChart.height}
+              >
                 <Line
                   x1={32}
                   y1={probabilityChart.height - 32}
@@ -681,11 +834,25 @@ const MyProgressPathScreen = ({ navigation, route }) => {
                   stroke="#CBD5E1"
                   strokeWidth="1"
                 />
-                <Line x1={32} y1={20} x2={32} y2={probabilityChart.height - 32} stroke="#CBD5E1" strokeWidth="1" />
+                <Line
+                  x1={32}
+                  y1={20}
+                  x2={32}
+                  y2={probabilityChart.height - 32}
+                  stroke="#CBD5E1"
+                  strokeWidth="1"
+                />
 
                 {probabilityChart.yTicks.map((tick, idx) => (
                   <React.Fragment key={`pt-${idx}`}>
-                    <Line x1={28} y1={tick.y} x2={probabilityChart.width - 24} y2={tick.y} stroke="#EEF2F7" strokeWidth="1" />
+                    <Line
+                      x1={28}
+                      y1={tick.y}
+                      x2={probabilityChart.width - 24}
+                      y2={tick.y}
+                      stroke="#EEF2F7"
+                      strokeWidth="1"
+                    />
                     <SvgText x={2} y={tick.y + 4} fontSize="10" fill="#64748B">
                       {`${tick.value}%`}
                     </SvgText>
@@ -705,11 +872,25 @@ const MyProgressPathScreen = ({ navigation, route }) => {
                 {probabilityChart.dots.map((dot, idx) => (
                   <React.Fragment key={`pd-${idx}`}>
                     <Circle cx={dot.x} cy={dot.y} r="4" fill="#B91C1C" />
-                    <SvgText x={dot.x} y={dot.y - 10} fontSize="10" fill="#991B1B" fontWeight="700" textAnchor="middle">
+                    <SvgText
+                      x={dot.x}
+                      y={dot.y - 10}
+                      fontSize="10"
+                      fill="#991B1B"
+                      fontWeight="700"
+                      textAnchor="middle"
+                    >
                       {`${dot.value.toFixed(1)}%`}
                     </SvgText>
                     {dot.contextText ? (
-                      <SvgText x={dot.x} y={dot.y + 13} fontSize="9" fill="#7F1D1D" fontWeight="600" textAnchor="middle">
+                      <SvgText
+                        x={dot.x}
+                        y={dot.y + 13}
+                        fontSize="9"
+                        fill="#7F1D1D"
+                        fontWeight="600"
+                        textAnchor="middle"
+                      >
                         {dot.contextText}
                       </SvgText>
                     ) : null}
@@ -717,7 +898,13 @@ const MyProgressPathScreen = ({ navigation, route }) => {
                 ))}
 
                 {probabilityChart.xLabels.map((label, idx) => (
-                  <SvgText key={`pxl-${idx}`} x={label.x - 10} y={probabilityChart.height - 10} fontSize="10" fill="#64748B">
+                  <SvgText
+                    key={`pxl-${idx}`}
+                    x={label.x - 10}
+                    y={probabilityChart.height - 10}
+                    fontSize="10"
+                    fill="#64748B"
+                  >
                     {label.text}
                   </SvgText>
                 ))}
@@ -727,19 +914,27 @@ const MyProgressPathScreen = ({ navigation, route }) => {
             {activeGraph === "health" ? (
               <View style={styles.legendRow}>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, { backgroundColor: "#2563EB" }]} />
+                  <View
+                    style={[styles.legendDot, { backgroundColor: "#2563EB" }]}
+                  />
                   <Text style={styles.legendText}>Past visits</Text>
                 </View>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, { backgroundColor: "#DC2626" }]} />
+                  <View
+                    style={[styles.legendDot, { backgroundColor: "#DC2626" }]}
+                  />
                   <Text style={styles.legendText}>Predicted next visit</Text>
                 </View>
               </View>
             ) : (
               <View style={styles.legendRow}>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, { backgroundColor: "#B91C1C" }]} />
-                  <Text style={styles.legendText}>Progression probability by date</Text>
+                  <View
+                    style={[styles.legendDot, { backgroundColor: "#B91C1C" }]}
+                  />
+                  <Text style={styles.legendText}>
+                    Progression probability by date
+                  </Text>
                 </View>
               </View>
             )}
@@ -747,67 +942,97 @@ const MyProgressPathScreen = ({ navigation, route }) => {
             {activeGraph === "health" ? (
               <View style={styles.zoneLegendWrap}>
                 <Text style={styles.zoneLegendTitle}>eGFR Ranges</Text>
-                <Text style={styles.zoneLine}>Green (90+): Stable and healthy</Text>
-                <Text style={styles.zoneLine}>Yellow (60-89): Monitor closely</Text>
-                <Text style={styles.zoneLine}>Orange (30-59): Increased risk</Text>
+                <Text style={styles.zoneLine}>
+                  Green (90+): Stable and healthy
+                </Text>
+                <Text style={styles.zoneLine}>
+                  Yellow (60-89): Monitor closely
+                </Text>
+                <Text style={styles.zoneLine}>
+                  Orange (30-59): Increased risk
+                </Text>
                 <Text style={styles.zoneLine}>Red (0-30): Action required</Text>
               </View>
             ) : (
               <View style={styles.riskInfoBox}>
                 <Text style={styles.zoneLegendTitle}>Risk Guide</Text>
-                <Text style={styles.riskInfoText}>Y-axis is progression probability (%).</Text>
+                <Text style={styles.riskInfoText}>
+                  Y-axis is progression probability (%).
+                </Text>
                 <Text style={styles.riskInfoText}>X-axis is visit date.</Text>
-                <Text style={styles.riskInfoText}>Each point also shows Stage for that visit.</Text>
-                <Text style={styles.riskInfoText}>Red dotted line shows risk movement over time.</Text>
+                <Text style={styles.riskInfoText}>
+                  Each point also shows Stage for that visit.
+                </Text>
+                <Text style={styles.riskInfoText}>
+                  Red dotted line shows risk movement over time.
+                </Text>
               </View>
             )}
 
             <View style={styles.explainCard}>
               <Text style={styles.explainTitle}>
-                {activeGraph === "health" ? "Health Trend Explanation" : "Probability Trend Explanation"}
+                {activeGraph === "health"
+                  ? "Health Trend Explanation"
+                  : "Probability Trend Explanation"}
               </Text>
               <Text style={styles.explainText}>
-                {activeGraph === "health" ? healthGraphExplanation : probabilityGraphExplanation}
+                {activeGraph === "health"
+                  ? healthGraphExplanation
+                  : probabilityGraphExplanation}
               </Text>
             </View>
 
-            
             {activeGraph === "probability" && riskIncreasing ? (
               <View style={styles.worseningBanner}>
                 <Ionicons name="trending-up" size={16} color="#B91C1C" />
-                <Text style={styles.worseningText}>Risk Probability Increasing</Text>
+                <Text style={styles.worseningText}>
+                  Risk Probability Increasing
+                </Text>
               </View>
             ) : null}
 
             <View style={styles.tableWrap}>
               <Text style={styles.tableTitle}>Visit Progression History</Text>
               {progressionRows.map((row) => (
-                <View key={`row-${row.visitNumber}-${row.visitDate}`} style={styles.historyCard}>
+                <View
+                  key={`row-${row.visitNumber}-${row.visitDate}`}
+                  style={styles.historyCard}
+                >
                   <View style={styles.historyCardTop}>
-                    <Text style={styles.visitBadge}>{`Visit #${row.visitNumber}`}</Text>
+                    <Text
+                      style={styles.visitBadge}
+                    >{`Visit #${row.visitNumber}`}</Text>
                     <Text style={styles.historyDate}>{row.visitDate}</Text>
                   </View>
 
                   <View style={styles.stageFlowRow}>
                     <View style={styles.stagePill}>
                       <Text style={styles.stagePillLabel}>Current</Text>
-                      <Text style={styles.stagePillValue}>{`S${row.currentStage}`}</Text>
+                      <Text
+                        style={styles.stagePillValue}
+                      >{`S${row.currentStage}`}</Text>
                     </View>
                     <Ionicons name="arrow-forward" size={16} color="#94A3B8" />
                     <View style={styles.stagePillNext}>
                       <Text style={styles.stagePillLabel}>Next</Text>
-                      <Text style={styles.stagePillValue}>{`S${row.nextStage}`}</Text>
+                      <Text
+                        style={styles.stagePillValue}
+                      >{`S${row.nextStage}`}</Text>
                     </View>
                   </View>
 
                   <View style={styles.metricsRow}>
                     <View style={styles.metricBox}>
                       <Text style={styles.metricLabel}>Current History</Text>
-                      <Text style={styles.metricValue}>{row.currentHistoryProbability}</Text>
+                      <Text style={styles.metricValue}>
+                        {row.currentHistoryProbability}
+                      </Text>
                     </View>
                     <View style={styles.metricBox}>
                       <Text style={styles.metricLabel}>Next 6-Month</Text>
-                      <Text style={styles.metricValue}>{row.sixMonthProbability}</Text>
+                      <Text style={styles.metricValue}>
+                        {row.sixMonthProbability}
+                      </Text>
                     </View>
                   </View>
                 </View>

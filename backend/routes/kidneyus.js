@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
+const authMiddleware = require("../middleware/auth");
 const kidneyusController = require("../controllers/kidneyusController");
+
+// Protect all kidney ultrasound routes
+router.use(authMiddleware);
 
 // POST: Analyze ultrasound
 router.post("/ultrasound", kidneyusController.analyzeKidneyUltrasound);
