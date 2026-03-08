@@ -21,12 +21,16 @@ const LoginScreen = ({ navigation }) => {
       const userID = response.data?.user?.id || email;
       const userEmail = response.data?.user?.email || email;
       const userData = response.data?.user || {};
+      const token = response.data?.token;
 
-      // Store complete user data in AsyncStorage
+      // Store complete user data and token in AsyncStorage
       await AsyncStorage.setItem("userData", JSON.stringify(userData));
       await AsyncStorage.setItem("userID", userID);
       await AsyncStorage.setItem("userName", userName);
       await AsyncStorage.setItem("userEmail", userEmail);
+      if (token) {
+        await AsyncStorage.setItem("authToken", token);
+      }
 
       Alert.alert("Success", "Logged in successfully");
       console.log("Navigating to Home with:", { userName, userID, userEmail });

@@ -1,9 +1,10 @@
 import "react-native-gesture-handler";
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { SafeAreaView, StyleSheet } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { WalletProvider } from "./src/context/WalletContext";
+import { setLogoutCallback } from "./src/api/axiosConfig";
 import LoginScreen from "./src/screens/LoginScreen";
 import SignupScreen from "./src/screens/SignupScreen";
 import HomeScreen from "./src/screens/HomeScreen";
@@ -30,9 +31,23 @@ import BPHistoryScreen from "./src/screens/BPHistoryScreen";
 const Stack = createStackNavigator();
 
 const App = () => {
+  const navigationRef = useRef(null);
+
+  useEffect(() => {
+    // Register the auto-logout callback for 401 responses
+    setLogoutCallback(() => {
+      if (navigationRef.current) {
+        navigationRef.current.reset({
+          index: 0,
+          routes: [{ name: "Login" }],
+        });
+      }
+    });
+  }, []);
+
   return (
     <WalletProvider>
-      <NavigationContainer>
+      <NavigationContainer ref={navigationRef}>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Signup" component={SignupScreen} />

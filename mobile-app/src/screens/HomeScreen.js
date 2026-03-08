@@ -7,6 +7,7 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
+  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,6 +18,29 @@ const HomeScreen = ({ navigation, route }) => {
   const userID = route.params?.userID;
   const [userEmail, setUserEmail] = useState(route.params?.userEmail || "");
   const [todayBP, setTodayBP] = useState(null);
+
+  const handleLogout = async () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await AsyncStorage.multiRemove([
+            "authToken",
+            "userData",
+            "userID",
+            "userName",
+            "userEmail",
+          ]);
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "Login" }],
+          });
+        },
+      },
+    ]);
+  };
 
   // Retrieve userEmail from AsyncStorage if not in route params
   useEffect(() => {
@@ -116,8 +140,18 @@ const HomeScreen = ({ navigation, route }) => {
             <Text style={styles.greeting}>Welcome back,</Text>
             <Text style={styles.userName}>{userName}</Text>
           </View>
-          <View style={styles.profileImageContainer}>
-            <Text style={styles.profileInitials}>{getInitials(userName)}</Text>
+          <View style={styles.headerRight}>
+            <TouchableOpacity
+              onPress={handleLogout}
+              style={styles.logoutButton}
+            >
+              <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
+            </TouchableOpacity>
+            <View style={styles.profileImageContainer}>
+              <Text style={styles.profileInitials}>
+                {getInitials(userName)}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -198,6 +232,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 32,
     marginTop: 10,
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  logoutButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#FF3B3010",
+    justifyContent: "center",
+    alignItems: "center",
   },
   greeting: {
     fontSize: 16,

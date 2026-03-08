@@ -1,4 +1,5 @@
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // For physical device, use your computer's IP address
 // For Android Emulator, it will use 10.0.2.2
@@ -23,5 +24,44 @@ const instance = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+// Request interceptor – attach JWT token to every request
+instance.interceptors.request.use(
+  async (config) => {
+    const token = await AsyncStorage.getItem("authToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error),
+);
+
+// Response interceptor – handle 401 (expired / invalid token)
+let logoutCallback = null;
+
+export const setLogoutCallback = (cb) => {
+  logoutCallback = cb;
+};
+
+instance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      // Clear stored auth data
+      await AsyncStorage.multiRemove([
+        "authToken",
+        "userData",
+        "userID",
+        "userName",
+        "userEmail",
+      ]);
+      if (logoutCallback) {
+        logoutCallback();
+      }
+    }
+    return Promise.reject(error);
+  },
+);
 
 export default instance;
