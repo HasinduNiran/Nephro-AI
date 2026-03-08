@@ -88,7 +88,7 @@ const NutrientWalletScreen = ({ navigation }) => {
     const remaining = limit - consumed;
 
     return (
-      <View style={styles.nutrientCard}>
+      <View style={[styles.nutrientCard, { borderLeftColor: statusColor }]}>
         <View style={styles.nutrientHeader}>
           <View style={styles.nutrientTitleContainer}>
             <Ionicons name={icon} size={24} color={statusColor} />
@@ -276,10 +276,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   stageCard: {
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#EBF3FF',
     padding: 16,
     borderRadius: 16,
     marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#4A90E2',
   },
   stageHeader: {
     flexDirection: 'row',
@@ -302,10 +304,12 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 16,
     marginBottom: 16,
-    shadowColor: '#000',
+    borderLeftWidth: 5,
+    borderLeftColor: '#27AE60',
+    shadowColor: '#0a1932',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
     elevation: 2,
   },
   nutrientHeader: {
@@ -319,10 +323,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nutrientName: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
     color: '#1C1C1E',
     marginLeft: 8,
+    letterSpacing: 0.2,
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -341,20 +346,21 @@ const styles = StyleSheet.create({
   progressBarBackground: {
     flex: 1,
     height: 10,
-    backgroundColor: '#E5E5EA',
-    borderRadius: 5,
+    backgroundColor: '#EAECF0',
+    borderRadius: 6,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    borderRadius: 5,
+    borderRadius: 6,
   },
   percentageText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
-    color: '#1C1C1E',
-    marginLeft: 12,
-    width: 45,
+    color: '#3D4A5C',
+    marginLeft: 10,
+    width: 42,
+    textAlign: 'right',
   },
   valuesContainer: {
     flexDirection: 'row',
@@ -365,12 +371,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   valueLabel: {
-    fontSize: 12,
-    color: '#8E8E93',
-    marginBottom: 4,
+    fontSize: 11,
+    color: '#9AA5B4',
+    marginBottom: 5,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    fontWeight: '600',
   },
   valueAmount: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: '#1C1C1E',
   },

@@ -35,10 +35,9 @@ import sys
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EMPTY_PLATE_PATH = os.path.join(BASE_DIR, "empty_plate.png")
 
-# Standard resolution — ALL images will be resized to this
-# This is CRITICAL: the overlay on the phone must match this ratio
-STANDARD_WIDTH = 1024
-STANDARD_HEIGHT = 1024
+# Standard resolution — MUST match portion_estimator.py (1524×1557 calibration)
+STANDARD_W = 1524
+STANDARD_H = 1557
 
 # Output files
 CALIBRATION_JSON = os.path.join(BASE_DIR, "plate_calibration.json")
@@ -48,15 +47,21 @@ DEBUG_PATH = os.path.join(BASE_DIR, "debug_compartments.png")
 
 
 def load_and_standardize(image_path):
-    """Load image and resize to standard dimensions."""
-    img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-    if img is None:
-        print(f"ERROR: Cannot load image: {image_path}")
-        sys.exit(1)
-    # Convert RGBA to BGR if needed
-    if img.shape[2] == 4:
-        img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
-    img = cv2.resize(img, (STANDARD_WIDTH, STANDARD_HEIGHT), interpolation=cv2.INTER_AREA)
+    """
+    Load image, fix hidden EXIF rotation, and resize to calibration dimensions.
+    Uses PIL ImageOps.exif_transpose so a portrait photo taken on any Android/iOS
+    device arrives physically upright regardless of EXIF orientation tag.
+    """
+    from PIL import Image as PILImage, ImageOps
+
+    pil_img = PILImage.open(image_path)
+    pil_img = ImageOps.exif_transpose(pil_img)   # strip EXIF rotation
+
+    # Convert PIL RGB → OpenCV BGR
+    img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+
+    # Force to calibration resolution
+    img = cv2.resize(img, (STANDARD_W, STANDARD_H), interpolation=cv2.INTER_AREA)
     return img
 
 
@@ -89,7 +94,7 @@ def detect_plate_boundary(gray):
     else:
         M = cv2.moments(plate_contour)
         center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-        axes = (STANDARD_WIDTH // 2, STANDARD_HEIGHT // 2)
+        axes = (STANDARD_W // 2, STANDARD_H // 2)
     
     return plate_mask, plate_contour, center, axes
 
@@ -514,8 +519,8 @@ def save_calibration(compartments, center, plate_area):
     # ── JSON calibration data ──
     cal_data = {
         "standard_resolution": {
-            "width": STANDARD_WIDTH,
-            "height": STANDARD_HEIGHT
+            "width": STANDARD_W,
+            "height": STANDARD_H
         },
         "plate_center": {"x": center[0], "y": center[1]},
         "total_plate_pixels": int(plate_area),
@@ -576,7 +581,7 @@ def main():
     print(f"\n[1/6] Loading empty plate: {EMPTY_PLATE_PATH}")
     img = load_and_standardize(EMPTY_PLATE_PATH)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    print(f"  Standardized to {STANDARD_WIDTH}x{STANDARD_HEIGHT}")
+    print(f"  Standardized to {STANDARD_W}x{STANDARD_H}")
     
     # ── Step 2: Detect plate boundary ──
     print("\n[2/6] Detecting plate boundary...")

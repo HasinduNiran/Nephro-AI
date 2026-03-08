@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import axios from '../api/axiosConfig';
 
 const DietaryManagerScreen = ({ route, navigation }) => {
@@ -55,7 +56,7 @@ const DietaryManagerScreen = ({ route, navigation }) => {
 
       {/* --- SECTION 1: NUTRIENT WALLET --- */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Daily Nutrient Wallet 🥗</Text>
+        <Text style={styles.cardTitle}>Daily Nutrient Wallet</Text>
         
         {loading ? (
           <Text>Loading wallet...</Text>
@@ -78,7 +79,7 @@ const DietaryManagerScreen = ({ route, navigation }) => {
         style={styles.scanBtn} 
         onPress={() => navigation.navigate("MealAnalysis", { userId })}
       >
-        <Text style={styles.btnEmoji}>📸</Text>
+        <Ionicons name="camera-outline" size={22} color="white" />
         <Text style={styles.btnText}>Scan New Meal</Text>
       </TouchableOpacity>
       
@@ -87,49 +88,57 @@ const DietaryManagerScreen = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FBFC', padding: 20 },
-  headerTitle: { fontSize: 26, fontWeight: 'bold', color: '#051C60', marginTop: 10 },
-  subText: { fontSize: 16, color: 'gray', marginBottom: 20 },
+  container: { flex: 1, backgroundColor: '#F3F7FB', padding: 20 },
+  headerTitle: { fontSize: 26, fontWeight: '700', color: '#0B2560', marginTop: 14, marginBottom: 4 },
+  subText: { fontSize: 14, color: '#7A8499', marginBottom: 22, letterSpacing: 0.2 },
   
   card: {
     backgroundColor: 'white',
     padding: 20,
-    borderRadius: 15,
-    marginBottom: 30,
+    borderRadius: 16,
+    marginBottom: 28,
+    borderWidth: 1,
+    borderColor: '#E8EDF4',
+    borderLeftWidth: 4,
+    borderLeftColor: '#1a6fe0',
+    shadowColor: '#0a1932',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
     elevation: 3, 
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
-  cardTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 15, color: '#333' },
+  cardTitle: { fontSize: 17, fontWeight: '700', marginBottom: 16, color: '#0B2560', letterSpacing: 0.3 },
   
   nutrientRow: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
-    marginBottom: 12, 
+    marginBottom: 10, 
     borderBottomWidth: 1, 
-    borderBottomColor: '#f0f0f0', 
-    paddingBottom: 8 
+    borderBottomColor: '#F0F4F9', 
+    paddingBottom: 10,
   },
-  nutrientLabel: { fontSize: 16, color: '#555' },
-  nutrientValue: { fontSize: 16, fontWeight: 'bold' },
-  textSafe: { color: '#28a745' },
+  nutrientLabel: { fontSize: 15, color: '#3D4A5C', fontWeight: '500' },
+  nutrientValue: { fontSize: 15, fontWeight: '700' },
+  textSafe: { color: '#1e8a3e' },
   textDanger: { color: '#dc3545' },
-  errorText: { color: 'gray', fontStyle: 'italic', marginTop: 10 },
+  errorText: { color: '#9AA5B4', fontStyle: 'italic', marginTop: 10, fontSize: 14 },
 
-  sectionHeader: { fontSize: 18, fontWeight: 'bold', marginBottom: 15, color: '#051C60' },
+  sectionHeader: { fontSize: 16, fontWeight: '700', marginBottom: 14, color: '#0B2560', letterSpacing: 0.3, textTransform: 'uppercase' },
   scanBtn: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#1a6fe0',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 18,
-    borderRadius: 12,
-    elevation: 3,
+    gap: 10,
+    paddingVertical: 16,
+    borderRadius: 14,
+    shadowColor: '#1a6fe0',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  btnEmoji: { fontSize: 24, marginRight: 10 },
-  btnText: { color: 'white', fontSize: 18, fontWeight: 'bold' }
+  btnText: { color: 'white', fontSize: 16, fontWeight: '700' },
 });
 
 export default DietaryManagerScreen;
