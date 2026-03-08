@@ -7,7 +7,6 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
-  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
@@ -58,28 +57,6 @@ const HomeScreen = ({ navigation, route }) => {
     fetchTodayBP();
   }, [userID]);
 
-  const handleLogout = async () => {
-    Alert.alert(
-      "Logout",
-      "Are you sure you want to logout?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Logout",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await AsyncStorage.multiRemove(["userID", "userEmail", "userName", "token"]);
-            } catch (err) {
-              console.error("Logout error:", err);
-            }
-            navigation.reset({ index: 0, routes: [{ name: "Login" }] });
-          },
-        },
-      ],
-    );
-  };
-
   const getInitials = (name) => {
     if (!name) return "U";
     const names = name.trim().split(" ");
@@ -87,6 +64,15 @@ const HomeScreen = ({ navigation, route }) => {
       return `${names[0][0]}${names[1][0]}`.toUpperCase();
     }
     return name[0].toUpperCase();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.multiRemove(["userID", "userEmail", "userName", "token"]);
+    } catch (error) {
+      console.error("Error clearing storage on logout:", error);
+    }
+    navigation.reset({ index: 0, routes: [{ name: "Login" }] });
   };
 
   const features = [
@@ -143,12 +129,8 @@ const HomeScreen = ({ navigation, route }) => {
             <View style={styles.profileImageContainer}>
               <Text style={styles.profileInitials}>{getInitials(userName)}</Text>
             </View>
-            <TouchableOpacity
-              style={styles.logoutButton}
-              onPress={handleLogout}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="log-out-outline" size={22} color="#FF4757" />
+            <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+              <Ionicons name="log-out-outline" size={24} color="#FF4757" />
             </TouchableOpacity>
           </View>
         </View>
@@ -231,19 +213,6 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     marginTop: 10,
   },
-  headerRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  logoutButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FF475715",
-    justifyContent: "center",
-    alignItems: "center",
-  },
   greeting: {
     fontSize: 16,
     color: "#8E8E93",
@@ -272,6 +241,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#FFF",
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  logoutButton: {
+    padding: 6,
   },
   sectionTitle: {
     fontSize: 18,
