@@ -268,7 +268,10 @@ class NLGGlossary:
         """
         text_lower = english_text.lower()
         flags: List[Dict[str, Any]] = []
-        seen_flags: set = set()  # Deduplicate by flag type
+        seen_flags: set = set()
+
+        # Words that cancel out an emergency if they appear right before the trigger
+        negations = ["no ", "not ", "low risk", "without ", "prevent ", "unlikely"]
 
         for key in self._sorted_keys:
             entry = self._entries[key]
@@ -277,23 +280,37 @@ class NLGGlossary:
             if not flag:
                 continue
 
-            if key.lower() in text_lower and flag not in seen_flags:
-                flag_obj = {
-                    "term": key,
-                    "flag": flag,
-                }
-                # Include optional fields if present
-                if "action" in entry:
-                    flag_obj["action"] = entry["action"]
-                if "empathy_prefix" in entry:
-                    flag_obj["empathy_prefix"] = entry["empathy_prefix"]
-                if "text" in entry:
-                    flag_obj["text"] = entry["text"]
-                elif "spoken_mixed" in entry:
-                    flag_obj["text"] = entry["spoken_mixed"]
+            key_lower = key.lower()
 
-                flags.append(flag_obj)
-                seen_flags.add(flag)
+            # First, check if the key is in the text at all
+            if key_lower in text_lower and flag not in seen_flags:
+
+                # Use regex to find exact word matches (prevents "severe" matching inside "perseverance")
+                pattern = r'\b' + re.escape(key_lower) + r'\b'
+
+                for match in re.finditer(pattern, text_lower):
+                    start_idx = match.start()
+
+                    # Grab the 25 characters immediately BEFORE the trigger word
+                    context_window = text_lower[max(0, start_idx - 25):start_idx]
+
+                    # Check if any of our negation words are in this window
+                    is_negated = any(neg in context_window for neg in negations)
+
+                    if not is_negated:
+                        # TRUE POSITIVE: No negations found, safe to trigger the alarm
+                        flag_obj = {
+                            "term": key,
+                            "flag": flag,
+                        }
+                        if "action" in entry: flag_obj["action"] = entry["action"]
+                        if "empathy_prefix" in entry: flag_obj["empathy_prefix"] = entry["empathy_prefix"]
+                        if "text" in entry: flag_obj["text"] = entry["text"]
+                        elif "spoken_mixed" in entry: flag_obj["text"] = entry["spoken_mixed"]
+
+                        flags.append(flag_obj)
+                        seen_flags.add(flag)
+                        break  # Stop checking this key, we found a valid trigger
 
         return flags
 
