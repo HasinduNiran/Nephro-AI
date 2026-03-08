@@ -368,7 +368,7 @@ class LLMEngine:
             
         return text
 
-    def enforce_spoken_sinhala(self, text: str) -> str:
+    def enforce_spoken_sinhala(self, text: str, user_intent: str = None) -> str:
         """
         [SAFETY NET] Deterministic glossary replacement using NLGGlossary.
         Uses the 'spoken_mixed' register (code-mixed Sinhala) by default.
@@ -401,10 +401,35 @@ class LLMEngine:
         text = text.replace("එක එක", "එක")
         text = text.replace("අගය අගය", "අගය")
         text = text.replace("Risk එක එක", "Risk එක")
-        
+
+        # SAFETY SWEEP: Remove redundant bracket duplicates produced by LLM hallucination
+        # e.g. "හමුවෙන්න (හමුවෙන්න)" → "හමුවෙන්න"
+        text = re.sub(r'([\w\u0D80-\u0DFF]+)\s*\(\1\)', r'\1', text)
+        # e.g. "Test එක (Test එක)" → "Test එක"
+        text = re.sub(r'(\S+\s+එක)\s*\(\1\)', r'\1', text)
+        # generic multi-word: "phrase (phrase)" both sides identical (case-insensitive)
+        text = re.sub(
+            r'([a-zA-Z\u0D80-\u0DFF][\w\u0D80-\u0DFF\s]{1,30})\s*\(\1\)',
+            r'\1', text, flags=re.IGNORECASE
+        )
+        text = re.sub(r'  +', ' ', text).strip()
+
+        # 🛡️ Empathy guard: strip accidental sympathy openers for non-symptom intents
+        if user_intent not in {"ask_symptoms", "ask_emergency"}:
+            for phrase in [
+                "ඒක අහන්න ලැබීමත් කණගාටුයි.",
+                "ඒක අහන්න ලැබීමත් කණගාටුයි",
+                "මට කණගාටුයි.",
+                "මට කණගාටුයි",
+                "ඒ ගැන කණගාටුයි.",
+                "ඒ ගැන කණගාටුයි",
+            ]:
+                text = text.replace(phrase, "")
+            text = re.sub(r'  +', ' ', text).strip()
+
         return text
 
-    def translate_to_sinhala_fallback(self, text: str) -> str:
+    def translate_to_sinhala_fallback(self, text: str, user_intent: str = None) -> str:
         """
         [STYLE LAYER] Translates medical advice to Natural Spoken Sinhala.
         
@@ -429,6 +454,13 @@ class LLMEngine:
         hint_str = "\n   ".join(hint_strings) if hint_strings else "(No specific terms detected)"
         print(f"   💡 Style Hints ({len(hint_strings)} terms matched)")
         
+        # Empathy rule: only symptomatic intents get the "I'm sorry to hear" phrase
+        empathy_rule = (
+            "Translate 'I'm sorry to hear' as 'ඒක අහන්න ලැබීමත් කණගාටුයි'."
+            if user_intent in {"ask_symptoms", "ask_emergency"}
+            else "Do NOT add 'I'm sorry to hear that' or any sympathy opener. The user asked a factual question. Be warm but direct."
+        )
+
         # 2. REGISTER-AWARE PROMPT WITH STRUCTURED HINTS
         system_prompt = (
             "You are a compassionate Sri Lankan medical assistant who speaks like a real \n"
@@ -446,10 +478,18 @@ class LLMEngine:
             
             "🔥 STYLE RULES:\n"
             "1. **Opener:** Start with 'ඔයාගේ තත්ත්වයත් එක්ක බලද්දී...' (Considering your condition...).\n"
-            "2. **Empathy:** Translate 'I'm sorry to hear' as 'ඒක අහන්න ලැබීමත් කණගාටුයි'.\n"
+            "2. **Empathy:** " + empathy_rule + "\n"
             "3. **Anatomy:** Do NOT use 'පිටුපස' (Back) for 'Stomach'. Use 'බඩේ' for stomach.\n"
             "4. **Tone:** Use warm words like 'පුළුවන් නම්' (If possible), 'වගේ දේවල්' (Things like).\n"
-            "5. **Code-Mixing (CRITICAL):** Use English medical terms naturally, but DO NOT put them in brackets as translations. NEVER write 'අවදානම් (High Risk)' or 'ඩයබිටීස් (දියවැඩියාව)'. Choose ONE language. Write 'අවදානම් තත්ත්වයක්' or 'ඩයබිටීස්'.\n"
+            "4.1 **Singlish Pluralization (CRITICAL):** The suffix 'එක' (eka) means THE ONE item (singular).\n"
+            "   NEVER combine plural words like 'විවිධ' / 'කිහිපයක්' / 'ටිකක්' with 'X එක'.\n"
+            "   BAD: 'විවිධ Test එක', 'Tests කිහිපයක් එක'\n"
+            "   GOOD plural: 'විවිධ Test', 'Tests කිහිපයක්', 'විවිධ පරීක්ෂණ'\n"
+            "   GOOD singular: 'Test එකක් කරලා', 'Report එක බලලා'\n"
+            "5. **Code-Mixing (CRITICAL):** Use English medical terms naturally, but NEVER put them in brackets as a second translation.\n"
+            "   BAD (FORBIDDEN): 'Test එක (Test එක)', 'හමුවෙන්න (හමුවෙන්න)', 'CKD රෝගය (CKD)', 'අවදානම් (High Risk)', 'ස්කෑන් එක (Scan එක)'\n"
+            "   GOOD: 'Test කරලා', 'හමුවෙන්න', 'CKD රෝගය', 'High Risk තත්ත්වය', 'ස්කෑන් එක'\n"
+            "   RULE: Choose ONE form — Sinhala OR English. Never write both side-by-side in brackets.\n"
             "6. **Natural Phrasing:** Avoid literal translations like 'පාලනය නොකළ Pressure'. Instead, say 'Pressure එක කන්ට්\u200dරෝල් නැහැ' or 'Pressure එක වැඩියි'.\n"
             "7. **Formatting:** Use Bullet points for lists.\n\n"
 
@@ -497,7 +537,7 @@ class LLMEngine:
                 
                 # 🛡️ SAFETY NET: Apply full glossary deterministic sweep
                 # This catches LLM mistakes (e.g. "මැදුරු රෝගය" for Diabetes)
-                translation = self.enforce_spoken_sinhala(translation)
+                translation = self.enforce_spoken_sinhala(translation, user_intent=user_intent)
                 
                 print(f"✅ Natural Output: {translation}") 
                 return translation
@@ -547,6 +587,19 @@ class LLMEngine:
            - REPLY POLITELY: "You're welcome! Take care of your health." or "Glad I could help. Stay safe."
 
         7. **TONE**: Empathetic, professional, decisive. Like a experienced doctor at a government hospital OPD — warm but focused.
+
+        8. 🎯 **OVERRIDE RULE — PERSONAL HEALTH QUESTIONS**:
+           - If the user asks "How am I?", "What is my status?", "Am I okay?", or any general question about their own health:
+           - Base your answer PRIMARILY on the 'PATIENT CONTEXT' section above (live MongoDB data).
+           - Use the KNOWLEDGE BASE only if you need to explain a specific medical concept.
+           - If the patient's data shows "Assessment Pending" or Stage 1 with normal-range labs, reassure them simply and naturally. Do NOT sound like a medical textbook.
+
+        9. 📏 **BREVITY & FORMAT RULES**:
+           - For conversational or personal-health questions: maximum 3–4 short sentences.
+           - NO BULLET POINTS for conversational replies — write in natural prose.
+           - Only use bullet points / numbered lists when the user explicitly asks for steps, a list, or technical details.
+           - Do NOT regurgitate complex clinical guidelines unless the user specifically requests them.
+           - NEVER open with a heading like "Based on your profile" or restate the patient's demographics.
 
         🤖 TOOL USE INSTRUCTIONS:
         - If you recommend a specific hospital or location based on the context, you MUST append a search tag at the very end of your response.
