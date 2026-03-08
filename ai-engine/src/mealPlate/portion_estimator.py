@@ -104,6 +104,47 @@ HEAPING_FACTOR = {
     "_default":   1.0,
 }
 
+# Depth correction: accounts for how shallowly a food sits relative to
+# the full compartment depth. fill_ratio is 2-D; multiplying by depth_factor
+# converts it to an accurate 3-D volume fraction.
+# Calibrated from real plate measurements (March 2026).
+FOOD_DEPTH_FACTOR = {
+    "dahl curry":              0.28,
+    "Beans curry":             0.30,
+    "fish curry":              0.45,
+    "tempered sprats":         0.16,
+    "Pol sambol":              0.28,
+    "Pol sambol - tempered":   0.28,
+    "Pol sambol - lime added": 0.28,
+    "mallum":                  0.35,
+    "mallum - gotukola":       0.35,
+    "mallum - mukunuwenna":    0.35,
+    "mallum - murunga":        0.35,
+    "mallum - kathurumurunga": 0.35,
+    "mallum - asamodagam":     0.35,
+    "beetroot":                0.40,
+    "chicken":                 0.65,
+    "cutlet":                  0.60,
+    "egg":                     0.70,
+    "white rice":              0.80,
+    "red rice":                0.80,
+    "fried rice":              0.75,
+    "roti":                    0.65,
+    "string hoppers":          0.50,
+    "pittu":                   0.55,
+    "hoppers":                 0.50,
+    "avacado":                 0.55,
+    "pineapple":               0.50,
+    "_default":                0.55,
+}
+
+# Hard safety caps (grams) per compartment to prevent extreme outliers.
+MAX_GRAMS_PER_COMPARTMENT = {
+    "main_carb": 300,
+    "side_1":    160,
+    "side_2":    110,
+}
+
 # ======================================================
 # COMPARTMENT MASKS  (loaded once from .npz)
 # ======================================================
@@ -245,10 +286,22 @@ def estimate_portion(food_name, food_mask, cx, cy):
     comp_volume   = COMPARTMENT_VOLUME_ML[compartment]
     density       = FOOD_DENSITY.get(food_name, FOOD_DENSITY["_default"])
     heaping_mult  = HEAPING_FACTOR.get(food_name, HEAPING_FACTOR["_default"])
+    depth_factor  = FOOD_DEPTH_FACTOR.get(food_name, FOOD_DEPTH_FACTOR["_default"])
 
     fill_ratio     = food_pixels / comp_total_px
-    food_volume_ml = fill_ratio * comp_volume * heaping_mult
+    food_volume_ml = fill_ratio * comp_volume * heaping_mult * depth_factor
     food_grams     = food_volume_ml * density
+
+    cap = MAX_GRAMS_PER_COMPARTMENT.get(compartment, 300)
+    if food_grams > cap:
+        print(f"[Portion] CAP applied: {food_name} in {compartment}: {food_grams:.1f}g -> {cap}g")
+        food_grams = float(cap)
+
+    print(
+        f"[Portion] {food_name:<26} | {compartment:<10} "
+        f"| px={food_pixels:>7,} fill={fill_ratio:.3f} depth={depth_factor} "
+        f"heap={heaping_mult} vol={food_volume_ml:.1f}ml -> {food_grams:.1f}g"
+    )
 
     return {
         "food":               food_name,
@@ -257,6 +310,7 @@ def estimate_portion(food_name, food_mask, cx, cy):
         "compartment_pixels": comp_total_px,
         "fill_ratio":         round(fill_ratio, 4),
         "heaping_factor":     heaping_mult,
+        "depth_factor":       depth_factor,
         "food_volume_ml":     round(food_volume_ml, 1),
         "density_g_per_ml":   density,
         "estimated_grams":    round(food_grams, 1),
