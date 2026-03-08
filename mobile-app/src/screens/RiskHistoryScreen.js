@@ -674,58 +674,7 @@ const RiskHistoryScreen = ({ route }) => {
           )}
         </View>
 
-        {/* SHAP-based risk drivers (when SHAP data exists) */}
-        {hasShap && (
-          <View style={styles.explanationSection}>
-            <View style={styles.explanationSectionHeader}>
-              <Text style={styles.explanationSectionIcon}>🎯</Text>
-              <Text
-                style={[styles.explanationSectionTitle, { color: "#1C1C1E" }]}
-              >
-                AI Risk Drivers (Latest Prediction)
-              </Text>
-            </View>
-            {shapFeatures.map((f) => {
-              const isPositive = f.value > 0.005;
-              const isNegative = f.value < -0.005;
-              return (
-                <View key={f.key} style={styles.explanationFactorRow}>
-                  <View
-                    style={[
-                      styles.explanationDot,
-                      { backgroundColor: f.color },
-                    ]}
-                  />
-                  <View style={styles.explanationFactorContent}>
-                    <Text style={styles.explanationFactorName}>
-                      {f.label}{" "}
-                      <Text
-                        style={{
-                          color: isPositive
-                            ? "#FF4757"
-                            : isNegative
-                              ? "#2ED573"
-                              : "#FFA502",
-                          fontSize: 11,
-                        }}
-                      >
-                        ({f.value > 0 ? "+" : ""}
-                        {f.value.toFixed(3)})
-                      </Text>
-                    </Text>
-                    <Text style={styles.explanationFactorAdvice}>
-                      {isPositive
-                        ? `Pushing risk higher. ${adviceMap[f.key] || ""}`
-                        : isNegative
-                          ? "Reducing your risk — keep it up!"
-                          : "Minimal impact on your risk."}
-                    </Text>
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-        )}
+
 
         {/* Vital signs–based insights (fallback when no SHAP data) */}
         {!hasShap && vitalInsights.length > 0 && (
@@ -789,70 +738,6 @@ const RiskHistoryScreen = ({ route }) => {
             </Text>
           </View>
         )}
-
-        {/* SHAP feature changes over time (only if multiple SHAP records) */}
-        {hasShap &&
-          shapRecords.length > 1 &&
-          (() => {
-            const firstShap = shapRecords[0];
-            const changes = Object.keys(SHAP_COLORS)
-              .map((key) => ({
-                key,
-                label: SHAP_LABELS[key],
-                color: SHAP_COLORS[key],
-                firstVal: firstShap.shapValues[key] || 0,
-                latestVal: latestShap.shapValues[key] || 0,
-                delta:
-                  (latestShap.shapValues[key] || 0) -
-                  (firstShap.shapValues[key] || 0),
-              }))
-              .filter((f) => Math.abs(f.delta) > 0.001)
-              .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
-
-            if (changes.length === 0) return null;
-            return (
-              <View style={styles.explanationSection}>
-                <View style={styles.explanationSectionHeader}>
-                  <Text style={styles.explanationSectionIcon}>📈</Text>
-                  <Text
-                    style={[
-                      styles.explanationSectionTitle,
-                      { color: "#3B71F3" },
-                    ]}
-                  >
-                    Feature Changes Over Time
-                  </Text>
-                </View>
-                {changes.map((f) => (
-                  <View key={f.key} style={styles.explanationFactorRow}>
-                    <View
-                      style={[
-                        styles.explanationDot,
-                        { backgroundColor: f.color },
-                      ]}
-                    />
-                    <View style={styles.explanationFactorContent}>
-                      <Text style={styles.explanationFactorName}>
-                        {f.label}{" "}
-                        <Text
-                          style={{
-                            color: f.delta > 0 ? "#FF4757" : "#2ED573",
-                            fontSize: 11,
-                          }}
-                        >
-                          {f.delta > 0 ? "⬆ +" : "⬇ "}
-                          {f.delta.toFixed(3)}
-                        </Text>
-                      </Text>
-                      <Text style={styles.explanationFactorAdvice}>
-                        {f.firstVal.toFixed(3)} → {f.latestVal.toFixed(3)}
-                      </Text>
-                    </View>
-                  </View>
-                ))}
-              </View>
-            );
-          })()}
 
         {/* Actionable advice — always shows */}
         <View style={[styles.explanationSection, styles.explanationActionBox]}>
