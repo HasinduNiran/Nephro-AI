@@ -674,8 +674,6 @@ const RiskHistoryScreen = ({ route }) => {
           )}
         </View>
 
-
-
         {/* Vital signs–based insights (fallback when no SHAP data) */}
         {!hasShap && vitalInsights.length > 0 && (
           <View style={styles.explanationSection}>
