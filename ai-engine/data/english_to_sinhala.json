@@ -35,7 +35,7 @@
   },
   "Chronic Kidney Disease": {
     "pure_sinhala": "නිදන්ගත වකුගඩු රෝගය",
-    "spoken_mixed": "වකුගඩු රෝගය (CKD)",
+    "spoken_mixed": "CKD රෝගය",
     "tts_phonetic": "wakugadu rogaya CKD"
   },
   "Kidney": {
@@ -55,7 +55,7 @@
   },
   "High risk": {
     "pure_sinhala": "ඉහළ අවදානම",
-    "spoken_mixed": "අවදානම් (High Risk)",
+    "spoken_mixed": "High Risk තත්ත්වය",
     "tts_phonetic": "awadaanam high risk"
   },
 
@@ -145,7 +145,7 @@
   },
   "Ultrasound": {
     "pure_sinhala": "අතිධ්වනි පරීක්ෂණය",
-    "spoken_mixed": "ස්කෑන් එක (Scan එක)",
+    "spoken_mixed": "ස්කෑන් එක",
     "tts_phonetic": "scan eka"
   },
   "Kidney ultrasound": {
@@ -181,7 +181,7 @@
   },
   "Transplant": {
     "pure_sinhala": "බද්ධ කිරීම",
-    "spoken_mixed": "බද්ධ කිරීම (Transplant)",
+    "spoken_mixed": "Transplant",
     "tts_phonetic": "baddha kireema transplant"
   },
   "Kidney transplant": {
@@ -214,7 +214,7 @@
   },
   "End-Stage Renal Disease": {
     "pure_sinhala": "අවසාන අදියර වකුගඩු රෝගය",
-    "spoken_mixed": "අවසාන අදියර (ESRD)",
+    "spoken_mixed": "ESRD",
     "tts_phonetic": "awasaana adiyara ESRD",
     "flag": "CRITICAL_URGENCY",
     "action": "trigger_red_ui_alert"
@@ -370,7 +370,7 @@
 
   "Star fruit": {
     "pure_sinhala": "කාමරංකා",
-    "spoken_mixed": "කාමරංකා (Star fruit)",
+    "spoken_mixed": "කාමරංකා",
     "tts_phonetic": "kaamarankaa star fruit",
     "flag": "NEPHROTOXIN_WARNING",
     "action": "trigger_red_ui_alert",
@@ -378,25 +378,25 @@
   },
   "Starfruit": {
     "pure_sinhala": "කාමරංකා",
-    "spoken_mixed": "කාමරංකා (Star fruit)",
+    "spoken_mixed": "කාමරංකා",
     "tts_phonetic": "kaamarankaa",
     "flag": "NEPHROTOXIN_WARNING",
     "action": "trigger_red_ui_alert"
   },
   "Bilimbi": {
     "pure_sinhala": "බිලින්",
-    "spoken_mixed": "බිලින් (Bilimbi)",
+    "spoken_mixed": "බිලින්",
     "tts_phonetic": "bilin",
     "flag": "NEPHROTOXIN_WARNING",
     "action": "trigger_red_ui_alert"
   },
   "Holy Basil": {
-    "spoken_mixed": "මදුරුතලා (Holy Basil)",
+    "spoken_mixed": "මදුරුතලා",
     "tts_phonetic": "maduruthala",
     "flag": "NEPHROTOXIN_WARNING"
   },
   "Ayurvedic tonic": {
-    "spoken_mixed": "අරිෂ්ටා (Ayurvedic Tonic)",
+    "spoken_mixed": "අරිෂ්ටා",
     "tts_phonetic": "arishta",
     "flag": "NEPHROTOXIN_WARNING"
   },
@@ -502,7 +502,7 @@
   "Doctor": "Doctor",
   "Clinic": "Clinic එක",
   "Hospital": "Hospital එක",
-  "Dietitian": "පෝෂණවේදියෙක් (Dietitian)",
+  "Dietitian": "පොෂණවේදියෙක්",
   "Patient": "රෝගියා",
 
   "// --- MEDICATIONS (ඖෂධ) ---": "",
@@ -511,16 +511,19 @@
   "Tablets": "පෙති",
   "Injection": "Injection එක",
   "Report": "Report එක",
+  "Reports": "වාර්තා",
   "Test": "Test එක",
+  "Tests": "පරීක්ෂණ",
   "Result": "Result එක",
+  "Results": "Results",
   "Treatment": "ප්‍රතිකාර",
   "ACE inhibitor": "ACE inhibitor",
   "ACE inhibitors": "ACE inhibitors",
   "ARB": "ARB",
   "ARBs": "ARBs",
   "Angiotensin receptor blocker": "ARB",
-  "Diuretic": "වතුර පෙති (Diuretic)",
-  "Diuretics": "වතුර පෙති (Diuretics)",
+  "Diuretic": "වතුර් පෙති",
+  "Diuretics": "වතුර් පෙති",
   "Water pill": "වතුර පෙති",
   "Water pills": "වතුර පෙති",
   "Calcium supplement": "Calcium පෙති",

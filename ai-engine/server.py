@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 import shutil
 import hashlib
 import base64
@@ -71,7 +72,7 @@ try:
         for i, key in enumerate(GOOGLE_API_KEYS):
             try:
                 client = genai.Client(api_key=key)
-                gemini_clients.append(client)
+                gemini_clients.append({"client": client, "masked_key": f"...{key[-6:]}"})
                 Log.success(f"Gemini TTS Client #{i+1} initialized (key ...{key[-6:]})")
             except Exception as e:
                 Log.warning(f"Gemini TTS client #{i+1} failed: {e}")
@@ -79,7 +80,7 @@ try:
             Log.success(f"🔄 API Key Rotation: {len(gemini_clients)} keys loaded (free-tier limit x{len(gemini_clients)})")
     elif GOOGLE_API_KEY:
         try:
-            gemini_clients.append(genai.Client(api_key=GOOGLE_API_KEY))
+            gemini_clients.append({"client": genai.Client(api_key=GOOGLE_API_KEY), "masked_key": f"...{GOOGLE_API_KEY[-6:]}"})
             Log.success("Gemini TTS Client Initialized (single key)")
         except Exception as e:
             Log.warning(f"Gemini TTS client failed: {e}")
@@ -153,13 +154,18 @@ def get_gemini_client():
 
 
 def clean_text_for_tts(text: str) -> str:
-    """Removes Markdown symbols and unsupported characters."""
-    # Remove bold/italic markers (*, _)
-    text = re.sub(r'[\*_#]', '', text) 
+    """Removes Markdown symbols, unsupported characters, and English brackets."""
+    # Remove bold/italic/heading markers (*, _, #)
+    text = re.sub(r'[\*_#]', '', text)
     # Remove markdown links [text](url) -> text
     text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
+    # Remove English words in parentheses — these crash the Sinhala TTS voice
+    # e.g. "(medical history)", "(cognitive impairment)", "(Stage 3)"
+    text = re.sub(r'\([a-zA-Z0-9\s\-]+\)', '', text)
     # Remove emojis and unsupported chars (keep only Sinhala, English, numbers, punctuation)
     text = re.sub(r'[^\w\s\u0D80-\u0DFF\.,\?!a-zA-Z0-9]', '', text)
+    # Clean up double spaces left behind by removals
+    text = re.sub(r'\s+', ' ', text).strip()
     return text
 
 async def generate_tts_file(text: str) -> Path:
@@ -237,7 +243,9 @@ def _generate_gemini_tts(text: str, output_path: Path) -> bool:
     """
     attempts = max(len(gemini_clients), 1)
     for attempt in range(attempts):
-        client = get_gemini_client()
+        client_data = get_gemini_client()
+        client = client_data["client"]
+        masked_key = client_data["masked_key"]
         try:
             response = client.models.generate_content(
                 model=GOOGLE_TTS_MODEL,
@@ -267,11 +275,11 @@ def _generate_gemini_tts(text: str, output_path: Path) -> bool:
             # Move to output_path so the cache key resolves correctly
             wav_path.replace(output_path)
 
-            print(f"   ✅ Gemini TTS successful (attempt {attempt + 1}/{attempts}, model: {GOOGLE_TTS_MODEL}, voice: {GOOGLE_TTS_VOICE})")
+            print(f"   ✅ Gemini TTS successful (attempt {attempt + 1}/{attempts}, key: {masked_key}, model: {GOOGLE_TTS_MODEL}, voice: {GOOGLE_TTS_VOICE})")
             return True
 
         except Exception as e:
-            print(f"   ⚠️ Gemini TTS attempt {attempt + 1}/{attempts} failed: {e}")
+            print(f"   ⚠️ Gemini TTS attempt {attempt + 1}/{attempts} failed (Key: {masked_key}): {e}")
             if attempt < attempts - 1:
                 print(f"   🔄 Retrying with next key in pool...")
 
@@ -287,7 +295,9 @@ def _generate_gemini_tts_bytes(text: str):
     """
     attempts = max(len(gemini_clients), 1)
     for attempt in range(attempts):
-        client = get_gemini_client()
+        client_data = get_gemini_client()
+        client = client_data["client"]
+        masked_key = client_data["masked_key"]
         try:
             response = client.models.generate_content(
                 model=GOOGLE_TTS_MODEL,
@@ -314,11 +324,11 @@ def _generate_gemini_tts_bytes(text: str):
                 wf.setframerate(24000)  # 24kHz
                 wf.writeframes(pcm_data)
 
-            print(f"   ✅ Gemini TTS bytes successful (attempt {attempt + 1}/{attempts})")
+            print(f"   ✅ Gemini TTS bytes successful (attempt {attempt + 1}/{attempts}, key: {masked_key})")
             return wav_buffer.getvalue()
 
         except Exception as e:
-            print(f"   ⚠️ Gemini TTS bytes attempt {attempt + 1}/{attempts} failed: {e}")
+            print(f"   ⚠️ Gemini TTS bytes attempt {attempt + 1}/{attempts} failed (Key: {masked_key}): {e}")
             if attempt < attempts - 1:
                 print(f"   🔄 Retrying with next key in pool...")
 
@@ -546,7 +556,7 @@ async def clear_chat(request: ChatRequest):
 async def text_chat(request: ChatRequest):
     patient_id = request.patient_id
     Log.step("📨", "REQUEST RECEIVED", f"Patient ID: '{patient_id}'")
-    
+
     # --- ZOMBIE CONTEXT FIX ---
     # Detect session starters and wipe memory
     GREETINGS = ["hi", "hello", "ayubowan", "start over", "help", "hey", "good morning", "good evening"]
@@ -591,7 +601,7 @@ async def audio_chat(
     patient_id: str = Form("default_patient")
 ):
     Log.step("🎙️", "AUDIO REQUEST", f"Patient: {patient_id}")
-    
+
     temp_filename = f"temp_{hashlib.md5(file.filename.encode()).hexdigest()}.wav"
     input_path = Path("temp_inputs") / temp_filename
     

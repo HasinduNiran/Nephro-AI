@@ -22,6 +22,7 @@
     },
     "android": {
       "package": "com.nephroai.mobile",
+      "softwareKeyboardLayoutMode": "pan",
       "permissions": ["android.permission.health.READ_BLOOD_PRESSURE"],
       "adaptiveIcon": {
         "foregroundImage": "./images/Nephro-logo.png",

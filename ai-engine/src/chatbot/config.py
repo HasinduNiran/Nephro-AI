@@ -22,6 +22,11 @@ COLLECTION_NAME = "nephro_ai_medical_kb"
 EMBEDDING_MODEL = "openai/text-embedding-3-small"
 EMBEDDING_DIMENSION = 1536
 
+# MongoDB Settings
+# Reads DATABASE_URL first (matches backend .env), falls back to MONGODB_URI, then localhost
+MONGODB_URI     = os.getenv("DATABASE_URL", os.getenv("MONGODB_URI", "mongodb://localhost:27017/"))
+MONGODB_DB_NAME = os.getenv("MONGODB_DB_NAME", "Nephro-AI")
+
 # OpenRouter API Settings
 # OpenRouter API Settings
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -33,7 +38,7 @@ GOOGLE_API_KEYS = [k.strip() for k in os.getenv("GOOGLE_API_KEYS", "").split(","
 if GOOGLE_API_KEY and GOOGLE_API_KEY not in GOOGLE_API_KEYS:
     GOOGLE_API_KEYS.insert(0, GOOGLE_API_KEY)
 GOOGLE_TTS_MODEL = "gemini-2.5-flash-preview-tts" # Optimised for low-latency single-speaker TTS
-GOOGLE_TTS_VOICE = "Aoede"                               # Clear, professional pre-built voice
+GOOGLE_TTS_VOICE = "Algenib"                               # Clear, professional pre-built voice
 
 # NLG — Dynamic Code-Mixing & Tone Generation Engine
 NLG_DEFAULT_REGISTER = "spoken_mixed"   # Options: "pure_sinhala", "spoken_mixed"

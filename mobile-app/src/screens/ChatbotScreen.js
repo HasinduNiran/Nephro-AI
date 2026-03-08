@@ -18,6 +18,7 @@ import {
   Easing,
   Linking,
   Keyboard, // Import Keyboard for handling keyboard events
+  Modal,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -31,6 +32,7 @@ import * as FileSystem from "expo-file-system/legacy"; // SDK 54: writeAsStringA
 import axios from "axios";
 import * as Haptics from "expo-haptics";
 import Markdown from "react-native-markdown-display";
+import { WebView } from "react-native-webview";
 
 // 👇 [NEW] Import Speech Library
 import * as Speech from "expo-speech";
@@ -118,6 +120,53 @@ const COLORS = {
   white: "#FFFFFF",
   overlay: "rgba(0,0,0,0.5)",
 };
+
+const THREE_BODY_LOADER_HTML = `
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<style>
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    display: flex; justify-content: flex-start; align-items: center;
+    background-color: transparent; overflow: hidden;
+  }
+  .three-body {
+    --uib-size: 30px;
+    --uib-speed: 0.8s;
+    --uib-color: #2E86DE;
+    position: relative;
+    display: inline-block;
+    height: var(--uib-size);
+    width: var(--uib-size);
+    animation: spin78236 calc(var(--uib-speed) * 2.5) infinite linear;
+  }
+  .three-body__dot { position: absolute; height: 100%; width: 30%; }
+  .three-body__dot:after {
+    content: ''; position: absolute; height: 0%; width: 100%;
+    padding-bottom: 100%; background-color: var(--uib-color); border-radius: 50%;
+  }
+  .three-body__dot:nth-child(1) { bottom: 5%; left: 0; transform: rotate(60deg); transform-origin: 50% 85%; }
+  .three-body__dot:nth-child(1)::after { bottom: 0; left: 0; animation: wobble1 var(--uib-speed) infinite ease-in-out; animation-delay: calc(var(--uib-speed) * -0.3); }
+  .three-body__dot:nth-child(2) { bottom: 5%; right: 0; transform: rotate(-60deg); transform-origin: 50% 85%; }
+  .three-body__dot:nth-child(2)::after { bottom: 0; left: 0; animation: wobble1 var(--uib-speed) infinite calc(var(--uib-speed) * -0.15) ease-in-out; }
+  .three-body__dot:nth-child(3) { bottom: -5%; left: 0; transform: translateX(116.666%); }
+  .three-body__dot:nth-child(3)::after { top: 0; left: 0; animation: wobble2 var(--uib-speed) infinite ease-in-out; }
+  @keyframes spin78236 { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @keyframes wobble1 { 0%, 100% { transform: translateY(0%) scale(1); opacity: 1; } 50% { transform: translateY(-66%) scale(0.65); opacity: 0.8; } }
+  @keyframes wobble2 { 0%, 100% { transform: translateY(0%) scale(1); opacity: 1; } 50% { transform: translateY(66%) scale(0.65); opacity: 0.8; } }
+</style>
+</head>
+<body>
+  <div class="three-body">
+    <div class="three-body__dot"></div>
+    <div class="three-body__dot"></div>
+    <div class="three-body__dot"></div>
+  </div>
+</body>
+</html>
+`;
 
 const ChatbotScreen = ({ route, navigation }) => {
   const { userID, userName } = route.params || {}; // Validate params exist
@@ -255,6 +304,7 @@ const ChatbotScreen = ({ route, navigation }) => {
   const [metering, setMetering] = useState(-160);
   const [inputFocused, setInputFocused] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [showTip, setShowTip] = useState(true);
   const [isTTSLoading, setIsTTSLoading] = useState(false);
   const [currentlyPlayingId, setCurrentlyPlayingId] = useState(null);
   const soundRef = useRef(null);
@@ -268,13 +318,6 @@ const ChatbotScreen = ({ route, navigation }) => {
   const dotAnim3 = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const typingDots = useRef(new Animated.Value(0)).current;
-
-  const suggestions = [
-    { text: "Diet Plan", icon: "nutrition", color: COLORS.accent },
-    { text: "Lab Results", icon: "flask", color: COLORS.primary },
-    { text: "Symptoms", icon: "fitness", color: COLORS.warning },
-    { text: "Medications", icon: "medical", color: COLORS.secondary },
-  ];
 
   const markdownStyles = {
     body: { color: COLORS.textDark, fontSize: 15, lineHeight: 22 },
@@ -534,19 +577,35 @@ const ChatbotScreen = ({ route, navigation }) => {
           }
           soundRef.current = null;
         }
+        // Guard: user may have tapped stop during the unloadAsync above
+        if (!sessionToken.active) {
+          cleanupSegments();
+          return;
+        }
         console.log(
           `[TTS] ▶ Segment ${index + 1}/${tempFiles.length}: ${tempFiles[index]}`,
         );
         const { sound } = await Audio.Sound.createAsync(
           { uri: tempFiles[index] },
-          { shouldPlay: true },
+          { shouldPlay: false },
         );
+        // Guard: user may have tapped stop while createAsync was running
+        if (!sessionToken.active) {
+          try {
+            await sound.unloadAsync();
+          } catch (e) {
+            /* ignore */
+          }
+          cleanupSegments();
+          return;
+        }
         soundRef.current = sound;
         sound.setOnPlaybackStatusUpdate((status) => {
           if (status.didJustFinish) {
             playSegment(index + 1);
           }
         });
+        await sound.playAsync();
       };
 
       setIsTTSLoading(false);
@@ -1007,9 +1066,7 @@ const ChatbotScreen = ({ route, navigation }) => {
     }
   };
 
-  const renderItem = ({ item, index }) => {
-    const isFirstMessage = index === 0;
-
+  const renderItem = ({ item }) => {
     return (
       <View
         style={{
@@ -1023,14 +1080,10 @@ const ChatbotScreen = ({ route, navigation }) => {
           <View
             style={[
               styles.avatarContainer,
-              isFirstMessage && styles.welcomeAvatar,
+              { backgroundColor: COLORS.primary },
             ]}
           >
-            <Ionicons
-              name={isFirstMessage ? "sparkles" : "medical"}
-              size={18}
-              color="white"
-            />
+            <Ionicons name="medical" size={18} color="white" />
           </View>
         )}
 
@@ -1102,71 +1155,6 @@ const ChatbotScreen = ({ route, navigation }) => {
                           </Text>
                         </TouchableOpacity>
                       )}
-
-                      {/* Read Aloud Button (Gemini TTS for Sinhala, expo-speech for English) */}
-                      <TouchableOpacity
-                        style={[
-                          styles.audioButton,
-                          isTTSLoading &&
-                            currentlyPlayingId === item.id && {
-                              backgroundColor: COLORS.primary + "20",
-                              borderColor: COLORS.primary,
-                            },
-                          !isTTSLoading &&
-                            currentlyPlayingId === item.id && {
-                              backgroundColor: COLORS.danger + "20",
-                              borderColor: COLORS.danger,
-                            },
-                        ]}
-                        onPress={() =>
-                          playServerTTS(
-                            item.text,
-                            item.id,
-                            item.urgencyFlags || [],
-                          )
-                        }
-                        activeOpacity={0.7}
-                        disabled={
-                          isTTSLoading && currentlyPlayingId !== item.id
-                        }
-                      >
-                        {isTTSLoading && currentlyPlayingId === item.id ? (
-                          <ActivityIndicator
-                            size="small"
-                            color={COLORS.primary}
-                          />
-                        ) : (
-                          <Ionicons
-                            name={
-                              currentlyPlayingId === item.id
-                                ? "stop-circle"
-                                : "volume-high"
-                            }
-                            size={24}
-                            color={
-                              currentlyPlayingId === item.id
-                                ? COLORS.danger
-                                : COLORS.primary
-                            }
-                          />
-                        )}
-                        <Text
-                          style={[
-                            styles.audioText,
-                            currentlyPlayingId === item.id && {
-                              color: isTTSLoading
-                                ? COLORS.primary
-                                : COLORS.danger,
-                            },
-                          ]}
-                        >
-                          {isTTSLoading && currentlyPlayingId === item.id
-                            ? "Loading..."
-                            : currentlyPlayingId === item.id
-                              ? "Stop Speaking"
-                              : "Read Aloud"}
-                        </Text>
-                      </TouchableOpacity>
                     </>
                   );
                 })()}
@@ -1187,19 +1175,50 @@ const ChatbotScreen = ({ route, navigation }) => {
             ) : null}
           </View>
 
-          {/* Timestamp */}
-          {item.timestamp && (
-            <Text
-              style={[
-                styles.timestamp,
-                item.sender === "user"
-                  ? styles.timestampRight
-                  : styles.timestampLeft,
-              ]}
-            >
-              {item.timestamp}
-            </Text>
-          )}
+          {/* Timestamp + Audio Icon */}
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent:
+                item.sender === "user" ? "flex-end" : "flex-start",
+              alignItems: "center",
+              marginTop: 4,
+              marginHorizontal: 8,
+            }}
+          >
+            {item.timestamp && (
+              <Text style={{ fontSize: 11, color: COLORS.textLighter }}>
+                {item.timestamp}
+              </Text>
+            )}
+            {item.sender === "bot" && (
+              <TouchableOpacity
+                style={{ paddingLeft: 6 }}
+                onPress={() =>
+                  playServerTTS(item.text, item.id, item.urgencyFlags || [])
+                }
+                disabled={isTTSLoading && currentlyPlayingId !== item.id}
+              >
+                {isTTSLoading && currentlyPlayingId === item.id ? (
+                  <ActivityIndicator size="small" color={COLORS.primary} />
+                ) : (
+                  <Ionicons
+                    name={
+                      currentlyPlayingId === item.id
+                        ? "stop-circle"
+                        : "volume-medium"
+                    }
+                    size={18}
+                    color={
+                      currentlyPlayingId === item.id
+                        ? COLORS.danger
+                        : COLORS.textLighter
+                    }
+                  />
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         {item.sender === "user" && (
@@ -1217,27 +1236,50 @@ const ChatbotScreen = ({ route, navigation }) => {
   };
 
   // Welcome Tips Component
-  const WelcomeTips = () => (
-    <View style={styles.tipsContainer}>
-      <Text style={styles.tipsTitle}>💡 Quick Tip</Text>
-      <View style={styles.tipItem}>
-        <Ionicons name="mic" size={16} color={COLORS.accent} />
-        <Text style={styles.tipText}>Hold the mic button to speak</Text>
+  const WelcomeTips = () => {
+    if (!showTip) return null;
+    return (
+      <View style={styles.tipsContainer}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 8,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: "700",
+              color: COLORS.primaryDark,
+            }}
+          >
+            💡 Quick Tip
+          </Text>
+          <TouchableOpacity
+            onPress={() => setShowTip(false)}
+            style={{ padding: 4 }}
+          >
+            <Ionicons name="close" size={18} color={COLORS.textMedium} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.tipItem}>
+          <Ionicons name="mic" size={16} color={COLORS.accent} />
+          <Text style={styles.tipText}>Hold the mic button to speak</Text>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
-    <SafeAreaView
-      style={styles.container}
-      edges={["top", "left", "right", "bottom"]}
-    >
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.card} />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 30}
+        behavior="padding"
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
         {/* Enhanced Header */}
         <View style={styles.header}>
@@ -1273,6 +1315,7 @@ const ChatbotScreen = ({ route, navigation }) => {
         </View>
 
         <FlatList
+          style={{ flex: 1 }}
           ref={flatListRef}
           data={messages}
           renderItem={renderItem}
@@ -1298,67 +1341,56 @@ const ChatbotScreen = ({ route, navigation }) => {
                 <View style={styles.avatarContainer}>
                   <Ionicons name="medical" size={18} color="white" />
                 </View>
+                {/* Sleek minimal pill */}
                 <View
                   style={[
                     styles.messageBubble,
                     styles.botBubble,
-                    styles.typingBubble,
+                    {
+                      paddingVertical: 8,
+                      paddingHorizontal: 14,
+                      flexDirection: "row",
+                      alignItems: "center",
+                    },
                   ]}
                 >
-                  {/* Dynamic Loading Status */}
-                  <View style={styles.loadingContainer}>
-                    <MaterialCommunityIcons
-                      name={loadingStep.icon}
-                      size={34}
-                      color={COLORS.primary}
-                      style={{ marginBottom: 0 }}
+                  <View
+                    style={{
+                      width: 35,
+                      height: 35,
+                      overflow: "hidden",
+                      marginRight: 8,
+                    }}
+                  >
+                    <WebView
+                      source={{ html: THREE_BODY_LOADER_HTML }}
+                      style={{ backgroundColor: "transparent", flex: 1 }}
+                      scrollEnabled={false}
+                      showsHorizontalScrollIndicator={false}
+                      showsVerticalScrollIndicator={false}
+                      originWhitelist={["*"]}
                     />
-                    <Text style={styles.loadingText}>{loadingStep.text}</Text>
                   </View>
+                  <Text
+                    style={{
+                      color: COLORS.textMedium,
+                      fontSize: 13,
+                      fontStyle: "italic",
+                    }}
+                  >
+                    {loadingStep.text}
+                  </Text>
                 </View>
               </View>
             ) : null
           }
         />
 
-        <View>
-          {/* Quick Suggestion Chips */}
-          <View style={styles.suggestionsContainer}>
-            <FlatList
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              data={suggestions}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[styles.chip, { borderColor: item.color }]}
-                  onPress={async () => {
-                    await Haptics.impactAsync(
-                      Haptics.ImpactFeedbackStyle.Light,
-                    );
-                    sendTextMessage(item.text);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons
-                    name={item.icon}
-                    size={16}
-                    color={item.color}
-                    style={{ marginRight: 6 }}
-                  />
-                  <Text style={[styles.chipText, { color: item.color }]}>
-                    {item.text}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              keyExtractor={(item) => item.text}
-              contentContainerStyle={{ paddingHorizontal: 16 }}
-            />
-          </View>
-
+        <View style={{ backgroundColor: COLORS.card }}>
           <View
             style={[
               styles.inputContainer,
-              { paddingBottom: Platform.OS === "ios" ? 24 : 12 },
+              { paddingBottom: Platform.OS === "ios" ? 34 : 20 },
             ]}
           >
             <View style={styles.inputWrapper}>
@@ -1399,63 +1431,67 @@ const ChatbotScreen = ({ route, navigation }) => {
               </TouchableOpacity>
             )}
           </View>
-
-          {/* Enhanced Recording Overlay */}
-          {isRecording && (
-            <View style={styles.recordingOverlay}>
-              <View style={styles.recordingCard}>
-                <View style={styles.recordingIconContainer}>
-                  <View style={styles.recordingPulse} />
-                  <Ionicons name="mic" size={52} color={COLORS.danger} />
-                </View>
-                <Text style={styles.recordingTitle}>🎤 Listening...</Text>
-                <Text style={styles.recordingSubtitle}>
-                  Speak clearly about your health
-                </Text>
-
-                <View style={styles.meterTrack}>
-                  <View
-                    style={[
-                      styles.meterFill,
-                      {
-                        width: `${Math.min(
-                          100,
-                          Math.max(5, (metering + 160) / 1.0),
-                        )}%`,
-                        backgroundColor:
-                          metering > -30 ? COLORS.accent : COLORS.danger,
-                      },
-                    ]}
-                  />
-                </View>
-                <View style={styles.volumeFeedback}>
-                  <Ionicons
-                    name={
-                      metering > -30
-                        ? "checkmark-circle"
-                        : "alert-circle-outline"
-                    }
-                    size={16}
-                    color={metering > -30 ? COLORS.accent : COLORS.warning}
-                  />
-                  <Text
-                    style={[
-                      styles.recordingHint,
-                      {
-                        color: metering > -30 ? COLORS.accent : COLORS.warning,
-                      },
-                    ]}
-                  >
-                    {metering > -30 ? "Perfect Volume ✓" : "Speak a bit louder"}
-                  </Text>
-                </View>
-
-                <Text style={styles.releaseHint}>Release to send</Text>
-              </View>
-            </View>
-          )}
         </View>
       </KeyboardAvoidingView>
+
+      {/* Enhanced Recording Overlay — rendered as a Modal so it covers the
+          full screen including the Android system navigation bar */}
+      <Modal
+        visible={isRecording}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <View style={styles.recordingOverlay}>
+          <View style={styles.recordingCard}>
+            <View style={styles.recordingIconContainer}>
+              <View style={styles.recordingPulse} />
+              <Ionicons name="mic" size={52} color={COLORS.danger} />
+            </View>
+            <Text style={styles.recordingTitle}>🎤 Listening...</Text>
+            <Text style={styles.recordingSubtitle}>
+              Speak clearly about your health
+            </Text>
+
+            <View style={styles.meterTrack}>
+              <View
+                style={[
+                  styles.meterFill,
+                  {
+                    width: `${Math.min(
+                      100,
+                      Math.max(5, (metering + 160) / 1.0),
+                    )}%`,
+                    backgroundColor:
+                      metering > -30 ? COLORS.accent : COLORS.danger,
+                  },
+                ]}
+              />
+            </View>
+            <View style={styles.volumeFeedback}>
+              <Ionicons
+                name={
+                  metering > -30 ? "checkmark-circle" : "alert-circle-outline"
+                }
+                size={16}
+                color={metering > -30 ? COLORS.accent : COLORS.warning}
+              />
+              <Text
+                style={[
+                  styles.recordingHint,
+                  {
+                    color: metering > -30 ? COLORS.accent : COLORS.warning,
+                  },
+                ]}
+              >
+                {metering > -30 ? "Perfect Volume ✓" : "Speak a bit louder"}
+              </Text>
+            </View>
+
+            <Text style={styles.releaseHint}>Release to send</Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -1732,16 +1768,8 @@ const styles = StyleSheet.create({
   },
 
   // ═══════════════════════════════════════════════════════
-  // INPUT & SUGGESTIONS
+  // INPUT
   // ═══════════════════════════════════════════════════════
-  suggestionsContainer: {
-    height: 55,
-    marginBottom: 8,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.cardBorder,
-    paddingTop: 8,
-  },
-
   inputContainer: {
     flexDirection: "row",
     padding: 12,
@@ -1819,27 +1847,6 @@ const styles = StyleSheet.create({
     transform: [{ scale: 1.1 }],
     shadowColor: COLORS.danger,
     shadowOpacity: 0.5,
-  },
-
-  chip: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 22,
-    marginRight: 10,
-    borderWidth: 1.5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-
-  chipText: {
-    fontWeight: "600",
-    fontSize: 14,
   },
 
   // ═══════════════════════════════════════════════════════
