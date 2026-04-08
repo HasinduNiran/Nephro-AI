@@ -33,7 +33,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/Nephro-AI
-            git pull origin last-one
+            git pull origin Last-one
             git lfs pull
-            # Docker Build - මෙතනින් තමයි අලුත් කෝඩ් එක Live වෙන්නේ
             sudo docker compose up -d --build
