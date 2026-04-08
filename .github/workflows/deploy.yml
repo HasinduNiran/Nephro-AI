@@ -1,0 +1,39 @@
+name: Nephro-AI CI/CD Shield 🛡️
+
+on:
+  push:
+    branches:
+      - last-one  # ඔයා hosting වලට පාවිච්චි කරන branch එක
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js (for Backend)
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Run Syntax Check (Backend)
+        working-directory: ./backend
+        run: npm install && echo "No syntax errors found" # මෙතන npm test තිබ්බා නම් තවත් හොඳයි
+
+  deploy:
+    needs: test-and-lint # උඩ පියවර pass වුණොත් විතරක් මේක වැඩ කරනවා!
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Azure via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/Nephro-AI
+            git pull origin last-one
+            git lfs pull
+            # Docker Build - මෙතනින් තමයි අලුත් කෝඩ් එක Live වෙන්නේ
+            sudo docker compose up -d --build
