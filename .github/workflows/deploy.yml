@@ -3,7 +3,7 @@ name: Nephro-AI CI/CD Shield 🛡️
 on:
   push:
     branches:
-      - last-one  # ඔයා hosting වලට පාවිච්චි කරන branch එක
+      - Last-one  # ඔයා hosting වලට පාවිච්චි කරන branch එක
 
 jobs:
   test-and-lint:
