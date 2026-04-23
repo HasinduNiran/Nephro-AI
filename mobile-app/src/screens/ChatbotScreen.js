@@ -33,6 +33,7 @@ import axios from "axios";
 import * as Haptics from "expo-haptics";
 import Markdown from "react-native-markdown-display";
 import { WebView } from "react-native-webview";
+import * as DocumentPicker from "expo-document-picker";
 
 // 👇 [NEW] Import Speech Library
 import * as Speech from "expo-speech";
@@ -177,6 +178,8 @@ const ChatbotScreen = ({ route, navigation }) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [attachedDoc, setAttachedDoc] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Default welcome message
   const welcomeMessage = {
@@ -274,6 +277,86 @@ const ChatbotScreen = ({ route, navigation }) => {
       ],
     );
   }, [CHAT_STORAGE_KEY, welcomeMessage, userID]);
+
+  // Handle document upload logic
+  const pickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["application/pdf", "image/*"],
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return;
+
+      const file = result.assets[0];
+      setAttachedDoc(file);
+      await uploadDocument(file);
+    } catch (err) {
+      console.error("Error picking document:", err);
+      Alert.alert("Error", "Could not pick document.");
+    }
+  };
+
+  const uploadDocument = async (file) => {
+    setIsUploading(true);
+    setLoadingType("text");
+    setIsLoading(true); 
+    setLoadingStep({ text: "Reading your report...", icon: "cloud-upload" });
+
+    const formData = new FormData();
+    formData.append("file", {
+      uri: file.uri,
+      name: file.name,
+      type: file.mimeType || "application/pdf",
+    });
+    formData.append("patient_id", userID || "default_patient");
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/chat/upload_context`, {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+      const data = await response.json();
+      console.log("Upload success:", data);
+      
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          text: `📄 Attached: ${file.name}\n\n*I will use this document as context for your next questions.*`,
+          sender: "bot",
+          timestamp: new Date().toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+    } catch (err) {
+      console.error("Upload error:", err);
+      Alert.alert("Upload Failed", "Could not upload the document.");
+      setAttachedDoc(null);
+    } finally {
+      setIsUploading(false);
+      setIsLoading(false);
+    }
+  };
+
+  const removeDocument = async () => {
+    try {
+      await axios.post(`${BACKEND_URL}/chat/clear`, {
+        patient_id: userID || "default_patient",
+      });
+      console.log("Document and chat history cleared");
+      setAttachedDoc(null);
+      setMessages([welcomeMessage]);
+    } catch (err) {
+      console.warn("Failed to clear backend context:", err);
+      Alert.alert("Error", "Could not clear document context from server.");
+    }
+  };
 
   // Keyboard listener to scroll to end when keyboard opens
   useEffect(() => {
@@ -1386,6 +1469,38 @@ const ChatbotScreen = ({ route, navigation }) => {
           }
         />
 
+        {attachedDoc && (
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: COLORS.primaryLight,
+            padding: 8,
+            paddingHorizontal: 12,
+            marginHorizontal: 16,
+            marginBottom: 8,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: COLORS.primary + '40',
+          }}>
+            <MaterialCommunityIcons name="file-document-outline" size={20} color={COLORS.primary} />
+            <Text style={{ flex: 1, marginLeft: 8, color: COLORS.primaryDark, fontSize: 13, fontWeight: '500' }} numberOfLines={1}>
+              {attachedDoc.name}
+            </Text>
+            <TouchableOpacity onPress={() => {
+              Alert.alert(
+                "Remove Document", 
+                "This will also clear your current chat history. Continue?",
+                [
+                  { text: "Cancel", style: "cancel" },
+                  { text: "Remove", style: "destructive", onPress: removeDocument }
+                ]
+              );
+            }}>
+              <Ionicons name="close-circle" size={20} color={COLORS.danger} />
+            </TouchableOpacity>
+          </View>
+        )}
+
         <View style={{ backgroundColor: COLORS.card }}>
           <View
             style={[
@@ -1393,19 +1508,28 @@ const ChatbotScreen = ({ route, navigation }) => {
               { paddingBottom: Platform.OS === "ios" ? 34 : 20 },
             ]}
           >
-            <View style={styles.inputWrapper}>
-              <TextInput
-                style={styles.input}
-                placeholder="Ask about your health..."
-                value={message}
-                onChangeText={setMessage}
-                placeholderTextColor={COLORS.textLighter}
-                multiline
-                maxLength={500}
-              />
-              {message.length > 0 && (
-                <Text style={styles.charCount}>{message.length}/500</Text>
-              )}
+            <View style={[styles.inputWrapper, { flexDirection: 'row', alignItems: 'flex-end' }]}>
+              <TouchableOpacity
+                onPress={pickDocument}
+                disabled={isUploading}
+                style={{ paddingBottom: 11, paddingRight: 6, opacity: isUploading ? 0.5 : 1 }}
+              >
+                <Ionicons name="attach" size={24} color={COLORS.primary} />
+              </TouchableOpacity>
+              <View style={{ flex: 1 }}>
+                <TextInput
+                  style={[styles.input, { paddingHorizontal: 0 }]}
+                  placeholder="Ask about your health..."
+                  value={message}
+                  onChangeText={setMessage}
+                  placeholderTextColor={COLORS.textLighter}
+                  multiline
+                  maxLength={500}
+                />
+                {message.length > 0 && (
+                  <Text style={styles.charCount}>{message.length}/500</Text>
+                )}
+              </View>
             </View>
 
             {message.length > 0 ? (

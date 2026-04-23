@@ -99,6 +99,7 @@ except Exception as e:
 
 Path("temp_inputs").mkdir(exist_ok=True)
 Path("tts_cache").mkdir(exist_ok=True)
+Path("temp_uploads").mkdir(exist_ok=True)
 
 # Round-Robin iterator — guarantees no two concurrent asyncio.gather calls share the same key
 client_cycle = itertools.cycle(gemini_clients) if gemini_clients else None
@@ -122,6 +123,18 @@ def cleanup_file(path: str):
             print(f"🧹 Cleaned up: {path}")
     except Exception as e:
         print(f"⚠️ Cleanup warning: {e}")
+
+def cleanup_document(doc_uri: str, local_path: str, client_data: dict = None):
+    if local_path:
+        cleanup_file(local_path)
+    if doc_uri:
+        try:
+            client = client_data["client"] if client_data else get_gemini_client().get("client")
+            if client:
+                client.files.delete(name=doc_uri)
+                print(f"🧹 Cleaned up Gemini File: {doc_uri}")
+        except Exception as e:
+            print(f"⚠️ Gemini File cleanup warning: {e}")
 
 def split_into_sentences(text: str) -> list:
     """
@@ -376,7 +389,7 @@ async def login(request: LoginRequest):
     user_id = request.email or request.username or "unknown_user"
     
     # Initialize session for this specific user
-    SESSIONS[user_id] = [] 
+    SESSIONS[user_id] = {"history": [], "doc_uri": None, "local_doc_path": None} 
     
     print(f"🔓 Login attempt for: {user_id}. History cleared.")
     return {
@@ -389,6 +402,49 @@ async def login(request: LoginRequest):
 @app.get("/")
 def health_check():
     return {"status": "active"}
+
+@app.post("/chat/upload_context")
+@app.post("/api/chat/upload_context")
+async def upload_context(file: UploadFile = File(...), patient_id: str = Form("default_patient")):
+    Log.step("📎", "DOCUMENT UPLOAD", f"Patient: {patient_id}")
+    
+    # Initialize session if missing
+    if patient_id not in SESSIONS:
+        SESSIONS[patient_id] = {"history": [], "doc_uri": None, "local_doc_path": None}
+        
+    temp_filename = f"temp_{hashlib.md5(file.filename.encode()).hexdigest()}_{file.filename}"
+    temp_path = Path("temp_uploads") / temp_filename
+    
+    # Save file locally
+    async with aiofiles.open(temp_path, 'wb') as temp_file:
+        content = await file.read()
+        await temp_file.write(content)
+        
+    # Upload to Gemini
+    try:
+        client_data = get_gemini_client()
+        if not client_data:
+            raise HTTPException(status_code=500, detail="Gemini client not initialized")
+            
+        client = client_data["client"]
+        gemini_file = client.files.upload(file=str(temp_path))
+        
+        # Cleanup old doc if exists
+        old_doc_uri = SESSIONS[patient_id].get("doc_uri")
+        old_local_path = SESSIONS[patient_id].get("local_doc_path")
+        if old_doc_uri:
+            cleanup_document(old_doc_uri, old_local_path, client_data)
+           
+        SESSIONS[patient_id]["doc_uri"] = gemini_file.name
+        SESSIONS[patient_id]["local_doc_path"] = str(temp_path)
+        
+        Log.success(f"Document uploaded to Gemini: {gemini_file.name}")
+        return {"success": True, "filename": file.filename, "message": "Document loaded successfully."}
+        
+    except Exception as e:
+        cleanup_file(str(temp_path))
+        print(f"❌ Upload Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # --- TTS ENDPOINT (Gemini TTS for Sinhala, Edge-TTS for English) ---
 @app.post("/chat/tts")
@@ -540,6 +596,10 @@ async def clear_chat(request: ChatRequest):
     
     # Clear session history
     if patient_id in SESSIONS:
+        doc_uri = SESSIONS[patient_id].get("doc_uri")
+        local_path = SESSIONS[patient_id].get("local_doc_path")
+        if doc_uri:
+            cleanup_document(doc_uri, local_path)
         del SESSIONS[patient_id]
         Log.step("  ", "Session Cleared", f"Removed history for {patient_id}")
     
@@ -566,15 +626,20 @@ async def text_chat(request: ChatRequest):
     
     if clean_input in GREETINGS:
         Log.warning(f"DETECTED GREETING ('{clean_input}'): Clearing history for {patient_id}")
-        SESSIONS[patient_id] = []
+        if patient_id in SESSIONS:
+            SESSIONS[patient_id]["history"] = []
     # ---------------------------
 
-    # Retrieve THIS patient's history (default to empty list if new)
-    user_history = SESSIONS.get(patient_id, [])
+    if patient_id not in SESSIONS:
+        SESSIONS[patient_id] = {"history": [], "doc_uri": None, "local_doc_path": None}
+
+    # Retrieve THIS patient's history & document (default to empty list if new)
+    user_history = SESSIONS[patient_id]["history"]
+    doc_uri = SESSIONS[patient_id]["doc_uri"]
     
     loop = asyncio.get_event_loop()
-    # Pass user_history instead of CHAT_HISTORY
-    result = await loop.run_in_executor(None, rag_engine.process_query, request.text, patient_id, user_history)
+    # Pass user_history instead of CHAT_HISTORY, and doc_uri
+    result = await loop.run_in_executor(None, rag_engine.process_query, request.text, patient_id, user_history, doc_uri)
     
     # Update THIS patient's history
     user_history.append({"role": "user", "content": request.text})
@@ -584,7 +649,7 @@ async def text_chat(request: ChatRequest):
     if len(user_history) > 10: 
         user_history = user_history[-10:]
     
-    SESSIONS[patient_id] = user_history # Save back to global dict
+    SESSIONS[patient_id]["history"] = user_history # Save back to global dict
     
     return {
         "response": result["response"],
@@ -627,22 +692,26 @@ async def audio_chat(
         is_garbage = any(x in transcribed_text for x in gibberish_triggers) or len(transcribed_text) < 2
         
         rag_result = {}
-        # Retrieve THIS patient's history (default to empty list if new)
-        user_history = SESSIONS.get(patient_id, [])
+        if patient_id not in SESSIONS:
+            SESSIONS[patient_id] = {"history": [], "doc_uri": None, "local_doc_path": None}
+
+        # Retrieve THIS patient's history & document
+        user_history = SESSIONS[patient_id]["history"]
+        doc_uri = SESSIONS[patient_id]["doc_uri"]
 
         if is_garbage:
             Log.warning("Detected Silence/Gibberish. Skipping processing.")
             transcribed_text = "(Silence/Noise)"
             response_text = "I couldn't hear you clearly. Please try again."
         else:
-            rag_result = await loop.run_in_executor(None, rag_engine.process_query, transcribed_text, patient_id, user_history)
+            rag_result = await loop.run_in_executor(None, rag_engine.process_query, transcribed_text, patient_id, user_history, doc_uri)
             response_text = rag_result["response"]
 
             user_history.append({"role": "user", "content": transcribed_text})
             user_history.append({"role": "assistant", "content": response_text})
             if len(user_history) > 10: 
                 user_history = user_history[-10:]
-            SESSIONS[patient_id] = user_history # Save back to global dict
+            SESSIONS[patient_id]["history"] = user_history
 
         # 5. Generate TTS (Gemini for Sinhala, Edge-TTS for English)
         output_audio_path = await generate_tts_file(response_text)
