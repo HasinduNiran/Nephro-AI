@@ -614,7 +614,8 @@ class LLMEngine:
         query: str, 
         context_documents: List[str], 
         patient_context: str,
-        history: List[Dict[str, str]] = []
+        history: List[Dict[str, str]] = [],
+        uploaded_file_uri: str = None
     ) -> str:
         """
         Pure Brain Layer: Generates response based on provided English Query & Context.
@@ -624,8 +625,50 @@ class LLMEngine:
         
         # 1. Base System Prompt
         system_prompt = self._generate_system_prompt(patient_context)
-        knowledge_context = "\n\n".join(context_documents[:3])
         
+        if uploaded_file_uri:
+            # Add fusion instruction
+            system_prompt += "\n\n⚠️ IMPORTANT: The user has uploaded a medical document. First scan the uploaded medical document for the patient's lab values or signs. Then cross-reference with the Medical Guidelines below. Answer combining both. If they conflict, state both and recommend a doctor visit."
+
+        knowledge_context = "\n\n".join(context_documents[:3])
+        user_message_content = f"KNOWLEDGE BASE:\n{knowledge_context}\n\nCURRENT PATIENT QUERY:\n{query}"
+
+        if uploaded_file_uri:
+            from google import genai
+            from google.genai import types
+            try:
+                # Use Gemini SDK
+                print("🧠 [BRAIN] Using Gemini SDK for Multimodal RAG")
+                client = None
+                if hasattr(config, 'GOOGLE_API_KEYS') and config.GOOGLE_API_KEYS:
+                    client = genai.Client(api_key=config.GOOGLE_API_KEYS[0])
+                elif hasattr(config, 'GOOGLE_API_KEY') and config.GOOGLE_API_KEY:
+                    client = genai.Client(api_key=config.GOOGLE_API_KEY)
+                else:
+                    return "Error: Missing GOOGLE_API_KEY for multimodal processing."
+                
+                uploaded_file = client.files.get(name=uploaded_file_uri)
+                
+                history_text = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in history[-4:]]) if history else "No history."
+                full_prompt = f"CHAT HISTORY:\n{history_text}\n\n{user_message_content}"
+                
+                response = client.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=[uploaded_file, full_prompt],
+                    config=types.GenerateContentConfig(
+                        system_instruction=system_prompt,
+                        temperature=0.7,
+                        max_output_tokens=2048
+                    )
+                )
+                
+                english_response = response.text.strip()
+                print(f"✅ Brain Output: {english_response}")
+                return english_response
+            except Exception as e:
+                print(f"❌ Multimodal Error: {e}")
+                return f"Multimodal Error: {str(e)}"
+
         # 2. Construct Message List
         messages = [{"role": "system", "content": system_prompt}]
         
@@ -637,7 +680,6 @@ class LLMEngine:
                 messages.append({"role": role, "content": msg['content']})
 
         # 4. Add Current User Question with RAG Context
-        user_message_content = f"KNOWLEDGE BASE:\n{knowledge_context}\n\nCURRENT PATIENT QUERY:\n{query}"
         messages.append({"role": "user", "content": user_message_content})
 
         headers = {
