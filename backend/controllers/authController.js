@@ -1,10 +1,27 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
+
+const isDatabaseReady = () => mongoose.connection.readyState === 1;
 
 // Register a new user
 exports.register = async (req, res) => {
   try {
+    if (!process.env.DATABASE_URL || !isDatabaseReady()) {
+      return res.status(503).json({
+        message:
+          "Database is not configured or not connected. Set DATABASE_URL in backend/.env and restart the server.",
+      });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      return res.status(503).json({
+        message:
+          "JWT_SECRET is missing. Set JWT_SECRET in backend/.env and restart the server.",
+      });
+    }
+
     const { name, birthday, gender, district, email, password } = req.body;
 
     // Check if user already exists
@@ -54,6 +71,20 @@ exports.register = async (req, res) => {
 // Login user
 exports.login = async (req, res) => {
   try {
+    if (!process.env.DATABASE_URL || !isDatabaseReady()) {
+      return res.status(503).json({
+        message:
+          "Database is not configured or not connected. Set DATABASE_URL in backend/.env and restart the server.",
+      });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      return res.status(503).json({
+        message:
+          "JWT_SECRET is missing. Set JWT_SECRET in backend/.env and restart the server.",
+      });
+    }
+
     const { email, password } = req.body;
 
     // Check if user exists
