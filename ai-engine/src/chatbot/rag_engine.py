@@ -94,7 +94,7 @@ class RAGEngine:
             
         return 'en'
 
-    def process_query(self, query: str, patient_id: str = "default_patient", chat_history: List[Dict[str, str]] = []) -> Dict[str, Any]:
+    def process_query(self, query: str, patient_id: str = "default_patient", chat_history: List[Dict[str, str]] = [], uploaded_file_uri: str = None) -> Dict[str, Any]:
         Log.section(f"PROCESSING QUERY: '{query}'")
 
         # 1. DETERMINE OUTPUT LANGUAGE FIRST (before cache check)
@@ -290,7 +290,8 @@ class RAGEngine:
             query=english_query, 
             context_documents=context_documents,
             patient_context=patient_context,
-            history=chat_history 
+            history=chat_history,
+            uploaded_file_uri=uploaded_file_uri
         )
         t_llm_end = time.time()
         Log.step("  ", "Generated Response", f"({t_llm_end - t_llm_start:.2f}s) {llm_response[:50]}...")
