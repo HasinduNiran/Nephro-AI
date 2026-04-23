@@ -51,7 +51,18 @@
         }
       ],
       "./plugins/withAndroidCxxFix",
+<<<<<<< Updated upstream
       "./plugins/withHealthConnectPermissions"
     ]
+=======
+      "./plugins/withHealthConnectPermissions",
+      "./plugins/withNetworkSecurityConfig"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "197d8766-20b4-4a21-a74b-4dea50cadebd"
+      }
+    }
+>>>>>>> Stashed changes
   }
 }
