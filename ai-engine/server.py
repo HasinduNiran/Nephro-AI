@@ -31,6 +31,8 @@ from src.chatbot.patient_input import PatientInputHandler
 from src.chatbot.config import GOOGLE_API_KEY, GOOGLE_API_KEYS, GOOGLE_TTS_MODEL, GOOGLE_TTS_VOICE, TTS_PHONETIC_ENABLED
 from src.chatbot.nlg_glossary import NLGGlossary
 from src.utils.logger import ConsoleLogger as Log
+from src.mealPlate.api import router as mealplate_router
+from src.ckd_stage.inference_api import router as ckd_router
 
 app = FastAPI(title="Nephro-AI Context-Aware Chatbot API")
 
@@ -54,6 +56,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(mealplate_router)
+app.include_router(ckd_router)
 
 # -----------------------------------------------------------------------------
 # GLOBAL ENGINES

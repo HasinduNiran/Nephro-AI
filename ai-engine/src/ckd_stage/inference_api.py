@@ -4,7 +4,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException
 from pydantic import BaseModel
 
 try:
@@ -36,7 +36,7 @@ class UltrasoundRequest(BaseModel):
     manual_ratio: Optional[float] = None
 
 
-app = FastAPI(title="Nephro-AI CKD Inference API", version="1.1.0")
+router = APIRouter()
 
 
 def _model_to_dict(model: BaseModel) -> Dict[str, Any]:
@@ -207,12 +207,12 @@ def _pick_mode(explicit_mode: Optional[str], input_data: Dict[str, Any], history
     return "lab"
 
 
-@app.get("/health")
+@router.get("/health")
 def health() -> Dict[str, Any]:
     return {"ok": True, "service": "nephro-ai-ckd-inference"}
 
 
-@app.post("/lab/analyze")
+@router.post("/lab/analyze")
 def analyze_lab(req: Dict[str, Any]) -> Dict[str, Any]:
     try:
         payload = req.get("lab_data") if isinstance(req, dict) and isinstance(req.get("lab_data"), dict) else req
@@ -250,7 +250,7 @@ def analyze_lab(req: Dict[str, Any]) -> Dict[str, Any]:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
-@app.post("/predict-stage")
+@router.post("/predict-stage")
 def predict_stage(req: StagePredictRequest) -> Dict[str, Any]:
     try:
         input_data = _build_input_payload(req)
@@ -270,7 +270,7 @@ def predict_stage(req: StagePredictRequest) -> Dict[str, Any]:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
-@app.post("/analyze-ultrasound")
+@router.post("/analyze-ultrasound")
 def analyze_ultrasound(req: UltrasoundRequest) -> Dict[str, Any]:
     try:
         result = predict_kidney_length(req.image_path, req.manual_ratio)
@@ -281,13 +281,20 @@ def analyze_ultrasound(req: UltrasoundRequest) -> Dict[str, Any]:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
-@app.post("/stage-progression/predict")
+@router.post("/stage-progression/predict")
 def predict_stage_progression(req: StagePredictRequest) -> Dict[str, Any]:
     # Alias route for explicit naming while keeping old endpoint compatibility.
     return predict_stage(req)
 
 
-@app.post("/us/analyze")
+@router.post("/us/analyze")
 def analyze_us(req: UltrasoundRequest) -> Dict[str, Any]:
     # Alias route for explicit naming while keeping old endpoint compatibility.
     return analyze_ultrasound(req)
+
+
+if __name__ == "__main__":
+    import uvicorn
+    _app = FastAPI(title="Nephro-AI CKD Inference API", version="1.1.0")
+    _app.include_router(router)
+    uvicorn.run(_app, host="0.0.0.0", port=8002)
