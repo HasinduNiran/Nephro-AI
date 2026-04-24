@@ -67,6 +67,7 @@ tensorflow>=2.13.0
 tf-keras>=2.20.0  # Backwards-compatible Keras for transformers
 opencv-python>=4.5.0
 pillow>=9.0.0
+ultralytics>=8.0.0
 scikit-learn>=1.3.0
 
 # Environment Variables
