@@ -852,7 +852,7 @@ async function runPrediction(inputData) {
       "stage_progression_predict.py"
     );
 
-    const pythonProcess = spawn("python", [
+    const pythonProcess = spawn("python3",[
       scriptPath,
       JSON.stringify(inputData),
     ]);
@@ -1098,7 +1098,7 @@ function processUltrasoundImage(imagePath, patientName) {
         console.log("Calling ultrasound analysis script:", scriptPath);
         console.log("Image path:", imagePath);
 
-        const pythonProcess = spawn("python", [scriptPath, imagePath]);
+        const pythonProcess = spawn("python3",[scriptPath, imagePath]);
 
         let dataString = "";
         let errorString = "";

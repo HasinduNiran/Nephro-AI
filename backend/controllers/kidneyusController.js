@@ -30,7 +30,7 @@ exports.analyzeKidneyUltrasound = async (req, res) => {
 
   // Fallback: legacy Python spawn path
   const scriptPath = path.join(__dirname, "..", "..", "ai-engine", "src", "ckd_stage", "ultrasound_scan.py");
-  const pythonProcess = spawn("python", [scriptPath, imagePath]);
+  const pythonProcess = spawn("python3",[scriptPath, imagePath]);
 
   let dataBuffer = ""; // Use a buffer to collect chunks
 

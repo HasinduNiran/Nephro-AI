@@ -150,7 +150,7 @@ app.post("/api/upload-ultrasound", upload.single("ultrasound"), (req, res) => {
         });
       }
 
-      const pythonProcess = spawn("python", [scriptPath, imagePath]);
+      const pythonProcess = spawn("python3",[scriptPath, imagePath]);
 
       let dataString = "";
       let errorString = "";

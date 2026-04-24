@@ -51,7 +51,7 @@ exports.predictRisk = async (req, res) => {
   );
 
   console.log("Python Script Path:", scriptPath);
-  const pythonProcess = spawn("python", [scriptPath, JSON.stringify(inputData)]);
+  const pythonProcess = spawn("python3",[scriptPath, JSON.stringify(inputData)]);
 
   let dataString = "";
   let errorString = "";

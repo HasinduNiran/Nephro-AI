@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const FASTAPI_INFERENCE_URL = (process.env.FASTAPI_INFERENCE_URL || "http://127.0.0.1:8001").replace(/\/$/, "");
+const FASTAPI_INFERENCE_URL = (process.env.FASTAPI_INFERENCE_URL || "http://ai-engine:8001").replace(/\/$/, "");
 const FASTAPI_TIMEOUT_MS = Number.parseInt(process.env.FASTAPI_TIMEOUT_MS || "45000", 10);
 const USE_FASTAPI_INFERENCE = String(process.env.USE_FASTAPI_INFERENCE || "true").toLowerCase() !== "false";
 
