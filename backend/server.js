@@ -110,7 +110,7 @@ app.post("/api/upload-ultrasound", upload.single("ultrasound"), (req, res) => {
   const { spawn } = require("child_process");
   const imagePath = req.file.path;
 
-  // Fast path: call persistent FastAPI inference service first.
+  // Fast path: call persistent FastAPI inference service (sends base64 so no path sharing needed).
   analyzeUltrasoundViaFastApi(imagePath)
     .then(async (fastApiResult) => {
       if (fastApiResult?.success) {

@@ -35,14 +35,35 @@ async function analyzeUltrasoundViaFastApi(imagePath, manualRatio = null) {
   if (!isFastApiEnabled()) return null;
 
   try {
-    const data = await callFastApi("/analyze-ultrasound", {
-      image_path: imagePath,
-      manual_ratio: manualRatio,
-    });
+    const fs = require("fs");
+    let payload;
+    if (fs.existsSync(imagePath)) {
+      const imageBuffer = fs.readFileSync(imagePath);
+      const base64 = imageBuffer.toString("base64");
+      const ext = imagePath.split(".").pop().toLowerCase();
+      const mime = ext === "png" ? "image/png" : "image/jpeg";
+      payload = { image_base64: `data:${mime};base64,${base64}`, manual_ratio: manualRatio };
+    } else {
+      payload = { image_path: imagePath, manual_ratio: manualRatio };
+    }
+    const data = await callFastApi("/analyze-ultrasound", payload);
     if (!data || data.success === false) return null;
     return data;
   } catch (error) {
     console.warn("FastAPI ultrasound unavailable, falling back to spawn:", error.message);
+    return null;
+  }
+}
+
+async function predictRiskViaFastApi(inputData) {
+  if (!isFastApiEnabled()) return null;
+
+  try {
+    const data = await callFastApi("/predict-risk", inputData);
+    if (!data || data.error) return null;
+    return data;
+  } catch (error) {
+    console.warn("FastAPI risk prediction unavailable, falling back to spawn:", error.message);
     return null;
   }
 }
@@ -53,4 +74,5 @@ module.exports = {
   isFastApiEnabled,
   predictStageViaFastApi,
   analyzeUltrasoundViaFastApi,
+  predictRiskViaFastApi,
 };

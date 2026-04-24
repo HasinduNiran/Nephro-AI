@@ -32,7 +32,8 @@ class StagePredictRequest(BaseModel):
 
 
 class UltrasoundRequest(BaseModel):
-    image_path: str
+    image_path: Optional[str] = None
+    image_base64: Optional[str] = None
     manual_ratio: Optional[float] = None
 
 
@@ -273,7 +274,13 @@ def predict_stage(req: StagePredictRequest) -> Dict[str, Any]:
 @router.post("/analyze-ultrasound")
 def analyze_ultrasound(req: UltrasoundRequest) -> Dict[str, Any]:
     try:
-        result = predict_kidney_length(req.image_path, req.manual_ratio)
+        if req.image_base64:
+            image_source = req.image_base64
+        elif req.image_path:
+            image_source = req.image_path
+        else:
+            raise ValueError("Provide either image_base64 or image_path")
+        result = predict_kidney_length(image_source, req.manual_ratio)
         if not result.get("success", False):
             raise ValueError(result.get("error", "Ultrasound analysis failed"))
         return result

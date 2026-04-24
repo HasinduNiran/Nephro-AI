@@ -33,6 +33,7 @@ from src.chatbot.nlg_glossary import NLGGlossary
 from src.utils.logger import ConsoleLogger as Log
 from src.mealPlate.api import router as mealplate_router
 from src.ckd_stage.inference_api import router as ckd_router
+from src.risk_prediction.api_predict import predict as predict_risk_fn
 
 app = FastAPI(title="Nephro-AI Context-Aware Chatbot API")
 
@@ -407,6 +408,24 @@ async def login(request: LoginRequest):
 @app.get("/")
 def health_check():
     return {"status": "active"}
+
+
+class RiskPredictRequest(BaseModel):
+    bp_systolic: float
+    bp_diastolic: float
+    age: float
+    gender: str
+    hba1c_level: float = 5.0
+    diabetes: bool = None
+
+@app.post("/predict-risk")
+@app.post("/api/predict-risk")
+def predict_risk(req: RiskPredictRequest):
+    data = req.model_dump() if hasattr(req, "model_dump") else req.dict()
+    result = predict_risk_fn(data)
+    if "error" in result:
+        raise HTTPException(status_code=500, detail=result["error"])
+    return result
 
 @app.post("/chat/upload_context")
 @app.post("/api/chat/upload_context")

@@ -1,7 +1,8 @@
 const { spawn } = require("child_process");
 const path = require("path");
+const { predictRiskViaFastApi } = require("../utils/inferenceClient");
 
-exports.predictRisk = (req, res) => {
+exports.predictRisk = async (req, res) => {
   const { bp_systolic, bp_diastolic, age, gender, diabetes, hba1c_level } =
     req.body;
 
@@ -17,26 +18,28 @@ exports.predictRisk = (req, res) => {
     });
   }
 
-  // Prepare data for python script
   const inputData = {
     bp_systolic: parseFloat(bp_systolic),
     bp_diastolic: parseFloat(bp_diastolic),
     age: parseFloat(age),
-    gender: gender, // 'Male' or 'Female'
+    gender: gender,
   };
 
-  // Handle hba1c_level
   if (hba1c_level !== undefined && hba1c_level !== null) {
     inputData.hba1c_level = parseFloat(hba1c_level);
   } else if (diabetes !== undefined) {
-    // Convert boolean to estimated HbA1c level
-    // Normal: ~5.0%, Diabetic: ~7.5%
     inputData.hba1c_level = diabetes ? 7.5 : 5.0;
   } else {
-    inputData.hba1c_level = 5.0; // Default normal
+    inputData.hba1c_level = 5.0;
   }
 
-  // Path to python script. Assuming server.js is in backend/ and api_predict.py is in scripts/
+  // Fast path: call persistent FastAPI inference service first
+  const fastApiResult = await predictRiskViaFastApi(inputData);
+  if (fastApiResult) {
+    return res.json(fastApiResult);
+  }
+
+  // Fallback: spawn Python subprocess
   const scriptPath = path.join(
     __dirname,
     "..",
@@ -47,47 +50,27 @@ exports.predictRisk = (req, res) => {
     "api_predict.py"
   );
 
-  // Debug paths
   console.log("Python Script Path:", scriptPath);
-  console.log("Input Data:", JSON.stringify(inputData));
-
-  // Spawn python process
-  const pythonProcess = spawn("python", [
-    scriptPath,
-    JSON.stringify(inputData),
-  ]);
+  const pythonProcess = spawn("python", [scriptPath, JSON.stringify(inputData)]);
 
   let dataString = "";
   let errorString = "";
 
-  pythonProcess.stdout.on("data", (data) => {
-    dataString += data.toString();
-  });
-
+  pythonProcess.stdout.on("data", (data) => { dataString += data.toString(); });
   pythonProcess.stderr.on("data", (data) => {
     errorString += data.toString();
-    console.error("Python Stderr:", data.toString()); // Log stderr directly
+    console.error("Python Stderr:", data.toString());
   });
 
   pythonProcess.on("close", (code) => {
     if (code !== 0) {
-      console.error(`Python script exited with code ${code}`);
-      console.error(`Stderr: ${errorString}`);
-      return res.status(500).json({
-        message: "Error calculating risk",
-        error: errorString,
-        path: scriptPath,
-      });
+      return res.status(500).json({ message: "Error calculating risk", error: errorString });
     }
-
     try {
       const result = JSON.parse(dataString);
-      if (result.error) {
-        return res.status(500).json({ message: result.error });
-      }
+      if (result.error) return res.status(500).json({ message: result.error });
       res.json(result);
     } catch (e) {
-      console.error("Error parsing python output:", e);
       res.status(500).json({ message: "Error parsing prediction result" });
     }
   });
