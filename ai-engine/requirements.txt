@@ -13,7 +13,7 @@ PyPDF2>=3.0.0
 docling[ocr]>=2.0.0
 
 # NLU (Natural Language Understanding)
-spacy>=3.7.2
+spacy>=3.7.2,<3.8.0
 
 # Natural Language Processing
 nltk>=3.8.1
@@ -54,7 +54,7 @@ soundfile>=0.13.0
 # Medical NLU
 scispacy>=0.5.4
 negspacy>=1.0.4
-# Note: en_ner_bc5cdr_md is installed via direct URL, not PyPI
+https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_ner_bc5cdr_md-0.5.4.tar.gz
 
 # Semantic Search & Hybrid NLU
 sentence-transformers>=2.2.2
