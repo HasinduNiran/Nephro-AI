@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nephro-AI | Intelligent CKD Management Platform</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy:   #0a1628;
+      --dark:   #0d1f3c;
+      --mid:    #112244;
+      --teal:   #00d4d4;
+      --cyan:   #00b8d9;
+      --blue:   #1e90ff;
+      --green:  #00e676;
+      --white:  #f0f4ff;
+      --muted:  #8899bb;
+      --card:   rgba(255,255,255,0.04);
+      --border: rgba(0,212,212,0.15);
+      --grad:   linear-gradient(135deg,#0a1628 0%,#0d2444 50%,#0a2040 100%);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+    a { color: var(--teal); text-decoration: none; }
+    a:hover { color: var(--cyan); }
+    h1,h2,h3,h4 { font-weight: 700; }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--navy); }
+    ::-webkit-scrollbar-thumb { background: var(--teal); border-radius: 3px; }
+
+    /* ===== NAV ===== */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+      background: rgba(10,22,40,0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; height: 64px;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .nav-logo {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--teal), var(--blue));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 1.1rem; color: var(--navy);
+    }
+    .nav-title { font-size: 1.25rem; font-weight: 800; color: var(--white); }
+    .nav-title span { color: var(--teal); }
+    .nav-links {
+      display: flex; gap: 0.25rem; list-style: none;
+    }
+    .nav-links a {
+      color: var(--muted); font-size: 0.88rem; font-weight: 500;
+      padding: 0.4rem 0.85rem; border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--teal); background: rgba(0,212,212,0.08);
+    }
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      cursor: pointer; background: none; border: none; padding: 6px;
+    }
+    .hamburger span {
+      display: block; width: 24px; height: 2px;
+      background: var(--teal); border-radius: 2px; transition: all 0.3s;
+    }
+
+    /* ===== SECTIONS ===== */
+    .page { display: none; }
+    .page.active { display: block; }
+    section { padding: 5rem 0 3rem; }
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* ===== HERO ===== */
+    #home { min-height: 100vh; display: flex; flex-direction: column; }
+    .hero {
+      min-height: 100vh;
+      background: var(--grad);
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 60% 40%, rgba(0,212,212,0.08) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 40% at 20% 80%, rgba(30,144,255,0.06) 0%, transparent 60%);
+    }
+    .hero-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 3rem; align-items: center;
+      padding-top: 80px;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(0,212,212,0.1); border: 1px solid var(--border);
+      border-radius: 100px; padding: 0.35rem 1rem;
+      font-size: 0.8rem; color: var(--teal); margin-bottom: 1.25rem;
+      letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    .hero-badge::before {
+      content: ''; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--teal); animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; } 50% { opacity: 0.3; }
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1.15; margin-bottom: 1rem;
+    }
+    .hero h1 .accent { color: var(--teal); }
+    .hero-sub {
+      color: var(--muted); font-size: 1.05rem; margin-bottom: 2rem; max-width: 480px;
+    }
+    .btn-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.75rem; border-radius: 8px;
+      font-size: 0.92rem; font-weight: 600; cursor: pointer;
+      border: none; transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--teal), var(--blue));
+      color: var(--navy);
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); color: var(--navy); }
+    .btn-outline {
+      background: transparent; color: var(--teal);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { background: rgba(0,212,212,0.08); }
+    .hero-visual {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    }
+    .component-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.25rem;
+      transition: all 0.3s;
+    }
+    .component-card:hover { border-color: var(--teal); transform: translateY(-3px); }
+    .component-card:first-child { grid-column: span 2; }
+    .cc-icon {
+      width: 42px; height: 42px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; margin-bottom: 0.75rem;
+    }
+    .cc-icon.teal { background: rgba(0,212,212,0.12); }
+    .cc-icon.blue { background: rgba(30,144,255,0.12); }
+    .cc-icon.green { background: rgba(0,230,118,0.12); }
+    .cc-icon.orange { background: rgba(255,152,0,0.12); }
+    .component-card h4 { font-size: 0.92rem; margin-bottom: 0.3rem; }
+    .component-card p { font-size: 0.78rem; color: var(--muted); }
+    .stat-pill {
+      display: inline-block; margin-top: 0.5rem;
+      background: rgba(0,212,212,0.1); border-radius: 100px;
+      padding: 0.15rem 0.6rem; font-size: 0.75rem; color: var(--teal);
+    }
+
+    /* ===== METRICS STRIP ===== */
+    .metrics-strip {
+      background: rgba(0,212,212,0.04);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 2rem 0;
+    }
+    .metrics-row {
+      display: flex; justify-content: space-around; flex-wrap: wrap; gap: 1.5rem;
+    }
+    .metric-item { text-align: center; }
+    .metric-num {
+      font-size: 2rem; font-weight: 800; color: var(--teal);
+      display: block; line-height: 1;
+    }
+    .metric-label { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
+
+    /* ===== SECTION HEADERS ===== */
+    .section-header { text-align: center; margin-bottom: 3rem; }
+    .section-tag {
+      display: inline-block; background: rgba(0,212,212,0.1);
+      border: 1px solid var(--border); border-radius: 100px;
+      padding: 0.25rem 0.9rem; font-size: 0.75rem; color: var(--teal);
+      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.75rem;
+    }
+    .section-header h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); margin-bottom: 0.75rem; }
+    .section-header p { color: var(--muted); max-width: 600px; margin: 0 auto; }
+
+    /* ===== CARDS ===== */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.5rem;
+      transition: all 0.3s;
+    }
+    .card:hover { border-color: var(--teal); transform: translateY(-3px); }
+    .card-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 1rem;
+    }
+    .card h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+    .card p { font-size: 0.85rem; color: var(--muted); }
+    .card ul { font-size: 0.83rem; color: var(--muted); padding-left: 1.1rem; margin-top: 0.5rem; }
+    .card ul li { margin-bottom: 0.3rem; }
+
+    /* ===== TABLES ===== */
+    .table-wrap { overflow-x: auto; margin-top: 1.5rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th {
+      background: rgba(0,212,212,0.08); color: var(--teal);
+      padding: 0.75rem 1rem; text-align: left; font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+    td { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--muted); }
+    tr:hover td { background: rgba(0,212,212,0.03); color: var(--white); }
+
+    /* ===== TIMELINE ===== */
+    .timeline { position: relative; padding-left: 2rem; }
+    .timeline::before {
+      content: ''; position: absolute; left: 8px; top: 0; bottom: 0;
+      width: 2px; background: linear-gradient(to bottom, var(--teal), transparent);
+    }
+    .tl-item { position: relative; margin-bottom: 2rem; }
+    .tl-dot {
+      position: absolute; left: -2.5rem; top: 0.2rem;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--navy); border: 2px solid var(--teal);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tl-dot.done { background: var(--teal); }
+    .tl-dot::after {
+      content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--teal);
+    }
+    .tl-dot.done::after { background: var(--navy); }
+    .tl-content {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.2rem 1.5rem;
+    }
+    .tl-content h4 { font-size: 0.95rem; margin-bottom: 0.25rem; }
+    .tl-content p { font-size: 0.83rem; color: var(--muted); }
+    .tl-meta { font-size: 0.78rem; color: var(--teal); margin-bottom: 0.4rem; }
+
+    /* ===== ABOUT ===== */
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; }
+    .member-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.75rem 1.25rem;
+      text-align: center; transition: all 0.3s;
+    }
+    .member-card:hover { border-color: var(--teal); transform: translateY(-3px); }
+    .avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      margin: 0 auto 1rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.75rem; font-weight: 700; color: var(--navy);
+    }
+    .member-card h3 { font-size: 0.95rem; margin-bottom: 0.25rem; }
+    .member-card .role { font-size: 0.8rem; color: var(--teal); margin-bottom: 0.5rem; }
+    .member-card .id { font-size: 0.78rem; color: var(--muted); }
+    .member-card .component {
+      margin-top: 0.75rem; padding: 0.3rem 0.75rem;
+      background: rgba(0,212,212,0.08); border-radius: 100px;
+      font-size: 0.75rem; color: var(--teal); display: inline-block;
+    }
+
+    /* ===== CONTACT ===== */
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .contact-form input, .contact-form textarea, .contact-form select {
+      width: 100%; background: var(--card);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 0.75rem 1rem; color: var(--white);
+      font-size: 0.9rem; margin-bottom: 1rem; outline: none;
+      transition: border-color 0.2s;
+    }
+    .contact-form input:focus, .contact-form textarea:focus {
+      border-color: var(--teal);
+    }
+    .contact-form textarea { min-height: 130px; resize: vertical; }
+    .contact-info { display: flex; flex-direction: column; gap: 1rem; }
+    .ci-item {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.1rem 1.25rem;
+      display: flex; align-items: flex-start; gap: 0.9rem;
+    }
+    .ci-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(0,212,212,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+    }
+    .ci-item h4 { font-size: 0.85rem; margin-bottom: 0.2rem; }
+    .ci-item p { font-size: 0.82rem; color: var(--muted); }
+
+    /* ===== DOMAIN TABS ===== */
+    .tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 2rem; }
+    .tab-btn {
+      padding: 0.5rem 1.2rem; border-radius: 8px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--muted); font-size: 0.85rem; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active, .tab-btn:hover {
+      background: rgba(0,212,212,0.1); color: var(--teal);
+      border-color: var(--teal);
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ===== PIPELINE ===== */
+    .pipeline {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 0;
+      margin: 2rem 0; justify-content: center;
+    }
+    .pipe-step {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.75rem 1rem; text-align: center;
+      font-size: 0.8rem; min-width: 120px;
+      transition: border-color 0.2s;
+    }
+    .pipe-step:hover { border-color: var(--teal); }
+    .pipe-step .ps-icon { font-size: 1.4rem; margin-bottom: 0.25rem; }
+    .pipe-arrow { color: var(--teal); font-size: 1.5rem; padding: 0 0.5rem; }
+
+    /* ===== ACCURACY BARS ===== */
+    .acc-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
+    .acc-item label { font-size: 0.83rem; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 0.35rem; }
+    .acc-item label span { color: var(--teal); font-weight: 700; }
+    .bar-track {
+      height: 8px; background: rgba(255,255,255,0.06); border-radius: 100px; overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%; border-radius: 100px;
+      background: linear-gradient(90deg, var(--teal), var(--blue));
+      transition: width 1.2s ease;
+    }
+
+    /* ===== DOCS / SLIDES ===== */
+    .docs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+    .doc-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
+      transition: all 0.3s;
+    }
+    .doc-card:hover { border-color: var(--teal); }
+    .doc-card .dc-type {
+      font-size: 0.72rem; color: var(--teal); text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .doc-card h4 { font-size: 0.9rem; }
+    .doc-card p { font-size: 0.78rem; color: var(--muted); }
+    .doc-card .dc-link {
+      margin-top: auto; display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.8rem; color: var(--teal);
+    }
+    .badge {
+      display: inline-block; padding: 0.2rem 0.6rem; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 600;
+    }
+    .badge-done { background: rgba(0,230,118,0.12); color: var(--green); }
+    .badge-pending { background: rgba(255,152,0,0.12); color: #ffa726; }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: rgba(0,0,0,0.3); border-top: 1px solid var(--border);
+      padding: 2rem 0; text-align: center;
+    }
+    footer p { font-size: 0.83rem; color: var(--muted); }
+    footer .ft-brand { color: var(--teal); font-weight: 700; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .nav-links { display: none; flex-direction: column; position: absolute;
+        top: 64px; left: 0; right: 0; background: rgba(10,22,40,0.98);
+        padding: 1rem; border-bottom: 1px solid var(--border); }
+      .nav-links.open { display: flex; }
+      .hamburger { display: flex; }
+      .hero-grid { grid-template-columns: 1fr; }
+      .hero-visual { display: none; }
+      .contact-grid { grid-template-columns: 1fr; }
+      .metrics-row { gap: 1rem; }
+      .pipeline { gap: 0.5rem; }
+      .pipe-arrow { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">N</div>
+    <span class="nav-title">Nephro<span>AI</span></span>
+  </div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#" onclick="showPage('home')" class="active" id="nav-home">Home</a></li>
+    <li><a href="#" onclick="showPage('domain')" id="nav-domain">Domain</a></li>
+    <li><a href="#" onclick="showPage('milestones')" id="nav-milestones">Milestones</a></li>
+    <li><a href="#" onclick="showPage('documents')" id="nav-documents">Documents</a></li>
+    <li><a href="#" onclick="showPage('slides')" id="nav-slides">Presentations</a></li>
+    <li><a href="#" onclick="showPage('about')" id="nav-about">About Us</a></li>
+    <li><a href="#" onclick="showPage('contact')" id="nav-contact">Contact</a></li>
+  </ul>
+  <button class="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- =========================================================
+     PAGE: HOME
+========================================================== -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="container">
+      <div class="hero-grid">
+        <div>
+          <div class="hero-badge">SLIIT Final Year Research Project 2025/2026</div>
+          <h1>Intelligent Mobile Health Platform for <span class="accent">Chronic Kidney Disease</span> Management</h1>
+          <p class="hero-sub">Nephro-AI integrates AI-driven risk prediction, bilingual conversational AI, automated dietary monitoring, and multimodal CKD progression forecasting into a unified mobile health platform for Sri Lankan patients.</p>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="showPage('domain')">Explore Research ›</button>
+            <button class="btn btn-outline" onclick="showPage('documents')">View Documents</button>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="component-card" style="background:rgba(0,212,212,0.05);">
+            <div class="cc-icon teal">🤖</div>
+            <h4>NephroBot — Bilingual Chatbot</h4>
+            <p>Context-aware RAG pipeline with Singlish NLU and Sandwich Architecture</p>
+            <span class="stat-pill">96.8% Clinical Precision</span>
+          </div>
+          <div class="component-card">
+            <div class="cc-icon blue">📊</div>
+            <h4>CKD Risk Prediction</h4>
+            <p>Stacking Ensemble ML with smartwatch BP integration</p>
+            <span class="stat-pill">98.83% Accuracy</span>
+          </div>
+          <div class="component-card">
+            <div class="cc-icon green">🍽️</div>
+            <h4>Meal Plate Analysis</h4>
+            <p>YOLOv11m + SAM segmentation for renal nutrition</p>
+            <span class="stat-pill">87% mAP@0.5</span>
+          </div>
+          <div class="component-card">
+            <div class="cc-icon orange">📈</div>
+            <h4>Stage Forecasting</h4>
+            <p>Multimodal LSTM with U-Net ultrasound features</p>
+            <span class="stat-pill">78% Next-Visit Acc.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="metrics-strip">
+    <div class="container">
+      <div class="metrics-row">
+        <div class="metric-item"><span class="metric-num">850M+</span><div class="metric-label">People Affected by CKD Globally</div></div>
+        <div class="metric-item"><span class="metric-num">4,114</span><div class="metric-label">Medical Knowledge Chunks in RAG DB</div></div>
+        <div class="metric-item"><span class="metric-num">93.7%</span><div class="metric-label">Singlish NLU Accuracy</div></div>
+        <div class="metric-item"><span class="metric-num">2.1%</span><div class="metric-label">Hallucination Rate (vs 18.4% baseline)</div></div>
+        <div class="metric-item"><span class="metric-num">4</span><div class="metric-label">AI-Powered Components</div></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Platform Overview</span>
+        <h2>Four Integrated AI Components</h2>
+        <p>Each component addresses a distinct clinical challenge in CKD management, unified in the Nephro-AI React Native mobile application.</p>
+      </div>
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-icon" style="background:rgba(0,212,212,0.1);">🤖</div>
+          <h3>Bilingual CKD Chatbot (NephroBot)</h3>
+          <p>Sandwich RAG Architecture enabling English and Sinhala/Singlish medical Q&amp;A grounded in 148 KDIGO/NKF clinical guideline documents. Features TinyBERT cross-encoder re-ranking and parallel asyncio TTS streaming.</p>
+          <ul>
+            <li>93.7% Singlish NLU accuracy</li>
+            <li>96.8% Clinical precision</li>
+            <li>820 ms first-audio latency</li>
+            <li>0 ms emergency alert (pre-cached)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-icon" style="background:rgba(30,144,255,0.1);">📊</div>
+          <h3>Early CKD Risk Prediction</h3>
+          <p>Stacking ensemble of fine-tuned XGBoost and Random Forest (meta-learner: Logistic Regression) using Google Health Connect smartwatch BP data, HbA1c, and 20-feature engineering framework with SHAP explainability.</p>
+          <ul>
+            <li>98.83% accuracy (AUC = 0.997)</li>
+            <li>5 minimally invasive inputs</li>
+            <li>Longitudinal y=mx+c trend analysis</li>
+            <li>SHAP plain-language explanations</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-icon" style="background:rgba(0,230,118,0.1);">🍽️</div>
+          <h3>Automated Meal Plate Analysis</h3>
+          <p>Fixed-geometry digital overlay resolves the Dimensionality Gap (2D→3D), enabling pixel-precise renal nutrient budgeting. Fine-tuned YOLOv11m on 4,200 Sri Lankan food images across 32 classes including Mallum, Pol Sambol, Dhal curry.</p>
+          <ul>
+            <li>87.0% mAP@0.5 on Sri Lankan foods</li>
+            <li>SAM: 4.4% area overestimation vs 22.7%</li>
+            <li>KDOQI-aligned Nutrient Wallet</li>
+            <li>100% safety logic adherence</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-icon" style="background:rgba(255,152,0,0.1);">📈</div>
+          <h3>CKD Progression Forecasting</h3>
+          <p>Multimodal LSTM integrating U-Net kidney ultrasound segmentation (kidney length) with Tesseract OCR-extracted lab biomarkers (eGFR, creatinine) for both next-visit and 6-month CKD stage progression prediction.</p>
+          <ul>
+            <li>97.63% U-Net segmentation accuracy</li>
+            <li>78% next-visit prediction accuracy</li>
+            <li>74% 6-month forecasting accuracy</li>
+            <li>MIMIC-IV clinical dataset training</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:rgba(0,212,212,0.03); border-top:1px solid var(--border);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Technology Stack</span>
+        <h2>Key Technologies</h2>
+      </div>
+      <div class="cards-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));">
+        <div class="card" style="padding:1rem; text-align:center;">
+          <div style="font-size:1.8rem;margin-bottom:0.5rem;">⚛️</div>
+          <h4 style="font-size:0.85rem;">React Native / Expo</h4>
+          <p style="font-size:0.76rem;">SDK 54 Mobile Frontend</p>
+        </div>
+        <div class="card" style="padding:1rem; text-align:center;">
+          <div style="font-size:1.8rem;margin-bottom:0.5rem;">🐍</div>
+          <h4 style="font-size:0.85rem;">FastAPI / Python</h4>
+          <p style="font-size:0.76rem;">AI Engine Backend</p>
+        </div>
+        <div class="card" style="padding:1rem; text-align:center;">
+          <div style="font-size:1.8rem;margin-bottom:0.5rem;">🧠</div>
+          <h4 style="font-size:0.85rem;">Gemini 2.5 Flash</h4>
+          <p style="font-size:0.76rem;">LLM via OpenRouter</p>
+        </div>
+        <div class="card" style="padding:1rem; text-align:center;">
+          <div style="font-size:1.8rem;margin-bottom:0.5rem;">🗄️</div>
+          <h4 style="font-size:0.85rem;">ChromaDB</h4>
+          <p style="font-size:0.76rem;">Vector Database (4,114 chunks)</p>
+        </div>
+        <div class="card" style="padding:1rem; text-align:center;">
+          <div style="font-size:1.8rem;margin-bottom:0.5rem;">🔤</div>
+          <h4 style="font-size:0.85rem;">LaBSE + SciSpaCy</h4>
+          <p style="font-size:0.76rem;">Multilingual NLU</p>
+        </div>
+        <div class="card" style="padding:1rem; text-align:center;">
+          <div style="font-size:1.8rem;margin-bottom:0.5rem;">🎙️</div>
+          <h4 style="font-size:0.85rem;">Groq Whisper v3</h4>
+          <p style="font-size:0.76rem;">Speech-to-Text</p>
+        </div>
+        <div class="card" style="padding:1rem; text-align:center;">
+          <div style="font-size:1.8rem;margin-bottom:0.5rem;">🍃</div>
+          <h4 style="font-size:0.85rem;">MongoDB Atlas</h4>
+          <p style="font-size:0.76rem;">Patient Data Store</p>
+        </div>
+        <div class="card" style="padding:1rem; text-align:center;">
+          <div style="font-size:1.8rem;margin-bottom:0.5rem;">🎯</div>
+          <h4 style="font-size:0.85rem;">YOLOv11m + SAM</h4>
+          <p style="font-size:0.76rem;">Food Detection & Segmentation</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer>
+    <div class="container">
+      <p>© 2025/2026 <span class="ft-brand">Nephro-AI</span> | Sri Lanka Institute of Information Technology (SLIIT) | Faculty of Computing | Department of Information Technology</p>
+    </div>
+  </footer>
+</div>
+
+<!-- =========================================================
+     PAGE: DOMAIN
+========================================================== -->
+<div class="page" id="page-domain">
+  <section style="padding-top:5rem;">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Research Domain</span>
+        <h2>Domain Overview</h2>
+        <p>Comprehensive research background, identified gaps, and methodological contributions of the Nephro-AI project.</p>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(this,'lit')">Literature Survey</button>
+        <button class="tab-btn" onclick="switchTab(this,'gap')">Research Gap</button>
+        <button class="tab-btn" onclick="switchTab(this,'prob')">Research Problem</button>
+        <button class="tab-btn" onclick="switchTab(this,'obj')">Objectives</button>
+        <button class="tab-btn" onclick="switchTab(this,'meth')">Methodology</button>
+        <button class="tab-btn" onclick="switchTab(this,'tech')">Technologies</button>
+      </div>
+
+      <!-- LITERATURE SURVEY -->
+      <div class="tab-panel active" id="tab-lit">
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-icon" style="background:rgba(0,212,212,0.1);">📚</div>
+            <h3>RAG in Clinical NLP</h3>
+            <p>Lewis et al. (NeurIPS 2020) formalised RAG as a mechanism grounding generative LLMs in retrieved documents to reduce hallucination. Medical RAG systems (MedRAG, BioRAG) demonstrate strong factuality on English queries but have not addressed low-resource code-mixed input or the <em>semantic collision problem</em> in bi-encoder retrieval for antonymous clinical terms (e.g., "high BP" vs "low BP").</p>
+          </div>
+          <div class="card">
+            <div class="card-icon" style="background:rgba(30,144,255,0.1);">🌐</div>
+            <h3>Low-Resource & Code-Mixed NLP</h3>
+            <p>LaBSE (Feng et al., ACL 2022) generates language-agnostic sentence embeddings across 109 languages enabling zero-shot cross-lingual transfer. However, its application to Romanised Sinhala (Singlish) with non-standard orthography and productive suffix morphology had not been evaluated prior to this work.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon" style="background:rgba(0,230,118,0.1);">🍽️</div>
+            <h3>Image-Based Dietary Assessment</h3>
+            <p>Deep learning approaches using CNNs and transformers achieve strong classification on Western food benchmarks but fail on Sri Lankan staples with textural ambiguity. SAM (Kirillov et al., ICCV 2023) enables zero-shot food segmentation. No prior system combined image-based portion estimation with CKD-stage-specific renal nutrient thresholds for South Asian populations.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon" style="background:rgba(255,152,0,0.1);">💓</div>
+            <h3>Wearable BP & ML Risk Models</h3>
+            <p>Consumer smartwatches achieve within-5 mmHg agreement with auscultatory measurements. Ensemble ML methods (stacking) consistently outperform single classifiers on CKD classification tasks. SHAP TreeExplainer provides clinically interpretable feature attributions. Prior work used single BP readings; multi-day wearable averages were not integrated.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon" style="background:rgba(180,0,255,0.1);">🧬</div>
+            <h3>Multimodal CKD Progression</h3>
+            <p>LSTM networks effectively capture temporal patterns in sequential clinical records. U-Net architectures segment kidney regions from ultrasound images, enabling kidney length extraction as a structural biomarker. Existing studies focus on either clinical data OR imaging data — not a unified multimodal framework with temporal modelling.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon" style="background:rgba(255,0,100,0.1);">🔊</div>
+            <h3>Multilingual TTS & Voice Interfaces</h3>
+            <p>Sinhala TTS remains underexplored. Google Cloud TTS supports Sinhala (si-LK) but fails on embedded Latin characters. Whisper-large-v3 (Radford et al., ICML 2023) achieves competitive WER across languages with domain adaptation via context prompting. Prior mobile health TTS deployments used synchronous paradigms with 4–10 s latency.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESEARCH GAP -->
+      <div class="tab-panel" id="tab-gap">
+        <div class="cards-grid" style="grid-template-columns:1fr;">
+          <div class="card" style="border-color:var(--teal);">
+            <h3>🎯 Gap 1 — No CKD-Specific Sinhala Conversational AI</h3>
+            <p>No existing system provides a Sinhala-language conversational interface for CKD patient education grounded in current clinical guidelines (KDIGO 2024). Generic Sinhala health chatbots lack the domain-specific entity ontology (171 CKD terms), clinical guideline RAG, and negation detection required for safe medical advice.</p>
+          </div>
+          <div class="card">
+            <h3>🎯 Gap 2 — Singlish Medical NLP Unaddressed</h3>
+            <p>Singlish — phonetic Sinhala in Latin script — is the dominant input modality on mobile devices yet is absent from published multilingual NLP benchmarks. No prior work addresses Singlish medical entity extraction with agglutination-aware suffix stripping, fuzzy Levenshtein matching, and cross-lingual zero-shot intent classification simultaneously.</p>
+          </div>
+          <div class="card">
+            <h3>🎯 Gap 3 — Bilingual RAG Architecture</h3>
+            <p>Standard RAG systems assume monolingual operation. Retrieving from English medical documents in response to Sinhala queries requires a translation bridge not provided by existing RAG frameworks. The Sandwich Translation Architecture developed here is a novel solution to this fundamental cross-lingual retrieval problem.</p>
+          </div>
+          <div class="card">
+            <h3>🎯 Gap 4 — Sri Lankan Dietary Assessment</h3>
+            <p>No prior automated dietary system targets Sri Lankan cuisine with stage-dynamic renal nutrient thresholds (Sodium, Potassium, Phosphorus, Protein) aligned to KDOQI guidelines for CKD Stages 1–5. Existing apps (MyFitnessPal, NutriKidney) omit renal micronutrients and use static thresholds.</p>
+          </div>
+          <div class="card">
+            <h3>🎯 Gap 5 — Multimodal CKD Progression</h3>
+            <p>Most CKD progression studies use either clinical data or imaging data — not a unified framework. The combination of U-Net ultrasound kidney length features with LSTM temporal modelling of OCR-extracted lab biomarkers from a real-world dataset (MIMIC-IV) had not been demonstrated prior to this work.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESEARCH PROBLEM -->
+      <div class="tab-panel" id="tab-prob">
+        <div class="card" style="border-color:var(--teal); margin-bottom:1.5rem;">
+          <h3>Central Research Problem</h3>
+          <p style="margin-top:0.5rem; font-size:0.95rem; color:var(--white); font-style:italic;">How can a comprehensive AI-driven mobile health platform be designed and implemented to provide Chronic Kidney Disease patients in Sri Lanka with: (1) accurate, clinically grounded bilingual medical information through a conversational AI that handles English, Sinhala Unicode, and informal Singlish input; (2) early risk identification from passively collected smartwatch biometrics; (3) automated renal dietary monitoring from smartphone images of Sri Lankan meals; and (4) longitudinal CKD progression forecasting from multimodal clinical and ultrasound data — all integrated within a single mobile application accessible to patients with limited digital literacy?</p>
+        </div>
+        <div class="cards-grid">
+          <div class="card"><h3>Sub-Problem 1</h3><p>How can biomedical NER, negation detection, and cross-lingual intent classification be applied to CKD-domain queries in both English and Romanised Sinhala (Singlish) in a real-time API environment?</p></div>
+          <div class="card"><h3>Sub-Problem 2</h3><p>How can a large corpus of English CKD clinical guidelines be made accessible to Sinhala-speaking patients through a bilingual RAG pipeline that preserves clinical accuracy?</p></div>
+          <div class="card"><h3>Sub-Problem 3</h3><p>How can 3D volumetric food mass be reliably estimated from a 2D smartphone image to enable milligram-level renal nutrient tracking without specialised hardware?</p></div>
+          <div class="card"><h3>Sub-Problem 4</h3><p>How can structural kidney features from ultrasound and functional biomarkers from lab reports be fused with a temporal model to predict CKD stage progression over clinically relevant time horizons?</p></div>
+        </div>
+      </div>
+
+      <!-- OBJECTIVES -->
+      <div class="tab-panel" id="tab-obj">
+        <div class="card" style="border-color:var(--teal); margin-bottom:1.5rem;">
+          <h3>Main Objective</h3>
+          <p>To design, implement, and evaluate a comprehensive AI-driven mobile health platform for Chronic Kidney Disease management that provides bilingual patient education, early risk prediction, automated dietary monitoring, and progression forecasting within a unified React Native application.</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Specific Objective</th><th>Component</th><th>Key Metric</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Develop a Singlish NLU engine with 4-layer entity extraction and LaBSE zero-shot intent classification</td><td>NephroBot</td><td>≥90% token match accuracy</td></tr>
+              <tr><td>2</td><td>Build a Two-Stage RAG pipeline (ChromaDB bi-encoder + TinyBERT cross-encoder) grounded in KDIGO/NKF guidelines</td><td>NephroBot</td><td>≤5% hallucination rate</td></tr>
+              <tr><td>3</td><td>Implement Sandwich Translation Architecture for bilingual English/Sinhala chatbot operation</td><td>NephroBot</td><td>End-to-end latency ≤5s</td></tr>
+              <tr><td>4</td><td>Develop stacking ensemble CKD risk model from 5 minimally invasive inputs with smartwatch BP integration</td><td>Risk Prediction</td><td>≥97% accuracy</td></tr>
+              <tr><td>5</td><td>Create fixed-geometry dietary monitoring system with YOLOv11m and SAM segmentation for 32 Sri Lankan food classes</td><td>Meal Analysis</td><td>≥85% mAP@0.5</td></tr>
+              <tr><td>6</td><td>Implement KDOQI-aligned Nutrient Wallet with stage-dynamic safety thresholds for CKD Stages 1–5</td><td>Meal Analysis</td><td>100% safety logic</td></tr>
+              <tr><td>7</td><td>Develop multimodal LSTM integrating U-Net ultrasound features with OCR-extracted lab data for CKD progression</td><td>Progression</td><td>≥75% next-visit acc.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- METHODOLOGY -->
+      <div class="tab-panel" id="tab-meth">
+        <h3 style="margin-bottom:1.5rem; color:var(--teal);">System Architecture — Seven-Stage Pipeline</h3>
+        <div class="pipeline">
+          <div class="pipe-step"><div class="ps-icon">📱</div>React Native<br>Mobile App</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step"><div class="ps-icon">🌐</div>Node.js<br>Orchestration</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step"><div class="ps-icon">🐍</div>FastAPI<br>AI Engine</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step"><div class="ps-icon">🔤</div>Hybrid NLU<br>Engine</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step"><div class="ps-icon">🗄️</div>2-Stage RAG<br>ChromaDB+TinyBERT</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step"><div class="ps-icon">🧠</div>Gemini 2.5<br>Flash LLM</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step"><div class="ps-icon">🔊</div>Code-Mixed<br>Sinhala TTS</div>
+        </div>
+
+        <div class="cards-grid" style="margin-top:2rem;">
+          <div class="card">
+            <h3>NephroBot — Sandwich RAG</h3>
+            <ul>
+              <li>Singlish → English via 4-stage Hybrid NLU (regex suffix strip → Rapidfuzz Levenshtein ≥85% → LaBSE zero-shot)</li>
+              <li>ChromaDB bi-encoder retrieval (k=15) + TinyBERT cross-encoder filtering (σ threshold τ=0.01)</li>
+              <li>Live MongoDB patient biometrics injected into Gemini 2.5 Flash context</li>
+              <li>Code-Mixed Sinhala NLG with Multi-Register Glossary + parallel asyncio TTS streaming (600-char chunks)</li>
+              <li>MD5 cache with timestamp invalidation for fresh biometric-aware responses</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Risk Prediction — Stacking Ensemble</h3>
+            <ul>
+              <li>5 inputs: age, gender, 7-day avg SBP/DBP (Health Connect), HbA1c</li>
+              <li>20-feature engineering (pairwise products, MAP, clinical JNC-7 bins)</li>
+              <li>RandomizedSearchCV hyperparameter tuning (20 iter, 3-fold CV)</li>
+              <li>Stacking: XGBoost + Random Forest → Logistic Regression meta-learner</li>
+              <li>SHAP TreeExplainer + linear regression trend analysis (y=mx+c)</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Meal Analysis — 2D→3D Pipeline</h3>
+            <ul>
+              <li>Fixed-geometry overlay: d=30cm, 1 pixel = 0.217mm constant</li>
+              <li>YOLOv11m fine-tuned on 4,200 Sri Lankan images (32 classes, 100 epochs, NVIDIA A100)</li>
+              <li>SAM ViT-B binary mask for pixel-precise fill ratio vs bounding box</li>
+              <li>Mass = FR × V × H × D × ρ (5-parameter morphology-aware formula)</li>
+              <li>Nutrient Wallet: KDOQI-aligned Na/K/P/Protein thresholds for all 5 CKD stages</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>CKD Progression — Multimodal LSTM</h3>
+            <ul>
+              <li>U-Net segmentation: kidney length = D_pixel × R (pixel→cm calibration)</li>
+              <li>Tesseract OCR extraction of eGFR and serum creatinine from lab reports</li>
+              <li>MIMIC-IV for clinical temporal data; Kaggle US Simulation for ultrasound</li>
+              <li>LSTM with MAX_SEQ_LEN=10 visits, SoftMax output over CKD stages</li>
+              <li>Multi-task: next-visit prediction + 6-month forecasting</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- TECHNOLOGIES -->
+      <div class="tab-panel" id="tab-tech">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Layer</th><th>Technology</th><th>Version/Model</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td>Mobile</td><td>React Native / Expo</td><td>SDK 54 / RN 0.81.5</td><td>Cross-platform mobile UI</td></tr>
+              <tr><td>Mobile</td><td>Google Health Connect</td><td>react-native-health-connect v3.5</td><td>Smartwatch BP data ingestion</td></tr>
+              <tr><td>Backend</td><td>Node.js / Express</td><td>4.18.x (port 5000)</td><td>API orchestration layer</td></tr>
+              <tr><td>AI Engine</td><td>Python / FastAPI</td><td>3.11 / Uvicorn (port 8001)</td><td>AI inference server</td></tr>
+              <tr><td>Database</td><td>MongoDB Atlas</td><td>9 collections</td><td>Patient records, lab data, nutrient logs</td></tr>
+              <tr><td>Vector DB</td><td>ChromaDB</td><td>Persistent client</td><td>Medical knowledge base (4,114 chunks)</td></tr>
+              <tr><td>LLM</td><td>Gemini 2.5 Flash</td><td>via OpenRouter</td><td>Response generation, translation, TTS</td></tr>
+              <tr><td>Embeddings</td><td>OpenAI text-embedding-3-small</td><td>1536-dim, via OpenRouter</td><td>Document & query vectorisation</td></tr>
+              <tr><td>NLU</td><td>SciSpaCy / spaCy</td><td>en_ner_bc5cdr_md</td><td>Biomedical NER (DISEASE, CHEMICAL)</td></tr>
+              <tr><td>NLU</td><td>LaBSE</td><td>sentence-transformers</td><td>Zero-shot cross-lingual intent classification</td></tr>
+              <tr><td>NLU</td><td>negspaCy / Negex</td><td>–</td><td>Clinical negation detection</td></tr>
+              <tr><td>NLU</td><td>Rapidfuzz</td><td>C++ library</td><td>Levenshtein fuzzy Singlish matching (≥85%)</td></tr>
+              <tr><td>Re-ranking</td><td>ms-marco-TinyBERT-L-2-v2</td><td>4.4M params</td><td>Cross-encoder passage re-ranking</td></tr>
+              <tr><td>PDF Ingestion</td><td>IBM Docling</td><td>Enterprise</td><td>Layout-aware PDF extraction with OCR</td></tr>
+              <tr><td>STT</td><td>Whisper-large-v3</td><td>Groq Cloud, 1.5B params</td><td>Medical speech-to-text</td></tr>
+              <tr><td>VAD</td><td>Silero VAD</td><td>torch.hub</td><td>Voice activity detection (512-sample frames)</td></tr>
+              <tr><td>TTS (EN)</td><td>Microsoft Edge-TTS</td><td>en-US-AriaNeural</td><td>English audio synthesis</td></tr>
+              <tr><td>TTS (SI)</td><td>Gemini TTS</td><td>Algenib voice</td><td>Sinhala audio synthesis</td></tr>
+              <tr><td>CV</td><td>YOLOv11m</td><td>Ultralytics, fine-tuned</td><td>Sri Lankan food detection (32 classes)</td></tr>
+              <tr><td>Segmentation</td><td>Segment Anything Model</td><td>ViT-B</td><td>Pixel-precise food area segmentation</td></tr>
+              <tr><td>Segmentation</td><td>U-Net</td><td>Custom trained</td><td>Kidney ultrasound segmentation</td></tr>
+              <tr><td>Temporal ML</td><td>LSTM</td><td>Keras/TensorFlow</td><td>CKD stage progression prediction</td></tr>
+              <tr><td>Ensemble ML</td><td>XGBoost + Random Forest</td><td>scikit-learn</td><td>CKD risk prediction (stacking)</td></tr>
+              <tr><td>Explainability</td><td>SHAP TreeExplainer</td><td>–</td><td>Feature attribution for risk scores</td></tr>
+              <tr><td>OCR</td><td>Tesseract OCR</td><td>v5</td><td>Lab report data extraction</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer><div class="container"><p>© 2025/2026 <span class="ft-brand">Nephro-AI</span> | SLIIT Faculty of Computing</p></div></footer>
+</div>
+
+<!-- =========================================================
+     PAGE: MILESTONES
+========================================================== -->
+<div class="page" id="page-milestones">
+  <section style="padding-top:5rem;">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Project Milestones</span>
+        <h2>Assessment Timeline</h2>
+        <p>Key deliverables, assessment dates, and mark allocations across the research project lifecycle.</p>
+      </div>
+      <div style="max-width:700px; margin:0 auto;">
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot done"></div>
+            <div class="tl-content">
+              <div class="tl-meta">July 2025 · Marks: 10%</div>
+              <h4>Project Charter &amp; Topic Approval</h4>
+              <p>Initial project scope, team formation, supervisor assignment, and research domain selection. Defined CKD management as the domain with four AI sub-components.</p>
+              <span class="badge badge-done">Completed</span>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot done"></div>
+            <div class="tl-content">
+              <div class="tl-meta">August 2025 · Marks: 15%</div>
+              <h4>Project Proposal Presentation</h4>
+              <p>Formal presentation of research problem, objectives, literature survey, proposed methodology, and timeline to panel. Included preliminary system architecture diagrams.</p>
+              <span class="badge badge-done">Completed</span>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot done"></div>
+            <div class="tl-content">
+              <div class="tl-meta">September – October 2025 · Marks: 10%</div>
+              <h4>Proposal Document Submission</h4>
+              <p>Detailed written proposal including literature review with ≥20 references, system design, WBS, Gantt chart, risk analysis, and ethical considerations. Submitted to supervisor and panel.</p>
+              <span class="badge badge-done">Completed</span>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot done"></div>
+            <div class="tl-content">
+              <div class="tl-meta">November – December 2025 · Marks: 20%</div>
+              <h4>Progress Presentation I</h4>
+              <p>Demonstrated working prototypes of the chatbot NLU pipeline, early risk prediction model (98.83% accuracy), and initial YOLOv11m food detection results. ChromaDB knowledge base constructed with 4,114 chunks.</p>
+              <span class="badge badge-done">Completed</span>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot done"></div>
+            <div class="tl-content">
+              <div class="tl-meta">January – February 2026 · Marks: 20%</div>
+              <h4>Progress Presentation II</h4>
+              <p>Full system integration demonstration including bilingual TTS streaming, SAM segmentation pipeline, LSTM progression forecasting, and end-to-end React Native mobile application with all four components functional.</p>
+              <span class="badge badge-done">Completed</span>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot done"></div>
+            <div class="tl-content">
+              <div class="tl-meta">March – April 2026 · Marks: 15%</div>
+              <h4>Final Individual Reports &amp; IEEE Papers</h4>
+              <p>Submission of individual academic reports (~60 pages each) and IEEE-format research papers for each component (NephroBot, Meal Analysis, Risk Prediction, CKD Progression Forecasting).</p>
+              <span class="badge badge-done">Completed</span>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-content">
+              <div class="tl-meta">April 2026 · Marks: 10%</div>
+              <h4>Final Presentation &amp; Viva</h4>
+              <p>Comprehensive final demonstration to full panel. Individual viva examination covering technical depth, research contributions, evaluation results, and future work directions.</p>
+              <span class="badge badge-pending">Upcoming</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer><div class="container"><p>© 2025/2026 <span class="ft-brand">Nephro-AI</span> | SLIIT Faculty of Computing</p></div></footer>
+</div>
+
+<!-- =========================================================
+     PAGE: DOCUMENTS
+========================================================== -->
+<div class="page" id="page-documents">
+  <section style="padding-top:5rem;">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Research Documents</span>
+        <h2>Project Documents</h2>
+        <p>All project deliverables, technical reports, and IEEE research papers produced throughout the project.</p>
+      </div>
+      <h3 style="color:var(--teal); margin-bottom:1rem;">📄 Project Administration</h3>
+      <div class="docs-grid" style="margin-bottom:2.5rem;">
+        <div class="doc-card">
+          <span class="dc-type">Charter</span>
+          <h4>Project Charter</h4>
+          <p>Team formation, scope definition, supervisor agreement, and domain selection document.</p>
+          <span class="badge badge-done">Completed</span>
+          <a class="dc-link" href="#">📥 Download</a>
+        </div>
+        <div class="doc-card">
+          <span class="dc-type">Proposal</span>
+          <h4>Research Proposal Document</h4>
+          <p>Full written proposal with literature review (≥20 references), methodology, WBS, Gantt, and risk analysis.</p>
+          <span class="badge badge-done">Completed</span>
+          <a class="dc-link" href="#">📥 Download</a>
+        </div>
+        <div class="doc-card">
+          <span class="dc-type">Checklist</span>
+          <h4>Progress Checklist I</h4>
+          <p>Supervisor-signed progress checklist for Progress Presentation I milestone.</p>
+          <span class="badge badge-done">Completed</span>
+          <a class="dc-link" href="#">📥 Download</a>
+        </div>
+        <div class="doc-card">
+          <span class="dc-type">Checklist</span>
+          <h4>Progress Checklist II</h4>
+          <p>Supervisor-signed progress checklist for Progress Presentation II milestone.</p>
+          <span class="badge badge-done">Completed</span>
+          <a class="dc-link" href="#">📥 Download</a>
+        </div>
+      </div>
+      <h3 style="color:var(--teal); margin-bottom:1rem;">📑 Individual Final Reports</h3>
+      <div class="docs-grid" style="margin-bottom:2.5rem;">
+        <div class="doc-card">
+          <span class="dc-type">Individual Report</span>
+          <h4>Dissanayake D S W L M</h4>
+          <p>CKD Intelligent Bilingual Chatbot — ~15,800 words academic report covering NLU, RAG, Voice Interface, and Sandwich Translation Architecture.</p>
+          <span class="badge badge-done">Completed</span>
+          <a class="dc-link" href="#">📥 Download PDF</a>
+        </div>
+        <div class="doc-card">
+          <span class="dc-type">Individual Report</span>
+          <h4>Team Member B</h4>
+          <p>Early CKD Risk Prediction with Stacking Ensemble ML and Smartwatch-Integrated BP Monitoring.</p>
+          <span class="badge badge-done">Completed</span>
+          <a class="dc-link" href="#">📥 Download PDF</a>
+        </div>
+        <div class="doc-card">
+          <span class="dc-type">Individual Report</span>
+          <h4>Team Member C</h4>
+          <p>Automated Dietary Monitoring Using YOLOv11m, SAM, and Fixed-Geometry Mass Reconstruction for CKD.</p>
+          <span class="badge badge-done">Completed</span>
+          <a class="dc-link" href="#">📥 Download PDF</a>
+        </div>
+        <div class="doc-card">
+          <span class="dc-type">Individual Report</span>
+          <h4>Team Member D</h4>
+          <p>Multimodal CKD Progression Prediction Using U-Net Ultrasound Features and Longitudinal LSTM Modelling.</p>
+          <span class="badge badge-done">Completed</span>
+          <a class="dc-link" href="#">📥 Download PDF</a>
+        </div>
+      </div>
+      <h3 style="color:var(--teal); margin-bottom:1rem;">📰 IEEE Research Papers</h3>
+      <div class="docs-grid">
+        <div class="doc-card" style="border-color:rgba(0,212,212,0.3);">
+          <span class="dc-type">IEEE Paper</span>
+          <h4>NephroBot: Context-Aware Bilingual Clinical Chatbot</h4>
+          <p>Two-Stage Cross-Encoder RAG Pipeline and Singlish NLU. Results: 93.7% NLU, 96.8% precision, 2.1% hallucination.</p>
+          <span class="badge badge-done">Submitted</span>
+          <a class="dc-link" href="#">📄 View Paper</a>
+        </div>
+        <div class="doc-card" style="border-color:rgba(0,212,212,0.3);">
+          <span class="dc-type">IEEE Paper</span>
+          <h4>Automated Dietary Monitoring for CKD Using YOLOv11m, SAM, and 2D-to-3D Reconstruction</h4>
+          <p>Fixed-geometry overlay + 5-parameter mass formula. 87% mAP@0.5, MAE 8–28g, 100% safety logic.</p>
+          <span class="badge badge-done">Submitted</span>
+          <a class="dc-link" href="#">📄 View Paper</a>
+        </div>
+        <div class="doc-card" style="border-color:rgba(0,212,212,0.3);">
+          <span class="dc-type">IEEE Paper</span>
+          <h4>Early CKD Risk Prediction Using Ensemble ML with Smartwatch BP Monitoring</h4>
+          <p>Stacking ensemble (XGBoost + RF) with SHAP explainability. 98.83% accuracy, AUC=0.997.</p>
+          <span class="badge badge-done">Submitted</span>
+          <a class="dc-link" href="#">📄 View Paper</a>
+        </div>
+        <div class="doc-card" style="border-color:rgba(0,212,212,0.3);">
+          <span class="dc-type">IEEE Paper</span>
+          <h4>Multimodal CKD Progression Using Ultrasound Features and Longitudinal Biomarkers</h4>
+          <p>U-Net + LSTM multimodal framework. 97.63% segmentation, 78% next-visit, 74% 6-month accuracy.</p>
+          <span class="badge badge-done">Submitted</span>
+          <a class="dc-link" href="#">📄 View Paper</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer><div class="container"><p>© 2025/2026 <span class="ft-brand">Nephro-AI</span> | SLIIT Faculty of Computing</p></div></footer>
+</div>
+
+<!-- =========================================================
+     PAGE: SLIDES
+========================================================== -->
+<div class="page" id="page-slides">
+  <section style="padding-top:5rem;">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Presentations</span>
+        <h2>Presentation Slides</h2>
+        <p>Slide decks used across all milestone presentations of the Nephro-AI project.</p>
+      </div>
+      <div class="docs-grid">
+        <div class="doc-card">
+          <span class="dc-type">Proposal Presentation</span>
+          <h4>Project Proposal — Nephro-AI</h4>
+          <p>Presented August 2025. Covers research problem, domain overview, proposed 4-component architecture, and project plan.</p>
+          <span class="badge badge-done">Completed</span>
+          <a class="dc-link" href="#">📊 View Slides</a>
+        </div>
+        <div class="doc-card">
+          <span class="dc-type">Progress Presentation I</span>
+          <h4>PP1 — Prototype Demonstrations</h4>
+          <p>Presented November 2025. Demonstrates NLU pipeline, 98.83% risk model, initial YOLOv11m food detection, and ChromaDB knowledge base construction.</p>
+          <span class="badge badge-done">Completed</span>
+          <a class="dc-link" href="#">📊 View Slides</a>
+        </div>
+        <div class="doc-card">
+          <span class="dc-type">Progress Presentation II</span>
+          <h4>PP2 — Full System Integration</h4>
+          <p>Presented February 2026. Full Sandwich RAG bilingual chatbot, SAM segmentation, LSTM progression forecasting, and integrated React Native app demo.</p>
+          <span class="badge badge-done">Completed</span>
+          <a class="dc-link" href="#">📊 View Slides</a>
+        </div>
+        <div class="doc-card">
+          <span class="dc-type">Final Presentation</span>
+          <h4>Final Presentation &amp; Viva</h4>
+          <p>Scheduled April 2026. Comprehensive system evaluation results, IEEE paper findings, contributions, and future work directions.</p>
+          <span class="badge badge-pending">Upcoming</span>
+          <a class="dc-link" style="opacity:0.4;" href="#">📊 Slides — TBA</a>
+        </div>
+      </div>
+
+      <div style="margin-top:3rem;">
+        <div class="section-header">
+          <span class="section-tag">Key Results Summary</span>
+          <h2>Evaluation Results at a Glance</h2>
+        </div>
+        <div class="cards-grid">
+          <div class="card">
+            <h3 style="color:var(--teal);">🤖 NephroBot</h3>
+            <div class="acc-list">
+              <div class="acc-item"><label>Singlish Token Match Accuracy<span>93.7%</span></label><div class="bar-track"><div class="bar-fill" style="width:93.7%"></div></div></div>
+              <div class="acc-item"><label>Clinical Precision<span>96.8%</span></label><div class="bar-track"><div class="bar-fill" style="width:96.8%"></div></div></div>
+              <div class="acc-item"><label>End-to-End NLU Accuracy<span>91.2%</span></label><div class="bar-track"><div class="bar-fill" style="width:91.2%"></div></div></div>
+              <div class="acc-item"><label>LaBSE Intent Accuracy<span>91.4%</span></label><div class="bar-track"><div class="bar-fill" style="width:91.4%"></div></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--teal);">📊 Risk Prediction</h3>
+            <div class="acc-list">
+              <div class="acc-item"><label>Stacking Ensemble Accuracy<span>98.83%</span></label><div class="bar-track"><div class="bar-fill" style="width:98.83%"></div></div></div>
+              <div class="acc-item"><label>AUC (High-Risk Class)<span>99.7%</span></label><div class="bar-track"><div class="bar-fill" style="width:99.7%"></div></div></div>
+              <div class="acc-item"><label>Fine-Tuned RF Accuracy<span>96.83%</span></label><div class="bar-track"><div class="bar-fill" style="width:96.83%"></div></div></div>
+              <div class="acc-item"><label>Trend Classification Agreement<span>86.7%</span></label><div class="bar-track"><div class="bar-fill" style="width:86.7%"></div></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--teal);">🍽️ Meal Analysis</h3>
+            <div class="acc-list">
+              <div class="acc-item"><label>YOLOv11m mAP@0.5<span>87.0%</span></label><div class="bar-track"><div class="bar-fill" style="width:87%"></div></div></div>
+              <div class="acc-item"><label>SAM Fill Ratio Accuracy<span>95.3%</span></label><div class="bar-track"><div class="bar-fill" style="width:95.3%"></div></div></div>
+              <div class="acc-item"><label>Nutrient Safety Logic (all stages)<span>100%</span></label><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div>
+              <div class="acc-item"><label>Inference Latency (vs YOLOv8m)<span>↓25%</span></label><div class="bar-track"><div class="bar-fill" style="width:75%; background:linear-gradient(90deg,var(--green),var(--teal))"></div></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--teal);">📈 Progression Forecasting</h3>
+            <div class="acc-list">
+              <div class="acc-item"><label>U-Net Segmentation Accuracy<span>97.63%</span></label><div class="bar-track"><div class="bar-fill" style="width:97.63%"></div></div></div>
+              <div class="acc-item"><label>Next-Visit Prediction Accuracy<span>78.35%</span></label><div class="bar-track"><div class="bar-fill" style="width:78.35%"></div></div></div>
+              <div class="acc-item"><label>6-Month Forecasting Accuracy<span>73.65%</span></label><div class="bar-track"><div class="bar-fill" style="width:73.65%"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer><div class="container"><p>© 2025/2026 <span class="ft-brand">Nephro-AI</span> | SLIIT Faculty of Computing</p></div></footer>
+</div>
+
+<!-- =========================================================
+     PAGE: ABOUT
+========================================================== -->
+<div class="page" id="page-about">
+  <section style="padding-top:5rem;">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">The Team</span>
+        <h2>About Us</h2>
+        <p>A team of four final-year IT undergraduates from SLIIT, each owning a distinct AI-powered component of the Nephro-AI platform.</p>
+      </div>
+
+      <div class="team-grid">
+        <div class="member-card" style="border-color:var(--teal);">
+          <div class="avatar" style="background:linear-gradient(135deg,#00d4d4,#1e90ff);">D</div>
+          <h3>Dissanayake D S W L M</h3>
+          <div class="role">AI / NLP Engineer</div>
+          <div class="id">IT22548696 · it22548696@my.sliit.lk</div>
+          <div class="component">🤖 CKD Chatbot Component</div>
+          <p style="font-size:0.78rem; color:var(--muted); margin-top:0.75rem;">Designed and implemented the NephroBot bilingual chatbot: Sandwich RAG Architecture, Singlish NLU Engine, Two-Stage Re-Rank Pipeline, voice interface (VAD+STT+TTS), and FastAPI backend.</p>
+        </div>
+        <div class="member-card">
+          <div class="avatar" style="background:linear-gradient(135deg,#1e90ff,#9c27b0);">N</div>
+          <h3>Niran B G S H</h3>
+          <div class="role">ML Engineer</div>
+          <div class="id">IT22607164 · it22607164@my.sliit.lk</div>
+          <div class="component">📊 Risk Prediction Component</div>
+          <p style="font-size:0.78rem; color:var(--muted); margin-top:0.75rem;">Built the early CKD risk prediction pipeline: stacking ensemble (XGBoost + RF), 20-feature engineering, Google Health Connect smartwatch integration, SHAP explainability, and longitudinal trend analysis.</p>
+        </div>
+        <div class="member-card">
+          <div class="avatar" style="background:linear-gradient(135deg,#00e676,#00bcd4);">P</div>
+          <h3>Pradeepkumara S V</h3>
+          <div class="role">Computer Vision Engineer</div>
+          <div class="id">IT22637796 · it22637796@my.sliit.lk</div>
+          <div class="component">🍽️ Meal Analysis Component</div>
+          <p style="font-size:0.78rem; color:var(--muted); margin-top:0.75rem;">Developed the automated dietary monitoring system: YOLOv11m food detection fine-tuned on Sri Lankan cuisine, SAM segmentation, fixed-geometry 2D→3D mass reconstruction, and KDOQI-aligned Nutrient Wallet.</p>
+        </div>
+        <div class="member-card">
+          <div class="avatar" style="background:linear-gradient(135deg,#ff9800,#f44336);">W</div>
+          <h3>Wijesiri W K G K N</h3>
+          <div class="role">Deep Learning Engineer</div>
+          <div class="id">IT22176806 · it22176806@my.sliit.lk</div>
+          <div class="component">📈 Progression Forecasting</div>
+          <p style="font-size:0.78rem; color:var(--muted); margin-top:0.75rem;">Implemented the multimodal CKD progression framework: U-Net kidney ultrasound segmentation, Tesseract OCR lab data extraction, MIMIC-IV data processing, and LSTM temporal prediction model.</p>
+        </div>
+      </div>
+
+      <div style="margin-top:3rem;">
+        <div class="section-header">
+          <span class="section-tag">Supervisors</span>
+          <h2>Academic Supervision</h2>
+        </div>
+        <div class="team-grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
+          <div class="member-card">
+            <div class="avatar" style="background:linear-gradient(135deg,#607d8b,#455a64); font-size:1rem;">KD</div>
+            <h3>Kapila Dissanayaka</h3>
+            <div class="role">Project Supervisor</div>
+            <div class="id">kapila.d@sliit.lk</div>
+            <p style="font-size:0.78rem; color:var(--muted); margin-top:0.75rem;">Faculty of Computing, Sri Lanka Institute of Information Technology, Malabe.</p>
+          </div>
+          <div class="member-card">
+            <div class="avatar" style="background:linear-gradient(135deg,#607d8b,#455a64); font-size:1rem;">GW</div>
+            <h3>Geethanjali Wimalaratne</h3>
+            <div class="role">Co-Supervisor</div>
+            <div class="id">geethanjali.w@sliit.lk</div>
+            <p style="font-size:0.78rem; color:var(--muted); margin-top:0.75rem;">Faculty of Computing, Sri Lanka Institute of Information Technology, Malabe.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:3rem; text-align:center;">
+        <div class="card" style="max-width:700px; margin:0 auto;">
+          <h3>🏛️ Sri Lanka Institute of Information Technology</h3>
+          <p style="margin-top:0.5rem;">Faculty of Computing · Department of Information Technology<br>
+          New Kandy Road, Malabe, Sri Lanka<br>
+          <a href="https://www.sliit.lk" target="_blank" style="color:var(--teal);">www.sliit.lk</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer><div class="container"><p>© 2025/2026 <span class="ft-brand">Nephro-AI</span> | SLIIT Faculty of Computing</p></div></footer>
+</div>
+
+<!-- =========================================================
+     PAGE: CONTACT
+========================================================== -->
+<div class="page" id="page-contact">
+  <section style="padding-top:5rem;">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Contact Us</span>
+        <h2>Get in Touch</h2>
+        <p>Reach out to the Nephro-AI research team for collaboration, enquiries, or feedback.</p>
+      </div>
+      <div class="contact-grid">
+        <div>
+          <div class="contact-form">
+            <h3 style="margin-bottom:1.25rem;">Send a Message</h3>
+            <input type="text" placeholder="Your Full Name" />
+            <input type="email" placeholder="Email Address" />
+            <select>
+              <option value="">— Topic of Enquiry —</option>
+              <option>Research Collaboration</option>
+              <option>Technical Question</option>
+              <option>Clinical Validation Partnership</option>
+              <option>General Feedback</option>
+            </select>
+            <textarea placeholder="Your message..."></textarea>
+            <button class="btn btn-primary" style="width:100%;" onclick="alert('Message sent! We will respond within 48 hours.')">Send Message ›</button>
+          </div>
+        </div>
+        <div class="contact-info">
+          <div class="ci-item">
+            <div class="ci-icon">📧</div>
+            <div>
+              <h4>Email (Chatbot Component)</h4>
+              <p>it22548696@my.sliit.lk</p>
+            </div>
+          </div>
+          <div class="ci-item">
+            <div class="ci-icon">📧</div>
+            <div>
+              <h4>Email (Risk Prediction)</h4>
+              <p>it22607164@my.sliit.lk</p>
+            </div>
+          </div>
+          <div class="ci-item">
+            <div class="ci-icon">📧</div>
+            <div>
+              <h4>Email (Meal Analysis)</h4>
+              <p>it22637796@my.sliit.lk</p>
+            </div>
+          </div>
+          <div class="ci-item">
+            <div class="ci-icon">📧</div>
+            <div>
+              <h4>Email (Progression)</h4>
+              <p>it22176806@my.sliit.lk</p>
+            </div>
+          </div>
+          <div class="ci-item">
+            <div class="ci-icon">🏛️</div>
+            <div>
+              <h4>Institution</h4>
+              <p>SLIIT — Faculty of Computing<br>New Kandy Road, Malabe, Sri Lanka</p>
+            </div>
+          </div>
+          <div class="ci-item">
+            <div class="ci-icon">👨‍🏫</div>
+            <div>
+              <h4>Supervisor</h4>
+              <p>kapila.d@sliit.lk</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer><div class="container"><p>© 2025/2026 <span class="ft-brand">Nephro-AI</span> | SLIIT Faculty of Computing</p></div></footer>
+</div>
+
+<!-- ===== JS ===== -->
+<script>
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+    const el = document.getElementById('nav-' + name);
+    if (el) el.classList.add('active');
+    window.scrollTo(0, 0);
+    document.getElementById('navLinks').classList.remove('open');
+  }
+
+  function toggleMenu() {
+    document.getElementById('navLinks').classList.toggle('open');
+  }
+
+  function switchTab(btn, tabId) {
+    btn.closest('.container').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    btn.closest('.container').querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+  }
+
+  // Animate bars on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.bar-fill').forEach(b => {
+          const w = b.style.width;
+          b.style.width = '0';
+          setTimeout(() => b.style.width = w, 100);
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('.acc-list').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
