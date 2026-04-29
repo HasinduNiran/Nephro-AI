@@ -1,0 +1,13 @@
+node_modules/
+android/app/.cxx/
+android/app/build/
+android/build/
+android/.gradle/
+android/.kotlin/
+.expo/web/cache/
+../ai-engine/
+../backend/
+../python/
+../Research Papers/
+../Thesis/
+../website/

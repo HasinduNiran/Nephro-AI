@@ -11,8 +11,8 @@ import axios from "axios";
 const API_IP = "20.17.161.231";
 
 // Exported URLs for use across the app
-export const API_URL = `http://${API_IP}:5000/api`;
-export const CHATBOT_URL = `http://${API_IP}:8001`;
+export const API_URL = `http://${API_IP}/api`;
+export const CHATBOT_URL = `http://${API_IP}/chatbot`;
 
 console.log("API Base URL:", API_URL);
 console.log("Chatbot URL:", CHATBOT_URL);

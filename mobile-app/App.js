@@ -1,6 +1,6 @@
 import "react-native-gesture-handler";
 import React from "react";
-import { SafeAreaView, StyleSheet } from "react-native";
+import { SafeAreaView, StyleSheet, View, Text } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { WalletProvider } from "./src/context/WalletContext";
@@ -29,8 +29,39 @@ import BPHistoryScreen from "./src/screens/BPHistoryScreen";
 
 const Stack = createStackNavigator();
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, padding: 40, backgroundColor: "#fff", justifyContent: "center" }}>
+          <Text style={{ fontSize: 18, fontWeight: "bold", color: "red", marginBottom: 10 }}>
+            App Error
+          </Text>
+          <Text style={{ fontSize: 13, color: "#333" }}>
+            {this.state.error?.toString()}
+          </Text>
+          <Text style={{ fontSize: 11, color: "#666", marginTop: 10 }}>
+            {this.state.error?.stack}
+          </Text>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const App = () => {
   return (
+    <ErrorBoundary>
     <WalletProvider>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -95,6 +126,7 @@ const App = () => {
         </Stack.Navigator>
       </NavigationContainer>
     </WalletProvider>
+    </ErrorBoundary>
   );
 };
 
