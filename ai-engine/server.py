@@ -431,17 +431,30 @@ def predict_risk(req: RiskPredictRequest):
 @app.post("/api/chat/upload_context")
 async def upload_context(file: UploadFile = File(...), patient_id: str = Form("default_patient")):
     Log.step("📎", "DOCUMENT UPLOAD", f"Patient: {patient_id}")
-    
+
+    # Validate file type
+    ALLOWED_TYPES = {"application/pdf", "image/jpeg", "image/jpg", "image/png"}
+    MAX_SIZE_MB = 20
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type: {file.content_type}. Only PDF and images (JPEG, PNG) are accepted."
+        )
+
+    # Read once, check size, then write
+    content = await file.read()
+    if len(content) > MAX_SIZE_MB * 1024 * 1024:
+        raise HTTPException(status_code=400, detail=f"File too large. Maximum allowed size is {MAX_SIZE_MB} MB.")
+
     # Initialize session if missing
     if patient_id not in SESSIONS:
         SESSIONS[patient_id] = {"history": [], "doc_uri": None, "local_doc_path": None}
-        
+
     temp_filename = f"temp_{hashlib.md5(file.filename.encode()).hexdigest()}_{file.filename}"
     temp_path = Path("temp_uploads") / temp_filename
-    
+
     # Save file locally
     async with aiofiles.open(temp_path, 'wb') as temp_file:
-        content = await file.read()
         await temp_file.write(content)
         
     # Upload to Gemini
@@ -469,6 +482,22 @@ async def upload_context(file: UploadFile = File(...), patient_id: str = Form("d
         cleanup_file(str(temp_path))
         print(f"❌ Upload Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# --- REMOVE DOCUMENT (preserves chat history) ---
+@app.post("/chat/remove_document")
+@app.post("/api/chat/remove_document")
+async def remove_document(request: ChatRequest):
+    patient_id = request.patient_id
+    Log.step("🗑️", "REMOVE DOCUMENT", f"Patient: {patient_id}")
+    if patient_id in SESSIONS:
+        doc_uri = SESSIONS[patient_id].get("doc_uri")
+        local_path = SESSIONS[patient_id].get("local_doc_path")
+        if doc_uri:
+            client_data = get_gemini_client()
+            cleanup_document(doc_uri, local_path, client_data)
+        SESSIONS[patient_id]["doc_uri"] = None
+        SESSIONS[patient_id]["local_doc_path"] = None
+    return {"success": True, "message": "Document removed. Chat history preserved."}
 
 # --- TTS ENDPOINT (Gemini TTS for Sinhala, Edge-TTS for English) ---
 @app.post("/chat/tts")

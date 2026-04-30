@@ -67,6 +67,20 @@ class LLMEngine:
         # 🆕 NLG GLOSSARY — Dynamic Code-Mixing & Tone Generation Engine
         self.glossary = NLGGlossary(config.DATA_DIR / "english_to_sinhala.json")
 
+        # Gemini client for multimodal (document-aware) generation
+        try:
+            from google import genai as _genai
+            if hasattr(config, 'GOOGLE_API_KEYS') and config.GOOGLE_API_KEYS:
+                self.gemini_client = _genai.Client(api_key=config.GOOGLE_API_KEYS[0])
+            elif hasattr(config, 'GOOGLE_API_KEY') and config.GOOGLE_API_KEY:
+                self.gemini_client = _genai.Client(api_key=config.GOOGLE_API_KEY)
+            else:
+                self.gemini_client = None
+                print("⚠️ Warning: No GOOGLE_API_KEY found — multimodal (document) queries will fail.")
+        except Exception as e:
+            self.gemini_client = None
+            print(f"⚠️ Warning: Could not initialize Gemini client: {e}")
+
     def _load_translations(self) -> Dict[str, str]:
         if self.cache_path.exists():
             try:
@@ -627,26 +641,43 @@ class LLMEngine:
         system_prompt = self._generate_system_prompt(patient_context)
         
         if uploaded_file_uri:
-            # Add fusion instruction
-            system_prompt += "\n\n⚠️ IMPORTANT: The user has uploaded a medical document. First scan the uploaded medical document for the patient's lab values or signs. Then cross-reference with the Medical Guidelines below. Answer combining both. If they conflict, state both and recommend a doctor visit."
+            system_prompt += """
+
+⚠️ UPLOADED MEDICAL DOCUMENT DETECTED — FOLLOW THIS EXACT REASONING PROTOCOL:
+
+STEP 1 — EXTRACT: Scan the uploaded document and extract all quantitative lab values \
+(e.g., Potassium, Creatinine, eGFR, BUN, Albumin, HbA1c, Blood Pressure, Phosphorus). \
+List each found value as: "[Lab Name]: [Value] [Unit]".
+
+STEP 2 — CROSS-REFERENCE: For each extracted lab value relevant to the patient's query, \
+look it up in the Medical Guidelines (KNOWLEDGE BASE) provided. \
+Identify if the value is: Normal / Mildly Abnormal / Critically Abnormal for a CKD patient.
+
+STEP 3 — SYNTHESIZE: Answer the patient's specific question by combining:
+  a) Their personal lab values (from the uploaded document)
+  b) The relevant medical guideline recommendation (from KNOWLEDGE BASE)
+  c) Their current CKD stage and comorbidities (from PATIENT PROFILE)
+
+STEP 4 — CITE SOURCES: For every key recommendation, append the source in parentheses. \
+Use: (Source: Uploaded Report), (Source: Medical Guidelines), or (Source: Patient Profile).
+
+STEP 5 — CONFLICT RESOLUTION: If the uploaded document contradicts the guidelines, \
+state BOTH findings and explicitly recommend: "Please consult your nephrologist to review this result."
+
+⚠️ Never fabricate lab values. If a value is not present in the uploaded document, say so clearly.
+"""
 
         knowledge_context = "\n\n".join(context_documents[:3])
         user_message_content = f"KNOWLEDGE BASE:\n{knowledge_context}\n\nCURRENT PATIENT QUERY:\n{query}"
 
         if uploaded_file_uri:
-            from google import genai
             from google.genai import types
             try:
-                # Use Gemini SDK
                 print("🧠 [BRAIN] Using Gemini SDK for Multimodal RAG")
-                client = None
-                if hasattr(config, 'GOOGLE_API_KEYS') and config.GOOGLE_API_KEYS:
-                    client = genai.Client(api_key=config.GOOGLE_API_KEYS[0])
-                elif hasattr(config, 'GOOGLE_API_KEY') and config.GOOGLE_API_KEY:
-                    client = genai.Client(api_key=config.GOOGLE_API_KEY)
-                else:
+                client = self.gemini_client
+                if client is None:
                     return "Error: Missing GOOGLE_API_KEY for multimodal processing."
-                
+
                 uploaded_file = client.files.get(name=uploaded_file_uri)
                 
                 history_text = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in history[-4:]]) if history else "No history."

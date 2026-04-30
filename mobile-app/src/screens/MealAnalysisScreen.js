@@ -355,7 +355,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         });
       }
 
-      const response = await axios.post("/food/detect", formData, {
+      const response = await axios.post("/mealPlate/detect", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

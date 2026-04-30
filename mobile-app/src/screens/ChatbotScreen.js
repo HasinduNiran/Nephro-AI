@@ -34,6 +34,7 @@ import * as Haptics from "expo-haptics";
 import Markdown from "react-native-markdown-display";
 import { WebView } from "react-native-webview";
 import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 
 // 👇 [NEW] Import Speech Library
 import * as Speech from "expo-speech";
@@ -278,6 +279,41 @@ const ChatbotScreen = ({ route, navigation }) => {
     );
   }, [CHAT_STORAGE_KEY, welcomeMessage, userID]);
 
+  const showAttachOptions = () => {
+    Alert.alert(
+      "Attach Medical Document",
+      "Select a file or take a photo of your lab report",
+      [
+        { text: "📁 Choose File (PDF/Image)", onPress: pickDocument },
+        { text: "📷 Take Photo", onPress: capturePhoto },
+        { text: "Cancel", style: "cancel" },
+      ]
+    );
+  };
+
+  const capturePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission needed", "Camera access is required to photograph lab reports.");
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+      allowsEditing: false,
+    });
+    if (!result.canceled) {
+      const asset = result.assets[0];
+      const file = {
+        uri: asset.uri,
+        name: `lab_report_${Date.now()}.jpg`,
+        mimeType: "image/jpeg",
+      };
+      setAttachedDoc(file);
+      await uploadDocument(file);
+    }
+  };
+
   // Handle document upload logic
   const pickDocument = async () => {
     try {
@@ -346,15 +382,14 @@ const ChatbotScreen = ({ route, navigation }) => {
 
   const removeDocument = async () => {
     try {
-      await axios.post(`${BACKEND_URL}/chat/clear`, {
+      await axios.post(`${BACKEND_URL}/chat/remove_document`, {
         patient_id: userID || "default_patient",
       });
-      console.log("Document and chat history cleared");
+      console.log("Document removed, chat history preserved");
       setAttachedDoc(null);
-      setMessages([welcomeMessage]);
     } catch (err) {
-      console.warn("Failed to clear backend context:", err);
-      Alert.alert("Error", "Could not clear document context from server.");
+      console.warn("Failed to remove document:", err);
+      Alert.alert("Error", "Could not remove document context from server.");
     }
   };
 
@@ -1510,7 +1545,7 @@ const ChatbotScreen = ({ route, navigation }) => {
           >
             <View style={[styles.inputWrapper, { flexDirection: 'row', alignItems: 'flex-end' }]}>
               <TouchableOpacity
-                onPress={pickDocument}
+                onPress={showAttachOptions}
                 disabled={isUploading}
                 style={{ paddingBottom: 11, paddingRight: 6, opacity: isUploading ? 0.5 : 1 }}
               >

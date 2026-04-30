@@ -130,7 +130,7 @@ router.post('/detect', upload.single('image'), async (req, res) => {
         
         try {
             // Try the enhanced endpoint first (with auto portions)
-            aiResponse = await axios.post('http://127.0.0.1:5001/predict_meal_with_portions', form, {
+            aiResponse = await axios.post('http://food-engine:5001/predict_meal_with_portions', form, {
                 headers: { ...form.getHeaders() }
             });
             hasPortions = !!(aiResponse.data.portions && aiResponse.data.portions.length > 0);
@@ -140,7 +140,7 @@ router.post('/detect', upload.single('image'), async (req, res) => {
             console.log("⚠️ Portion endpoint unavailable, using basic detection");
             const fallbackForm = new FormData();
             fallbackForm.append('image', req.file.buffer, 'meal.jpg');
-            aiResponse = await axios.post('http://127.0.0.1:5001/predict_meal', fallbackForm, {
+            aiResponse = await axios.post('http://food-engine:5001/predict_meal', fallbackForm, {
                 headers: { ...fallbackForm.getHeaders() }
             });
         }
