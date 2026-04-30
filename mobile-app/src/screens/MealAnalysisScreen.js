@@ -355,7 +355,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         });
       }
 
-      const response = await axios.post("http://127.0.0.1:5001/predict_meal_with_portions", formData, {
+      const response = await axios.post("/food/detect", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
