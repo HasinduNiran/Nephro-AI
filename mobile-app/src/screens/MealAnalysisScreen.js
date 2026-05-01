@@ -405,54 +405,27 @@ const MealAnalysisScreen = ({ route, navigation }) => {
 
         // --- AUTO PORTION: Use AI-estimated grams if available ---
         let autoAmount = "1";
-        let autoUnit =
-          units && units.length > 0 && units[0] ? units[0] : "grams";
+        let autoUnit = "grams";
+        let estimatedGramsValue = null;
+
+        // Try to get estimated grams from the object, handling possible variations in the property name
+        if (item.autoPortionGrams !== undefined) {
+          estimatedGramsValue = item.autoPortionGrams;
+        } else if (item.estimated_grams !== undefined) {
+          estimatedGramsValue = item.estimated_grams;
+        } else if (item.grams !== undefined) {
+          estimatedGramsValue = item.grams;
+        } else if (item.portion_grams !== undefined) {
+          estimatedGramsValue = item.portion_grams;
+        }
 
         if (
           hasAutoPortions &&
-          item.estimated_grams &&
-          item.estimated_grams > 0
+          estimatedGramsValue !== null &&
+          estimatedGramsValue > 0
         ) {
-          // Convert grams to the best matching unit
-          const localFood = lookupFood(foodName);
-          if (localFood && localFood.units) {
-            // Find the unit whose weight best matches the estimated grams
-            let bestUnit = null;
-            let bestAmount = 1;
-            let bestDiff = Infinity;
-
-            for (const [unitName, unitGrams] of Object.entries(
-              localFood.units,
-            )) {
-              if (!unitName || unitName === "undefined") continue;
-              // How many of this unit = estimated grams?
-              const count = item.estimated_grams / unitGrams;
-              // Round to nearest 0.5
-              const rounded = Math.round(count * 2) / 2;
-              if (rounded >= 0.5) {
-                const diff = Math.abs(
-                  rounded * unitGrams - item.estimated_grams,
-                );
-                if (diff < bestDiff) {
-                  bestDiff = diff;
-                  bestUnit = unitName;
-                  bestAmount = rounded;
-                }
-              }
-            }
-
-            if (bestUnit) {
-              autoUnit = bestUnit;
-              autoAmount = String(bestAmount);
-            }
-          } else {
-            // No unit conversion possible, use grams directly
-            autoUnit = "grams";
-            autoAmount = String(item.estimated_grams);
-            if (!units.includes("grams")) {
-              units = ["grams", ...units];
-            }
-          }
+          autoAmount = String(Math.round(estimatedGramsValue));
+          autoUnit = "grams";
         }
 
         return {
@@ -462,8 +435,8 @@ const MealAnalysisScreen = ({ route, navigation }) => {
           availableUnits: units && units.length > 0 ? units : ["grams"],
           hasVariants: variants !== null,
           variants: variants || [],
-          autoEstimated: hasAutoPortions && item.estimated_grams > 0,
-          autoPortionGrams: item.estimated_grams || null, // raw AI grams — source of truth
+          autoEstimated: hasAutoPortions && estimatedGramsValue > 0,
+          autoPortionGrams: estimatedGramsValue ? Math.round(estimatedGramsValue) : null, // raw AI grams — source of truth
           manuallyEdited: false,                          // set true when user changes amount/unit
           compartment: item.compartment || null,
         };
@@ -757,11 +730,14 @@ const MealAnalysisScreen = ({ route, navigation }) => {
       const units = Object.keys(foodData.units).filter(
         (u) => u && u !== "undefined",
       );
+      // Give them 'grams' as a fallback if they want
+      const availableUnits = units.length > 0 ? units : ["grams"];
+      
       const newItem = {
         food: foodName,
         amount: "1",
-        unit: units[0] || "grams",
-        availableUnits: units.length > 0 ? units : ["grams"],
+        unit: availableUnits[0], // Fallback to household unit explicitly
+        availableUnits: availableUnits,
         isManuallyAdded: true,
       };
       setItems([...items, newItem]);
@@ -936,7 +912,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                 </View>
 
                 {/* Amount + Unit inputs for manually added items; grams display for AI-estimated */}
-                {item.isManuallyAdded ? (
+                {item.isManuallyAdded || item.manuallyEdited ? (
                   <View style={styles.portionRow}>
                     <View style={styles.portionControl}>
                       <Text style={styles.portionLabel}>Amount</Text>
@@ -982,6 +958,23 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                         {" "}· AI · {item.compartment?.replace(/_/g, " ")}
                       </Text>
                     )}
+                    <TouchableOpacity
+                      onPress={() => {
+                        const localFood = lookupFood(item.food);
+                        let firstUnit = "grams";
+                        if (localFood && localFood.units) {
+                          const unitKeys = Object.keys(localFood.units).filter(u => u !== "undefined");
+                          if (unitKeys.length > 0) {
+                            firstUnit = unitKeys[0];
+                          }
+                        }
+                        updateRow(index, "unit", firstUnit);
+                        updateRow(index, "manuallyEdited", true);
+                      }}
+                      style={{ marginLeft: 10, padding: 4 }}
+                    >
+                      <Ionicons name="create-outline" size={18} color="#555" />
+                    </TouchableOpacity>
                   </View>
                 )}
               </View>

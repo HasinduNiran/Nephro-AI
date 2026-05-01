@@ -310,10 +310,9 @@ def estimate_portion(food_name, food_mask, cx, cy):
         "food_pixels":        food_pixels,
         "compartment_pixels": comp_total_px,
         "fill_ratio":         round(fill_ratio, 4),
-        "heaping_factor":     heaping_mult,
-        "depth_factor":       depth_factor,
-        "food_volume_ml":     round(food_volume_ml, 1),
-        "density_g_per_ml":   density,
+        "fill_level_cm":      round(fill_level, 2),
+        "food_volume_cm3":    round(food_volume_cm3, 1),
+        "density_g_per_cm3":  density,
         "estimated_grams":    round(food_grams, 1),
         "confidence":         _confidence(fill_ratio, food_pixels),
     }
