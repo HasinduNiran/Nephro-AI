@@ -456,6 +456,7 @@ const ChatbotScreen = ({ route, navigation }) => {
   const [showTip, setShowTip] = useState(true);
   const [isTTSLoading, setIsTTSLoading] = useState(false);
   const [currentlyPlayingId, setCurrentlyPlayingId] = useState(null);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
   const soundRef = useRef(null);
   const fetchAbortRef = useRef(null); // AbortController for in-flight Sinhala TTS fetch
   const flatListRef = useRef();
@@ -1248,17 +1249,16 @@ const ChatbotScreen = ({ route, navigation }) => {
               { backgroundColor: COLORS.primary },
             ]}
           >
-            <Ionicons name="medical" size={18} color="white" />
+            <FontAwesome5 name="heartbeat" size={15} color="white" />
           </View>
         )}
 
-        <View style={{ maxWidth: "85%" }}>
+        <View style={{ maxWidth: "88%", flex: 1 }}>
           <View
             style={[
               styles.messageBubble,
               item.sender === "user" ? styles.userBubble : styles.botBubble,
               item.isError && styles.errorBubble,
-              // 🆕 Urgency flag styling (Angle 4: Empathy & Urgency Router)
               item.urgencyFlags?.some((f) => f.flag === "CRITICAL_URGENCY") &&
                 styles.criticalBubble,
               item.urgencyFlags?.some(
@@ -1276,7 +1276,6 @@ const ChatbotScreen = ({ route, navigation }) => {
               <Text style={styles.userText}>{item.text}</Text>
             ) : (
               <View>
-                {/* Parse for [MAPS:] tag */}
                 {(() => {
                   const mapTagMatch = item.text.match(/\[MAPS: (.*?)\]/);
                   const locationQuery = mapTagMatch ? mapTagMatch[1] : null;
@@ -1288,7 +1287,6 @@ const ChatbotScreen = ({ route, navigation }) => {
                     <>
                       <Markdown style={markdownStyles}>{displayText}</Markdown>
 
-                      {/* Navigate Button */}
                       {locationQuery && (
                         <TouchableOpacity
                           style={{
@@ -1313,9 +1311,7 @@ const ChatbotScreen = ({ route, navigation }) => {
                             color={COLORS.accent}
                             style={{ marginRight: 8 }}
                           />
-                          <Text
-                            style={{ color: COLORS.accent, fontWeight: "600" }}
-                          >
+                          <Text style={{ color: COLORS.accent, fontWeight: "600" }}>
                             Navigate to {locationQuery}
                           </Text>
                         </TouchableOpacity>
@@ -1326,64 +1322,96 @@ const ChatbotScreen = ({ route, navigation }) => {
               </View>
             )}
 
-            {/* Source Attribution Tag */}
+            {/* Source citation pills — replaces raw filename text */}
             {item.sender === "bot" && item.sources && !item.isError ? (
               <View style={styles.sourceContainer}>
                 <Ionicons
                   name="book-outline"
                   size={11}
                   color={COLORS.textLight}
-                  style={{ marginRight: 4 }}
+                  style={{ marginRight: 6, marginTop: 1 }}
                 />
-                <Text style={styles.sourceText}>{item.sources}</Text>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", flex: 1, gap: 6 }}>
+                  {item.sources
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean)
+                    .map((src, idx) => {
+                      // Extract a readable label: first meaningful word + year if present
+                      const year = src.match(/\d{4}/)?.[0];
+                      const name = src
+                        .replace(/[-_]/g, " ")
+                        .replace(/\.pdf$/i, "")
+                        .split(" ")
+                        .filter((w) => w.length > 3)
+                        .slice(0, 2)
+                        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                        .join(" ");
+                      const label = year ? `${name} (${year})` : name || `Ref ${idx + 1}`;
+                      return (
+                        <View key={idx} style={styles.sourcePill}>
+                          <Text style={styles.sourcePillText} numberOfLines={1}>
+                            {label}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                </View>
               </View>
             ) : null}
           </View>
 
-          {/* Timestamp + Audio Icon */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent:
-                item.sender === "user" ? "flex-end" : "flex-start",
-              alignItems: "center",
-              marginTop: 4,
-              marginHorizontal: 8,
-            }}
-          >
-            {item.timestamp && (
-              <Text style={{ fontSize: 11, color: COLORS.textLighter }}>
-                {item.timestamp}
-              </Text>
-            )}
-            {item.sender === "bot" && (
-              <TouchableOpacity
-                style={{ paddingLeft: 6 }}
-                onPress={() =>
-                  playServerTTS(item.text, item.id, item.urgencyFlags || [])
-                }
-                disabled={isTTSLoading && currentlyPlayingId !== item.id}
+          {/* Audio pill button — separate row for breathing room */}
+          {item.sender === "bot" && (
+            <TouchableOpacity
+              style={[
+                styles.audioPlayBtn,
+                currentlyPlayingId === item.id && styles.audioPlayBtnActive,
+              ]}
+              onPress={() =>
+                playServerTTS(item.text, item.id, item.urgencyFlags || [])
+              }
+              disabled={isTTSLoading && currentlyPlayingId !== item.id}
+              activeOpacity={0.75}
+            >
+              {isTTSLoading && currentlyPlayingId === item.id ? (
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              ) : (
+                <Ionicons
+                  name={currentlyPlayingId === item.id ? "stop-circle" : "volume-medium"}
+                  size={15}
+                  color={currentlyPlayingId === item.id ? COLORS.danger : COLORS.primary}
+                />
+              )}
+              <Text
+                style={[
+                  styles.audioPlayBtnText,
+                  currentlyPlayingId === item.id && { color: COLORS.danger },
+                ]}
               >
-                {isTTSLoading && currentlyPlayingId === item.id ? (
-                  <ActivityIndicator size="small" color={COLORS.primary} />
-                ) : (
-                  <Ionicons
-                    name={
-                      currentlyPlayingId === item.id
-                        ? "stop-circle"
-                        : "volume-medium"
-                    }
-                    size={18}
-                    color={
-                      currentlyPlayingId === item.id
-                        ? COLORS.danger
-                        : COLORS.textLighter
-                    }
-                  />
-                )}
-              </TouchableOpacity>
-            )}
-          </View>
+                {isTTSLoading && currentlyPlayingId === item.id
+                  ? "Loading..."
+                  : currentlyPlayingId === item.id
+                  ? "Stop"
+                  : "Play"}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Timestamp — own row */}
+          {item.timestamp && (
+            <Text
+              style={{
+                fontSize: 11,
+                color: COLORS.textLighter,
+                marginTop: 4,
+                marginHorizontal: 4,
+                textAlign: item.sender === "user" ? "right" : "left",
+              }}
+            >
+              {item.timestamp}
+            </Text>
+          )}
         </View>
 
         {item.sender === "user" && (
@@ -1405,33 +1433,21 @@ const ChatbotScreen = ({ route, navigation }) => {
     if (!showTip) return null;
     return (
       <View style={styles.tipsContainer}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 8,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 14,
-              fontWeight: "700",
-              color: COLORS.primaryDark,
-            }}
-          >
-            💡 Quick Tip
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <Text style={{ fontSize: 14, fontWeight: "700", color: COLORS.primaryDark }}>
+            💡 Quick Tips
           </Text>
-          <TouchableOpacity
-            onPress={() => setShowTip(false)}
-            style={{ padding: 4 }}
-          >
+          <TouchableOpacity onPress={() => setShowTip(false)} style={{ padding: 4 }}>
             <Ionicons name="close" size={18} color={COLORS.textMedium} />
           </TouchableOpacity>
         </View>
         <View style={styles.tipItem}>
           <Ionicons name="mic" size={16} color={COLORS.accent} />
           <Text style={styles.tipText}>Hold the mic button to speak</Text>
+        </View>
+        <View style={[styles.tipItem, { marginTop: 6 }]}>
+          <Ionicons name="volume-medium" size={16} color={COLORS.primary} />
+          <Text style={styles.tipText}>Tap Play on any response to hear it aloud</Text>
         </View>
       </View>
     );
@@ -1457,7 +1473,7 @@ const ChatbotScreen = ({ route, navigation }) => {
           </TouchableOpacity>
           <View style={styles.headerCenter}>
             <View style={styles.headerIconContainer}>
-              <Ionicons name="medical" size={22} color={COLORS.white} />
+              <FontAwesome5 name="heartbeat" size={19} color={COLORS.white} />
               <View style={styles.onlineIndicator} />
             </View>
             <View>
@@ -1484,8 +1500,9 @@ const ChatbotScreen = ({ route, navigation }) => {
             activeOpacity={0.7}
             onPress={() => setShowLanguageModal(true)}
           >
-            <Text style={styles.langChipText}>
-              {selectedLanguage === "sinhala" ? "සිං" : "EN"}
+            <Ionicons name="globe-outline" size={13} color={COLORS.primary} />
+            <Text style={[styles.langChipText, { marginLeft: 4 }]}>
+              {selectedLanguage === "sinhala" ? "සිංහල" : "English"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -1515,7 +1532,7 @@ const ChatbotScreen = ({ route, navigation }) => {
                 }}
               >
                 <View style={styles.avatarContainer}>
-                  <Ionicons name="medical" size={18} color="white" />
+                  <FontAwesome5 name="heartbeat" size={15} color="white" />
                 </View>
                 {/* Sleek minimal pill */}
                 <View
@@ -1612,7 +1629,7 @@ const ChatbotScreen = ({ route, navigation }) => {
               <View style={{ flex: 1 }}>
                 <TextInput
                   style={[styles.input, { paddingHorizontal: 0 }]}
-                  placeholder="Ask about your health..."
+                  placeholder={selectedLanguage === "sinhala" ? "සිංහල හෝ English ලිවිය හැකිය..." : "Ask in English or Sinhala..."}
                   value={message}
                   onChangeText={setMessage}
                   placeholderTextColor={COLORS.textLighter}
