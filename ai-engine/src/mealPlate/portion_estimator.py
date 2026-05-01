@@ -289,8 +289,9 @@ def estimate_portion(food_name, food_mask, cx, cy):
     depth_factor  = FOOD_DEPTH_FACTOR.get(food_name, FOOD_DEPTH_FACTOR["_default"])
 
     fill_ratio     = food_pixels / comp_total_px
-    food_volume_ml = fill_ratio * comp_volume * heaping_mult * depth_factor
-    food_grams     = food_volume_ml * density
+    fill_level     = fill_ratio * 2.5
+    food_volume_cm3 = food_pixels * 0.00026958 * fill_level
+    food_grams     = food_volume_cm3 * density
 
     cap = MAX_GRAMS_PER_COMPARTMENT.get(compartment, 300)
     if food_grams > cap:
@@ -299,8 +300,8 @@ def estimate_portion(food_name, food_mask, cx, cy):
 
     print(
         f"[Portion] {food_name:<26} | {compartment:<10} "
-        f"| px={food_pixels:>7,} fill={fill_ratio:.3f} depth={depth_factor} "
-        f"heap={heaping_mult} vol={food_volume_ml:.1f}ml -> {food_grams:.1f}g"
+        f"| px={food_pixels:>7,} fill={fill_ratio:.3f} level={fill_level:.2f}cm "
+        f"vol={food_volume_cm3:.1f}cm3 -> {food_grams:.1f}g"
     )
 
     return {
