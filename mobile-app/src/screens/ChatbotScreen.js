@@ -175,12 +175,18 @@ const ChatbotScreen = ({ route, navigation }) => {
 
   // Chat storage key unique to each user
   const CHAT_STORAGE_KEY = `chat_messages_${userID || "guest"}`;
+  const LANG_STORAGE_KEY = `language_preference_${userID || "guest"}`;
 
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [attachedDoc, setAttachedDoc] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Explicit user language preference — "sinhala" or "english"
+  // null means the modal hasn't been answered yet
+  const [selectedLanguage, setSelectedLanguage] = useState(null);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
 
   // Default welcome message
   const welcomeMessage = {
@@ -235,6 +241,31 @@ const ChatbotScreen = ({ route, navigation }) => {
     };
     saveMessages();
   }, [messages, isInitialized]);
+
+  // Load saved language preference; show modal if not set yet
+  useEffect(() => {
+    const loadLanguage = async () => {
+      try {
+        const saved = await AsyncStorage.getItem(LANG_STORAGE_KEY);
+        if (saved === "sinhala" || saved === "english") {
+          setSelectedLanguage(saved);
+        } else {
+          setShowLanguageModal(true);
+        }
+      } catch (e) {
+        setShowLanguageModal(true);
+      }
+    };
+    loadLanguage();
+  }, []);
+
+  const selectLanguage = async (lang) => {
+    setSelectedLanguage(lang);
+    setShowLanguageModal(false);
+    try {
+      await AsyncStorage.setItem(LANG_STORAGE_KEY, lang);
+    } catch (e) { /* non-critical */ }
+  };
 
   // Debug log - Run only once on mount
   useEffect(() => {
@@ -506,11 +537,11 @@ const ChatbotScreen = ({ route, navigation }) => {
 
     const cleanText = text.replace(/[*#]/g, "").replace(/\[MAPS:.*?\]/g, "");
 
-    // Sinhala detection: true if ANY Sinhala Unicode character is present
-    const sinhalaCharCount = (text.match(/[\u0D80-\u0DFF]/g) || []).length;
-    const isSinhala = sinhalaCharCount > 0;
+    // Use explicit user language preference \u2014 zero detection latency, 100% accuracy
+    const isSinhala = (selectedLanguage || "auto") === "sinhala" ||
+      ((selectedLanguage || "auto") === "auto" && (text.match(/[\u0D80-\u0DFF]/g) || []).length > 0);
     console.log(
-      `[TTS] Language detection | sinhalaChars=${sinhalaCharCount} | isSinhala=${isSinhala} | engine=${isSinhala ? "GEMINI SERVER" : "LOCAL expo-speech"}`,
+      `[TTS] Language | preference=${selectedLanguage} | isSinhala=${isSinhala} | engine=${isSinhala ? "GEMINI SERVER" : "LOCAL expo-speech"}`,
     );
 
     // For English, use local expo-speech (fast, good quality)
@@ -586,7 +617,7 @@ const ChatbotScreen = ({ route, navigation }) => {
           const streamResponse = await fetch(`${BACKEND_URL}/chat/tts/stream`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text, urgency_flags: urgencyFlags }),
+            body: JSON.stringify({ text, urgency_flags: urgencyFlags, language: selectedLanguage || "auto" }),
             signal: abortController.signal,
           });
           if (fetchAbortRef.current === abortController)
@@ -616,7 +647,7 @@ const ChatbotScreen = ({ route, navigation }) => {
           const response = await fetch(`${BACKEND_URL}/chat/tts`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text }),
+            body: JSON.stringify({ text, language: selectedLanguage || "auto" }),
             signal: fallbackController.signal,
           });
           if (fetchAbortRef.current === fallbackController)
@@ -943,6 +974,7 @@ const ChatbotScreen = ({ route, navigation }) => {
       name: "voice_input.m4a",
     });
     formData.append("patient_id", userID || "default_patient");
+    formData.append("language", selectedLanguage || "auto");
 
     const userMsgId = Date.now().toString();
     setMessages((prev) => [
@@ -1010,8 +1042,9 @@ const ChatbotScreen = ({ route, navigation }) => {
         prev.map((m) => (m.id === userMsgId ? { ...m, text: transcribedText } : m))
       );
 
-      // Play server-generated audio (Gemini TTS for Sinhala, expo-speech for English)
-      const isSinhala = /[\u0D80-\u0DFF]/.test(responseText);
+      // Use explicit language preference for audio routing \u2014 no detection needed
+      const isSinhala = (selectedLanguage || "auto") === "sinhala" ||
+        ((selectedLanguage || "auto") === "auto" && /[\u0D80-\u0DFF]/.test(responseText));
       if (isSinhala) {
         try {
           await Audio.setAudioModeAsync({
@@ -1151,6 +1184,7 @@ const ChatbotScreen = ({ route, navigation }) => {
       const res = await axios.post(`${BACKEND_URL}/chat/text`, {
         text: text,
         patient_id: userID || "default_patient",
+        language: selectedLanguage || "auto",
       });
 
       const botReply = res.data.response;
@@ -1443,6 +1477,17 @@ const ChatbotScreen = ({ route, navigation }) => {
           >
             <Ionicons name="trash-outline" size={22} color={COLORS.textLight} />
           </TouchableOpacity>
+
+          {/* Language toggle chip */}
+          <TouchableOpacity
+            style={styles.langChip}
+            activeOpacity={0.7}
+            onPress={() => setShowLanguageModal(true)}
+          >
+            <Text style={styles.langChipText}>
+              {selectedLanguage === "sinhala" ? "සිං" : "EN"}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <FlatList
@@ -1661,6 +1706,48 @@ const ChatbotScreen = ({ route, navigation }) => {
             </View>
 
             <Text style={styles.releaseHint}>Release to send</Text>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ── Language Selection Modal ─────────────────────────────────── */}
+      <Modal
+        visible={showLanguageModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => selectedLanguage && setShowLanguageModal(false)}
+      >
+        <View style={styles.langModalOverlay}>
+          <View style={styles.langModalCard}>
+            <Ionicons name="language" size={40} color={COLORS.primary} style={{ marginBottom: 12 }} />
+            <Text style={styles.langModalTitle}>
+              Select Language
+            </Text>
+            <Text style={styles.langModalSubtitle}>
+              Please select your preferred language{"\n"}
+              කරුණාකර ඔබේ භාෂාව තෝරන්න
+            </Text>
+
+            <TouchableOpacity
+              style={[styles.langBtn, selectedLanguage === "sinhala" && styles.langBtnActive]}
+              activeOpacity={0.8}
+              onPress={() => selectLanguage("sinhala")}
+            >
+              <Text style={[styles.langBtnText, selectedLanguage === "sinhala" && styles.langBtnTextActive]}>
+                සිංහල
+              </Text>
+              <Text style={styles.langBtnSub}>Sinhala</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.langBtn, selectedLanguage === "english" && styles.langBtnActive]}
+              activeOpacity={0.8}
+              onPress={() => selectLanguage("english")}
+            >
+              <Text style={[styles.langBtnText, selectedLanguage === "english" && styles.langBtnTextActive]}>
+                English
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -2167,6 +2254,83 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     fontStyle: "italic",
+  },
+
+  // ── Language Chip (header) ───────────────────────────────────────────
+  langChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+    backgroundColor: COLORS.primary + "18",
+    borderWidth: 1,
+    borderColor: COLORS.primary + "40",
+    marginLeft: 8,
+  },
+  langChipText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: COLORS.primary,
+  },
+
+  // ── Language Selection Modal ─────────────────────────────────────────
+  langModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  langModalCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: 24,
+    padding: 28,
+    alignItems: "center",
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  langModalTitle: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: COLORS.textDark,
+    marginBottom: 8,
+  },
+  langModalSubtitle: {
+    fontSize: 14,
+    color: COLORS.textMedium,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  langBtn: {
+    width: "100%",
+    paddingVertical: 16,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: COLORS.cardBorder,
+    alignItems: "center",
+    marginBottom: 12,
+    backgroundColor: COLORS.background,
+  },
+  langBtnActive: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primary + "12",
+  },
+  langBtnText: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: COLORS.textDark,
+  },
+  langBtnTextActive: {
+    color: COLORS.primary,
+  },
+  langBtnSub: {
+    fontSize: 13,
+    color: COLORS.textMedium,
+    marginTop: 2,
   },
 });
 

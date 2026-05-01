@@ -4,6 +4,10 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
     build-essential \
+    libportaudio2 \
+    libportaudiocpp0 \
+    portaudio19-dev \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
