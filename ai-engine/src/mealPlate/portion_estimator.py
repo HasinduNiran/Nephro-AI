@@ -492,6 +492,40 @@ def estimate_all_portions(cv_img, yolo_boxes, debug_save_path=None):
         results.append(est)
         debug_items.append((food_mask, est, (bx1, by1, bx2, by2)))
 
+    # --- NORMALIZE MULTIPLE FOODS IN SAME COMPARTMENT ---
+    # Ensure total fill_ratio per compartment does not exceed 1.0
+    comp_totals = {}
+    for est in results:
+        comp = est.get("compartment")
+        if comp:
+            comp_totals[comp] = comp_totals.get(comp, 0) + est.get("food_pixels", 0)
+
+    for est in results:
+        comp = est.get("compartment")
+        if comp and comp_totals[comp] > 0:
+            comp_px = COMPARTMENT_PIXELS.get(comp, 1)
+            # If foods spill over mathematically, scale them down proportionally
+            if comp_totals[comp] > comp_px:
+                scale = comp_px / comp_totals[comp]
+                new_px = int(est["food_pixels"] * scale)
+                est["food_pixels"] = new_px
+                
+                # Recalculate using exact physical formula
+                new_fill = new_px / comp_px
+                new_level = new_fill * 2.5
+                new_vol_cm3 = new_px * 0.00026958 * new_level
+                new_grams = new_vol_cm3 * est.get("density_g_per_cm3", 1.0)
+                
+                cap = MAX_GRAMS_PER_COMPARTMENT.get(comp, 300)
+                if new_grams > cap:
+                    new_grams = float(cap)
+                
+                est["fill_ratio"] = round(new_fill, 4)
+                est["fill_level_cm"] = round(new_level, 2)
+                est["food_volume_cm3"] = round(new_vol_cm3, 1)
+                est["estimated_grams"] = round(new_grams, 1)
+                print(f"[Portion NORMALIZE] {est['food']} scaled down: new px={new_px}, new fill={est['fill_ratio']}, new grams={est['estimated_grams']}g")
+
     if debug_save_path:
         try:
             os.makedirs(os.path.dirname(os.path.abspath(debug_save_path)), exist_ok=True)
