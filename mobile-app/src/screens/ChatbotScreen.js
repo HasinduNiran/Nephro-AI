@@ -449,6 +449,7 @@ const ChatbotScreen = ({ route, navigation }) => {
     icon: "dots-horizontal",
   });
   const [loadingType, setLoadingType] = useState("text"); // 'audio' or 'text'
+  const [loadingStepIndex, setLoadingStepIndex] = useState(0);
   const [sound, setSound] = useState(null);
   const [metering, setMetering] = useState(-160);
   const [inputFocused, setInputFocused] = useState(false);
@@ -470,7 +471,7 @@ const ChatbotScreen = ({ route, navigation }) => {
   const typingDots = useRef(new Animated.Value(0)).current;
 
   const markdownStyles = {
-    body: { color: COLORS.textDark, fontSize: 15, lineHeight: 22 },
+    body: { color: COLORS.textDark, fontSize: 17, lineHeight: 26, letterSpacing: 0.2 },
     bullet_list: { marginTop: 5, marginBottom: 5 },
     strong: { fontWeight: "700", color: COLORS.primaryDark },
     paragraph: { marginBottom: 8 },
@@ -835,12 +836,14 @@ const ChatbotScreen = ({ route, navigation }) => {
       const steps = loadingType === "audio" ? audioSteps : textSteps;
 
       let i = 0;
-      setLoadingStep(steps[0]); // Start immediately
+      setLoadingStep(steps[0]);
+      setLoadingStepIndex(0);
 
       interval = setInterval(() => {
-        i = (i + 1) % steps.length; // Loop through steps
+        i = (i + 1) % steps.length;
         setLoadingStep(steps[i]);
-      }, 1500); // Update every 1.5 seconds
+        setLoadingStepIndex(i);
+      }, 1500);
     }
     return () => clearInterval(interval);
   }, [isLoading, loadingType]);
@@ -1520,6 +1523,11 @@ const ChatbotScreen = ({ route, navigation }) => {
             flatListRef.current?.scrollToEnd({ animated: true })
           }
           onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+          onScroll={({ nativeEvent: { layoutMeasurement, contentOffset, contentSize } }) => {
+            const distanceFromBottom = contentSize.height - contentOffset.y - layoutMeasurement.height;
+            setShowScrollBtn(distanceFromBottom > 120);
+          }}
+          scrollEventThrottle={100}
           ListHeaderComponent={messages.length <= 1 ? <WelcomeTips /> : null}
           ListFooterComponent={
             isTyping ? (
@@ -1564,20 +1572,38 @@ const ChatbotScreen = ({ route, navigation }) => {
                       originWhitelist={["*"]}
                     />
                   </View>
-                  <Text
-                    style={{
-                      color: COLORS.textMedium,
-                      fontSize: 13,
-                      fontStyle: "italic",
-                    }}
-                  >
-                    {loadingStep.text}
-                  </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: COLORS.textMedium, fontSize: 13, fontStyle: "italic" }}>
+                      {loadingStep.text}
+                    </Text>
+                    {/* Progress bar: each step fills 20% */}
+                    <View style={{ height: 3, borderRadius: 2, backgroundColor: COLORS.cardBorder, marginTop: 6, overflow: "hidden" }}>
+                      <View
+                        style={{
+                          height: 3,
+                          borderRadius: 2,
+                          backgroundColor: COLORS.primary,
+                          width: `${((loadingStepIndex + 1) / 5) * 100}%`,
+                        }}
+                      />
+                    </View>
+                  </View>
                 </View>
               </View>
             ) : null
           }
         />
+
+        {/* Scroll-to-bottom FAB */}
+        {showScrollBtn && (
+          <TouchableOpacity
+            style={styles.scrollFAB}
+            onPress={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="chevron-down" size={20} color={COLORS.white} />
+          </TouchableOpacity>
+        )}
 
         {attachedDoc && (
           <View style={{
@@ -1881,7 +1907,10 @@ const styles = StyleSheet.create({
   },
 
   messageBubble: {
-    padding: 14,
+    paddingTop: 14,
+    paddingBottom: 12,
+    paddingLeft: 16,
+    paddingRight: 16,
     borderRadius: 18,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -1891,7 +1920,7 @@ const styles = StyleSheet.create({
   },
 
   userBubble: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.primaryDark,
     borderBottomRightRadius: 4,
   },
 
@@ -1900,6 +1929,8 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.primaryLight,
   },
 
   errorBubble: {
@@ -1931,12 +1962,15 @@ const styles = StyleSheet.create({
 
   userText: {
     color: COLORS.white,
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 17,
+    lineHeight: 26,
+    letterSpacing: 0.2,
   },
 
   botText: {
     color: COLORS.textDark,
+    fontSize: 17,
+    lineHeight: 26,
   },
 
   timestamp: {
@@ -1958,11 +1992,70 @@ const styles = StyleSheet.create({
 
   sourceContainer: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginTop: 10,
     paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: COLORS.cardBorder,
+  },
+
+  sourcePill: {
+    backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    maxWidth: 160,
+  },
+
+  sourcePillText: {
+    fontSize: 11,
+    color: COLORS.textMedium,
+    fontWeight: "500",
+  },
+
+  audioPlayBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    marginTop: 6,
+    marginLeft: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    backgroundColor: COLORS.primaryLight,
+    borderWidth: 1,
+    borderColor: COLORS.primary + "30",
+    gap: 5,
+  },
+
+  audioPlayBtnActive: {
+    backgroundColor: "#FFF0F0",
+    borderColor: COLORS.danger + "50",
+  },
+
+  audioPlayBtnText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+
+  scrollFAB: {
+    position: "absolute",
+    right: 16,
+    bottom: 80,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: COLORS.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
   },
 
   sourceText: {
@@ -2232,14 +2325,19 @@ const styles = StyleSheet.create({
   // TIPS SECTION
   // ═══════════════════════════════════════════════════════
   tipsContainer: {
-    backgroundColor: COLORS.primaryLight,
+    backgroundColor: COLORS.white,
     marginHorizontal: 16,
     marginTop: 8,
     marginBottom: 16,
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: COLORS.primary + "20",
+    borderColor: COLORS.cardBorder,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
 
   tipsTitle: {
@@ -2275,6 +2373,8 @@ const styles = StyleSheet.create({
 
   // ── Language Chip (header) ───────────────────────────────────────────
   langChip: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 14,
