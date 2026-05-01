@@ -44,7 +44,7 @@ class LoginRequest(BaseModel):
     password: str
 
 class ChatRequest(BaseModel):
-    text: str
+    text: str = ""
     patient_id: str = "default_patient"
 
 class TTSRequest(BaseModel):
