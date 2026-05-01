@@ -515,9 +515,10 @@ async def text_to_speech(request: TTSRequest):
         if output_audio_path.stat().st_size == 0:
             raise HTTPException(status_code=500, detail="TTS generation failed")
 
+        is_sinhala_tts = any('඀' <= c <= '෿' for c in request.text)
         return FileResponse(
             output_audio_path,
-            media_type="audio/mpeg",
+            media_type="audio/wav" if is_sinhala_tts else "audio/mpeg",
             headers={
                 "Content-Disposition": "attachment; filename=tts_output.mp3"
             }
@@ -776,13 +777,14 @@ async def audio_chat(
 
         background_tasks.add_task(cleanup_file, str(input_path))
 
+        is_sinhala_response = any('඀' <= c <= '෿' for c in response_text)
         return FileResponse(
-            output_audio_path, 
-            media_type="audio/mpeg",
+            output_audio_path,
+            media_type="audio/wav" if is_sinhala_response else "audio/mpeg",
             headers={
                 "X-Transcription-B64": safe_transcription,
                 "X-Response-B64": safe_response,
-                "X-Sources-B64": safe_sources 
+                "X-Sources-B64": safe_sources,
             }
         )
 

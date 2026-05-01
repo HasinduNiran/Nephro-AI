@@ -981,9 +981,11 @@ const ChatbotScreen = ({ route, navigation }) => {
       // Read headers for the text response
       const b64ResponseText = response.headers.get("x-response-b64");
       const b64Sources = response.headers.get("x-sources-b64");
+      const b64Transcription = response.headers.get("x-transcription-b64");
 
       let responseText = "Audio Response";
       let sourcesText = "";
+      let transcribedText = "\uD83C\uDFA4 Voice Message";
 
       try {
         if (b64ResponseText) {
@@ -992,12 +994,21 @@ const ChatbotScreen = ({ route, navigation }) => {
         if (b64Sources) {
           sourcesText = base64Decode(b64Sources);
         }
+        if (b64Transcription) {
+          transcribedText = base64Decode(b64Transcription);
+        }
       } catch (e) {
         console.log("Error decoding headers", e);
         // Fallback: try to use the base64 string directly
         if (b64ResponseText) responseText = b64ResponseText;
         if (b64Sources) sourcesText = b64Sources;
+        if (b64Transcription) transcribedText = b64Transcription;
       }
+
+      // Update voice message bubble with the actual transcribed text
+      setMessages((prev) =>
+        prev.map((m) => (m.id === userMsgId ? { ...m, text: transcribedText } : m))
+      );
 
       // Play server-generated audio (Gemini TTS for Sinhala, expo-speech for English)
       const isSinhala = /[\u0D80-\u0DFF]/.test(responseText);
@@ -1019,8 +1030,10 @@ const ChatbotScreen = ({ route, navigation }) => {
             reader.readAsDataURL(audioBlob);
           });
 
+          // Gemini TTS returns WAV for Sinhala \u2014 use .wav extension so the decoder
+          // correctly identifies the format instead of misreading it as MP3.
           const fileUri =
-            FileSystem.cacheDirectory + `voice_response_${Date.now()}.mp3`;
+            FileSystem.cacheDirectory + `voice_response_${Date.now()}.wav`;
           await FileSystem.writeAsStringAsync(fileUri, base64Audio, {
             encoding: "base64", // string literal avoids EncodingType enum resolution bug
           });
