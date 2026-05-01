@@ -10,6 +10,19 @@ services:
       - "8001:8001"
     restart: unless-stopped
 
+  nephro-food-engine:
+    image: python:3.10-slim
+    container_name: nephro-food-engine
+    working_dir: /app/src
+    volumes:
+      - ./ai-engine:/app
+    env_file:
+      - ./ai-engine/.env
+    command: sh -c "pip install -r /app/requirements.txt && python foodmain.py"
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
+
   backend:
     image: node:18-slim
     container_name: nephro-backend
