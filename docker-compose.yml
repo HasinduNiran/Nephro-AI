@@ -11,14 +11,12 @@ services:
     restart: unless-stopped
 
   nephro-food-engine:
-    image: python:3.10-slim
+    build:
+      context: ./ai-engine
+      dockerfile: Dockerfile.food
     container_name: nephro-food-engine
-    working_dir: /app/src
     volumes:
       - ./ai-engine:/app
-    env_file:
-      - ./ai-engine/.env
-    command: sh -c "pip install -r /app/requirements.txt && python foodmain.py"
     ports:
       - "5001:5001"
     restart: unless-stopped
