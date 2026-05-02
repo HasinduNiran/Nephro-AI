@@ -44,6 +44,9 @@ import { CHATBOT_URL } from "../api/axiosConfig";
 // Use centralized URL from axiosConfig
 const BACKEND_URL = CHATBOT_URL;
 
+// Session-scoped language preference — survives navigation but resets on app close
+let _sessionLanguage = null;
+
 // Custom base64 decode for React Native (atob polyfill)
 const base64Decode = (str) => {
   const chars =
@@ -175,7 +178,6 @@ const ChatbotScreen = ({ route, navigation }) => {
 
   // Chat storage key unique to each user
   const CHAT_STORAGE_KEY = `chat_messages_${userID || "guest"}`;
-  const LANG_STORAGE_KEY = `language_preference_${userID || "guest"}`;
 
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
@@ -242,29 +244,19 @@ const ChatbotScreen = ({ route, navigation }) => {
     saveMessages();
   }, [messages, isInitialized]);
 
-  // Load saved language preference; show modal if not set yet
+  // Show language modal once per app session; skip if already chosen this session
   useEffect(() => {
-    const loadLanguage = async () => {
-      try {
-        const saved = await AsyncStorage.getItem(LANG_STORAGE_KEY);
-        if (saved === "sinhala" || saved === "english") {
-          setSelectedLanguage(saved);
-        } else {
-          setShowLanguageModal(true);
-        }
-      } catch (e) {
-        setShowLanguageModal(true);
-      }
-    };
-    loadLanguage();
+    if (_sessionLanguage) {
+      setSelectedLanguage(_sessionLanguage);
+    } else {
+      setShowLanguageModal(true);
+    }
   }, []);
 
-  const selectLanguage = async (lang) => {
+  const selectLanguage = (lang) => {
+    _sessionLanguage = lang;
     setSelectedLanguage(lang);
     setShowLanguageModal(false);
-    try {
-      await AsyncStorage.setItem(LANG_STORAGE_KEY, lang);
-    } catch (e) { /* non-critical */ }
   };
 
   // Debug log - Run only once on mount
