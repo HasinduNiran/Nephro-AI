@@ -73,11 +73,13 @@ def predict_image_yolo(image_bytes):
                 class_id = int(box.cls[0])
                 class_name = model.names[class_id]
                 detected_foods.add(class_name)
-                
+
         return list(detected_foods)
 
     except Exception as e:
-        print(f"Error during prediction: {e}")
+        import traceback
+        print(f"[predictor] Error during YOLO prediction: {e}")
+        traceback.print_exc()
         return []
 
 
@@ -156,7 +158,9 @@ def predict_image_with_portions(image_bytes):
                 print(f"Portion estimation error: {pe}")
         
         return detected_items
-    
+
     except Exception as e:
-        print(f"Error during prediction: {e}")
+        import traceback
+        print(f"[predictor] Error during prediction: {e}")
+        traceback.print_exc()
         return []
