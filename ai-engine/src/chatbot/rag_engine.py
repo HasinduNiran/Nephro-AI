@@ -94,12 +94,19 @@ class RAGEngine:
             
         return 'en'
 
-    def process_query(self, query: str, patient_id: str = "default_patient", chat_history: List[Dict[str, str]] = [], uploaded_file_uri: str = None) -> Dict[str, Any]:
+    def process_query(self, query: str, patient_id: str = "default_patient", chat_history: List[Dict[str, str]] = [], uploaded_file_uri: str = None, language: str = "auto") -> Dict[str, Any]:
         Log.section(f"PROCESSING QUERY: '{query}'")
 
-        # 1. DETERMINE OUTPUT LANGUAGE FIRST (before cache check)
-        target_lang = self._detect_output_language(query)
-        Log.step("🔍", "Detecting Language", f"Result: {'SINHALA' if target_lang == 'si' else 'ENGLISH'}")
+        # 1. DETERMINE OUTPUT LANGUAGE — explicit user preference skips auto-detection
+        if language == "sinhala":
+            target_lang = "si"
+            Log.step("🌐", "Language", "SINHALA (user preference — detection skipped)")
+        elif language == "english":
+            target_lang = "en"
+            Log.step("🌐", "Language", "ENGLISH (user preference — detection skipped)")
+        else:
+            target_lang = self._detect_output_language(query)
+            Log.step("🔍", "Detecting Language", f"Result: {'SINHALA' if target_lang == 'si' else 'ENGLISH'}")
 
         # 2. CHECK CACHE (now includes language in key)
         cache_key = self.get_cache_key(query, patient_id, target_lang)

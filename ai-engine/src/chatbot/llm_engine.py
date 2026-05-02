@@ -69,22 +69,20 @@ class LLMEngine:
 
         # Gemini client for multimodal (document-aware) generation
         try:
-            from google import genai as _genai
-            if hasattr(config, 'GOOGLE_API_KEYS') and config.GOOGLE_API_KEYS:
-                self.gemini_client = _genai.Client(api_key=config.GOOGLE_API_KEYS[0])
-            elif hasattr(config, 'GOOGLE_API_KEY') and config.GOOGLE_API_KEY:
-                self.gemini_client = _genai.Client(api_key=config.GOOGLE_API_KEY)
-            else:
-                self.gemini_client = None
+            from chatbot.key_rotator import gemini_rotator as _gemini_rotator
+            self._gemini_rotator = _gemini_rotator
+            self.gemini_client = _gemini_rotator.current_client() if _gemini_rotator else None
+            if not self.gemini_client:
                 print("⚠️ Warning: No GOOGLE_API_KEY found — multimodal (document) queries will fail.")
         except Exception as e:
+            self._gemini_rotator = None
             self.gemini_client = None
             print(f"⚠️ Warning: Could not initialize Gemini client: {e}")
 
     def _load_translations(self) -> Dict[str, str]:
         if self.cache_path.exists():
             try:
-                with open(self.cache_path, "r", encoding="utf-8") as f:
+                with open(self.cache_path, "r", encoding="ut    -8") as f:
                     return json.load(f)
             except Exception: pass
         return {}
@@ -674,26 +672,26 @@ state BOTH findings and explicitly recommend: "Please consult your nephrologist 
             from google.genai import types
             try:
                 print("🧠 [BRAIN] Using Gemini SDK for Multimodal RAG")
-                client = self.gemini_client
-                if client is None:
+                if self._gemini_rotator is None:
                     return "Error: Missing GOOGLE_API_KEY for multimodal processing."
 
-                uploaded_file = client.files.get(name=uploaded_file_uri)
-                
                 history_text = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in history[-4:]]) if history else "No history."
                 full_prompt = f"CHAT HISTORY:\n{history_text}\n\n{user_message_content}"
-                
-                response = client.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=[uploaded_file, full_prompt],
-                    config=types.GenerateContentConfig(
-                        system_instruction=system_prompt,
-                        temperature=0.7,
-                        max_output_tokens=2048
+
+                def _run(client):
+                    uploaded_file = client.files.get(name=uploaded_file_uri)
+                    response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=[uploaded_file, full_prompt],
+                        config=types.GenerateContentConfig(
+                            system_instruction=system_prompt,
+                            temperature=0.7,
+                            max_output_tokens=2048
+                        )
                     )
-                )
-                
-                english_response = response.text.strip()
+                    return response.text.strip()
+
+                english_response = self._gemini_rotator.call_with_rotation(_run)
                 print(f"✅ Brain Output: {english_response}")
                 return english_response
             except Exception as e:

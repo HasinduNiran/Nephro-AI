@@ -28,7 +28,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Initialize MobileSAM globally so it only loads into RAM once.
 print("[PortionEstimator] Loading MobileSAM Foundation Model...")
 _SAM_PATH = os.path.join(BASE_DIR, "..", "mobile_sam.pt")
-sam_model = SAM(_SAM_PATH)
+try:
+    sam_model = SAM(_SAM_PATH)
+    print("[PortionEstimator] MobileSAM loaded successfully")
+except Exception as e:
+    print(f"[PortionEstimator] WARNING: SAM load failed: {e} — portion estimation disabled")
+    sam_model = None
 
 DEBUG_SHOW_MASKS = False
 

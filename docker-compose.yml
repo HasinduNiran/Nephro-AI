@@ -1,0 +1,33 @@
+services:
+  ai-engine:
+    build: ./ai-engine
+    container_name: nephro-ai-engine
+    volumes:
+      - ./ai-engine:/app
+    env_file:
+      - ./ai-engine/.env
+    ports:
+      - "8001:8001"
+    restart: unless-stopped
+
+  nephro-food-engine:
+    build:
+      context: ./ai-engine
+      dockerfile: Dockerfile.food
+    container_name: nephro-food-engine
+    volumes:
+      - ./ai-engine:/app
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
+
+  backend:
+    image: node:18-slim
+    container_name: nephro-backend
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    command: sh -c "npm install && node server.js"
+    ports:
+      - "5000:5000"
+    restart: unless-stopped

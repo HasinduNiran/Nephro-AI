@@ -30,19 +30,16 @@ def read_root():
 @app.post("/predict_meal")
 async def predict_meal(image: UploadFile = File(...)):
     """Original endpoint: returns food names only."""
+    import traceback
     try:
-        # Read the uploaded file
         image_bytes = await image.read()
-        
-        # Get predictions
         detected_foods = predict_image_yolo(image_bytes)
-        
-        print(f"Detected: {detected_foods}") # Log to console for debugging
-        return {"foods": detected_foods}
-        
+        print(f"Detected: {detected_foods}")
+        return {"foods": detected_foods, "error": None}
     except Exception as e:
-        print(f"Server Error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        traceback.print_exc()
+        print(f"[foodmain] /predict_meal Server Error: {e}")
+        return {"foods": [], "error": str(e)}
 
 
 @app.post("/predict_meal_with_portions")
@@ -50,46 +47,36 @@ async def predict_meal_with_portions(image: UploadFile = File(...)):
     """
     Enhanced endpoint: returns food names + auto-estimated portion sizes.
     The image should be taken with the plate aligned to the overlay.
-    
-    Returns:
-    {
-      "foods": ["white rice", "dahl curry", ...],
-      "portions": [
-        {
-          "food": "white rice",
-          "estimated_grams": 367.6,
-          "compartment": "main_carb",
-          "fill_ratio": 0.955,
-          "confidence": 0.84,
-          ...
-        },
-        ...
-      ]
-    }
     """
+    import traceback
     try:
         image_bytes = await image.read()
-        
-        # Get predictions with portion estimates
         detected_items = predict_image_with_portions(image_bytes)
-        
-        # Also extract just the food names for backward compatibility
-        food_names = list(set(item["food"] for item in detected_items))
-        
-        print(f"Detected with portions: {[(i['food'], i['estimated_grams']) for i in detected_items]}")
-        
+        food_names = list(set(item.get("food", "unknown") for item in detected_items))
+
+        print(f"Detected with portions: {[(i.get('food'), i.get('estimated_grams', 0)) for i in detected_items]}")
+
         debug_url = "http://127.0.0.1:5001/debug_image" if os.path.exists(DEBUG_VIS_PATH) else None
         align_url = "http://127.0.0.1:5001/debug_alignment" if os.path.exists(ALIGNMENT_CHECK_PATH) else None
         return {
             "foods": food_names,
             "portions": detected_items,
             "debug_image_url": debug_url,
-            "alignment_check_url": align_url
+            "alignment_check_url": align_url,
+            "error": None,
         }
-        
     except Exception as e:
-        print(f"Server Error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        traceback.print_exc()
+        print(f"[foodmain] /predict_meal_with_portions Server Error: {e}")
+        # Graceful degradation: return 200 with empty results so the mobile
+        # app shows the user-friendly fallback flow instead of an axios 500.
+        return {
+            "foods": [],
+            "portions": [],
+            "debug_image_url": None,
+            "alignment_check_url": None,
+            "error": str(e),
+        }
 
 @app.get("/debug_image")
 def get_debug_image():
