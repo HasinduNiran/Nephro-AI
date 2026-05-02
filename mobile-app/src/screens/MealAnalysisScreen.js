@@ -199,7 +199,7 @@ const foodNutrientDB = {
 };
 
 const MealAnalysisScreen = ({ route, navigation }) => {
-  const { wallet, addNutrients, checkSafety, getLimits } = useWallet();
+  const { wallet, addNutrients, checkSafety, getLimits, ckdStage, updateStage } = useWallet();
   const [userId, setUserId] = useState(route.params?.userId || null);
   const [imageUri, setImageUri] = useState(null);
   const [items, setItems] = useState([]);
@@ -980,6 +980,24 @@ const MealAnalysisScreen = ({ route, navigation }) => {
               </View>
             ))}
 
+            <View style={styles.stageSelectorContainer}>
+              <Text style={styles.stageSelectorLabel}>Verify CKD Stage before Analysis:</Text>
+              <View style={styles.stagePickerWrapper}>
+                <Picker
+                  selectedValue={ckdStage}
+                  style={styles.stagePicker}
+                  onValueChange={(itemValue) => updateStage(parseInt(itemValue))}
+                >
+                  <Picker.Item label="Stage 1 (Mild)" value={1} />
+                  <Picker.Item label="Stage 2 (Mild)" value={2} />
+                  <Picker.Item label="Stage 3 (Moderate)" value={3} />
+                  <Picker.Item label="Stage 4 (Severe)" value={4} />
+                  <Picker.Item label="Stage 5 (Failure)" value={5} />
+                </Picker>
+              </View>
+              <Text style={styles.stageHelpText}>Nutrient safety limits adjust automatically</Text>
+            </View>
+
             <TouchableOpacity
               style={styles.checkBtn}
               onPress={() => handleAnalyze(false)}
@@ -1320,6 +1338,39 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 5,
+  },
+  stageSelectorContainer: {
+    backgroundColor: "#F7FAFC",
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginBottom: 16,
+    marginTop: 10,
+  },
+  stageSelectorLabel: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#4A5568",
+    marginBottom: 6,
+  },
+  stagePickerWrapper: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  stagePicker: {
+    height: 50,
+    width: "100%",
+  },
+  stageHelpText: {
+    fontSize: 12,
+    color: "#718096",
+    marginTop: 6,
+    fontStyle: "italic",
+    textAlign: "center",
   },
   checkBtn: {
     backgroundColor: "#4A5568",
