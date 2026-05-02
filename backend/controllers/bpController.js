@@ -90,4 +90,45 @@ const getMonthlyAverage = async (req, res) => {
   }
 };
 
-module.exports = { upsertBPRecord, getBPHistory, getMonthlyAverage };
+// GET /api/bp-records/:userId/range-average?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
+// Returns { avgSystolic, avgDiastolic, recordCount } for the given date range
+const getRangeAverage = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({ message: "startDate and endDate are required." });
+    }
+
+    const records = await BPRecord.find({
+      userId,
+      date: { $gte: startDate, $lte: endDate },
+    }).lean();
+
+    if (!records || records.length === 0) {
+      return res.status(200).json({
+        success: true,
+        recordCount: 0,
+        avgSystolic: null,
+        avgDiastolic: null,
+      });
+    }
+
+    const totalSystolic = records.reduce((sum, r) => sum + r.systolic, 0);
+    const totalDiastolic = records.reduce((sum, r) => sum + r.diastolic, 0);
+    const count = records.length;
+
+    res.status(200).json({
+      success: true,
+      recordCount: count,
+      avgSystolic: Math.round(totalSystolic / count),
+      avgDiastolic: Math.round(totalDiastolic / count),
+    });
+  } catch (error) {
+    console.error("getRangeAverage error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+module.exports = { upsertBPRecord, getBPHistory, getMonthlyAverage, getRangeAverage };

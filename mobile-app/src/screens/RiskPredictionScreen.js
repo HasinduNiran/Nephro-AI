@@ -7,22 +7,47 @@ import {
   Alert,
   ActivityIndicator,
   TouchableOpacity,
+  Platform,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomInput from "../components/CustomInput";
 import CustomButton from "../components/CustomButton";
 import axios from "../api/axiosConfig";
 
+// Format a Date object to "YYYY-MM-DD"
+const toISODate = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
+
+// Format a "YYYY-MM-DD" string for display: "Apr 18, 2026"
+const toDisplayDate = (isoStr) => {
+  if (!isoStr) return "";
+  const [y, m, d] = isoStr.split("-").map(Number);
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${months[m - 1]} ${d}, ${y}`;
+};
+
 const RiskPredictionScreen = ({ navigation, route }) => {
-  // Resolve actual user ID from route params or AsyncStorage
   const paramUserId = route?.params?.userId || route?.params?.userID;
   const [userId, setUserId] = useState(paramUserId || null);
 
-  const [bpSystolic, setBpSystolic] = useState("");
-  const [bpDiastolic, setBpDiastolic] = useState("");
+  // 14-day date range: default to last 14 days (today inclusive)
+  const today = new Date();
+  const fourteenDaysAgo = new Date(today);
+  fourteenDaysAgo.setDate(today.getDate() - 13);
+
+  const [dateRangeStart, setDateRangeStart] = useState(fourteenDaysAgo);
+  const [dateRangeEnd, setDateRangeEnd] = useState(today);
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+
   const [age, setAge] = useState("");
-  const [gender, setGender] = useState("Male"); // Male or Female
-  const [hba1cLevel, setHba1cLevel] = useState(""); // HbA1c level (%)
+  const [gender, setGender] = useState("Male");
+  const [hba1cLevel, setHba1cLevel] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [riskLevel, setRiskLevel] = useState(null);
@@ -30,10 +55,12 @@ const RiskPredictionScreen = ({ navigation, route }) => {
   const [shapValues, setShapValues] = useState(null);
   const [shapBaseValue, setShapBaseValue] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
-  const [bpAvgLoading, setBpAvgLoading] = useState(true);
-  const [bpAvgData, setBpAvgData] = useState(null); // { avgSystolic, avgDiastolic, recordCount }
+  const [bpAvgLoading, setBpAvgLoading] = useState(false);
+  const [bpAvgData, setBpAvgData] = useState(null);
+  const [bpSystolic, setBpSystolic] = useState("");
+  const [bpDiastolic, setBpDiastolic] = useState("");
 
-  // Keep userId in sync when route params change (e.g. different user logs in)
+  // Keep userId in sync when route params change
   useEffect(() => {
     const newParamId = route?.params?.userId || route?.params?.userID;
     if (newParamId && newParamId !== userId) {
@@ -52,33 +79,22 @@ const RiskPredictionScreen = ({ navigation, route }) => {
     resolveUserId();
   }, []);
 
-  // Fetch user data on component mount
+  // Load user profile (age, gender) from AsyncStorage
   useEffect(() => {
     const loadUserData = async () => {
       try {
         const userDataString = await AsyncStorage.getItem("userData");
         if (userDataString) {
           const userData = JSON.parse(userDataString);
-
-          // Set gender from user data
-          if (userData.gender) {
-            setGender(userData.gender);
-          }
-
-          // Calculate age from birthday
+          if (userData.gender) setGender(userData.gender);
           if (userData.birthday) {
             const birthDate = new Date(userData.birthday);
-            const today = new Date();
-            let calculatedAge = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-
-            if (
-              monthDiff < 0 ||
-              (monthDiff === 0 && today.getDate() < birthDate.getDate())
-            ) {
+            const now = new Date();
+            let calculatedAge = now.getFullYear() - birthDate.getFullYear();
+            const monthDiff = now.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birthDate.getDate())) {
               calculatedAge--;
             }
-
             setAge(calculatedAge.toString());
           }
         }
@@ -86,179 +102,40 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         console.error("Error loading user data:", error);
       }
     };
-
     loadUserData();
   }, []);
 
-  // Fetch this month's BP average from saved records
+  // Fetch 14-day BP average whenever the date range or userId changes
   useEffect(() => {
-    const loadMonthlyBPAvg = async () => {
+    const load14DayBPAvg = async () => {
       try {
         const uid = userId || (await AsyncStorage.getItem("userID"));
         if (!uid) return;
-        const now = new Date();
-        const month = now.getMonth() + 1;
-        const year = now.getFullYear();
+        setBpAvgLoading(true);
+        setBpAvgData(null);
+        const startDate = toISODate(dateRangeStart);
+        const endDate = toISODate(dateRangeEnd);
         const res = await axios.get(
-          `/bp-records/${uid}/monthly-average?month=${month}&year=${year}`,
+          `/bp-records/${uid}/range-average?startDate=${startDate}&endDate=${endDate}`,
         );
         const data = res.data;
         setBpAvgData(data);
         if (data.recordCount > 0) {
           setBpSystolic(String(data.avgSystolic));
           setBpDiastolic(String(data.avgDiastolic));
+        } else {
+          setBpSystolic("");
+          setBpDiastolic("");
         }
       } catch (err) {
-        console.warn("loadMonthlyBPAvg error:", err);
+        console.warn("load14DayBPAvg error:", err);
       } finally {
         setBpAvgLoading(false);
       }
     };
-    loadMonthlyBPAvg();
-  }, [userId]);
+    load14DayBPAvg();
+  }, [userId, dateRangeStart, dateRangeEnd]);
 
-  // Fetch blood pressure from Health Connect (smartwatch / wearable)
-  const fetchBPFromHealthConnect = async () => {
-    if (Platform.OS !== "android") {
-      Alert.alert(
-        "Not Supported",
-        "Health Connect is only available on Android.",
-      );
-      return;
-    }
-
-    setFetchingBP(true);
-    try {
-      // Step 1: Check if Health Connect SDK is available on this device
-      let sdkStatus;
-      try {
-        sdkStatus = await getSdkStatus();
-      } catch (sdkError) {
-        console.warn("getSdkStatus failed:", sdkError);
-        Alert.alert(
-          "Health Connect Not Available",
-          "Google Health Connect is not installed on this device.\n\nPlease install it from the Play Store and make sure your smartwatch is syncing BP data.",
-        );
-        return;
-      }
-
-      // SdkAvailabilityStatus: 1 = UNAVAILABLE, 2 = UPDATE_REQUIRED, 3 = AVAILABLE
-      if (sdkStatus !== SdkAvailabilityStatus.SDK_AVAILABLE) {
-        const msg =
-          sdkStatus ===
-          SdkAvailabilityStatus.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED
-            ? "Health Connect needs to be updated. Please update it from the Play Store."
-            : "Health Connect is not available on this device. Please install it from the Play Store.";
-        Alert.alert("Health Connect", msg);
-        return;
-      }
-
-      // Step 2: Initialize the Health Connect SDK
-      let isInitialized = false;
-      try {
-        isInitialized = await initialize();
-      } catch (initError) {
-        console.warn("Health Connect initialize failed:", initError);
-        Alert.alert(
-          "Initialization Failed",
-          "Could not initialize Health Connect. Please make sure the app is installed and up to date.",
-        );
-        return;
-      }
-
-      if (!isInitialized) {
-        Alert.alert(
-          "Health Connect Unavailable",
-          "Could not initialize Health Connect. Please install or update it from the Play Store.",
-        );
-        return;
-      }
-
-      // Step 3: Request blood pressure read permission
-      let grantedPermissions;
-      try {
-        grantedPermissions = await requestPermission([
-          { accessType: "read", recordType: "BloodPressure" },
-        ]);
-      } catch (permError) {
-        console.warn("requestPermission failed:", permError);
-        Alert.alert(
-          "Permission Error",
-          "Could not request Health Connect permissions. Please check Health Connect settings.",
-        );
-        return;
-      }
-
-      if (!grantedPermissions || grantedPermissions.length === 0) {
-        Alert.alert(
-          "Permission Denied",
-          "Blood pressure read permission is required.\n\nPlease grant it in Health Connect settings.",
-        );
-        return;
-      }
-
-      // Step 4: Read BP records from the last 7 days
-      const endTime = new Date().toISOString();
-      const startTime = new Date(
-        Date.now() - 7 * 24 * 60 * 60 * 1000,
-      ).toISOString();
-
-      let result;
-      try {
-        result = await readRecords("BloodPressure", {
-          timeRangeFilter: {
-            operator: "between",
-            startTime,
-            endTime,
-          },
-        });
-      } catch (readError) {
-        console.warn("readRecords failed:", readError);
-        Alert.alert(
-          "Read Error",
-          "Could not read blood pressure data from Health Connect.\n\nError: " +
-            (readError?.message || "Unknown error"),
-        );
-        return;
-      }
-
-      if (!result || !result.records || result.records.length === 0) {
-        Alert.alert(
-          "No Data Found",
-          "No blood pressure readings found in Health Connect for the last 7 days.\n\nMake sure your smartwatch is syncing BP data to Google Health Connect.",
-        );
-        return;
-      }
-
-      // Step 5: Get the most recent reading and populate fields
-      const latestRecord = result.records[result.records.length - 1];
-      const systolic = Math.round(latestRecord.systolic.inMillimetersOfMercury);
-      const diastolic = Math.round(
-        latestRecord.diastolic.inMillimetersOfMercury,
-      );
-      const recordTime = new Date(latestRecord.time).toLocaleString();
-
-      setBpSystolic(systolic.toString());
-      setBpDiastolic(diastolic.toString());
-      setBpSource("healthConnect");
-
-      Alert.alert(
-        "⌚ BP Data Imported",
-        `Latest reading from Health Connect:\n\nSystolic: ${systolic} mmHg\nDiastolic: ${diastolic} mmHg\nRecorded: ${recordTime}\n\nTotal readings found: ${result.records.length}`,
-      );
-    } catch (error) {
-      console.error("Health Connect Error:", error);
-      Alert.alert(
-        "Error",
-        "An unexpected error occurred while accessing Health Connect.\n\nError: " +
-          (error?.message || "Unknown error"),
-      );
-    } finally {
-      setFetchingBP(false);
-    }
-  };
-
-  // Validation ranges for inputs
   const VALIDATION_RANGES = {
     bpSystolic: { min: 70, max: 250, label: "Systolic BP" },
     bpDiastolic: { min: 40, max: 150, label: "Diastolic BP" },
@@ -268,64 +145,32 @@ const RiskPredictionScreen = ({ navigation, route }) => {
   const validateInput = (value, field) => {
     const range = VALIDATION_RANGES[field];
     const numValue = parseFloat(value);
-
-    if (isNaN(numValue)) {
-      return { valid: false, message: `${range.label} must be a valid number` };
-    }
-    if (numValue < range.min) {
-      return {
-        valid: false,
-        message: `${range.label} must be at least ${range.min}`,
-      };
-    }
-    if (numValue > range.max) {
-      return {
-        valid: false,
-        message: `${range.label} must not exceed ${range.max}`,
-      };
-    }
+    if (isNaN(numValue)) return { valid: false, message: `${range.label} must be a valid number` };
+    if (numValue < range.min) return { valid: false, message: `${range.label} must be at least ${range.min}` };
+    if (numValue > range.max) return { valid: false, message: `${range.label} must not exceed ${range.max}` };
     return { valid: true };
   };
 
   const onPredictPressed = async () => {
     if (!bpSystolic || !bpDiastolic || !age) {
-      Alert.alert(
-        "Error",
-        "Please fill in Blood Pressure (Systolic and Diastolic) and Age",
-      );
+      Alert.alert("Error", "Please fill in Blood Pressure (Systolic and Diastolic) and Age");
       return;
     }
 
-    // Validate Systolic BP
     const systolicValidation = validateInput(bpSystolic, "bpSystolic");
-    if (!systolicValidation.valid) {
-      Alert.alert("Invalid Input", systolicValidation.message);
-      return;
-    }
+    if (!systolicValidation.valid) { Alert.alert("Invalid Input", systolicValidation.message); return; }
 
-    // Validate Diastolic BP
     const diastolicValidation = validateInput(bpDiastolic, "bpDiastolic");
-    if (!diastolicValidation.valid) {
-      Alert.alert("Invalid Input", diastolicValidation.message);
-      return;
-    }
+    if (!diastolicValidation.valid) { Alert.alert("Invalid Input", diastolicValidation.message); return; }
 
-    // Validate that Systolic > Diastolic
     if (parseFloat(bpSystolic) <= parseFloat(bpDiastolic)) {
-      Alert.alert(
-        "Invalid Input",
-        "Systolic BP must be greater than Diastolic BP",
-      );
+      Alert.alert("Invalid Input", "Systolic BP must be greater than Diastolic BP");
       return;
     }
 
-    // Validate HbA1c Level (if provided)
     if (hba1cLevel) {
       const hba1cValidation = validateInput(hba1cLevel, "hba1cLevel");
-      if (!hba1cValidation.valid) {
-        Alert.alert("Invalid Input", hba1cValidation.message);
-        return;
-      }
+      if (!hba1cValidation.valid) { Alert.alert("Invalid Input", hba1cValidation.message); return; }
     }
 
     setLoading(true);
@@ -336,28 +181,13 @@ const RiskPredictionScreen = ({ navigation, route }) => {
     setIsSaved(false);
 
     try {
-      const requestData = {
-        bp_systolic: bpSystolic,
-        bp_diastolic: bpDiastolic,
-        age,
-        gender,
-      };
-
-      // If HbA1c level is provided, use it
-      if (hba1cLevel) {
-        requestData.hba1c_level = hba1cLevel;
-      }
+      const requestData = { bp_systolic: bpSystolic, bp_diastolic: bpDiastolic, age, gender };
+      if (hba1cLevel) requestData.hba1c_level = hba1cLevel;
 
       const response = await axios.post("/predict", requestData);
-
       setRiskLevel(response.data.risk_level);
-      // Use risk_score from backend
-      const score =
-        response.data.risk_score ||
-        calculateRiskScore(response.data.risk_level);
+      const score = response.data.risk_score || calculateRiskScore(response.data.risk_level);
       setRiskScore(score);
-
-      // Capture SHAP values from prediction response
       if (response.data.shap_values) {
         setShapValues(response.data.shap_values);
         setShapBaseValue(response.data.shap_base_value || 0);
@@ -370,7 +200,6 @@ const RiskPredictionScreen = ({ navigation, route }) => {
     }
   };
 
-  // Calculate a numeric risk score based on risk level if not provided by backend
   const calculateRiskScore = (level) => {
     const lowerLevel = level?.toLowerCase() || "";
     if (lowerLevel.includes("low")) return 33;
@@ -380,22 +209,17 @@ const RiskPredictionScreen = ({ navigation, route }) => {
   };
 
   const onSavePressed = async () => {
-    if (!userId) {
-      Alert.alert("Error", "User not identified. Please log in again.");
-      return;
-    }
-    if (!riskLevel || riskScore === null) {
-      Alert.alert("Error", "Please predict risk first before saving.");
-      return;
-    }
+    if (!userId) { Alert.alert("Error", "User not identified. Please log in again."); return; }
+    if (!riskLevel || riskScore === null) { Alert.alert("Error", "Please predict risk first before saving."); return; }
 
     setSaving(true);
-
     try {
       const response = await axios.post("/risk-history/save", {
         userId,
         riskLevel,
         riskScore,
+        periodStart: toISODate(dateRangeStart),
+        periodEnd: toISODate(dateRangeEnd),
         vitalSigns: {
           bpSystolic: parseFloat(bpSystolic),
           bpDiastolic: parseFloat(bpDiastolic),
@@ -416,17 +240,14 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       });
 
       setIsSaved(true);
-
+      const periodLabel = `${toDisplayDate(toISODate(dateRangeStart))} – ${toDisplayDate(toISODate(dateRangeEnd))}`;
       const message = response.data.isUpdate
-        ? "Your risk record for this month has been updated!"
-        : "Your risk record has been saved for this month!";
+        ? `Your risk record for ${periodLabel} has been updated!`
+        : `Your risk record for ${periodLabel} has been saved!`;
 
       Alert.alert("Success", message, [
         { text: "OK" },
-        {
-          text: "View History",
-          onPress: () => navigation.navigate("RiskHistory", { userId }),
-        },
+        { text: "View History", onPress: () => navigation.navigate("RiskHistory", { userId }) },
       ]);
     } catch (error) {
       console.error("Save Error:", error);
@@ -444,24 +265,94 @@ const RiskPredictionScreen = ({ navigation, route }) => {
     return "#747D8C";
   };
 
+  const onStartDateChange = (event, selectedDate) => {
+    setShowStartPicker(false);
+    if (selectedDate) {
+      setDateRangeStart(selectedDate);
+      // Auto-set end date to start + 13 days (14-day range inclusive)
+      const autoEnd = new Date(selectedDate);
+      autoEnd.setDate(selectedDate.getDate() + 13);
+      if (autoEnd > today) autoEnd.setTime(today.getTime());
+      setDateRangeEnd(autoEnd);
+    }
+  };
+
+  const onEndDateChange = (event, selectedDate) => {
+    setShowEndPicker(false);
+    if (selectedDate) setDateRangeEnd(selectedDate);
+  };
+
+  const periodDays =
+    Math.round((dateRangeEnd - dateRangeStart) / (1000 * 60 * 60 * 24)) + 1;
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.container}
     >
       <Text style={styles.title}>Early Risk Prediction</Text>
-      <Text style={styles.subtitle}>Enter your vital signs below</Text>
+      <Text style={styles.subtitle}>Select a 14-day period to begin</Text>
 
-      {/* BP Monthly Average Card */}
+      {/* Date Range Selector */}
+      <View style={styles.dateRangeCard}>
+        <Text style={styles.dateRangeTitle}>📅 Select 14-Day Period</Text>
+        <View style={styles.dateRow}>
+          <View style={styles.dateField}>
+            <Text style={styles.dateFieldLabel}>Start Date</Text>
+            <TouchableOpacity
+              style={styles.datePicker}
+              onPress={() => setShowStartPicker(true)}
+            >
+              <Text style={styles.datePickerText}>{toDisplayDate(toISODate(dateRangeStart))}</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.dateArrow}>→</Text>
+          <View style={styles.dateField}>
+            <Text style={styles.dateFieldLabel}>End Date</Text>
+            <TouchableOpacity
+              style={styles.datePicker}
+              onPress={() => setShowEndPicker(true)}
+            >
+              <Text style={styles.datePickerText}>{toDisplayDate(toISODate(dateRangeEnd))}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <Text style={styles.periodDaysText}>
+          {periodDays} day{periodDays !== 1 ? "s" : ""} selected
+          {periodDays !== 14 ? " (14 days recommended)" : " ✓"}
+        </Text>
+      </View>
+
+      {showStartPicker && (
+        <DateTimePicker
+          value={dateRangeStart}
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={onStartDateChange}
+          maximumDate={today}
+        />
+      )}
+      {showEndPicker && (
+        <DateTimePicker
+          value={dateRangeEnd}
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={onEndDateChange}
+          minimumDate={dateRangeStart}
+          maximumDate={today}
+        />
+      )}
+
+      {/* BP 14-Day Average Card */}
       {bpAvgLoading ? (
         <View style={styles.bpAvgCard}>
           <ActivityIndicator size="small" color="#4A90E2" />
-          <Text style={styles.bpAvgLoadingText}>Loading BP average...</Text>
+          <Text style={styles.bpAvgLoadingText}>Loading BP average for selected period...</Text>
         </View>
       ) : bpAvgData?.recordCount > 0 ? (
         <View style={styles.bpAvgCard}>
           <Text style={styles.bpAvgLabel}>
-            📊 BP from monthly average ({bpAvgData.recordCount} reading
+            📊 14-day BP average ({bpAvgData.recordCount} reading
             {bpAvgData.recordCount !== 1 ? "s" : ""})
           </Text>
           <Text style={styles.bpAvgValue}>
@@ -470,9 +361,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
             <Text style={{ color: "#4A90E2" }}>{bpAvgData.avgDiastolic}</Text>
             <Text style={{ color: "#8E8E93", fontSize: 13 }}> mmHg</Text>
           </Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("BPHistory", { userId })}
-          >
+          <TouchableOpacity onPress={() => navigation.navigate("BPHistory", { userId })}>
             <Text style={styles.bpAvgLink}>Manage BP data →</Text>
           </TouchableOpacity>
         </View>
@@ -481,7 +370,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
           style={styles.bpNoDataCard}
           onPress={() => navigation.navigate("BPHistory", { userId })}
         >
-          <Text style={styles.bpNoDataText}>⚠️ No BP data for this month.</Text>
+          <Text style={styles.bpNoDataText}>⚠️ No BP data for the selected period.</Text>
           <Text style={styles.bpNoDataLink}>Add readings in BP History →</Text>
         </TouchableOpacity>
       )}
@@ -508,34 +397,25 @@ const RiskPredictionScreen = ({ navigation, route }) => {
       <CustomButton text="Predict Risk" onPress={onPredictPressed} />
 
       {loading && (
-        <ActivityIndicator
-          size="large"
-          color="#4A90E2"
-          style={{ marginTop: 20 }}
-        />
+        <ActivityIndicator size="large" color="#4A90E2" style={{ marginTop: 20 }} />
       )}
 
       {riskLevel && (
         <View style={styles.resultContainer}>
           <Text style={styles.resultLabel}>Predicted Risk Level:</Text>
-          <Text
-            style={[styles.resultValue, { color: getRiskColor(riskLevel) }]}
-          >
+          <Text style={[styles.resultValue, { color: getRiskColor(riskLevel) }]}>
             {riskLevel}
           </Text>
 
           {riskScore !== null && (
             <View style={styles.scoreContainer}>
               <Text style={styles.scoreLabel}>Risk Score:</Text>
-              <Text
-                style={[styles.scoreValue, { color: getRiskColor(riskLevel) }]}
-              >
+              <Text style={[styles.scoreValue, { color: getRiskColor(riskLevel) }]}>
                 {riskScore.toFixed(0)}
               </Text>
             </View>
           )}
 
-          {/* Save Button */}
           <TouchableOpacity
             style={[
               styles.saveButton,
@@ -548,45 +428,35 @@ const RiskPredictionScreen = ({ navigation, route }) => {
             {saving ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <>
-                <Text style={styles.saveButtonText}>
-                  {isSaved
-                    ? "✓ Saved for This Month"
-                    : "💾 Save Monthly Record"}
-                </Text>
-              </>
+              <Text style={styles.saveButtonText}>
+                {isSaved ? "✓ Saved for This Period" : "💾 Save 14-Day Record"}
+              </Text>
             )}
           </TouchableOpacity>
 
           {isSaved && (
             <Text style={styles.savedHint}>
-              Your record has been saved. View your history to see the trend.
+              Record saved for {toDisplayDate(toISODate(dateRangeStart))} –{" "}
+              {toDisplayDate(toISODate(dateRangeEnd))}. View history to see the trend.
             </Text>
           )}
         </View>
       )}
 
-      {/* View History Button */}
       <TouchableOpacity
         style={styles.historyButton}
         onPress={() => navigation.navigate("RiskHistory", { userId })}
       >
-        <Text style={styles.historyButtonText}>
-          📊 View Risk History & Trend
-        </Text>
+        <Text style={styles.historyButtonText}>📊 View Risk History & Trend</Text>
       </TouchableOpacity>
 
-      {/* Info Card */}
       <View style={styles.infoCard}>
         <Text style={styles.infoTitle}>💡 About the Prediction</Text>
         <Text style={styles.infoText}>
-          {"\n\n"}BP values are automatically sourced from your monthly average
-          saved in BP History.
-          {"\n\n"}Optional: HbA1c Level (%) for more accurate prediction.
-          {"\n\n"}Add or sync BP readings in BP History to keep your average up
-          to date.
-          {"\n\n"}Save your prediction each month to track your kidney health
-          trend over time.
+          {"\n\n"}Select a 14-day date range first. BP values are automatically sourced
+          from daily readings saved in BP History for that exact period.
+          {"\n\n"}Optional: Enter your HbA1c Level (%) for a more accurate prediction.
+          {"\n\n"}Save your prediction to track your kidney health trend over time.
         </Text>
       </View>
     </ScrollView>
@@ -611,6 +481,61 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#8E8E93",
     marginBottom: 20,
+  },
+  dateRangeCard: {
+    width: "100%",
+    backgroundColor: "#F0F4FF",
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: "#3B71F3",
+  },
+  dateRangeTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#3B71F3",
+    marginBottom: 12,
+  },
+  dateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  dateField: {
+    flex: 1,
+  },
+  dateFieldLabel: {
+    fontSize: 11,
+    color: "#8E8E93",
+    marginBottom: 4,
+    fontWeight: "600",
+  },
+  datePicker: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "#3B71F3",
+  },
+  datePickerText: {
+    fontSize: 13,
+    color: "#1C1C1E",
+    fontWeight: "600",
+  },
+  dateArrow: {
+    marginHorizontal: 10,
+    fontSize: 18,
+    color: "#3B71F3",
+    fontWeight: "bold",
+  },
+  periodDaysText: {
+    fontSize: 12,
+    color: "#555",
+    marginTop: 10,
+    textAlign: "center",
+    fontStyle: "italic",
   },
   bpAvgCard: {
     width: "100%",
@@ -690,42 +615,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
     fontWeight: "500",
-  },
-  genderContainer: {
-    width: "100%",
-    marginBottom: 15,
-  },
-  genderLabel: {
-    fontSize: 16,
-    color: "#333",
-    marginBottom: 10,
-    fontWeight: "500",
-  },
-  genderButtons: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  genderButton: {
-    flex: 1,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: "#E5E5E5",
-    backgroundColor: "#FFF",
-    alignItems: "center",
-  },
-  genderButtonActive: {
-    borderColor: "#4A90E2",
-    backgroundColor: "#EBF4FF",
-  },
-  genderButtonText: {
-    fontSize: 16,
-    color: "#666",
-    fontWeight: "600",
-  },
-  genderButtonTextActive: {
-    color: "#4A90E2",
   },
   resultContainer: {
     marginTop: 30,
