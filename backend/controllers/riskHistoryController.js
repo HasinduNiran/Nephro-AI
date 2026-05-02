@@ -98,7 +98,7 @@ exports.saveRiskRecord = async (req, res) => {
   try {
     const { userId, riskLevel, riskScore, vitalSigns, shapValues, periodStart, periodEnd } = req.body;
 
-    if (!userId || !riskLevel || riskScore === undefined) {
+    if (!userId || !riskLevel || riskScore == null) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
