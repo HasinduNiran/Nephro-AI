@@ -38,6 +38,8 @@ class UltrasoundRequest(BaseModel):
 
 
 router = APIRouter()
+app = FastAPI(title="Nephro-AI CKD Inference API", version="1.1.0")
+app.include_router(router)
 
 
 def _model_to_dict(model: BaseModel) -> Dict[str, Any]:
@@ -302,6 +304,4 @@ def analyze_us(req: UltrasoundRequest) -> Dict[str, Any]:
 
 if __name__ == "__main__":
     import uvicorn
-    _app = FastAPI(title="Nephro-AI CKD Inference API", version="1.1.0")
-    _app.include_router(router)
-    uvicorn.run(_app, host="0.0.0.0", port=8002)
+    uvicorn.run(app, host="0.0.0.0", port=8002)

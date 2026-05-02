@@ -63,6 +63,47 @@ const parseDateString = (value) => {
   return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
 };
 
+const sanitizeIntegerInput = (value) => String(value || "").replace(/[^0-9]/g, "");
+
+const sanitizeDecimalInput = (value) => {
+  const text = String(value || "").replace(/[^0-9.]/g, "");
+  const parts = text.split(".");
+  if (parts.length <= 2) return text;
+  return `${parts[0]}.${parts.slice(1).join("")}`;
+};
+
+const manualFieldLimits = {
+  age: { min: 0, max: 120, label: "0 - 120 years" },
+  creatinine: (genderCode) => (genderCode === "F"
+    ? { min: 0.6, max: 1.3, label: "0.6 - 1.3 mg/dL" }
+    : { min: 0.6, max: 1.6, label: "0.6 - 1.6 mg/dL" }),
+  egfr: { min: 0, max: 130, label: "0 - 130 mL/min/1.73m²" },
+  bun: { min: 0, max: 200, label: "0 - 200 mg/dL" },
+  albumin: { min: 2.5, max: 5.5, label: "2.5 - 5.5 g/dL" },
+  hemoglobin: (genderCode) => (genderCode === "F"
+    ? { min: 12.0, max: 15.5, label: "12.0 - 15.5 g/dL" }
+    : { min: 13.5, max: 17.5, label: "13.5 - 17.5 g/dL" }),
+};
+
+const getManualFieldConfig = (fieldName, genderCode) => {
+  const config = manualFieldLimits[fieldName];
+  return typeof config === "function" ? config(genderCode) : config;
+};
+
+const validateNumericField = (fieldName, rawValue, genderCode) => {
+  if (rawValue === "" || rawValue === null || rawValue === undefined) return "";
+  const value = Number(rawValue);
+  if (!Number.isFinite(value)) return "Enter a valid number.";
+
+  const config = getManualFieldConfig(fieldName, genderCode);
+  if (!config) return "";
+  if (value < config.min || value > config.max) {
+    return `Add values within ${config.label}.`;
+  }
+
+  return "";
+};
+
 const FutureCKDStageScreen = ({ navigation, route }) => {
   // Try multiple param shapes to recover email passed from upstream screens/auth
   const userFromRoute = route.params?.user || null;
@@ -152,6 +193,7 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
   const [albumin, setAlbumin] = useState("");
   const [hemoglobin, setHemoglobin] = useState("");
   const [showManualEntry, setShowManualEntry] = useState(false);
+  const [manualFieldErrors, setManualFieldErrors] = useState({});
 
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -206,7 +248,71 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
     setBun("");
     setAlbumin("");
     setHemoglobin("");
+    setManualFieldErrors({});
     setShowManualEntry(false);
+  };
+
+  const updateManualField = (fieldName, value, options = {}) => {
+    const sanitizedValue = options.integer ? sanitizeIntegerInput(value) : sanitizeDecimalInput(value);
+    const setterMap = {
+      age: setAge,
+      creatinine: setCreatinine,
+      egfr: setEgfr,
+      bun: setBun,
+      albumin: setAlbumin,
+      hemoglobin: setHemoglobin,
+    };
+
+    const setter = setterMap[fieldName];
+    if (setter) setter(sanitizedValue);
+
+    setManualFieldErrors((currentErrors) => {
+      const nextErrors = { ...currentErrors };
+      const fieldError = validateNumericField(fieldName, sanitizedValue, gender);
+      if (fieldError) {
+        nextErrors[fieldName] = fieldError;
+      } else {
+        delete nextErrors[fieldName];
+      }
+      return nextErrors;
+    });
+  };
+
+  const validateManualFields = () => {
+    const nextErrors = {};
+
+    if (age) {
+      const ageError = validateNumericField("age", age, gender);
+      if (ageError) nextErrors.age = ageError;
+    }
+
+    if (creatinine) {
+      const creatinineError = validateNumericField("creatinine", creatinine, gender);
+      if (creatinineError) nextErrors.creatinine = creatinineError;
+    }
+
+    if (egfr) {
+      const egfrError = validateNumericField("egfr", egfr, gender);
+      if (egfrError) nextErrors.egfr = egfrError;
+    }
+
+    if (bun) {
+      const bunError = validateNumericField("bun", bun, gender);
+      if (bunError) nextErrors.bun = bunError;
+    }
+
+    if (albumin) {
+      const albuminError = validateNumericField("albumin", albumin, gender);
+      if (albuminError) nextErrors.albumin = albuminError;
+    }
+
+    if (hemoglobin) {
+      const hemoglobinError = validateNumericField("hemoglobin", hemoglobin, gender);
+      if (hemoglobinError) nextErrors.hemoglobin = hemoglobinError;
+    }
+
+    setManualFieldErrors(nextErrors);
+    return nextErrors;
   };
 
   const confirmClearLabPreview = () => {
@@ -241,6 +347,13 @@ const FutureCKDStageScreen = ({ navigation, route }) => {
   const analyzeLabInPage = async () => {
     if (!hasLabInputForPreview) {
       Alert.alert("No Lab Input", "Upload a lab report or enter manual lab values first.");
+      return;
+    }
+
+    const fieldErrors = validateManualFields();
+    if (Object.keys(fieldErrors).length > 0) {
+      const firstError = Object.values(fieldErrors)[0];
+      Alert.alert("Validation Error", firstError || "Add values within the allowed range before analyzing.");
       return;
     }
 
@@ -481,6 +594,13 @@ const analyzeData = async () => {
 
     // Validate manual values if no lab report
     if (!hasLabReport && hasManualValues) {
+      const fieldErrors = validateManualFields();
+      if (Object.keys(fieldErrors).length > 0) {
+        const firstError = Object.values(fieldErrors)[0];
+        Alert.alert("Validation Error", firstError || "Please correct the manual values.");
+        return;
+      }
+
       if (!egfr && !creatinine) {
         Alert.alert(
           "Insufficient Data",
@@ -762,11 +882,12 @@ const analyzeData = async () => {
                 <TextInput
                   style={styles.textInput}
                   value={age}
-                  onChangeText={setAge}
+                  onChangeText={(value) => updateManualField("age", value, { integer: true })}
                   placeholder="Enter age"
                   placeholderTextColor="#8E8E93"
                   keyboardType="number-pad"
                 />
+                {manualFieldErrors.age ? <Text style={styles.fieldErrorText}>{manualFieldErrors.age}</Text> : null}
               </View>
 
               <View style={[styles.ageGenderField, { marginTop: 12 }]}> 
@@ -909,7 +1030,7 @@ const analyzeData = async () => {
                     <TextInput
                       style={styles.textInput}
                       value={creatinine}
-                      onChangeText={setCreatinine}
+                      onChangeText={(value) => updateManualField("creatinine", value)}
                       placeholder="e.g., 1.2"
                       placeholderTextColor="#8E8E93"
                       keyboardType="decimal-pad"
@@ -917,6 +1038,7 @@ const analyzeData = async () => {
                     <Text style={styles.validationHint}>
                       {`Range (${gender === "F" ? "Female" : "Male"}): ${getCreatinineRangeByGender(gender || "M").label}`}
                     </Text>
+                    {manualFieldErrors.creatinine ? <Text style={styles.fieldErrorText}>{manualFieldErrors.creatinine}</Text> : null}
                   </View>
 
                   {/* eGFR */}
@@ -926,12 +1048,13 @@ const analyzeData = async () => {
                     <TextInput
                       style={styles.textInput}
                       value={egfr}
-                      onChangeText={setEgfr}
+                      onChangeText={(value) => updateManualField("egfr", value)}
                       placeholder="e.g., 60"
                       placeholderTextColor="#8E8E93"
                       keyboardType="decimal-pad"
                     />
                     <Text style={styles.validationHint}>Must be 0 or greater</Text>
+                    {manualFieldErrors.egfr ? <Text style={styles.fieldErrorText}>{manualFieldErrors.egfr}</Text> : null}
                   </View>
 
                   {/* BUN */}
@@ -941,7 +1064,7 @@ const analyzeData = async () => {
                     <TextInput
                       style={styles.textInput}
                       value={bun}
-                      onChangeText={setBun}
+                      onChangeText={(value) => updateManualField("bun", value)}
                       placeholder="e.g., 20"
                       placeholderTextColor="#8E8E93"
                       keyboardType="decimal-pad"
@@ -950,6 +1073,7 @@ const analyzeData = async () => {
                     {bunRiskCategory ? (
                       <Text style={styles.bunRiskText}>{`BUN Category: ${bunRiskCategory}`}</Text>
                     ) : null}
+                    {manualFieldErrors.bun ? <Text style={styles.fieldErrorText}>{manualFieldErrors.bun}</Text> : null}
                   </View>
 
                   {/* Albumin */}
@@ -959,11 +1083,12 @@ const analyzeData = async () => {
                     <TextInput
                       style={styles.textInput}
                       value={albumin}
-                      onChangeText={setAlbumin}
+                      onChangeText={(value) => updateManualField("albumin", value)}
                       placeholder="e.g., 4.0"
                       placeholderTextColor="#8E8E93"
                       keyboardType="decimal-pad"
                     />
+                    {manualFieldErrors.albumin ? <Text style={styles.fieldErrorText}>{manualFieldErrors.albumin}</Text> : null}
                   </View>
 
                   {/* Hemoglobin */}
@@ -973,11 +1098,12 @@ const analyzeData = async () => {
                     <TextInput
                       style={styles.textInput}
                       value={hemoglobin}
-                      onChangeText={setHemoglobin}
+                      onChangeText={(value) => updateManualField("hemoglobin", value)}
                       placeholder="e.g., 12.5"
                       placeholderTextColor="#8E8E93"
                       keyboardType="decimal-pad"
                     />
+                    {manualFieldErrors.hemoglobin ? <Text style={styles.fieldErrorText}>{manualFieldErrors.hemoglobin}</Text> : null}
                   </View>
                 </View>
               )}
@@ -1269,81 +1395,7 @@ const analyzeData = async () => {
           </Text>
         )}
 
-        {/* Past CKD Stage Records */}
-        <View style={styles.historySection}>
-          <TouchableOpacity
-            style={styles.historyHeader}
-            onPress={() => navigation.navigate("FutureCKDStageHistory", { userEmail, userName })}
-            activeOpacity={0.8}
-          >
-            <View style={styles.historyHeaderLeft}>
-              <Ionicons name="time" size={22} color="#4A90E2" />
-              <View>
-                <Text style={styles.historyTitle}>Past Records</Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward" size={22} color="#8E8E93" />
-          </TouchableOpacity>
-
-          <View style={styles.historyBody}>
-            {historyLoading ? (
-              <Text style={styles.emptyHistoryText}>Loading...</Text>
-            ) : historyError ? (
-              <Text style={styles.emptyHistoryText}>{historyError}</Text>
-            ) : history.length === 0 ? (
-              <View style={styles.emptyHistory}>
-                <Text style={styles.emptyHistoryText}>
-                  No saved predictions yet. Run an analysis to capture it here.
-                </Text>
-              </View>
-            ) : (
-              <>
-                {history.slice(0, 2).map((record, index) => {
-                  const stageWithUS = record.prediction_with_us?.predicted_stage;
-                  const stageLabOnly = record.prediction_lab_only?.predicted_stage;
-                  const inputs = record.inputs || {};
-                  const labs = inputs.labs || {};
-                  const uploaded = inputs.uploaded || {};
-                  const visitNumber = index + 1;
-
-                  return (
-                    <View key={record._id || record.id || index} style={styles.historyCard}>
-                      <View style={styles.historyCardHeader}>
-                        <View>
-                          <Text style={styles.historyCardTitle}>
-                            {stageWithUS || stageLabOnly
-                              ? `Stage ${stageWithUS || stageLabOnly}`
-                              : "Result saved"}
-                          </Text>
-                          <Text style={styles.historyCardDate}>{formatDateTime(record.visitDate || record.inputs?.visitDate || record.createdAt)}</Text>
-                          <Text style={styles.historyCardDate}>Visit #{visitNumber}</Text>
-                        </View>
-                        {/* <View style={styles.badgeRow}>
-                          {uploaded.labReport && (
-                            <View style={[styles.badge, styles.badgePrimary]}>
-                              <Text style={styles.badgeText}>Lab</Text>
-                            </View>
-                          )}
-                          {uploaded.ultrasound && (
-                            <View style={[styles.badge, styles.badgeSecondary]}>
-                              <Text style={styles.badgeText}>Ultrasound</Text>
-                            </View>
-                          )}
-                          {(labs.creatinine || labs.egfr) && (
-                            <View style={[styles.badge, styles.badgeMuted]}>
-                              <Text style={styles.badgeText}>Manual Labs</Text>
-                            </View>
-                          )}
-                        </View> */}
-                      </View>
-                    </View>
-                  );
-                })}
-                {history.length > 2 }
-              </>
-            )}
-          </View>
-        </View>
+        {/* Past CKD Stage Records removed */}
       </ScrollView>
     </SafeAreaView>
   );
@@ -1544,6 +1596,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#8E8E93",
     marginTop: 4,
+  },
+  fieldErrorText: {
+    fontSize: 11,
+    color: "#FF3B30",
+    marginTop: 4,
+    fontWeight: "600",
   },
   bunRiskText: {
     fontSize: 11,

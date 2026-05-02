@@ -20,6 +20,24 @@ const getStageColor = (stage) => {
   return STAGE_COLORS[Math.min(s, STAGE_COLORS.length) - 1] || "#FF3B30";
 };
 
+const formatStageLabel = (stage) => {
+  if (stage === null || stage === undefined || stage === "") {
+    return "";
+  }
+
+  const text = String(stage).trim();
+  if (/^stage\s+/i.test(text)) {
+    return text;
+  }
+
+  const numeric = text.match(/\d+/);
+  if (numeric) {
+    return `Stage ${numeric[0]}`;
+  }
+
+  return text;
+};
+
 const ScanLabScreen = ({ navigation, route }) => {
   const userName = route.params?.userName || "User";
   const userEmail = route.params?.userEmail || "";
@@ -47,7 +65,10 @@ const ScanLabScreen = ({ navigation, route }) => {
             const latest = sorted[0];
             const stage =
               latest.prediction_with_us?.predicted_stage ??
+              latest.prediction_with_us?.current_stage ??
               latest.prediction_lab_only?.predicted_stage ??
+              latest.prediction_lab_only?.current_stage ??
+              latest.current_stage ??
               null;
             setCurrentStage(stage);
           }
@@ -64,31 +85,23 @@ const ScanLabScreen = ({ navigation, route }) => {
   const features = [
     {
       id: 1,
-      title: "Scan Analysis",
-      subtitle: "Kidney ultrasound",
-      icon: "scan",
-      color: "#4A90E2", // Blue
-      onPress: () => navigation.navigate("ScanAnalysis", { userName, userEmail }),
-    },
-    {
-      id: 2,
-      title: "Lab Analysis",
-      subtitle: "Blood test results",
+      title: "CKD stage",
+      subtitle: "Test results",
       icon: "flask",
       color: "#F5A623", // Orange
       onPress: () => navigation.navigate("LabAnalysis", { userName, userEmail }),
     },
     {
-      id: 3,
-      title: "Future CKD Stage",
+      id: 2,
+      title: "Future CKD Stage Progression",
       subtitle: "Stage progression",
       icon: "trending-up",
       color: "#50E3C2", // Teal
       onPress: () => navigation.navigate("FutureCKDStage", { userName, userEmail }),
     },
     {
-      id: 4,
-      title: "My Progress Path",
+      id: 3,
+      title: "Progression History",
       subtitle: "History graph",
       icon: "pulse",
       color: "#EF4444", // Red
@@ -118,7 +131,7 @@ const ScanLabScreen = ({ navigation, route }) => {
         showsVerticalScrollIndicator={false}
       >
         {/* Dashboard Title */}
-        <Text style={styles.sectionTitle}>Choose Analysis Type</Text>
+        
         <Text style={styles.patientInfo}>Patient: {userName || userEmail}</Text>
         {userEmail ? (
           <Text style={styles.patientEmail}>{userEmail}</Text>
@@ -132,7 +145,7 @@ const ScanLabScreen = ({ navigation, route }) => {
             <ActivityIndicator size="small" color="#4A90E2" style={{ marginLeft: 8 }} />
           ) : currentStage !== null ? (
             <View style={[styles.stagePill, { backgroundColor: getStageColor(currentStage) }]}>
-              <Text style={styles.stagePillText}>Stage {currentStage}</Text>
+              <Text style={styles.stagePillText}>{formatStageLabel(currentStage)}</Text>
             </View>
           ) : (
             <Text style={styles.stageUnknown}>Not yet assessed</Text>
