@@ -482,6 +482,7 @@ async def upload_context(file: UploadFile = File(...), patient_id: str = Form("d
            
         SESSIONS[patient_id]["doc_uri"] = gemini_file.name
         SESSIONS[patient_id]["local_doc_path"] = str(temp_path)
+        SESSIONS[patient_id]["doc_client"] = client  # must use same key for files.get()
         
         Log.success(f"Document uploaded to Gemini: {gemini_file.name}")
         return {"success": True, "filename": file.filename, "message": "Document loaded successfully."}
@@ -705,9 +706,10 @@ async def text_chat(request: ChatRequest):
     # Retrieve THIS patient's history & document (default to empty list if new)
     user_history = SESSIONS[patient_id]["history"]
     doc_uri = SESSIONS[patient_id]["doc_uri"]
-    
+    doc_client = SESSIONS[patient_id].get("doc_client")
+
     loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(None, rag_engine.process_query, request.text, patient_id, user_history, doc_uri, request.language)
+    result = await loop.run_in_executor(None, rag_engine.process_query, request.text, patient_id, user_history, doc_uri, request.language, doc_client)
     
     # Update THIS patient's history
     user_history.append({"role": "user", "content": request.text})
@@ -767,13 +769,14 @@ async def audio_chat(
         # Retrieve THIS patient's history & document
         user_history = SESSIONS[patient_id]["history"]
         doc_uri = SESSIONS[patient_id]["doc_uri"]
+        doc_client = SESSIONS[patient_id].get("doc_client")
 
         if is_garbage:
             Log.warning("Detected Silence/Gibberish. Skipping processing.")
             transcribed_text = "(Silence/Noise)"
             response_text = "I couldn't hear you clearly. Please try again."
         else:
-            rag_result = await loop.run_in_executor(None, rag_engine.process_query, transcribed_text, patient_id, user_history, doc_uri, language)
+            rag_result = await loop.run_in_executor(None, rag_engine.process_query, transcribed_text, patient_id, user_history, doc_uri, language, doc_client)
             response_text = rag_result["response"]
 
             user_history.append({"role": "user", "content": transcribed_text})

@@ -622,12 +622,13 @@ class LLMEngine:
 
 
     def generate_response(
-        self, 
-        query: str, 
-        context_documents: List[str], 
+        self,
+        query: str,
+        context_documents: List[str],
         patient_context: str,
         history: List[Dict[str, str]] = [],
-        uploaded_file_uri: str = None
+        uploaded_file_uri: str = None,
+        doc_client=None
     ) -> str:
         """
         Pure Brain Layer: Generates response based on provided English Query & Context.
@@ -691,7 +692,11 @@ state BOTH findings and explicitly recommend: "Please consult your nephrologist 
                     )
                     return response.text.strip()
 
-                english_response = self._gemini_rotator.call_with_rotation(_run)
+                # Use the same client that uploaded the file — Gemini files are per-key
+                if doc_client:
+                    english_response = _run(doc_client)
+                else:
+                    english_response = self._gemini_rotator.call_with_rotation(_run)
                 print(f"✅ Brain Output: {english_response}")
                 return english_response
             except Exception as e:
