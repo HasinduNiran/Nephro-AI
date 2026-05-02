@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import project configuration
 from chatbot import config
+from chatbot.key_rotator import gemini_rotator as _gemini_rotator
 
 # Third-party libraries for PDF processing and NLP
 import PyPDF2
@@ -393,8 +394,7 @@ class PDFKnowledgeExtractor:
         if not self.docling_config.get('vlm_image_captioning', True):
             return markdown_text
 
-        api_key = config.GOOGLE_API_KEY
-        if not api_key:
+        if _gemini_rotator is None:
             return markdown_text
 
         pictures = getattr(getattr(docling_result, 'document', None), 'pictures', [])
@@ -407,12 +407,6 @@ class PDFKnowledgeExtractor:
         vlm_model = self.docling_config.get('vlm_model', 'gemini-2.5-flash')
 
         print(f"   Captioning {len(pictures)} figure(s) via {vlm_model}...")
-
-        try:
-            genai_client = genai.Client(api_key=api_key)
-        except Exception as e:
-            print(f"   VLM client init failed: {e} — skipping image captioning")
-            return markdown_text
 
         prompt = (
             "You are a medical imaging assistant. "
@@ -436,9 +430,11 @@ class PDFKnowledgeExtractor:
                 from google.genai import types as genai_types
                 image_part = genai_types.Part.from_bytes(data=image_bytes, mime_type="image/png")
 
-                response = genai_client.models.generate_content(
-                    model=vlm_model,
-                    contents=[image_part, prompt]
+                response = _gemini_rotator.call_with_rotation(
+                    lambda client: client.models.generate_content(
+                        model=vlm_model,
+                        contents=[image_part, prompt]
+                    )
                 )
                 caption = response.text.strip().replace('\n', ' ')
 

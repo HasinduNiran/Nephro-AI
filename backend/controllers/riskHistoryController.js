@@ -10,26 +10,30 @@ const calculateLinearRegression = (records) => {
       slope: 0,
       intercept: records.length === 1 ? records[0].riskScore : 0,
       trend: "insufficient_data",
-      trendDescription: "Need at least 2 months of data for trend analysis",
+      trendDescription: "Need at least 2 records for trend analysis",
     };
   }
 
   const n = records.length;
 
-  // Convert records to x (month index) and y (risk score)
-  // Sort by date first
+  // Sort by periodStart when available, otherwise fall back to year/month
   const sortedRecords = [...records].sort((a, b) => {
+    if (a.periodStart && b.periodStart) {
+      return a.periodStart.localeCompare(b.periodStart);
+    }
     if (a.year !== b.year) return a.year - b.year;
-    return a.month - b.month;
+    return (a.month || 0) - (b.month || 0);
   });
 
-  // X values: 0, 1, 2, 3... (month index from start)
+  // X values: 0, 1, 2, 3... (period index from start)
   // Y values: risk scores
   const data = sortedRecords.map((record, index) => ({
     x: index,
     y: record.riskScore,
     month: record.month,
     year: record.year,
+    periodStart: record.periodStart || null,
+    periodEnd: record.periodEnd || null,
   }));
 
   // Calculate means
@@ -72,6 +76,8 @@ const calculateLinearRegression = (records) => {
     y: slope * point.x + intercept,
     month: point.month,
     year: point.year,
+    periodStart: point.periodStart,
+    periodEnd: point.periodEnd,
   }));
 
   return {
@@ -90,36 +96,42 @@ const calculateLinearRegression = (records) => {
  */
 exports.saveRiskRecord = async (req, res) => {
   try {
-    const { userId, riskLevel, riskScore, vitalSigns, shapValues } = req.body;
+    const { userId, riskLevel, riskScore, vitalSigns, shapValues, periodStart, periodEnd } = req.body;
 
-    if (!userId || !riskLevel || riskScore === undefined) {
+    if (!userId || !riskLevel || riskScore == null) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
     const now = new Date();
-    const month = now.getMonth() + 1; // JavaScript months are 0-indexed
-    const year = now.getFullYear();
 
-    // Check if record exists for this month
-    const existingRecord = await RiskRecord.findOne({ userId, month, year });
+    // Derive month/year from periodStart when provided, otherwise use current date
+    const refDate = periodStart ? new Date(periodStart) : now;
+    const month = refDate.getMonth() + 1;
+    const year = refDate.getFullYear();
+
+    // Look up existing record by periodStart (14-day) or by month/year (legacy)
+    const query = periodStart
+      ? { userId, periodStart }
+      : { userId, month, year };
+
+    const existingRecord = await RiskRecord.findOne(query);
 
     if (existingRecord) {
-      // Update existing record
       existingRecord.riskLevel = riskLevel;
       existingRecord.riskScore = riskScore;
       existingRecord.vitalSigns = vitalSigns;
       existingRecord.shapValues = shapValues || null;
       existingRecord.recordDate = now;
+      if (periodStart) existingRecord.periodEnd = periodEnd || null;
       await existingRecord.save();
 
       return res.json({
-        message: "Risk record updated for this month",
+        message: "Risk record updated for this period",
         record: existingRecord,
         isUpdate: true,
       });
     }
 
-    // Create new record
     const newRecord = new RiskRecord({
       userId,
       riskLevel,
@@ -128,6 +140,8 @@ exports.saveRiskRecord = async (req, res) => {
       shapValues: shapValues || null,
       month,
       year,
+      periodStart: periodStart || null,
+      periodEnd: periodEnd || null,
       recordDate: now,
     });
 
@@ -142,8 +156,7 @@ exports.saveRiskRecord = async (req, res) => {
     console.error("Error saving risk record:", error);
 
     if (error.code === 11000) {
-      // Duplicate key error - should not happen with our upsert logic, but just in case
-      return res.status(400).json({ message: "Record already exists for this month" });
+      return res.status(400).json({ message: "Record already exists for this period" });
     }
 
     res.status(500).json({ message: "Failed to save risk record", error: error.message });
@@ -162,7 +175,7 @@ exports.getRiskHistory = async (req, res) => {
     }
 
     const records = await RiskRecord.find({ userId })
-      .sort({ year: 1, month: 1 })
+      .sort({ periodStart: 1, year: 1, month: 1 })
       .lean();
 
     if (records.length === 0) {
@@ -187,8 +200,10 @@ exports.getRiskHistory = async (req, res) => {
     // Format records for display
     const formattedRecords = records.map((record) => ({
       ...record,
-      monthName: getMonthName(record.month),
-      displayDate: `${getMonthName(record.month)} ${record.year}`,
+      monthName: record.month ? getMonthName(record.month) : null,
+      displayDate: record.periodStart
+        ? `${record.periodStart} – ${record.periodEnd || record.periodStart}`
+        : `${getMonthName(record.month)} ${record.year}`,
     }));
 
     res.json({

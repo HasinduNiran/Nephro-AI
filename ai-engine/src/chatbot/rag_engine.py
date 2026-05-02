@@ -94,12 +94,19 @@ class RAGEngine:
             
         return 'en'
 
-    def process_query(self, query: str, patient_id: str = "default_patient", chat_history: List[Dict[str, str]] = [], uploaded_file_uri: str = None) -> Dict[str, Any]:
+    def process_query(self, query: str, patient_id: str = "default_patient", chat_history: List[Dict[str, str]] = [], uploaded_file_uri: str = None, language: str = "auto", doc_client=None) -> Dict[str, Any]:
         Log.section(f"PROCESSING QUERY: '{query}'")
 
-        # 1. DETERMINE OUTPUT LANGUAGE FIRST (before cache check)
-        target_lang = self._detect_output_language(query)
-        Log.step("🔍", "Detecting Language", f"Result: {'SINHALA' if target_lang == 'si' else 'ENGLISH'}")
+        # 1. DETERMINE OUTPUT LANGUAGE — explicit user preference skips auto-detection
+        if language == "sinhala":
+            target_lang = "si"
+            Log.step("🌐", "Language", "SINHALA (user preference — detection skipped)")
+        elif language == "english":
+            target_lang = "en"
+            Log.step("🌐", "Language", "ENGLISH (user preference — detection skipped)")
+        else:
+            target_lang = self._detect_output_language(query)
+            Log.step("🔍", "Detecting Language", f"Result: {'SINHALA' if target_lang == 'si' else 'ENGLISH'}")
 
         # 2. CHECK CACHE (now includes language in key)
         cache_key = self.get_cache_key(query, patient_id, target_lang)
@@ -287,19 +294,29 @@ class RAGEngine:
         t_llm_start = time.time()
         
         llm_response = self.llm.generate_response(
-            query=english_query, 
+            query=english_query,
             context_documents=context_documents,
             patient_context=patient_context,
             history=chat_history,
-            uploaded_file_uri=uploaded_file_uri
+            uploaded_file_uri=uploaded_file_uri,
+            doc_client=doc_client
         )
         t_llm_end = time.time()
         Log.step("  ", "Generated Response", f"({t_llm_end - t_llm_start:.2f}s) {llm_response[:50]}...")
 
         # 6. STYLE LAYER (Translation Back)
         final_response = llm_response
-        
-        if target_lang == 'si':
+
+        # Guard: error strings must never enter the style LLM — it ignores them and hallucinates
+        _is_error_response = llm_response.startswith("Multimodal Error:") or llm_response.startswith("Error:")
+
+        if _is_error_response:
+            Log.warning("Error response from Brain — skipping style layer to prevent hallucination")
+            if target_lang == 'si':
+                final_response = "මට කණගාටුයි, ඔයාගේ ලේඛනය access කිරීමේ ගැටළුවක් ඇතිවුණා. කරුණාකර ලේඛනය නැවත upload කර ප්‍රශ්නය නැවත අහන්න."
+            else:
+                final_response = "Sorry, I couldn't access your document. Please try uploading it again."
+        elif target_lang == 'si':
             Log.step("🎨", "STYLE: Sinhala Localization...")
             final_response = self.llm.translate_to_sinhala_fallback(llm_response, user_intent=nlu_intent)
             Log.success(f"Final Output: {final_response[:50]}...")

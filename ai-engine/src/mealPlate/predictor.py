@@ -73,11 +73,13 @@ def predict_image_yolo(image_bytes):
                 class_id = int(box.cls[0])
                 class_name = model.names[class_id]
                 detected_foods.add(class_name)
-                
+
         return list(detected_foods)
 
     except Exception as e:
-        print(f"Error during prediction: {e}")
+        import traceback
+        print(f"[predictor] Error during YOLO prediction: {e}")
+        traceback.print_exc()
         return []
 
 
@@ -102,9 +104,13 @@ def predict_image_with_portions(image_bytes):
         return []
     
     try:
-        # 1. EXIF failsafe + force to 1524×1557 calibration resolution
-        cv_img = standardize_incoming_image(image_bytes)
-        pil_img = PILImage.fromarray(cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB))
+        # 1. Image loading — use cv2 standardization only if portion estimator is ready
+        if _portion_ready:
+            cv_img = standardize_incoming_image(image_bytes)
+            pil_img = PILImage.fromarray(cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB))
+        else:
+            pil_img = PILImage.open(io.BytesIO(image_bytes)).convert("RGB")
+            cv_img = None
         
         # 2. Run YOLO detection
         results = model.predict(pil_img, conf=0.25)
@@ -152,7 +158,9 @@ def predict_image_with_portions(image_bytes):
                 print(f"Portion estimation error: {pe}")
         
         return detected_items
-    
+
     except Exception as e:
-        print(f"Error during prediction: {e}")
+        import traceback
+        print(f"[predictor] Error during prediction: {e}")
+        traceback.print_exc()
         return []

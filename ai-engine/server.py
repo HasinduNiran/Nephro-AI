@@ -44,12 +44,14 @@ class LoginRequest(BaseModel):
     password: str
 
 class ChatRequest(BaseModel):
-    text: str
+    text: str = ""
     patient_id: str = "default_patient"
+    language: str = "auto"  # "sinhala", "english", or "auto" (legacy auto-detect)
 
 class TTSRequest(BaseModel):
     text: str
     urgency_flags: list = []  # list of {flag, term, ...} dicts from NLG engine
+    language: str = "auto"  # "sinhala", "english", or "auto"
 
 app.add_middleware(
     CORSMiddleware,
@@ -187,17 +189,23 @@ def clean_text_for_tts(text: str) -> str:
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
-async def generate_tts_file(text: str) -> Path:
+async def generate_tts_file(text: str, language: str = "auto") -> Path:
     """
     Hybrid TTS Generator:
     - Sinhala: Gemini TTS (Kore voice) with Edge-TTS fallback
     - English: Edge-TTS (AriaNeural)
+    language: "sinhala", "english", or "auto" (detect from text content)
     """
     # 0. Clean the text
     clean_text = clean_text_for_tts(text)
 
-    # 1. Detect Language
-    is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in text)
+    # 1. Resolve Language \u2014 explicit preference wins, fallback to content detection
+    if language == "sinhala":
+        is_sinhala = True
+    elif language == "english":
+        is_sinhala = False
+    else:
+        is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in text)
 
     # 1.5 🆕 TTS Phonetic Preprocessing (Angle 3: TTS Pronunciation Optimization)
     # Replaces English medical terms embedded in Sinhala with phonetic Singlish
@@ -474,6 +482,7 @@ async def upload_context(file: UploadFile = File(...), patient_id: str = Form("d
            
         SESSIONS[patient_id]["doc_uri"] = gemini_file.name
         SESSIONS[patient_id]["local_doc_path"] = str(temp_path)
+        SESSIONS[patient_id]["doc_client"] = client  # must use same key for files.get()
         
         Log.success(f"Document uploaded to Gemini: {gemini_file.name}")
         return {"success": True, "filename": file.filename, "message": "Document loaded successfully."}
@@ -510,14 +519,17 @@ async def text_to_speech(request: TTSRequest):
     Log.step("🔊", "TTS REQUEST", f"Length: {len(request.text)} chars")
 
     try:
-        output_audio_path = await generate_tts_file(request.text)
+        output_audio_path = await generate_tts_file(request.text, request.language)
 
         if output_audio_path.stat().st_size == 0:
             raise HTTPException(status_code=500, detail="TTS generation failed")
 
+        is_sinhala_tts = request.language == "sinhala" or (
+            request.language == "auto" and any('඀' <= c <= '෿' for c in request.text)
+        )
         return FileResponse(
             output_audio_path,
-            media_type="audio/mpeg",
+            media_type="audio/wav" if is_sinhala_tts else "audio/mpeg",
             headers={
                 "Content-Disposition": "attachment; filename=tts_output.mp3"
             }
@@ -542,7 +554,12 @@ async def text_to_speech_stream(request: TTSRequest):
         raise HTTPException(status_code=400, detail="Text is required")
 
     clean_text = clean_text_for_tts(request.text)
-    is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in request.text)
+    if request.language == "sinhala":
+        is_sinhala = True
+    elif request.language == "english":
+        is_sinhala = False
+    else:
+        is_sinhala = any('\u0D80' <= char <= '\u0DFF' for char in request.text)
 
     if is_sinhala and TTS_PHONETIC_ENABLED:
         clean_text = nlg_glossary.apply_tts_phonetics(clean_text)
@@ -689,10 +706,10 @@ async def text_chat(request: ChatRequest):
     # Retrieve THIS patient's history & document (default to empty list if new)
     user_history = SESSIONS[patient_id]["history"]
     doc_uri = SESSIONS[patient_id]["doc_uri"]
-    
+    doc_client = SESSIONS[patient_id].get("doc_client")
+
     loop = asyncio.get_event_loop()
-    # Pass user_history instead of CHAT_HISTORY, and doc_uri
-    result = await loop.run_in_executor(None, rag_engine.process_query, request.text, patient_id, user_history, doc_uri)
+    result = await loop.run_in_executor(None, rag_engine.process_query, request.text, patient_id, user_history, doc_uri, request.language, doc_client)
     
     # Update THIS patient's history
     user_history.append({"role": "user", "content": request.text})
@@ -714,9 +731,10 @@ async def text_chat(request: ChatRequest):
 @app.post("/chat/audio")
 @app.post("/api/chat/audio")
 async def audio_chat(
-    background_tasks: BackgroundTasks, 
-    file: UploadFile = File(...), 
-    patient_id: str = Form("default_patient")
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    patient_id: str = Form("default_patient"),
+    language: str = Form("auto"),
 ):
     Log.step("🎙️", "AUDIO REQUEST", f"Patient: {patient_id}")
 
@@ -751,13 +769,14 @@ async def audio_chat(
         # Retrieve THIS patient's history & document
         user_history = SESSIONS[patient_id]["history"]
         doc_uri = SESSIONS[patient_id]["doc_uri"]
+        doc_client = SESSIONS[patient_id].get("doc_client")
 
         if is_garbage:
             Log.warning("Detected Silence/Gibberish. Skipping processing.")
             transcribed_text = "(Silence/Noise)"
             response_text = "I couldn't hear you clearly. Please try again."
         else:
-            rag_result = await loop.run_in_executor(None, rag_engine.process_query, transcribed_text, patient_id, user_history, doc_uri)
+            rag_result = await loop.run_in_executor(None, rag_engine.process_query, transcribed_text, patient_id, user_history, doc_uri, language, doc_client)
             response_text = rag_result["response"]
 
             user_history.append({"role": "user", "content": transcribed_text})
@@ -767,8 +786,8 @@ async def audio_chat(
             SESSIONS[patient_id]["history"] = user_history
 
         # 5. Generate TTS (Gemini for Sinhala, Edge-TTS for English)
-        output_audio_path = await generate_tts_file(response_text)
-        
+        output_audio_path = await generate_tts_file(response_text, language)
+
         safe_transcription = base64.b64encode(transcribed_text.encode('utf-8')).decode('ascii')
         safe_response = base64.b64encode(response_text.encode('utf-8')).decode('ascii')
         sources_list = [m.get('source', 'Unknown') for m in rag_result.get("source_metadata", [])]
@@ -776,13 +795,16 @@ async def audio_chat(
 
         background_tasks.add_task(cleanup_file, str(input_path))
 
+        is_sinhala_response = language == "sinhala" or (
+            language == "auto" and any('඀' <= c <= '෿' for c in response_text)
+        )
         return FileResponse(
-            output_audio_path, 
-            media_type="audio/mpeg",
+            output_audio_path,
+            media_type="audio/wav" if is_sinhala_response else "audio/mpeg",
             headers={
                 "X-Transcription-B64": safe_transcription,
                 "X-Response-B64": safe_response,
-                "X-Sources-B64": safe_sources 
+                "X-Sources-B64": safe_sources,
             }
         )
 

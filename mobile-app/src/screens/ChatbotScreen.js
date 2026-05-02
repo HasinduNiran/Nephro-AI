@@ -44,6 +44,9 @@ import { CHATBOT_URL } from "../api/axiosConfig";
 // Use centralized URL from axiosConfig
 const BACKEND_URL = CHATBOT_URL;
 
+// Session-scoped language preference — survives navigation but resets on app close
+let _sessionLanguage = null;
+
 // Custom base64 decode for React Native (atob polyfill)
 const base64Decode = (str) => {
   const chars =
@@ -181,6 +184,12 @@ const ChatbotScreen = ({ route, navigation }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [attachedDoc, setAttachedDoc] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Explicit user language preference — "sinhala" or "english"
+  // null means the modal hasn't been answered yet
+  const [selectedLanguage, setSelectedLanguage] = useState(null);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
 
   // Default welcome message
   const welcomeMessage = {
@@ -235,6 +244,21 @@ const ChatbotScreen = ({ route, navigation }) => {
     };
     saveMessages();
   }, [messages, isInitialized]);
+
+  // Show language modal once per app session; skip if already chosen this session
+  useEffect(() => {
+    if (_sessionLanguage) {
+      setSelectedLanguage(_sessionLanguage);
+    } else {
+      setShowLanguageModal(true);
+    }
+  }, []);
+
+  const selectLanguage = (lang) => {
+    _sessionLanguage = lang;
+    setSelectedLanguage(lang);
+    setShowLanguageModal(false);
+  };
 
   // Debug log - Run only once on mount
   useEffect(() => {
@@ -335,8 +359,9 @@ const ChatbotScreen = ({ route, navigation }) => {
 
   const uploadDocument = async (file) => {
     setIsUploading(true);
+    setUploadProgress(0);
     setLoadingType("text");
-    setIsLoading(true); 
+    setIsLoading(true);
     setLoadingStep({ text: "Reading your report...", icon: "cloud-upload" });
 
     const formData = new FormData();
@@ -348,16 +373,18 @@ const ChatbotScreen = ({ route, navigation }) => {
     formData.append("patient_id", userID || "default_patient");
 
     try {
-      const response = await fetch(`${BACKEND_URL}/chat/upload_context`, {
-        method: "POST",
-        body: formData,
-      });
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
-      const data = await response.json();
-      console.log("Upload success:", data);
-      
+      const response = await axios.post(
+        `${BACKEND_URL}/chat/upload_context`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          onUploadProgress: (e) => {
+            if (e.total) setUploadProgress(e.loaded / e.total);
+          },
+        }
+      );
+      console.log("Upload success:", response.data);
+
       setMessages((prev) => [
         ...prev,
         {
@@ -376,6 +403,7 @@ const ChatbotScreen = ({ route, navigation }) => {
       setAttachedDoc(null);
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
       setIsLoading(false);
     }
   };
@@ -418,6 +446,7 @@ const ChatbotScreen = ({ route, navigation }) => {
     icon: "dots-horizontal",
   });
   const [loadingType, setLoadingType] = useState("text"); // 'audio' or 'text'
+  const [loadingStepIndex, setLoadingStepIndex] = useState(0);
   const [sound, setSound] = useState(null);
   const [metering, setMetering] = useState(-160);
   const [inputFocused, setInputFocused] = useState(false);
@@ -425,6 +454,7 @@ const ChatbotScreen = ({ route, navigation }) => {
   const [showTip, setShowTip] = useState(true);
   const [isTTSLoading, setIsTTSLoading] = useState(false);
   const [currentlyPlayingId, setCurrentlyPlayingId] = useState(null);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
   const soundRef = useRef(null);
   const fetchAbortRef = useRef(null); // AbortController for in-flight Sinhala TTS fetch
   const flatListRef = useRef();
@@ -438,7 +468,7 @@ const ChatbotScreen = ({ route, navigation }) => {
   const typingDots = useRef(new Animated.Value(0)).current;
 
   const markdownStyles = {
-    body: { color: COLORS.textDark, fontSize: 15, lineHeight: 22 },
+    body: { color: COLORS.textDark, fontSize: 17, lineHeight: 26, letterSpacing: 0.2 },
     bullet_list: { marginTop: 5, marginBottom: 5 },
     strong: { fontWeight: "700", color: COLORS.primaryDark },
     paragraph: { marginBottom: 8 },
@@ -506,11 +536,11 @@ const ChatbotScreen = ({ route, navigation }) => {
 
     const cleanText = text.replace(/[*#]/g, "").replace(/\[MAPS:.*?\]/g, "");
 
-    // Sinhala detection: true if ANY Sinhala Unicode character is present
-    const sinhalaCharCount = (text.match(/[\u0D80-\u0DFF]/g) || []).length;
-    const isSinhala = sinhalaCharCount > 0;
+    // Use explicit user language preference \u2014 zero detection latency, 100% accuracy
+    const isSinhala = (selectedLanguage || "auto") === "sinhala" ||
+      ((selectedLanguage || "auto") === "auto" && (text.match(/[\u0D80-\u0DFF]/g) || []).length > 0);
     console.log(
-      `[TTS] Language detection | sinhalaChars=${sinhalaCharCount} | isSinhala=${isSinhala} | engine=${isSinhala ? "GEMINI SERVER" : "LOCAL expo-speech"}`,
+      `[TTS] Language | preference=${selectedLanguage} | isSinhala=${isSinhala} | engine=${isSinhala ? "GEMINI SERVER" : "LOCAL expo-speech"}`,
     );
 
     // For English, use local expo-speech (fast, good quality)
@@ -586,7 +616,7 @@ const ChatbotScreen = ({ route, navigation }) => {
           const streamResponse = await fetch(`${BACKEND_URL}/chat/tts/stream`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text, urgency_flags: urgencyFlags }),
+            body: JSON.stringify({ text, urgency_flags: urgencyFlags, language: selectedLanguage || "auto" }),
             signal: abortController.signal,
           });
           if (fetchAbortRef.current === abortController)
@@ -616,7 +646,7 @@ const ChatbotScreen = ({ route, navigation }) => {
           const response = await fetch(`${BACKEND_URL}/chat/tts`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text }),
+            body: JSON.stringify({ text, language: selectedLanguage || "auto" }),
             signal: fallbackController.signal,
           });
           if (fetchAbortRef.current === fallbackController)
@@ -803,12 +833,14 @@ const ChatbotScreen = ({ route, navigation }) => {
       const steps = loadingType === "audio" ? audioSteps : textSteps;
 
       let i = 0;
-      setLoadingStep(steps[0]); // Start immediately
+      setLoadingStep(steps[0]);
+      setLoadingStepIndex(0);
 
       interval = setInterval(() => {
-        i = (i + 1) % steps.length; // Loop through steps
+        i = (i + 1) % steps.length;
         setLoadingStep(steps[i]);
-      }, 1500); // Update every 1.5 seconds
+        setLoadingStepIndex(i);
+      }, 1500);
     }
     return () => clearInterval(interval);
   }, [isLoading, loadingType]);
@@ -943,6 +975,7 @@ const ChatbotScreen = ({ route, navigation }) => {
       name: "voice_input.m4a",
     });
     formData.append("patient_id", userID || "default_patient");
+    formData.append("language", selectedLanguage || "auto");
 
     const userMsgId = Date.now().toString();
     setMessages((prev) => [
@@ -981,9 +1014,11 @@ const ChatbotScreen = ({ route, navigation }) => {
       // Read headers for the text response
       const b64ResponseText = response.headers.get("x-response-b64");
       const b64Sources = response.headers.get("x-sources-b64");
+      const b64Transcription = response.headers.get("x-transcription-b64");
 
       let responseText = "Audio Response";
       let sourcesText = "";
+      let transcribedText = "\uD83C\uDFA4 Voice Message";
 
       try {
         if (b64ResponseText) {
@@ -992,15 +1027,25 @@ const ChatbotScreen = ({ route, navigation }) => {
         if (b64Sources) {
           sourcesText = base64Decode(b64Sources);
         }
+        if (b64Transcription) {
+          transcribedText = base64Decode(b64Transcription);
+        }
       } catch (e) {
         console.log("Error decoding headers", e);
         // Fallback: try to use the base64 string directly
         if (b64ResponseText) responseText = b64ResponseText;
         if (b64Sources) sourcesText = b64Sources;
+        if (b64Transcription) transcribedText = b64Transcription;
       }
 
-      // Play server-generated audio (Gemini TTS for Sinhala, expo-speech for English)
-      const isSinhala = /[\u0D80-\u0DFF]/.test(responseText);
+      // Update voice message bubble with the actual transcribed text
+      setMessages((prev) =>
+        prev.map((m) => (m.id === userMsgId ? { ...m, text: transcribedText } : m))
+      );
+
+      // Use explicit language preference for audio routing \u2014 no detection needed
+      const isSinhala = (selectedLanguage || "auto") === "sinhala" ||
+        ((selectedLanguage || "auto") === "auto" && /[\u0D80-\u0DFF]/.test(responseText));
       if (isSinhala) {
         try {
           await Audio.setAudioModeAsync({
@@ -1019,8 +1064,10 @@ const ChatbotScreen = ({ route, navigation }) => {
             reader.readAsDataURL(audioBlob);
           });
 
+          // Gemini TTS returns WAV for Sinhala \u2014 use .wav extension so the decoder
+          // correctly identifies the format instead of misreading it as MP3.
           const fileUri =
-            FileSystem.cacheDirectory + `voice_response_${Date.now()}.mp3`;
+            FileSystem.cacheDirectory + `voice_response_${Date.now()}.wav`;
           await FileSystem.writeAsStringAsync(fileUri, base64Audio, {
             encoding: "base64", // string literal avoids EncodingType enum resolution bug
           });
@@ -1138,6 +1185,7 @@ const ChatbotScreen = ({ route, navigation }) => {
       const res = await axios.post(`${BACKEND_URL}/chat/text`, {
         text: text,
         patient_id: userID || "default_patient",
+        language: selectedLanguage || "auto",
       });
 
       const botReply = res.data.response;
@@ -1201,17 +1249,16 @@ const ChatbotScreen = ({ route, navigation }) => {
               { backgroundColor: COLORS.primary },
             ]}
           >
-            <Ionicons name="medical" size={18} color="white" />
+            <FontAwesome5 name="heartbeat" size={15} color="white" />
           </View>
         )}
 
-        <View style={{ maxWidth: "85%" }}>
+        <View style={{ maxWidth: "88%", flex: 1 }}>
           <View
             style={[
               styles.messageBubble,
               item.sender === "user" ? styles.userBubble : styles.botBubble,
               item.isError && styles.errorBubble,
-              // 🆕 Urgency flag styling (Angle 4: Empathy & Urgency Router)
               item.urgencyFlags?.some((f) => f.flag === "CRITICAL_URGENCY") &&
                 styles.criticalBubble,
               item.urgencyFlags?.some(
@@ -1229,7 +1276,6 @@ const ChatbotScreen = ({ route, navigation }) => {
               <Text style={styles.userText}>{item.text}</Text>
             ) : (
               <View>
-                {/* Parse for [MAPS:] tag */}
                 {(() => {
                   const mapTagMatch = item.text.match(/\[MAPS: (.*?)\]/);
                   const locationQuery = mapTagMatch ? mapTagMatch[1] : null;
@@ -1241,7 +1287,6 @@ const ChatbotScreen = ({ route, navigation }) => {
                     <>
                       <Markdown style={markdownStyles}>{displayText}</Markdown>
 
-                      {/* Navigate Button */}
                       {locationQuery && (
                         <TouchableOpacity
                           style={{
@@ -1266,9 +1311,7 @@ const ChatbotScreen = ({ route, navigation }) => {
                             color={COLORS.accent}
                             style={{ marginRight: 8 }}
                           />
-                          <Text
-                            style={{ color: COLORS.accent, fontWeight: "600" }}
-                          >
+                          <Text style={{ color: COLORS.accent, fontWeight: "600" }}>
                             Navigate to {locationQuery}
                           </Text>
                         </TouchableOpacity>
@@ -1279,64 +1322,96 @@ const ChatbotScreen = ({ route, navigation }) => {
               </View>
             )}
 
-            {/* Source Attribution Tag */}
+            {/* Source citation pills — replaces raw filename text */}
             {item.sender === "bot" && item.sources && !item.isError ? (
               <View style={styles.sourceContainer}>
                 <Ionicons
                   name="book-outline"
                   size={11}
                   color={COLORS.textLight}
-                  style={{ marginRight: 4 }}
+                  style={{ marginRight: 6, marginTop: 1 }}
                 />
-                <Text style={styles.sourceText}>{item.sources}</Text>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", flex: 1, gap: 6 }}>
+                  {item.sources
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean)
+                    .map((src, idx) => {
+                      // Extract a readable label: first meaningful word + year if present
+                      const year = src.match(/\d{4}/)?.[0];
+                      const name = src
+                        .replace(/[-_]/g, " ")
+                        .replace(/\.pdf$/i, "")
+                        .split(" ")
+                        .filter((w) => w.length > 3)
+                        .slice(0, 2)
+                        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                        .join(" ");
+                      const label = year ? `${name} (${year})` : name || `Ref ${idx + 1}`;
+                      return (
+                        <View key={idx} style={styles.sourcePill}>
+                          <Text style={styles.sourcePillText} numberOfLines={1}>
+                            {label}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                </View>
               </View>
             ) : null}
           </View>
 
-          {/* Timestamp + Audio Icon */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent:
-                item.sender === "user" ? "flex-end" : "flex-start",
-              alignItems: "center",
-              marginTop: 4,
-              marginHorizontal: 8,
-            }}
-          >
-            {item.timestamp && (
-              <Text style={{ fontSize: 11, color: COLORS.textLighter }}>
-                {item.timestamp}
-              </Text>
-            )}
-            {item.sender === "bot" && (
-              <TouchableOpacity
-                style={{ paddingLeft: 6 }}
-                onPress={() =>
-                  playServerTTS(item.text, item.id, item.urgencyFlags || [])
-                }
-                disabled={isTTSLoading && currentlyPlayingId !== item.id}
+          {/* Audio pill button — separate row for breathing room */}
+          {item.sender === "bot" && (
+            <TouchableOpacity
+              style={[
+                styles.audioPlayBtn,
+                currentlyPlayingId === item.id && styles.audioPlayBtnActive,
+              ]}
+              onPress={() =>
+                playServerTTS(item.text, item.id, item.urgencyFlags || [])
+              }
+              disabled={isTTSLoading && currentlyPlayingId !== item.id}
+              activeOpacity={0.75}
+            >
+              {isTTSLoading && currentlyPlayingId === item.id ? (
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              ) : (
+                <Ionicons
+                  name={currentlyPlayingId === item.id ? "stop-circle" : "volume-medium"}
+                  size={15}
+                  color={currentlyPlayingId === item.id ? COLORS.danger : COLORS.primary}
+                />
+              )}
+              <Text
+                style={[
+                  styles.audioPlayBtnText,
+                  currentlyPlayingId === item.id && { color: COLORS.danger },
+                ]}
               >
-                {isTTSLoading && currentlyPlayingId === item.id ? (
-                  <ActivityIndicator size="small" color={COLORS.primary} />
-                ) : (
-                  <Ionicons
-                    name={
-                      currentlyPlayingId === item.id
-                        ? "stop-circle"
-                        : "volume-medium"
-                    }
-                    size={18}
-                    color={
-                      currentlyPlayingId === item.id
-                        ? COLORS.danger
-                        : COLORS.textLighter
-                    }
-                  />
-                )}
-              </TouchableOpacity>
-            )}
-          </View>
+                {isTTSLoading && currentlyPlayingId === item.id
+                  ? "Loading..."
+                  : currentlyPlayingId === item.id
+                  ? "Stop"
+                  : "Play"}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Timestamp — own row */}
+          {item.timestamp && (
+            <Text
+              style={{
+                fontSize: 11,
+                color: COLORS.textLighter,
+                marginTop: 4,
+                marginHorizontal: 4,
+                textAlign: item.sender === "user" ? "right" : "left",
+              }}
+            >
+              {item.timestamp}
+            </Text>
+          )}
         </View>
 
         {item.sender === "user" && (
@@ -1358,33 +1433,21 @@ const ChatbotScreen = ({ route, navigation }) => {
     if (!showTip) return null;
     return (
       <View style={styles.tipsContainer}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 8,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 14,
-              fontWeight: "700",
-              color: COLORS.primaryDark,
-            }}
-          >
-            💡 Quick Tip
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <Text style={{ fontSize: 14, fontWeight: "700", color: COLORS.primaryDark }}>
+            💡 Quick Tips
           </Text>
-          <TouchableOpacity
-            onPress={() => setShowTip(false)}
-            style={{ padding: 4 }}
-          >
+          <TouchableOpacity onPress={() => setShowTip(false)} style={{ padding: 4 }}>
             <Ionicons name="close" size={18} color={COLORS.textMedium} />
           </TouchableOpacity>
         </View>
         <View style={styles.tipItem}>
           <Ionicons name="mic" size={16} color={COLORS.accent} />
           <Text style={styles.tipText}>Hold the mic button to speak</Text>
+        </View>
+        <View style={[styles.tipItem, { marginTop: 6 }]}>
+          <Ionicons name="volume-medium" size={16} color={COLORS.primary} />
+          <Text style={styles.tipText}>Tap Play on any response to hear it aloud</Text>
         </View>
       </View>
     );
@@ -1410,7 +1473,7 @@ const ChatbotScreen = ({ route, navigation }) => {
           </TouchableOpacity>
           <View style={styles.headerCenter}>
             <View style={styles.headerIconContainer}>
-              <Ionicons name="medical" size={22} color={COLORS.white} />
+              <FontAwesome5 name="heartbeat" size={19} color={COLORS.white} />
               <View style={styles.onlineIndicator} />
             </View>
             <View>
@@ -1430,6 +1493,18 @@ const ChatbotScreen = ({ route, navigation }) => {
           >
             <Ionicons name="trash-outline" size={22} color={COLORS.textLight} />
           </TouchableOpacity>
+
+          {/* Language toggle chip */}
+          <TouchableOpacity
+            style={styles.langChip}
+            activeOpacity={0.7}
+            onPress={() => setShowLanguageModal(true)}
+          >
+            <Ionicons name="globe-outline" size={13} color={COLORS.primary} />
+            <Text style={[styles.langChipText, { marginLeft: 4 }]}>
+              {selectedLanguage === "sinhala" ? "සිංහල" : "English"}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <FlatList
@@ -1445,6 +1520,11 @@ const ChatbotScreen = ({ route, navigation }) => {
             flatListRef.current?.scrollToEnd({ animated: true })
           }
           onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+          onScroll={({ nativeEvent: { layoutMeasurement, contentOffset, contentSize } }) => {
+            const distanceFromBottom = contentSize.height - contentOffset.y - layoutMeasurement.height;
+            setShowScrollBtn(distanceFromBottom > 120);
+          }}
+          scrollEventThrottle={100}
           ListHeaderComponent={messages.length <= 1 ? <WelcomeTips /> : null}
           ListFooterComponent={
             isTyping ? (
@@ -1457,7 +1537,7 @@ const ChatbotScreen = ({ route, navigation }) => {
                 }}
               >
                 <View style={styles.avatarContainer}>
-                  <Ionicons name="medical" size={18} color="white" />
+                  <FontAwesome5 name="heartbeat" size={15} color="white" />
                 </View>
                 {/* Sleek minimal pill */}
                 <View
@@ -1489,50 +1569,87 @@ const ChatbotScreen = ({ route, navigation }) => {
                       originWhitelist={["*"]}
                     />
                   </View>
-                  <Text
-                    style={{
-                      color: COLORS.textMedium,
-                      fontSize: 13,
-                      fontStyle: "italic",
-                    }}
-                  >
-                    {loadingStep.text}
-                  </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: COLORS.textMedium, fontSize: 13, fontStyle: "italic" }}>
+                      {loadingStep.text}
+                    </Text>
+                    {/* Progress bar: each step fills 20% */}
+                    <View style={{ height: 3, borderRadius: 2, backgroundColor: COLORS.cardBorder, marginTop: 6, overflow: "hidden" }}>
+                      <View
+                        style={{
+                          height: 3,
+                          borderRadius: 2,
+                          backgroundColor: COLORS.primary,
+                          width: `${((loadingStepIndex + 1) / 5) * 100}%`,
+                        }}
+                      />
+                    </View>
+                  </View>
                 </View>
               </View>
             ) : null
           }
         />
 
+        {/* Scroll-to-bottom FAB */}
+        {showScrollBtn && (
+          <TouchableOpacity
+            style={styles.scrollFAB}
+            onPress={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="chevron-down" size={20} color={COLORS.white} />
+          </TouchableOpacity>
+        )}
+
         {attachedDoc && (
           <View style={{
-            flexDirection: 'row',
-            alignItems: 'center',
             backgroundColor: COLORS.primaryLight,
-            padding: 8,
             paddingHorizontal: 12,
+            paddingTop: 8,
+            paddingBottom: isUploading ? 4 : 8,
             marginHorizontal: 16,
             marginBottom: 8,
             borderRadius: 8,
             borderWidth: 1,
             borderColor: COLORS.primary + '40',
           }}>
-            <MaterialCommunityIcons name="file-document-outline" size={20} color={COLORS.primary} />
-            <Text style={{ flex: 1, marginLeft: 8, color: COLORS.primaryDark, fontSize: 13, fontWeight: '500' }} numberOfLines={1}>
-              {attachedDoc.name}
-            </Text>
-            <TouchableOpacity onPress={() => {
-              Alert.alert(
-                "Remove Document", 
-                "This will also clear your current chat history. Continue?",
-                [
-                  { text: "Cancel", style: "cancel" },
-                  { text: "Remove", style: "destructive", onPress: removeDocument }
-                ]
-              );
-            }}>
-              <Ionicons name="close-circle" size={20} color={COLORS.danger} />
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {isUploading
+                ? <ActivityIndicator size={18} color={COLORS.primary} />
+                : <MaterialCommunityIcons name="file-document-outline" size={20} color={COLORS.primary} />
+              }
+              <Text style={{ flex: 1, marginLeft: 8, color: COLORS.primaryDark, fontSize: 13, fontWeight: '500' }} numberOfLines={1}>
+                {isUploading
+                  ? `Uploading… ${Math.round(uploadProgress * 100)}%`
+                  : attachedDoc.name
+                }
+              </Text>
+              {!isUploading && (
+                <TouchableOpacity onPress={() => {
+                  Alert.alert(
+                    "Remove Document",
+                    "This will also clear your current chat history. Continue?",
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      { text: "Remove", style: "destructive", onPress: removeDocument }
+                    ]
+                  );
+                }}>
+                  <Ionicons name="close-circle" size={20} color={COLORS.danger} />
+                </TouchableOpacity>
+              )}
+            </View>
+            {isUploading && (
+              <View style={{ height: 3, backgroundColor: COLORS.primary + '30', borderRadius: 2, marginTop: 6 }}>
+                <View style={{
+                  height: 3,
+                  width: `${Math.round(uploadProgress * 100)}%`,
+                  backgroundColor: COLORS.primary,
+                  borderRadius: 2,
+                }} />
+              </View>
+            )}
           </View>
         )}
 
@@ -1554,7 +1671,7 @@ const ChatbotScreen = ({ route, navigation }) => {
               <View style={{ flex: 1 }}>
                 <TextInput
                   style={[styles.input, { paddingHorizontal: 0 }]}
-                  placeholder="Ask about your health..."
+                  placeholder={selectedLanguage === "sinhala" ? "සිංහල හෝ English ලිවිය හැකිය..." : "Ask in English or Sinhala..."}
                   value={message}
                   onChangeText={setMessage}
                   placeholderTextColor={COLORS.textLighter}
@@ -1648,6 +1765,48 @@ const ChatbotScreen = ({ route, navigation }) => {
             </View>
 
             <Text style={styles.releaseHint}>Release to send</Text>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ── Language Selection Modal ─────────────────────────────────── */}
+      <Modal
+        visible={showLanguageModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => selectedLanguage && setShowLanguageModal(false)}
+      >
+        <View style={styles.langModalOverlay}>
+          <View style={styles.langModalCard}>
+            <Ionicons name="language" size={40} color={COLORS.primary} style={{ marginBottom: 12 }} />
+            <Text style={styles.langModalTitle}>
+              Select Language
+            </Text>
+            <Text style={styles.langModalSubtitle}>
+              Please select your preferred language{"\n"}
+              කරුණාකර ඔබේ භාෂාව තෝරන්න
+            </Text>
+
+            <TouchableOpacity
+              style={[styles.langBtn, selectedLanguage === "sinhala" && styles.langBtnActive]}
+              activeOpacity={0.8}
+              onPress={() => selectLanguage("sinhala")}
+            >
+              <Text style={[styles.langBtnText, selectedLanguage === "sinhala" && styles.langBtnTextActive]}>
+                සිංහල
+              </Text>
+              <Text style={styles.langBtnSub}>Sinhala</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.langBtn, selectedLanguage === "english" && styles.langBtnActive]}
+              activeOpacity={0.8}
+              onPress={() => selectLanguage("english")}
+            >
+              <Text style={[styles.langBtnText, selectedLanguage === "english" && styles.langBtnTextActive]}>
+                English
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -1764,7 +1923,10 @@ const styles = StyleSheet.create({
   },
 
   messageBubble: {
-    padding: 14,
+    paddingTop: 14,
+    paddingBottom: 12,
+    paddingLeft: 16,
+    paddingRight: 16,
     borderRadius: 18,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -1774,7 +1936,7 @@ const styles = StyleSheet.create({
   },
 
   userBubble: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.primaryDark,
     borderBottomRightRadius: 4,
   },
 
@@ -1783,6 +1945,8 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.primaryLight,
   },
 
   errorBubble: {
@@ -1814,12 +1978,15 @@ const styles = StyleSheet.create({
 
   userText: {
     color: COLORS.white,
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 17,
+    lineHeight: 26,
+    letterSpacing: 0.2,
   },
 
   botText: {
     color: COLORS.textDark,
+    fontSize: 17,
+    lineHeight: 26,
   },
 
   timestamp: {
@@ -1841,11 +2008,70 @@ const styles = StyleSheet.create({
 
   sourceContainer: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginTop: 10,
     paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: COLORS.cardBorder,
+  },
+
+  sourcePill: {
+    backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    maxWidth: 160,
+  },
+
+  sourcePillText: {
+    fontSize: 11,
+    color: COLORS.textMedium,
+    fontWeight: "500",
+  },
+
+  audioPlayBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    marginTop: 6,
+    marginLeft: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    backgroundColor: COLORS.primaryLight,
+    borderWidth: 1,
+    borderColor: COLORS.primary + "30",
+    gap: 5,
+  },
+
+  audioPlayBtnActive: {
+    backgroundColor: "#FFF0F0",
+    borderColor: COLORS.danger + "50",
+  },
+
+  audioPlayBtnText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+
+  scrollFAB: {
+    position: "absolute",
+    right: 16,
+    bottom: 80,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: COLORS.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
   },
 
   sourceText: {
@@ -2115,14 +2341,19 @@ const styles = StyleSheet.create({
   // TIPS SECTION
   // ═══════════════════════════════════════════════════════
   tipsContainer: {
-    backgroundColor: COLORS.primaryLight,
+    backgroundColor: COLORS.white,
     marginHorizontal: 16,
     marginTop: 8,
     marginBottom: 16,
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: COLORS.primary + "20",
+    borderColor: COLORS.cardBorder,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
 
   tipsTitle: {
@@ -2154,6 +2385,85 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     fontStyle: "italic",
+  },
+
+  // ── Language Chip (header) ───────────────────────────────────────────
+  langChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+    backgroundColor: COLORS.primary + "18",
+    borderWidth: 1,
+    borderColor: COLORS.primary + "40",
+    marginLeft: 8,
+  },
+  langChipText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: COLORS.primary,
+  },
+
+  // ── Language Selection Modal ─────────────────────────────────────────
+  langModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  langModalCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: 24,
+    padding: 28,
+    alignItems: "center",
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  langModalTitle: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: COLORS.textDark,
+    marginBottom: 8,
+  },
+  langModalSubtitle: {
+    fontSize: 14,
+    color: COLORS.textMedium,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  langBtn: {
+    width: "100%",
+    paddingVertical: 16,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: COLORS.cardBorder,
+    alignItems: "center",
+    marginBottom: 12,
+    backgroundColor: COLORS.background,
+  },
+  langBtnActive: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primary + "12",
+  },
+  langBtnText: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: COLORS.textDark,
+  },
+  langBtnTextActive: {
+    color: COLORS.primary,
+  },
+  langBtnSub: {
+    fontSize: 13,
+    color: COLORS.textMedium,
+    marginTop: 2,
   },
 });
 
