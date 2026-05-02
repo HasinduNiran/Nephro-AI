@@ -102,9 +102,13 @@ def predict_image_with_portions(image_bytes):
         return []
     
     try:
-        # 1. EXIF failsafe + force to 1524×1557 calibration resolution
-        cv_img = standardize_incoming_image(image_bytes)
-        pil_img = PILImage.fromarray(cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB))
+        # 1. Image loading — use cv2 standardization only if portion estimator is ready
+        if _portion_ready:
+            cv_img = standardize_incoming_image(image_bytes)
+            pil_img = PILImage.fromarray(cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB))
+        else:
+            pil_img = PILImage.open(io.BytesIO(image_bytes)).convert("RGB")
+            cv_img = None
         
         # 2. Run YOLO detection
         results = model.predict(pil_img, conf=0.25)
