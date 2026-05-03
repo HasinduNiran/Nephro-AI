@@ -1025,7 +1025,8 @@ const ChatbotScreen = ({ route, navigation }) => {
       ...prev,
       {
         id: userMsgId,
-        text: "🎤 Voice Message",
+        text: "",
+        isVoice: true,
         sender: "user",
         timestamp: new Date().toLocaleTimeString("en-US", {
           hour: "2-digit",
@@ -1081,10 +1082,6 @@ const ChatbotScreen = ({ route, navigation }) => {
         if (b64Transcription) transcribedText = b64Transcription;
       }
 
-      // Update voice message bubble with the actual transcribed text
-      setMessages((prev) =>
-        prev.map((m) => (m.id === userMsgId ? { ...m, text: transcribedText } : m))
-      );
 
       // Use explicit language preference for audio routing \u2014 no detection needed
       const isSinhala = (selectedLanguage || "auto") === "sinhala" ||
@@ -1318,7 +1315,14 @@ const ChatbotScreen = ({ route, navigation }) => {
             ]}
           >
             {item.sender === "user" ? (
-              <Text style={styles.userText}>{item.text}</Text>
+              item.isVoice ? (
+                <View style={styles.voiceMsgRow}>
+                  <Ionicons name="mic" size={16} color="white" />
+                  <Text style={[styles.userText, { marginLeft: 6 }]}>Voice message</Text>
+                </View>
+              ) : (
+                <Text style={styles.userText}>{item.text}</Text>
+              )
             ) : (
               <View>
                 {(() => {
@@ -2014,6 +2018,10 @@ const styles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 26,
     letterSpacing: 0.2,
+  },
+  voiceMsgRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   botText: {
