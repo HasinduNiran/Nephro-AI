@@ -199,12 +199,14 @@ const foodNutrientDB = {
 };
 
 const MealAnalysisScreen = ({ route, navigation }) => {
-  const { wallet, addNutrients, checkSafety, getLimits } = useWallet();
+  const { wallet, addNutrients, checkSafety, getLimits, ckdStage, updateStage } = useWallet();
   const [userId, setUserId] = useState(route.params?.userId || null);
+  const [userEmail, setUserEmail] = useState(null); // used to fetch real CKD stage
   const [imageUri, setImageUri] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
+  const [ckdStageSource, setCkdStageSource] = useState(null); // 'predicted' | 'default'
 
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -217,24 +219,64 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   const [alignmentImageUri, setAlignmentImageUri] = useState(null); // mask alignment check
 
   useEffect(() => {
-    const loadUserId = async () => {
-      if (!userId) {
-        try {
-          const storedUser = await AsyncStorage.getItem("user");
-          if (storedUser) {
-            const userData = JSON.parse(storedUser);
-            setUserId(userData._id || userData.id || "temp_user_001");
-          } else {
-            setUserId("temp_user_001");
-          }
-        } catch (error) {
-          console.error("Error loading user:", error);
+    const loadUser = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem("user");
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          if (!userId) setUserId(userData._id || userData.id || "temp_user_001");
+          setUserEmail(userData.email || null);  // always load email for CKD stage lookup
+        } else if (!userId) {
           setUserId("temp_user_001");
         }
+      } catch (error) {
+        console.error("Error loading user:", error);
+        if (!userId) setUserId("temp_user_001");
       }
     };
-    loadUserId();
+    loadUser();
   }, []);
+
+  // --- FETCH REAL CKD STAGE FROM BACKEND ---
+  // Fires once userEmail is available. Looks up the patient's latest
+  // StageProgressionRecord and applies the correct nutrient limits.
+  useEffect(() => {
+    if (!userEmail) {
+      console.log("[CKD-STAGE] ⚠️  userEmail not yet available — skipping stage fetch");
+      return;
+    }
+
+    const fetchRealCKDStage = async () => {
+      const url = `/mealPlate/ckd-stage/${encodeURIComponent(userEmail)}`;
+      console.log(`[CKD-STAGE] 🔍 Fetching CKD stage for email: "${userEmail}"`);
+      console.log(`[CKD-STAGE] 🌐 Request URL: ${url}`);
+
+      try {
+        const response = await axios.get(url);
+        console.log("[CKD-STAGE] 📦 Raw server response:", JSON.stringify(response.data));
+
+        if (response.data?.success && response.data?.ckdStage) {
+          const fetchedStage = response.data.ckdStage;
+          const source = response.data.source; // 'predicted' or 'default'
+
+          console.log(`[CKD-STAGE] ✅ Stage received: ${fetchedStage}  |  Source: "${source}"`);
+          console.log(`[CKD-STAGE] 🔄 Calling updateStage(${fetchedStage}) — WalletContext limits will update now`);
+
+          updateStage(fetchedStage);
+          setCkdStageSource(source);
+
+          console.log(`[CKD-STAGE] ✔️  Done — MealAnalysisScreen is now using Stage ${fetchedStage} nutrient limits`);
+        } else {
+          console.warn("[CKD-STAGE] ⚠️  Response missing ckdStage or success=false:", response.data);
+        }
+      } catch (err) {
+        console.warn("[CKD-STAGE] 🔴 Network/server error fetching CKD stage:", err.message);
+        console.warn("[CKD-STAGE]    Keeping existing WalletContext stage value as fallback");
+      }
+    };
+
+    fetchRealCKDStage();
+  }, [userEmail]);
 
   const handleCameraPress = () => {
     setImageSource("camera");
@@ -405,54 +447,27 @@ const MealAnalysisScreen = ({ route, navigation }) => {
 
         // --- AUTO PORTION: Use AI-estimated grams if available ---
         let autoAmount = "1";
-        let autoUnit =
-          units && units.length > 0 && units[0] ? units[0] : "grams";
+        let autoUnit = "grams";
+        let estimatedGramsValue = null;
+
+        // Try to get estimated grams from the object, handling possible variations in the property name
+        if (item.autoPortionGrams !== undefined) {
+          estimatedGramsValue = item.autoPortionGrams;
+        } else if (item.estimated_grams !== undefined) {
+          estimatedGramsValue = item.estimated_grams;
+        } else if (item.grams !== undefined) {
+          estimatedGramsValue = item.grams;
+        } else if (item.portion_grams !== undefined) {
+          estimatedGramsValue = item.portion_grams;
+        }
 
         if (
           hasAutoPortions &&
-          item.estimated_grams &&
-          item.estimated_grams > 0
+          estimatedGramsValue !== null &&
+          estimatedGramsValue > 0
         ) {
-          // Convert grams to the best matching unit
-          const localFood = lookupFood(foodName);
-          if (localFood && localFood.units) {
-            // Find the unit whose weight best matches the estimated grams
-            let bestUnit = null;
-            let bestAmount = 1;
-            let bestDiff = Infinity;
-
-            for (const [unitName, unitGrams] of Object.entries(
-              localFood.units,
-            )) {
-              if (!unitName || unitName === "undefined") continue;
-              // How many of this unit = estimated grams?
-              const count = item.estimated_grams / unitGrams;
-              // Round to nearest 0.5
-              const rounded = Math.round(count * 2) / 2;
-              if (rounded >= 0.5) {
-                const diff = Math.abs(
-                  rounded * unitGrams - item.estimated_grams,
-                );
-                if (diff < bestDiff) {
-                  bestDiff = diff;
-                  bestUnit = unitName;
-                  bestAmount = rounded;
-                }
-              }
-            }
-
-            if (bestUnit) {
-              autoUnit = bestUnit;
-              autoAmount = String(bestAmount);
-            }
-          } else {
-            // No unit conversion possible, use grams directly
-            autoUnit = "grams";
-            autoAmount = String(item.estimated_grams);
-            if (!units.includes("grams")) {
-              units = ["grams", ...units];
-            }
-          }
+          autoAmount = String(Math.round(estimatedGramsValue));
+          autoUnit = "grams";
         }
 
         return {
@@ -462,8 +477,8 @@ const MealAnalysisScreen = ({ route, navigation }) => {
           availableUnits: units && units.length > 0 ? units : ["grams"],
           hasVariants: variants !== null,
           variants: variants || [],
-          autoEstimated: hasAutoPortions && item.estimated_grams > 0,
-          autoPortionGrams: item.estimated_grams || null, // raw AI grams — source of truth
+          autoEstimated: hasAutoPortions && estimatedGramsValue > 0,
+          autoPortionGrams: estimatedGramsValue ? Math.round(estimatedGramsValue) : null, // raw AI grams — source of truth
           manuallyEdited: false,                          // set true when user changes amount/unit
           compartment: item.compartment || null,
         };
@@ -757,11 +772,14 @@ const MealAnalysisScreen = ({ route, navigation }) => {
       const units = Object.keys(foodData.units).filter(
         (u) => u && u !== "undefined",
       );
+      // Give them 'grams' as a fallback if they want
+      const availableUnits = units.length > 0 ? units : ["grams"];
+      
       const newItem = {
         food: foodName,
         amount: "1",
-        unit: units[0] || "grams",
-        availableUnits: units.length > 0 ? units : ["grams"],
+        unit: availableUnits[0], // Fallback to household unit explicitly
+        availableUnits: availableUnits,
         isManuallyAdded: true,
       };
       setItems([...items, newItem]);
@@ -936,7 +954,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                 </View>
 
                 {/* Amount + Unit inputs for manually added items; grams display for AI-estimated */}
-                {item.isManuallyAdded ? (
+                {item.isManuallyAdded || item.manuallyEdited ? (
                   <View style={styles.portionRow}>
                     <View style={styles.portionControl}>
                       <Text style={styles.portionLabel}>Amount</Text>
@@ -982,10 +1000,61 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                         {" "}· AI · {item.compartment?.replace(/_/g, " ")}
                       </Text>
                     )}
+                    <TouchableOpacity
+                      onPress={() => {
+                        const localFood = lookupFood(item.food);
+                        let firstUnit = "grams";
+                        if (localFood && localFood.units) {
+                          const unitKeys = Object.keys(localFood.units).filter(u => u !== "undefined");
+                          if (unitKeys.length > 0) {
+                            firstUnit = unitKeys[0];
+                          }
+                        }
+                        updateRow(index, "unit", firstUnit);
+                        updateRow(index, "manuallyEdited", true);
+                      }}
+                      style={{ marginLeft: 10, padding: 4 }}
+                    >
+                      <Ionicons name="create-outline" size={18} color="#555" />
+                    </TouchableOpacity>
                   </View>
                 )}
               </View>
             ))}
+
+            <View style={styles.stageSelectorContainer}>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+                <Text style={styles.stageSelectorLabel}>CKD Stage for Nutrient Limits:</Text>
+                {ckdStageSource === "predicted" && (
+                  <View style={{ backgroundColor: "#d4edda", borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2, marginLeft: 8 }}>
+                    <Text style={{ fontSize: 10, color: "#155724", fontWeight: "700" }}>✓ Auto-loaded</Text>
+                  </View>
+                )}
+                {ckdStageSource === "default" && (
+                  <View style={{ backgroundColor: "#fff3cd", borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2, marginLeft: 8 }}>
+                    <Text style={{ fontSize: 10, color: "#856404", fontWeight: "700" }}>No prediction found</Text>
+                  </View>
+                )}
+              </View>
+              <View style={styles.stagePickerWrapper}>
+                <Picker
+                  selectedValue={ckdStage}
+                  style={styles.stagePicker}
+                  onValueChange={(itemValue) => updateStage(parseInt(itemValue))}
+                >
+                  <Picker.Item label="Stage 1 (Mild)" value={1} />
+                  <Picker.Item label="Stage 2 (Mild)" value={2} />
+                  <Picker.Item label="Stage 3 (Moderate)" value={3} />
+                  <Picker.Item label="Stage 4 (Severe)" value={4} />
+                  <Picker.Item label="Stage 5 (Failure)" value={5} />
+                </Picker>
+              </View>
+              <Text style={styles.stageHelpText}>
+                {ckdStageSource === "predicted"
+                  ? "Loaded from your latest CKD prediction — you can override if needed"
+                  : "Nutrient safety limits adjust automatically"}
+              </Text>
+            </View>
 
             <TouchableOpacity
               style={styles.checkBtn}
@@ -1327,6 +1396,39 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 5,
+  },
+  stageSelectorContainer: {
+    backgroundColor: "#F7FAFC",
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginBottom: 16,
+    marginTop: 10,
+  },
+  stageSelectorLabel: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#4A5568",
+    marginBottom: 6,
+  },
+  stagePickerWrapper: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  stagePicker: {
+    height: 50,
+    width: "100%",
+  },
+  stageHelpText: {
+    fontSize: 12,
+    color: "#718096",
+    marginTop: 6,
+    fontStyle: "italic",
+    textAlign: "center",
   },
   checkBtn: {
     backgroundColor: "#4A5568",

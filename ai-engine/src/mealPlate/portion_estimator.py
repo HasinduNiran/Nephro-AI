@@ -294,8 +294,9 @@ def estimate_portion(food_name, food_mask, cx, cy):
     depth_factor  = FOOD_DEPTH_FACTOR.get(food_name, FOOD_DEPTH_FACTOR["_default"])
 
     fill_ratio     = food_pixels / comp_total_px
-    food_volume_ml = fill_ratio * comp_volume * heaping_mult * depth_factor
-    food_grams     = food_volume_ml * density
+    fill_level     = fill_ratio * 2.5
+    food_volume_cm3 = food_pixels * 0.00026958 * fill_level
+    food_grams     = food_volume_cm3 * density
 
     cap = MAX_GRAMS_PER_COMPARTMENT.get(compartment, 300)
     if food_grams > cap:
@@ -304,8 +305,8 @@ def estimate_portion(food_name, food_mask, cx, cy):
 
     print(
         f"[Portion] {food_name:<26} | {compartment:<10} "
-        f"| px={food_pixels:>7,} fill={fill_ratio:.3f} depth={depth_factor} "
-        f"heap={heaping_mult} vol={food_volume_ml:.1f}ml -> {food_grams:.1f}g"
+        f"| px={food_pixels:>7,} fill={fill_ratio:.3f} level={fill_level:.2f}cm "
+        f"vol={food_volume_cm3:.1f}cm3 -> {food_grams:.1f}g"
     )
 
     return {
@@ -314,10 +315,9 @@ def estimate_portion(food_name, food_mask, cx, cy):
         "food_pixels":        food_pixels,
         "compartment_pixels": comp_total_px,
         "fill_ratio":         round(fill_ratio, 4),
-        "heaping_factor":     heaping_mult,
-        "depth_factor":       depth_factor,
-        "food_volume_ml":     round(food_volume_ml, 1),
-        "density_g_per_ml":   density,
+        "fill_level_cm":      round(fill_level, 2),
+        "food_volume_cm3":    round(food_volume_cm3, 1),
+        "density_g_per_cm3":  density,
         "estimated_grams":    round(food_grams, 1),
         "confidence":         _confidence(fill_ratio, food_pixels),
     }
@@ -496,6 +496,40 @@ def estimate_all_portions(cv_img, yolo_boxes, debug_save_path=None):
         est["bbox"] = [ox1, oy1, ox2, oy2]
         results.append(est)
         debug_items.append((food_mask, est, (bx1, by1, bx2, by2)))
+
+    # --- NORMALIZE MULTIPLE FOODS IN SAME COMPARTMENT ---
+    # Ensure total fill_ratio per compartment does not exceed 1.0
+    comp_totals = {}
+    for est in results:
+        comp = est.get("compartment")
+        if comp:
+            comp_totals[comp] = comp_totals.get(comp, 0) + est.get("food_pixels", 0)
+
+    for est in results:
+        comp = est.get("compartment")
+        if comp and comp_totals[comp] > 0:
+            comp_px = COMPARTMENT_PIXELS.get(comp, 1)
+            # If foods spill over mathematically, scale them down proportionally
+            if comp_totals[comp] > comp_px:
+                scale = comp_px / comp_totals[comp]
+                new_px = int(est["food_pixels"] * scale)
+                est["food_pixels"] = new_px
+                
+                # Recalculate using exact physical formula
+                new_fill = new_px / comp_px
+                new_level = new_fill * 2.5
+                new_vol_cm3 = new_px * 0.00026958 * new_level
+                new_grams = new_vol_cm3 * est.get("density_g_per_cm3", 1.0)
+                
+                cap = MAX_GRAMS_PER_COMPARTMENT.get(comp, 300)
+                if new_grams > cap:
+                    new_grams = float(cap)
+                
+                est["fill_ratio"] = round(new_fill, 4)
+                est["fill_level_cm"] = round(new_level, 2)
+                est["food_volume_cm3"] = round(new_vol_cm3, 1)
+                est["estimated_grams"] = round(new_grams, 1)
+                print(f"[Portion NORMALIZE] {est['food']} scaled down: new px={new_px}, new fill={est['fill_ratio']}, new grams={est['estimated_grams']}g")
 
     if debug_save_path:
         try:
