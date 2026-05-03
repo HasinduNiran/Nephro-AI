@@ -44,6 +44,9 @@ import { CHATBOT_URL } from "../api/axiosConfig";
 // Use centralized URL from axiosConfig
 const BACKEND_URL = CHATBOT_URL;
 
+// Session-scoped language preference — survives navigation but resets on app close
+let _sessionLanguage = null;
+
 // Custom base64 decode for React Native (atob polyfill)
 const base64Decode = (str) => {
   const chars =
@@ -175,13 +178,13 @@ const ChatbotScreen = ({ route, navigation }) => {
 
   // Chat storage key unique to each user
   const CHAT_STORAGE_KEY = `chat_messages_${userID || "guest"}`;
-  const LANG_STORAGE_KEY = `language_preference_${userID || "guest"}`;
 
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [attachedDoc, setAttachedDoc] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Explicit user language preference — "sinhala" or "english"
   // null means the modal hasn't been answered yet
@@ -242,29 +245,19 @@ const ChatbotScreen = ({ route, navigation }) => {
     saveMessages();
   }, [messages, isInitialized]);
 
-  // Load saved language preference; show modal if not set yet
+  // Show language modal once per app session; skip if already chosen this session
   useEffect(() => {
-    const loadLanguage = async () => {
-      try {
-        const saved = await AsyncStorage.getItem(LANG_STORAGE_KEY);
-        if (saved === "sinhala" || saved === "english") {
-          setSelectedLanguage(saved);
-        } else {
-          setShowLanguageModal(true);
-        }
-      } catch (e) {
-        setShowLanguageModal(true);
-      }
-    };
-    loadLanguage();
+    if (_sessionLanguage) {
+      setSelectedLanguage(_sessionLanguage);
+    } else {
+      setShowLanguageModal(true);
+    }
   }, []);
 
-  const selectLanguage = async (lang) => {
+  const selectLanguage = (lang) => {
+    _sessionLanguage = lang;
     setSelectedLanguage(lang);
     setShowLanguageModal(false);
-    try {
-      await AsyncStorage.setItem(LANG_STORAGE_KEY, lang);
-    } catch (e) { /* non-critical */ }
   };
 
   // Debug log - Run only once on mount
@@ -366,8 +359,9 @@ const ChatbotScreen = ({ route, navigation }) => {
 
   const uploadDocument = async (file) => {
     setIsUploading(true);
+    setUploadProgress(0);
     setLoadingType("text");
-    setIsLoading(true); 
+    setIsLoading(true);
     setLoadingStep({ text: "Reading your report...", icon: "cloud-upload" });
 
     const formData = new FormData();
@@ -379,16 +373,18 @@ const ChatbotScreen = ({ route, navigation }) => {
     formData.append("patient_id", userID || "default_patient");
 
     try {
-      const response = await fetch(`${BACKEND_URL}/chat/upload_context`, {
-        method: "POST",
-        body: formData,
-      });
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
-      const data = await response.json();
-      console.log("Upload success:", data);
-      
+      const response = await axios.post(
+        `${BACKEND_URL}/chat/upload_context`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          onUploadProgress: (e) => {
+            if (e.total) setUploadProgress(e.loaded / e.total);
+          },
+        }
+      );
+      console.log("Upload success:", response.data);
+
       setMessages((prev) => [
         ...prev,
         {
@@ -407,6 +403,7 @@ const ChatbotScreen = ({ route, navigation }) => {
       setAttachedDoc(null);
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
       setIsLoading(false);
     }
   };
@@ -1607,33 +1604,52 @@ const ChatbotScreen = ({ route, navigation }) => {
 
         {attachedDoc && (
           <View style={{
-            flexDirection: 'row',
-            alignItems: 'center',
             backgroundColor: COLORS.primaryLight,
-            padding: 8,
             paddingHorizontal: 12,
+            paddingTop: 8,
+            paddingBottom: isUploading ? 4 : 8,
             marginHorizontal: 16,
             marginBottom: 8,
             borderRadius: 8,
             borderWidth: 1,
             borderColor: COLORS.primary + '40',
           }}>
-            <MaterialCommunityIcons name="file-document-outline" size={20} color={COLORS.primary} />
-            <Text style={{ flex: 1, marginLeft: 8, color: COLORS.primaryDark, fontSize: 13, fontWeight: '500' }} numberOfLines={1}>
-              {attachedDoc.name}
-            </Text>
-            <TouchableOpacity onPress={() => {
-              Alert.alert(
-                "Remove Document", 
-                "This will also clear your current chat history. Continue?",
-                [
-                  { text: "Cancel", style: "cancel" },
-                  { text: "Remove", style: "destructive", onPress: removeDocument }
-                ]
-              );
-            }}>
-              <Ionicons name="close-circle" size={20} color={COLORS.danger} />
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {isUploading
+                ? <ActivityIndicator size={18} color={COLORS.primary} />
+                : <MaterialCommunityIcons name="file-document-outline" size={20} color={COLORS.primary} />
+              }
+              <Text style={{ flex: 1, marginLeft: 8, color: COLORS.primaryDark, fontSize: 13, fontWeight: '500' }} numberOfLines={1}>
+                {isUploading
+                  ? `Uploading… ${Math.round(uploadProgress * 100)}%`
+                  : attachedDoc.name
+                }
+              </Text>
+              {!isUploading && (
+                <TouchableOpacity onPress={() => {
+                  Alert.alert(
+                    "Remove Document",
+                    "This will also clear your current chat history. Continue?",
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      { text: "Remove", style: "destructive", onPress: removeDocument }
+                    ]
+                  );
+                }}>
+                  <Ionicons name="close-circle" size={20} color={COLORS.danger} />
+                </TouchableOpacity>
+              )}
+            </View>
+            {isUploading && (
+              <View style={{ height: 3, backgroundColor: COLORS.primary + '30', borderRadius: 2, marginTop: 6 }}>
+                <View style={{
+                  height: 3,
+                  width: `${Math.round(uploadProgress * 100)}%`,
+                  backgroundColor: COLORS.primary,
+                  borderRadius: 2,
+                }} />
+              </View>
+            )}
           </View>
         )}
 

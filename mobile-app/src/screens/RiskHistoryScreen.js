@@ -138,7 +138,7 @@ const RiskHistoryScreen = ({ route }) => {
           <Text style={styles.noDataIcon}>📊</Text>
           <Text style={styles.noDataText}>No risk data recorded yet</Text>
           <Text style={styles.noDataSubText}>
-            Make predictions monthly to see your trend
+            Make predictions for 14-day periods to see your trend
           </Text>
         </View>
       );
@@ -326,7 +326,7 @@ const RiskHistoryScreen = ({ route }) => {
         <View style={styles.xAxisLabels}>
           {dataPoints.map((point, index) => (
             <Text key={index} style={styles.xAxisLabel}>
-              {getShortMonth(point.month)}
+              {getXLabel(point)}
             </Text>
           ))}
         </View>
@@ -461,10 +461,11 @@ const RiskHistoryScreen = ({ route }) => {
     const { dataPoints, slope } = trendAnalysis;
     if (!dataPoints || dataPoints.length === 0) return null;
 
-    // Use all records for graph-based analysis
+    // Use all records for graph-based analysis, sorted by period/date
     const sortedRecords = [...records].sort((a, b) => {
+      if (a.periodStart && b.periodStart) return a.periodStart.localeCompare(b.periodStart);
       if (a.year !== b.year) return a.year - b.year;
-      return a.month - b.month;
+      return (a.month || 0) - (b.month || 0);
     });
     const firstRecord = sortedRecords[0];
     const latestRecord = sortedRecords[sortedRecords.length - 1];
@@ -487,17 +488,17 @@ const RiskHistoryScreen = ({ route }) => {
     // Build graph trajectory summary (always works — uses scores)
     const buildGraphSummary = () => {
       if (!hasMultiple) {
-        return `You have 1 recorded prediction with a risk score of ${latestScore} (${latestRisk}). Track more months to see your trend.`;
+        return `You have 1 recorded prediction with a risk score of ${latestScore} (${latestRisk}). Track more periods to see your trend.`;
       }
       const firstScore = firstRecord.riskScore?.toFixed(1) || "N/A";
       const firstRisk = firstRecord.riskLevel || "Unknown";
-      const months = sortedRecords.length;
+      const periods = sortedRecords.length;
       if (graphDirection === "rising") {
-        return `Over ${months} months, your graph shows risk rising from ${firstScore} (${firstRisk}) to ${latestScore} (${latestRisk}). Here's what we found:`;
+        return `Over ${periods} periods, your graph shows risk rising from ${firstScore} (${firstRisk}) to ${latestScore} (${latestRisk}). Here's what we found:`;
       } else if (graphDirection === "falling") {
-        return `Over ${months} months, your graph shows risk declining from ${firstScore} (${firstRisk}) to ${latestScore} (${latestRisk}). Great progress!`;
+        return `Over ${periods} periods, your graph shows risk declining from ${firstScore} (${firstRisk}) to ${latestScore} (${latestRisk}). Great progress!`;
       }
-      return `Over ${months} months, your risk has remained relatively stable around ${latestScore} (${latestRisk}).`;
+      return `Over ${periods} periods, your risk has remained relatively stable around ${latestScore} (${latestRisk}).`;
     };
 
     // Detect biggest month-over-month score jump (works without SHAP)
@@ -530,8 +531,8 @@ const RiskHistoryScreen = ({ route }) => {
             topCause = shapDeltas[0];
           }
           biggestJump = {
-            fromMonth: getShortMonth(prev.month),
-            toMonth: getShortMonth(curr.month),
+            fromMonth: prev.periodStart ? toShortDate(prev.periodStart) : getShortMonth(prev.month),
+            toMonth: curr.periodStart ? toShortDate(curr.periodStart) : getShortMonth(curr.month),
             fromScore: prev.riskScore?.toFixed(1),
             toScore: curr.riskScore?.toFixed(1),
             direction:
@@ -642,8 +643,8 @@ const RiskHistoryScreen = ({ route }) => {
         <Text style={styles.explanationTitle}>🧠 Your Graph Explained</Text>
         <Text style={styles.explanationSubtitle}>
           {hasShap
-            ? `AI-powered analysis of your ${sortedRecords.length}-month risk trajectory`
-            : `Analysis of your ${sortedRecords.length}-month risk trajectory`}
+            ? `AI-powered analysis of your ${sortedRecords.length}-period risk trajectory`
+            : `Analysis of your ${sortedRecords.length}-period risk trajectory`}
         </Text>
 
         {/* Graph trajectory summary — always shows */}
@@ -669,7 +670,7 @@ const RiskHistoryScreen = ({ route }) => {
               ]}
             >
               Slope (m) = {slope > 0 ? "+" : ""}
-              {slope?.toFixed(4)} per month
+              {slope?.toFixed(4)} per period
             </Text>
           )}
         </View>
@@ -768,14 +769,21 @@ const RiskHistoryScreen = ({ route }) => {
 
     return (
       <View style={styles.historyContainer}>
-        <Text style={styles.sectionTitle}>📋 Monthly Records</Text>
+        <Text style={styles.sectionTitle}>📋 14-Day Records</Text>
         {records.map((record, index) => (
           <View key={record._id || index} style={styles.historyItem}>
             <View style={styles.historyDate}>
-              <Text style={styles.historyMonth}>
-                {getShortMonth(record.month)}
-              </Text>
-              <Text style={styles.historyYear}>{record.year}</Text>
+              {record.periodStart ? (
+                <>
+                  <Text style={styles.historyMonth}>{toShortDate(record.periodStart)}</Text>
+                  <Text style={styles.historyYear}>– {toShortDate(record.periodEnd)}</Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.historyMonth}>{getShortMonth(record.month)}</Text>
+                  <Text style={styles.historyYear}>{record.year}</Text>
+                </>
+              )}
             </View>
             <View style={styles.historyContent}>
               <View style={styles.historyRisk}>
@@ -899,22 +907,31 @@ const RiskHistoryScreen = ({ route }) => {
 };
 
 // Helper functions
+
+// Returns short month name from a 1-based month number: "Jan", "Feb", etc.
 const getShortMonth = (month) => {
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   return months[month - 1] || "N/A";
+};
+
+// Returns short label for a data point's x-axis: uses periodStart if available,
+// otherwise falls back to month/year.
+// e.g. "Apr 18" or "Jan 2025"
+const getXLabel = (point) => {
+  if (point?.periodStart) {
+    const [y, m, d] = point.periodStart.split("-").map(Number);
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return `${months[m - 1]} ${d}`;
+  }
+  return getShortMonth(point?.month);
+};
+
+// Format a YYYY-MM-DD string to "Apr 18"
+const toShortDate = (isoStr) => {
+  if (!isoStr) return "";
+  const [, m, d] = isoStr.split("-").map(Number);
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${months[m - 1]} ${d}`;
 };
 
 const getRiskColor = (riskLevel) => {
@@ -1231,7 +1248,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   historyDate: {
-    width: 50,
+    width: 72,
     alignItems: "center",
     justifyContent: "center",
     borderRightWidth: 1,

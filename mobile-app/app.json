@@ -26,7 +26,8 @@
       "package": "com.nephroai.mobile",
       "softwareKeyboardLayoutMode": "pan",
       "permissions": [
-        "android.permission.health.READ_BLOOD_PRESSURE"
+        "android.permission.health.READ_BLOOD_PRESSURE",
+        "android.permission.health.READ_HEALTH_DATA_HISTORY"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./images/Nephro-logo.png",

@@ -1,5 +1,6 @@
 import sys
 import os
+
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 import json
@@ -43,6 +44,114 @@ def load_ckd_model(mode="lab"):
 
     return model, assets
 
+# ==========================================================
+# eGFR SENSITIVITY ADJUSTMENT
+# ==========================================================
+
+def calculate_egfr_sensitivity_factor(egfr_value, current_stage):
+    """
+    Calculate a sensitivity factor based on how close eGFR is to stage boundaries.
+    This makes the model more responsive to eGFR changes.
+    """
+    stage_boundaries = {
+        "1": 90,
+        "2": 60,
+        "3.1": 45,
+        "3.2": 30,
+        "4": 15,
+        "5": 0
+    }
+    
+    if current_stage not in stage_boundaries:
+        return 1.0
+    
+    current_boundary = stage_boundaries[current_stage]
+    
+    # For G1, look at distance from 90
+    if current_stage == "1":
+        if egfr_value >= 90:
+            # High eGFR, lower risk
+            distance = min(30, egfr_value - 90)
+            factor = max(0.5, 1.0 - (distance / 100))
+        else:
+            # Below 90, increased risk
+            distance = min(30, 90 - egfr_value)
+            factor = min(2.0, 1.0 + (distance / 50))
+    
+    # For G2, look at both directions
+    elif current_stage == "2":
+        if egfr_value >= 60:
+            # Approaching G1 from below (good)
+            distance = min(30, egfr_value - 60)
+            # More reduction as eGFR increases toward 90
+            factor = max(0.5, 1.0 - (distance / 80))
+        else:
+            # Dropping toward G3a (bad)
+            distance = min(60, 60 - egfr_value)
+            # Scale up risk based on how far below 60
+            factor = min(2.0, 1.0 + (distance / 40))
+    
+    # For G3a, focus on deterioration
+    elif current_stage == "3.1":
+        if egfr_value >= 45:
+            # Improving toward G2
+            distance = min(45, egfr_value - 45)
+            factor = max(0.6, 1.0 - (distance / 60))
+        else:
+            # Declining toward G3b
+            distance = min(45, 45 - egfr_value)
+            factor = min(2.0, 1.0 + (distance / 30))
+    
+    # For G3b, focus on deterioration
+    elif current_stage == "3.2":
+        if egfr_value >= 30:
+            # Improving toward G3a
+            distance = min(30, egfr_value - 30)
+            factor = max(0.7, 1.0 - (distance / 50))
+        else:
+            # Declining toward G4
+            distance = min(30, 30 - egfr_value)
+            factor = min(2.0, 1.0 + (distance / 25))
+    
+    # For G4
+    elif current_stage == "4":
+        if egfr_value >= 15:
+            # Improving toward G3b
+            distance = min(15, egfr_value - 15)
+            factor = max(0.8, 1.0 - (distance / 40))
+        else:
+            # Declining toward G5
+            distance = min(15, 15 - egfr_value)
+            factor = min(2.0, 1.0 + (distance / 20))
+    
+    # For G5, only improving matters
+    elif current_stage == "5":
+        if egfr_value > 15:
+            # Improving from G5 (very rare but possible)
+            distance = min(15, egfr_value - 15)
+            factor = max(0.8, 1.0 - (distance / 30))
+        else:
+            # Very low eGFR, high risk
+            factor = 2.0
+    
+    else:
+        factor = 1.0
+    
+    return factor
+
+def adjust_risk_by_egfr(risk, egfr_value, current_stage):
+    """
+    Adjust the progression risk based on current eGFR value.
+    """
+    sensitivity_factor = calculate_egfr_sensitivity_factor(egfr_value, current_stage)
+    
+    # Apply non-linear scaling for more sensitivity
+    adjusted_risk = risk * sensitivity_factor
+    
+    # Ensure risk stays within [0, 1]
+    adjusted_risk = max(0.0, min(1.0, adjusted_risk))
+    
+    return adjusted_risk, sensitivity_factor
 
 # ==========================================================
 # BUILD SEQUENCE FROM VISIT HISTORY
@@ -155,13 +264,11 @@ def build_sequence(history, assets):
 
     return seq, static_vals
 
-
 # ==========================================================
 # RISK CALCULATION
 # ==========================================================
 
 def calculate_risks(next_probs, sixm_probs, current_stage_idx):
-
     # Progression = any stage increase
     progression_risk_next = np.sum(next_probs[current_stage_idx+1:])
     progression_risk_6m = np.sum(sixm_probs[current_stage_idx+1:])
@@ -176,7 +283,6 @@ def calculate_risks(next_probs, sixm_probs, current_stage_idx):
         "risk_severe_progression_next_visit": round(float(severe_next), 4),
         "risk_severe_progression_6_month": round(float(severe_6m), 4)
     }
-
 
 def _extract_recent_egfr_delta(history):
     values = []
@@ -195,7 +301,6 @@ def _extract_recent_egfr_delta(history):
         return None
 
     return values[-1] - values[-2]
-
 
 def _apply_egfr_trend_guardrail(next_probs, sixm_probs, current_idx, history):
     delta = _extract_recent_egfr_delta(history)
@@ -246,7 +351,6 @@ def _apply_egfr_trend_guardrail(next_probs, sixm_probs, current_idx, history):
         "damp_factor": float(damp_factor),
     }
 
-
 def _normalize_distribution(probs):
     arr = np.array(probs, dtype=float, copy=True)
     arr = np.nan_to_num(arr, nan=0.0, posinf=0.0, neginf=0.0)
@@ -257,7 +361,6 @@ def _normalize_distribution(probs):
             return arr
         return np.ones_like(arr) / float(len(arr))
     return arr / total
-
 
 def _apply_temperature_scaling(probs, temperature):
     temp = float(temperature)
@@ -271,7 +374,6 @@ def _apply_temperature_scaling(probs, temperature):
     scaled -= np.max(scaled)
     exp_scaled = np.exp(scaled)
     return _normalize_distribution(exp_scaled)
-
 
 def _maybe_calibrate_distribution(probs, assets, horizon_key):
     config = assets.get("temperature_scaling", {}) if isinstance(assets, dict) else {}
@@ -297,7 +399,6 @@ def _maybe_calibrate_distribution(probs, assets, horizon_key):
         "method": "temperature",
         "temperature": float(temperature),
     }
-
 
 def _compute_prediction_quality(stages, probs):
     arr = _normalize_distribution(probs)
@@ -340,14 +441,12 @@ def _compute_prediction_quality(stages, probs):
         "uncertainty": normalized_entropy,
     }
 
-
 def _risk_level_from_probability(value):
     if value < 0.20:
         return "low"
     if value < 0.50:
         return "moderate"
     return "high"
-
 
 def _stage_metadata():
     return [
@@ -358,7 +457,6 @@ def _stage_metadata():
         {"key": "4", "label": "G4", "description": "Severe loss of function", "egfr_range": "15-29"},
         {"key": "5", "label": "G5", "description": "Kidney failure", "egfr_range": "<15"},
     ]
-
 
 def _stage_from_egfr(egfr_value):
     try:
@@ -377,7 +475,6 @@ def _stage_from_egfr(egfr_value):
         return "4"
     return "5"
 
-
 def _normalize_stage_label(value):
     if value is None:
         return None
@@ -390,7 +487,6 @@ def _normalize_stage_label(value):
     if text.endswith(".0"):
         text = text[:-2]
     return text
-
 
 def _resolve_stage_index(current_stage_raw, stages, egfr_value):
     normalized_map = {}
@@ -408,7 +504,6 @@ def _resolve_stage_index(current_stage_raw, stages, egfr_value):
     # final fallback to first class to avoid runtime crash
     first_stage = _normalize_stage_label(stages[0]) if stages else "1"
     return first_stage, 0
-
 
 # ==========================================================
 # MAIN PREDICTION FUNCTION
@@ -435,7 +530,13 @@ def predict_progression(history, mode="lab"):
     stages = list(assets.get("stages", ["1", "2", "3.1", "3.2", "4", "5"]))
     current_stage_raw = history[-1].get("ckd_stage")
     egfr_value = history[-1].get("egfr", history[-1].get("gfr"))
-    current_stage, current_idx = _resolve_stage_index(current_stage_raw, stages, egfr_value)
+    
+    try:
+        egfr_numeric = float(egfr_value)
+    except Exception:
+        egfr_numeric = None
+    
+    current_stage, current_idx = _resolve_stage_index(current_stage_raw, stages, egfr_numeric)
 
     # Guardrail: if recent eGFR trend improves, reduce worsening risk distribution
     next_probs, sixm_probs, trend_adjustment = _apply_egfr_trend_guardrail(
@@ -448,14 +549,53 @@ def predict_progression(history, mode="lab"):
     next_probs = _normalize_distribution(next_probs)
     sixm_probs = _normalize_distribution(sixm_probs)
 
+    # Calculate base risks
     risks = calculate_risks(next_probs, sixm_probs, current_idx)
+    
+    # Apply eGFR sensitivity adjustment to make risk responsive to current eGFR value
+    if egfr_numeric is not None:
+        base_progression_risk = risks["risk_progression_next_visit"]
+        adjusted_risk, sensitivity_factor = adjust_risk_by_egfr(
+            base_progression_risk, 
+            egfr_numeric, 
+            current_stage
+        )
+        
+        # Update the risk values
+        risks["risk_progression_next_visit"] = round(adjusted_risk, 4)
+        risks["overall_progression_risk"] = round(adjusted_risk, 4)
+        risks["egfr_sensitivity_factor"] = round(sensitivity_factor, 4)
+        
+        # Also adjust the 6-month risk proportionally
+        adjusted_6m_risk = risks["risk_progression_6_month"] * sensitivity_factor
+        risks["risk_progression_6_month"] = round(min(1.0, adjusted_6m_risk), 4)
+        
+        # Adjust severe progression risks
+        adjusted_severe_next = risks["risk_severe_progression_next_visit"] * sensitivity_factor
+        adjusted_severe_6m = risks["risk_severe_progression_6_month"] * sensitivity_factor
+        risks["risk_severe_progression_next_visit"] = round(min(1.0, adjusted_severe_next), 4)
+        risks["risk_severe_progression_6_month"] = round(min(1.0, adjusted_severe_6m), 4)
+        
+        # Apply sensitivity to probability distributions as well for more granular adjustment
+        for i in range(len(next_probs)):
+            if i > current_idx:  # Worsening stages
+                next_probs[i] = next_probs[i] * sensitivity_factor
+            elif i < current_idx:  # Improving stages
+                next_probs[i] = next_probs[i] * (1 / max(0.5, sensitivity_factor))
+        
+        # Renormalize
+        next_probs = _normalize_distribution(next_probs)
+        sixm_probs = _normalize_distribution(sixm_probs)
+        
+        # Recalculate risks with adjusted distributions
+        risks.update(calculate_risks(next_probs, sixm_probs, current_idx))
+        risks["egfr_sensitivity_applied"] = True
+    else:
+        risks["egfr_sensitivity_applied"] = False
+        risks["egfr_sensitivity_factor"] = 1.0
+
     quality = _compute_prediction_quality(stages, next_probs)
-
-    try:
-        egfr_numeric = float(egfr_value)
-    except Exception:
-        egfr_numeric = None
-
+    
     overall_progression_risk = float(risks["risk_progression_next_visit"])
 
     return {
@@ -493,7 +633,6 @@ def predict_progression(history, mode="lab"):
         **risks
     }
 
-
 def _has_ultrasound_data(input_json):
     if isinstance(input_json, dict):
         us_block = input_json.get("ultrasound_data")
@@ -523,7 +662,6 @@ def _has_ultrasound_data(input_json):
 
     return False
 
-
 def _extract_history(input_json):
     if isinstance(input_json, list):
         return input_json
@@ -537,7 +675,6 @@ def _extract_history(input_json):
             return [input_json["lab_data"]]
 
     return []
-
 
 # ==========================================================
 # CLI ENTRY (for Node.js backend)

@@ -11,6 +11,7 @@ import {
   Modal,
   Switch,
   Platform,
+  PermissionsAndroid,
   RefreshControl,
   TextInput,
   SafeAreaView,
@@ -214,6 +215,9 @@ const BPHistoryScreen = ({ navigation, route }) => {
         { accessType: "read", recordType: "BloodPressure" },
       ]);
       if (!perms || perms.length === 0) return;
+      await PermissionsAndroid.request(
+        "android.permission.health.READ_HEALTH_DATA_HISTORY",
+      );
       const endTime = new Date().toISOString();
       const startTime = new Date(
         Date.now() - 7 * 24 * 60 * 60 * 1000,
@@ -464,9 +468,22 @@ const BPHistoryScreen = ({ navigation, route }) => {
         );
         return;
       }
+      const historyGranted = await PermissionsAndroid.request(
+        "android.permission.health.READ_HEALTH_DATA_HISTORY",
+        {
+          title: "Historical BP Data",
+          message:
+            "Allow Nephro-AI to read your blood pressure records older than 30 days so your full history is visible.",
+          buttonPositive: "Allow",
+          buttonNegative: "Skip",
+        },
+      );
       const endTime = new Date().toISOString();
+      // Read 90 days when history access is granted, otherwise fall back to 30 days
+      const lookbackDays =
+        historyGranted === PermissionsAndroid.RESULTS.GRANTED ? 90 : 30;
       const startTime = new Date(
-        Date.now() - 7 * 24 * 60 * 60 * 1000,
+        Date.now() - lookbackDays * 24 * 60 * 60 * 1000,
       ).toISOString();
       const result = await readRecords("BloodPressure", {
         timeRangeFilter: { operator: "between", startTime, endTime },
@@ -474,7 +491,7 @@ const BPHistoryScreen = ({ navigation, route }) => {
       if (!result?.records?.length) {
         Alert.alert(
           "No Data",
-          "No BP readings found in Health Connect for the last 7 days.",
+          "No BP readings found in Health Connect for the selected period.",
         );
         return;
       }

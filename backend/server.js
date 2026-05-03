@@ -73,9 +73,22 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => {
+  .then(async () => {
     console.log("MongoDB Connected Successfully");
-    // Start the background health-data sync cron job
+
+    // Drop the old monthly unique index so 14-day records aren't blocked by it.
+    // Mongoose only creates indexes — it never drops ones removed from the schema.
+    try {
+      const RiskRecord = require("./models/RiskRecord");
+      await RiskRecord.collection.dropIndex("userId_1_month_1_year_1");
+      console.log("✅ Dropped legacy risk record monthly unique index");
+    } catch (err) {
+      // Code 27 = IndexNotFound — already dropped or never existed, safe to ignore
+      if (err.code !== 27 && err.codeName !== "IndexNotFound") {
+        console.warn("⚠️  Could not drop old risk record index:", err.message);
+      }
+    }
+
     startSyncJob();
   })
   .catch((err) => console.error("MongoDB Connection Error:", err));

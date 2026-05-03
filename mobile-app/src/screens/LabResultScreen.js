@@ -24,6 +24,25 @@ const LabResultScreen = ({ navigation, route }) => {
 
   console.log("Lab Result Data:", labData);
 
+  // Helper function to determine CKD stage from eGFR
+  const getCKDStageFromEGFR = (egfr) => {
+    if (egfr >= 90) return "Stage 1";
+    if (egfr >= 60) return "Stage 2";
+    if (egfr >= 30) return "Stage 3";
+    if (egfr >= 15) return "Stage 4";
+    return "Stage 5";
+  };
+
+  // Helper function to get eGFR range description
+  const getEGFRRangeDescription = (egfr) => {
+    if (egfr >= 90) return "≥90";
+    if (egfr >= 60) return "60-89";
+    if (egfr >= 45) return "45-59";
+    if (egfr >= 30) return "30-44";
+    if (egfr >= 15) return "15-29";
+    return "<15";
+  };
+
   const getStageColor = (stage) => {
     if (!stage) return "#8E8E93";
     if (stage.includes("1") || stage.includes("2")) return "#50E3C2";
@@ -99,18 +118,18 @@ const LabResultScreen = ({ navigation, route }) => {
             </View>
 
             {/* CKD Stage Card */}
-            <View style={[styles.stageCard, { borderLeftColor: getStageColor(labData.ckdStage) }]}>
+            <View style={[styles.stageCard, { borderLeftColor: getStageColor(labData.ckdStage || getCKDStageFromEGFR(labData.eGFR)) }]}>
               <View style={styles.stageHeader}>
                 <Ionicons
-                  name={getStageIcon(labData.ckdStage)}
+                  name={getStageIcon(labData.ckdStage || getCKDStageFromEGFR(labData.eGFR))}
                   size={32}
-                  color={getStageColor(labData.ckdStage)}
+                  color={getStageColor(labData.ckdStage || getCKDStageFromEGFR(labData.eGFR))}
                 />
                 <View style={styles.stageInfo}>
-                  <Text style={[styles.stageText, { color: getStageColor(labData.ckdStage) }]}>
-                    {labData.ckdStage || "Unknown Stage"}
+                  <Text style={[styles.stageText, { color: getStageColor(labData.ckdStage || getCKDStageFromEGFR(labData.eGFR)) }]}>
+                    {labData.ckdStage || getCKDStageFromEGFR(labData.eGFR) || "Unknown Stage"}
                   </Text>
-                  <Text style={styles.eGFRRange}>eGFR: {labData.eGFRRange}</Text>
+                  <Text style={styles.eGFRRange}>eGFR: {labData.eGFRRange || getEGFRRangeDescription(labData.eGFR)}</Text>
                 </View>
               </View>
               {labData.stageDescription && (
@@ -123,15 +142,17 @@ const LabResultScreen = ({ navigation, route }) => {
               <Text style={styles.cardTitle}>Lab Values</Text>
               
               {/* eGFR */}
-              <View style={styles.labValueRow}>
-                <View style={styles.labValueContent}>
-                  <Text style={styles.labValueLabel}>eGFR</Text>
-                  <Text style={styles.labValueValue}>
-                    {labData.eGFR ? labData.eGFR.toFixed(2) : "N/A"} mL/min/1.73m²
-                  </Text>
+              {(labData.eGFR || labData.eGFR === 0) && (
+                <View style={styles.labValueRow}>
+                  <View style={styles.labValueContent}>
+                    <Text style={styles.labValueLabel}>eGFR</Text>
+                    <Text style={styles.labValueValue}>
+                      {typeof labData.eGFR === 'number' ? labData.eGFR.toFixed(2) : labData.eGFR} mL/min/1.73m²
+                    </Text>
+                  </View>
+                  <Ionicons name="water-outline" size={24} color="#4A90E2" />
                 </View>
-                <Ionicons name="water-outline" size={24} color="#4A90E2" />
-              </View>
+              )}
 
               {/* Creatinine */}
               {labData.creatinine && (
@@ -140,7 +161,7 @@ const LabResultScreen = ({ navigation, route }) => {
                     <Text style={styles.labValueLabel}>Creatinine</Text>
                     <View style={styles.labValueWithStatus}>
                       <Text style={styles.labValueValue}>
-                        {labData.creatinine.toFixed(2)} mg/dL
+                        {typeof labData.creatinine === 'number' ? labData.creatinine.toFixed(2) : labData.creatinine} mg/dL
                       </Text>
                       {labData.creatinineStatus && (
                         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(labData.creatinineStatus) + "20" }]}>
@@ -186,20 +207,63 @@ const LabResultScreen = ({ navigation, route }) => {
                   <View style={styles.labValueContent}>
                     <Text style={styles.labValueLabel}>Albumin</Text>
                     <Text style={styles.labValueValue}>
-                      {labData.albumin.toFixed(2)} g/dL
+                      {typeof labData.albumin === 'number' ? labData.albumin.toFixed(2) : labData.albumin} g/dL
                     </Text>
                   </View>
                   <Ionicons name="nutrition-outline" size={24} color="#4A90E2" />
                 </View>
               )}
+
+              {/* Hemoglobin */}
+              {labData.hemoglobin && (
+                <View style={styles.labValueRow}>
+                  <View style={styles.labValueContent}>
+                    <Text style={styles.labValueLabel}>Hemoglobin</Text>
+                    <Text style={styles.labValueValue}>
+                      {typeof labData.hemoglobin === 'number' ? labData.hemoglobin.toFixed(2) : labData.hemoglobin} g/dL
+                    </Text>
+                  </View>
+                  <Ionicons name="water-outline" size={24} color="#4A90E2" />
+                </View>
+              )}
+
+              {/* Age */}
+              {labData.age && (
+                <View style={styles.labValueRow}>
+                  <View style={styles.labValueContent}>
+                    <Text style={styles.labValueLabel}>Age</Text>
+                    <Text style={styles.labValueValue}>{labData.age} years</Text>
+                  </View>
+                  <Ionicons name="calendar-outline" size={24} color="#4A90E2" />
+                </View>
+              )}
+
+              {/* Gender */}
+              {labData.gender && (
+                <View style={styles.labValueRow}>
+                  <View style={styles.labValueContent}>
+                    <Text style={styles.labValueLabel}>Gender</Text>
+                    <Text style={styles.labValueValue}>{labData.gender === 'M' ? 'Male' : 'Female'}</Text>
+                  </View>
+                  <Ionicons name={labData.gender === 'M' ? "male" : "female"} size={24} color="#4A90E2" />
+                </View>
+              )}
             </View>
 
-            {/* OCR Info (if from image) */}
+            {/* Data Source Info */}
             {labData.imageFilename && (
               <View style={styles.ocrInfoCard}>
                 <Ionicons name="camera-outline" size={20} color="#50E3C2" />
                 <Text style={styles.ocrInfoText}>
                   Extracted from image: {labData.imageFilename}
+                </Text>
+              </View>
+            )}
+            {labData.source === "manual_entry" && (
+              <View style={styles.ocrInfoCard}>
+                <Ionicons name="create-outline" size={20} color="#50E3C2" />
+                <Text style={styles.ocrInfoText}>
+                  Manually entered lab values
                 </Text>
               </View>
             )}

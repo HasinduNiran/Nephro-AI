@@ -39,16 +39,21 @@ const riskRecordSchema = new mongoose.Schema(
       hba1c_level: { type: Number },
       baseValue: { type: Number },
     },
-    // Month and year for tracking
+    // Month and year kept for backward compatibility
     month: {
       type: Number,
-      required: true,
       min: 1,
       max: 12,
     },
     year: {
       type: Number,
-      required: true,
+    },
+    // 14-day period tracking (YYYY-MM-DD)
+    periodStart: {
+      type: String,
+    },
+    periodEnd: {
+      type: String,
     },
     recordDate: {
       type: Date,
@@ -58,7 +63,8 @@ const riskRecordSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Compound index to ensure one record per user per month
-riskRecordSchema.index({ userId: 1, month: 1, year: 1 }, { unique: true });
+// Sparse unique index: one record per user per 14-day period start date
+// Sparse means documents without periodStart are excluded (preserves old month/year records)
+riskRecordSchema.index({ userId: 1, periodStart: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model("RiskRecord", riskRecordSchema);
