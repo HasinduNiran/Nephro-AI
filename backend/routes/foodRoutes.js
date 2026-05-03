@@ -5,6 +5,7 @@ const axios = require('axios');
 const FormData = require('form-data');
 const { foodDatabase } = require('../mealPlate/foodData'); 
 const NutrientWallet = require('../models/NutrientWallet');
+const StageProgressionRecord = require('../models/StageProgressionRecord');
 const { getCKDLimits } = require('../utils/nutrientLimits'); 
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -64,21 +65,77 @@ const findFoodInDb = (aiName) => {
 // --- HELPER: GET DATE ---
 const getTodayDate = () => new Date().toISOString().split('T')[0];
 
+// --- HELPER: GET CKD STAGE FROM STAGE PROGRESSION RECORDS ---
+// Looks up the latest StageProgressionRecord for this user and extracts
+// the stage with the highest probability from progression_by_stage.
+const fetchCKDStage = async (userEmail) => {
+    if (!userEmail) {
+        console.log('[CKD-STAGE] ⚠️  No email provided — defaulting to Stage 3');
+        return 3;
+    }
+
+    const normalized = userEmail.toLowerCase().trim();
+    console.log(`[CKD-STAGE] 🔍 Looking up stage for email: "${normalized}"`);
+
+    try {
+        const record = await StageProgressionRecord.findOne(
+            { userEmail: normalized },
+            { progression_by_stage: 1, createdAt: 1 },
+            { sort: { createdAt: -1 } }  // most recent record first
+        );
+
+        if (!record) {
+            console.log(`[CKD-STAGE] ❌ No StageProgressionRecord found for "${normalized}" — defaulting to Stage 3`);
+            return 3;
+        }
+
+        console.log(`[CKD-STAGE] ✅ Record found (created: ${record.createdAt?.toISOString() ?? 'unknown'})`);
+
+        if (!record.progression_by_stage || record.progression_by_stage.length === 0) {
+            console.log('[CKD-STAGE] ⚠️  progression_by_stage array is empty — defaulting to Stage 3');
+            return 3;
+        }
+
+        // Log every stage + its probability so you can verify the data is correct
+        console.log('[CKD-STAGE] 📊 All stage probabilities from this record:');
+        record.progression_by_stage.forEach(s => {
+            console.log(`             Stage: ${s.stage}  |  Probability: ${(s.probability * 100).toFixed(2)}%`);
+        });
+
+        // Pick the stage with the highest probability
+        const best = record.progression_by_stage.reduce((prev, curr) =>
+            (curr.probability > prev.probability ? curr : prev)
+        );
+
+        // Parse stage number from strings like "Stage_3", "Stage3", "3"
+        const match = String(best.stage).match(/(\d)/);
+        const stage = match ? parseInt(match[1]) : 3;
+
+        console.log(`[CKD-STAGE] 🏆 Chosen stage: ${stage}  (raw value: "${best.stage}", probability: ${(best.probability * 100).toFixed(2)}%)`);
+        console.log(`[CKD-STAGE] ✔️  Returning Stage ${stage} for user "${normalized}"`);
+        return stage;
+
+    } catch (err) {
+        console.error('[CKD-STAGE] 🔴 Database lookup error:', err.message);
+        return 3;
+    }
+};
+
 // --- HELPER: GET/CREATE WALLET ---
-const getWallet = async (userId) => {
+// ckdStage is optional; if omitted the helper will use Stage 3 as a safe default.
+const getWallet = async (userId, ckdStage = 3) => {
     const today = getTodayDate();
     let wallet = await NutrientWallet.findOne({ userId, date: today });
 
     if (!wallet) {
-        // Default to Stage 3 limits (Hardcoded for now)
-        const currentStage = 3; 
-        const dailyLimits = getCKDLimits(currentStage);
+        const dailyLimits = getCKDLimits(ckdStage);
+        console.log(`[Wallet] Creating new wallet for userId=${userId} with Stage ${ckdStage} limits:`, dailyLimits);
 
         wallet = new NutrientWallet({
             userId,
             date: today,
             consumed: { sodium: 0, potassium: 0, phosphorus: 0, protein: 0 },
-            limits: dailyLimits 
+            limits: dailyLimits
         });
         await wallet.save();
     }
@@ -228,7 +285,11 @@ router.post('/confirm-meal', async (req, res) => {
     });
 
     try {
-        const wallet = await getWallet(userId);
+        // Fetch real CKD stage using the userEmail passed from the mobile app.
+        // Falls back to Stage 3 if userEmail is not provided or no record exists.
+        const userEmail = req.body.userEmail || null;
+        const ckdStage  = userEmail ? await fetchCKDStage(userEmail) : 3;
+        const wallet    = await getWallet(userId, ckdStage);
 
         const projected = {
             sodium: wallet.consumed.sodium + mealNutrients.sodium,
@@ -276,7 +337,31 @@ router.post('/confirm-meal', async (req, res) => {
 });
 
 // ---------------------------------------------------------
-// ROUTE 3: STATUS (For Dashboard)
+// ROUTE 3: CKD STAGE LOOKUP (called by MealAnalysisScreen on mount)
+// GET /api/mealPlate/ckd-stage/:userEmail
+// Returns the patient's current CKD stage based on their latest AI prediction.
+// ---------------------------------------------------------
+router.get('/ckd-stage/:userEmail', async (req, res) => {
+    try {
+        const { userEmail } = req.params;
+        if (!userEmail) {
+            return res.status(400).json({ error: 'userEmail is required' });
+        }
+
+        const stage = await fetchCKDStage(userEmail);
+        return res.json({
+            success: true,
+            ckdStage: stage,
+            source: stage === 3 ? 'default' : 'predicted'
+        });
+    } catch (err) {
+        console.error('[CKD Stage Route] Error:', err.message);
+        return res.status(500).json({ error: 'Could not fetch CKD stage', ckdStage: 3 });
+    }
+});
+
+// ---------------------------------------------------------
+// ROUTE 4: STATUS (For Dashboard)
 // ---------------------------------------------------------
 router.get('/status/:userId', async (req, res) => {
     try {

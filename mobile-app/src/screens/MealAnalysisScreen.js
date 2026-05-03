@@ -201,10 +201,12 @@ const foodNutrientDB = {
 const MealAnalysisScreen = ({ route, navigation }) => {
   const { wallet, addNutrients, checkSafety, getLimits, ckdStage, updateStage } = useWallet();
   const [userId, setUserId] = useState(route.params?.userId || null);
+  const [userEmail, setUserEmail] = useState(null); // used to fetch real CKD stage
   const [imageUri, setImageUri] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
+  const [ckdStageSource, setCkdStageSource] = useState(null); // 'predicted' | 'default'
 
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -217,13 +219,14 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   const [alignmentImageUri, setAlignmentImageUri] = useState(null); // mask alignment check
 
   useEffect(() => {
-    const loadUserId = async () => {
+    const loadUser = async () => {
       if (!userId) {
         try {
           const storedUser = await AsyncStorage.getItem("user");
           if (storedUser) {
             const userData = JSON.parse(storedUser);
             setUserId(userData._id || userData.id || "temp_user_001");
+            setUserEmail(userData.email || null);  // store email for CKD stage lookup
           } else {
             setUserId("temp_user_001");
           }
@@ -233,8 +236,49 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         }
       }
     };
-    loadUserId();
+    loadUser();
   }, []);
+
+  // --- FETCH REAL CKD STAGE FROM BACKEND ---
+  // Fires once userEmail is available. Looks up the patient's latest
+  // StageProgressionRecord and applies the correct nutrient limits.
+  useEffect(() => {
+    if (!userEmail) {
+      console.log("[CKD-STAGE] ⚠️  userEmail not yet available — skipping stage fetch");
+      return;
+    }
+
+    const fetchRealCKDStage = async () => {
+      const url = `/mealPlate/ckd-stage/${encodeURIComponent(userEmail)}`;
+      console.log(`[CKD-STAGE] 🔍 Fetching CKD stage for email: "${userEmail}"`);
+      console.log(`[CKD-STAGE] 🌐 Request URL: ${url}`);
+
+      try {
+        const response = await axios.get(url);
+        console.log("[CKD-STAGE] 📦 Raw server response:", JSON.stringify(response.data));
+
+        if (response.data?.success && response.data?.ckdStage) {
+          const fetchedStage = response.data.ckdStage;
+          const source = response.data.source; // 'predicted' or 'default'
+
+          console.log(`[CKD-STAGE] ✅ Stage received: ${fetchedStage}  |  Source: "${source}"`);
+          console.log(`[CKD-STAGE] 🔄 Calling updateStage(${fetchedStage}) — WalletContext limits will update now`);
+
+          updateStage(fetchedStage);
+          setCkdStageSource(source);
+
+          console.log(`[CKD-STAGE] ✔️  Done — MealAnalysisScreen is now using Stage ${fetchedStage} nutrient limits`);
+        } else {
+          console.warn("[CKD-STAGE] ⚠️  Response missing ckdStage or success=false:", response.data);
+        }
+      } catch (err) {
+        console.warn("[CKD-STAGE] 🔴 Network/server error fetching CKD stage:", err.message);
+        console.warn("[CKD-STAGE]    Keeping existing WalletContext stage value as fallback");
+      }
+    };
+
+    fetchRealCKDStage();
+  }, [userEmail]);
 
   const handleCameraPress = () => {
     setImageSource("camera");
@@ -981,7 +1025,19 @@ const MealAnalysisScreen = ({ route, navigation }) => {
             ))}
 
             <View style={styles.stageSelectorContainer}>
-              <Text style={styles.stageSelectorLabel}>Verify CKD Stage before Analysis:</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+                <Text style={styles.stageSelectorLabel}>CKD Stage for Nutrient Limits:</Text>
+                {ckdStageSource === "predicted" && (
+                  <View style={{ backgroundColor: "#d4edda", borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2, marginLeft: 8 }}>
+                    <Text style={{ fontSize: 10, color: "#155724", fontWeight: "700" }}>✓ Auto-loaded</Text>
+                  </View>
+                )}
+                {ckdStageSource === "default" && (
+                  <View style={{ backgroundColor: "#fff3cd", borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2, marginLeft: 8 }}>
+                    <Text style={{ fontSize: 10, color: "#856404", fontWeight: "700" }}>No prediction found</Text>
+                  </View>
+                )}
+              </View>
               <View style={styles.stagePickerWrapper}>
                 <Picker
                   selectedValue={ckdStage}
@@ -995,7 +1051,11 @@ const MealAnalysisScreen = ({ route, navigation }) => {
                   <Picker.Item label="Stage 5 (Failure)" value={5} />
                 </Picker>
               </View>
-              <Text style={styles.stageHelpText}>Nutrient safety limits adjust automatically</Text>
+              <Text style={styles.stageHelpText}>
+                {ckdStageSource === "predicted"
+                  ? "Loaded from your latest CKD prediction — you can override if needed"
+                  : "Nutrient safety limits adjust automatically"}
+              </Text>
             </View>
 
             <TouchableOpacity
