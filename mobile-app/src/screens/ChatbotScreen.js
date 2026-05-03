@@ -1504,7 +1504,7 @@ const ChatbotScreen = ({ route, navigation }) => {
 
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: "#F0F3F8" }}
-        behavior="padding"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
         {/* Hero Header */}
