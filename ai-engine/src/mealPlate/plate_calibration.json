@@ -35,9 +35,9 @@
     }
   },
   "volume_ml": {
-    "main_carb": 580,
-    "side_1": 250,
-    "side_2": 165,
+    "main_carb": 350,
+    "side_1": 200,
+    "side_2": 200,
     "NOTE": "Measure your plate compartments with water and update these values!"
   }
 }
