@@ -2,7 +2,7 @@ const HealthRecord = require("../models/HealthRecord");
 const DailySummary = require("../models/DailySummary");
 const {
   runSyncCycle,
-  computeMonthlyBPAverages,
+  compute14DayBPAverages,
 } = require("../services/healthSyncService");
 
 /* ──────────────────────────────────────────────────────────
@@ -85,23 +85,19 @@ const getDailySummaries = async (req, res) => {
 };
 
 /* ──────────────────────────────────────────────────────────
- *  GET /api/health-sync/:userId/monthly-average?month=M&year=YYYY
- *  Returns BP-only monthly averages from the deduplicated data.
+ *  GET /api/health-sync/:userId/14day-average?date=YYYY-MM-DD
+ *  Returns BP-only 14-day averages ending on `date` (default: today).
  * ────────────────────────────────────────────────────────── */
-const getMonthlyBPAverage = async (req, res) => {
+const get14DayBPAverage = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { month, year } = req.query;
+    const { date } = req.query; // optional – defaults to today
 
-    if (!month || !year) {
-      return res.status(400).json({ message: "month and year are required." });
-    }
-
-    const result = await computeMonthlyBPAverages(userId, year, month);
+    const result = await compute14DayBPAverages(userId, date || null);
 
     res.status(200).json({ success: true, ...result });
   } catch (err) {
-    console.error("getMonthlyBPAverage error:", err);
+    console.error("get14DayBPAverage error:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
@@ -110,5 +106,5 @@ module.exports = {
   ingestHealthRecords,
   triggerSync,
   getDailySummaries,
-  getMonthlyBPAverage,
+  get14DayBPAverage,
 };

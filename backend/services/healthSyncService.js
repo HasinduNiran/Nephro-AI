@@ -57,20 +57,18 @@ function buildDeduplicationPipeline() {
 }
 
 /**
- * Stage 2 – Monthly BP Average (runs on DailySummary collection)
+ * Stage 2 – 14-Day BP Average (runs on DailySummary collection)
  *
- * Calculates avgSystolic / avgDiastolic for a given user + month.
+ * Calculates avgSystolic / avgDiastolic for a given user over the
+ * last 14 days ending on `endDate` (inclusive).
  * HbA1c is explicitly excluded ($ne: null guard on BP fields).
  */
-function buildMonthlyBPAveragePipeline(userId, yearMonth) {
-  // yearMonth format: "YYYY-MM"
-  const datePrefix = `^${yearMonth}-`;
-
+function build14DayBPAveragePipeline(userId, startDate, endDate) {
   return [
     {
       $match: {
         userId: new mongoose.Types.ObjectId(userId),
-        date: { $regex: datePrefix },
+        date: { $gte: startDate, $lte: endDate },
         // ── strict BP-only filter ──
         systolic: { $ne: null },
         diastolic: { $ne: null },
@@ -172,20 +170,23 @@ async function runSyncCycle() {
  * ========================================================= */
 
 /**
- * Returns { avgSystolic, avgDiastolic, recordCount } for a user
- * in a given month. Operates on *deduplicated* DailySummary data.
+ * Returns { avgSystolic, avgDiastolic, recordCount, startDate, endDate }
+ * for a user over the 14 days ending on `endDate` (default: today).
+ * Operates on *deduplicated* DailySummary data.
  */
-async function computeMonthlyBPAverages(userId, year, month) {
-  const mm = String(month).padStart(2, "0");
-  const yearMonth = `${year}-${mm}`;
-  const pipeline = buildMonthlyBPAveragePipeline(userId, yearMonth);
+async function compute14DayBPAverages(userId, endDate) {
+  const end = endDate || new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+  const startMs = new Date(end).getTime() - 13 * 24 * 60 * 60 * 1000;
+  const start = new Date(startMs).toISOString().slice(0, 10);
+
+  const pipeline = build14DayBPAveragePipeline(userId, start, end);
   const results = await DailySummary.aggregate(pipeline);
 
   if (!results || results.length === 0) {
-    return { avgSystolic: null, avgDiastolic: null, recordCount: 0 };
+    return { avgSystolic: null, avgDiastolic: null, recordCount: 0, startDate: start, endDate: end };
   }
 
-  return results[0];
+  return { ...results[0], startDate: start, endDate: end };
 }
 
 /* =========================================================
@@ -240,5 +241,5 @@ module.exports = {
   startSyncJob,
   stopSyncJob,
   runSyncCycle, // exposed for manual / on-demand trigger
-  computeMonthlyBPAverages,
+  compute14DayBPAverages,
 };
