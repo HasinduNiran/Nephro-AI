@@ -40,6 +40,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as Speech from "expo-speech";
 import { Buffer } from "buffer"; // Reliable base64 conversion in React Native
 import { CHATBOT_URL } from "../api/axiosConfig";
+import { useFocusEffect } from "@react-navigation/native";
 
 // Use centralized URL from axiosConfig
 const BACKEND_URL = CHATBOT_URL;
@@ -457,6 +458,7 @@ const ChatbotScreen = ({ route, navigation }) => {
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const soundRef = useRef(null);
   const fetchAbortRef = useRef(null); // AbortController for in-flight Sinhala TTS fetch
+  const recordingRef = useRef(null); // mirrors `recording` state for unmount cleanup
   const flatListRef = useRef();
 
   // Animation values
@@ -865,15 +867,39 @@ const ChatbotScreen = ({ route, navigation }) => {
     })();
   }, []);
 
-  // Cleanup sound on component unmount
+  // Cleanup on component unmount
   useEffect(() => {
     return () => {
+      if (recordingRef.current) {
+        recordingRef.current.stopAndUnloadAsync().catch(() => {});
+        recordingRef.current = null;
+      }
       if (soundRef.current) {
         soundRef.current.unloadAsync().catch(() => {});
+        soundRef.current = null;
+      }
+      if (fetchAbortRef.current) {
+        fetchAbortRef.current.abort();
+        fetchAbortRef.current = null;
       }
       Speech.stop();
     };
   }, []);
+
+  // Stop recording and audio when navigating away without unmounting
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        if (recordingRef.current) {
+          recordingRef.current.stopAndUnloadAsync().catch(() => {});
+          recordingRef.current = null;
+          setIsRecording(false);
+          setRecording(undefined);
+        }
+        stopAllAudio();
+      };
+    }, []),
+  );
 
   // Typing indicator animation
   useEffect(() => {
@@ -907,6 +933,7 @@ const ChatbotScreen = ({ route, navigation }) => {
 
   // 2. Start Recording
   const startRecording = async () => {
+    let newRecording = null;
     try {
       if (sound) {
         await sound.unloadAsync();
@@ -938,28 +965,44 @@ const ChatbotScreen = ({ route, navigation }) => {
 
       await recording.setProgressUpdateInterval(100);
 
+      newRecording = recording;
+      recordingRef.current = recording;
       setRecording(recording);
       setIsRecording(true);
     } catch (err) {
       console.error("Failed to start recording", err);
+      // Clean up any partially-created recording so the modal never stays stuck
+      if (newRecording) {
+        newRecording.stopAndUnloadAsync().catch(() => {});
+      }
+      recordingRef.current = null;
+      setRecording(undefined);
+      setIsRecording(false);
     }
   };
 
   // 3. Stop Recording & Send to Server
   const stopRecording = async () => {
     console.log("Stopping recording..");
+    const activeRecording = recording;
     setRecording(undefined);
     setIsRecording(false);
+    recordingRef.current = null;
 
-    if (!recording) return;
+    if (!activeRecording) return;
 
-    await recording.stopAndUnloadAsync();
-    const uri = recording.getURI();
-    console.log("Recording stored at", uri);
+    try {
+      await activeRecording.stopAndUnloadAsync();
+      const uri = activeRecording.getURI();
+      if (!uri) return;
+      console.log("Recording stored at", uri);
 
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    await sendAudioToBackend(uri);
+      await sendAudioToBackend(uri);
+    } catch (err) {
+      console.error("Failed to stop/send recording", err);
+    }
   };
 
   // 4. API Logic: Upload Audio (UPDATED for Client-Side TTS)
@@ -982,7 +1025,8 @@ const ChatbotScreen = ({ route, navigation }) => {
       ...prev,
       {
         id: userMsgId,
-        text: "🎤 Voice Message",
+        text: "",
+        isVoice: true,
         sender: "user",
         timestamp: new Date().toLocaleTimeString("en-US", {
           hour: "2-digit",
@@ -1038,10 +1082,6 @@ const ChatbotScreen = ({ route, navigation }) => {
         if (b64Transcription) transcribedText = b64Transcription;
       }
 
-      // Update voice message bubble with the actual transcribed text
-      setMessages((prev) =>
-        prev.map((m) => (m.id === userMsgId ? { ...m, text: transcribedText } : m))
-      );
 
       // Use explicit language preference for audio routing \u2014 no detection needed
       const isSinhala = (selectedLanguage || "auto") === "sinhala" ||
@@ -1158,6 +1198,8 @@ const ChatbotScreen = ({ route, navigation }) => {
     const text = textToSend?.text || textToSend || message;
     if (!text.trim()) return;
 
+    Keyboard.dismiss();
+
     if (!textToSend) setMessage(""); // Clear input if typed
 
     // 🛑 REMOVE or COMMENT OUT this line (Don't speak when user is typing)
@@ -1273,7 +1315,14 @@ const ChatbotScreen = ({ route, navigation }) => {
             ]}
           >
             {item.sender === "user" ? (
-              <Text style={styles.userText}>{item.text}</Text>
+              item.isVoice ? (
+                <View style={styles.voiceMsgRow}>
+                  <Ionicons name="mic" size={16} color="white" />
+                  <Text style={[styles.userText, { marginLeft: 6 }]}>Voice message</Text>
+                </View>
+              ) : (
+                <Text style={styles.userText}>{item.text}</Text>
+              )
             ) : (
               <View>
                 {(() => {
@@ -1459,7 +1508,7 @@ const ChatbotScreen = ({ route, navigation }) => {
 
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: "#F0F3F8" }}
-        behavior="padding"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
         {/* Hero Header */}
@@ -1703,6 +1752,7 @@ const ChatbotScreen = ({ route, navigation }) => {
         transparent
         animationType="fade"
         statusBarTranslucent
+        onRequestClose={stopRecording}
       >
         <View style={styles.recordingOverlay}>
           <View style={styles.recordingCard}>
@@ -1751,6 +1801,22 @@ const ChatbotScreen = ({ route, navigation }) => {
             </View>
 
             <Text style={styles.releaseHint}>Release to send</Text>
+
+            <TouchableOpacity
+              onPress={async () => {
+                const activeRecording = recording;
+                setRecording(undefined);
+                setIsRecording(false);
+                recordingRef.current = null;
+                if (activeRecording) {
+                  activeRecording.stopAndUnloadAsync().catch(() => {});
+                }
+              }}
+              style={styles.recordingCancelBtn}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.recordingCancelText}>✕ Cancel</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -1760,7 +1826,10 @@ const ChatbotScreen = ({ route, navigation }) => {
         visible={showLanguageModal}
         transparent
         animationType="fade"
-        onRequestClose={() => selectedLanguage && setShowLanguageModal(false)}
+        onRequestClose={() => {
+          if (!selectedLanguage) selectLanguage("auto");
+          else setShowLanguageModal(false);
+        }}
       >
         <View style={styles.langModalOverlay}>
           <View style={styles.langModalCard}>
@@ -1949,6 +2018,10 @@ const styles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 26,
     letterSpacing: 0.2,
+  },
+  voiceMsgRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   botText: {
@@ -2303,6 +2376,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textLighter,
     fontStyle: "italic",
+  },
+  recordingCancelBtn: {
+    marginTop: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: COLORS.danger,
+  },
+  recordingCancelText: {
+    color: COLORS.danger,
+    fontSize: 14,
+    fontWeight: "600",
   },
 
   // ═══════════════════════════════════════════════════════

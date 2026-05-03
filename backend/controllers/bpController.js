@@ -47,48 +47,48 @@ const getBPHistory = async (req, res) => {
 
 // GET /api/bp-records/:userId/monthly-average?month=M&year=YYYY
 // Returns { avgSystolic, avgDiastolic, recordCount } rounded to integers
-const getMonthlyAverage = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { month, year } = req.query;
+// const getMonthlyAverage = async (req, res) => {
+//   try {
+//     const { userId } = req.params;
+//     const { month, year } = req.query;
 
-    if (!month || !year) {
-      return res.status(400).json({ message: "month and year are required." });
-    }
+//     if (!month || !year) {
+//       return res.status(400).json({ message: "month and year are required." });
+//     }
 
-    const mm = String(month).padStart(2, "0");
-    const yyyy = String(year);
-    const prefix = `${yyyy}-${mm}-`; // e.g. "2026-03-"
+//     const mm = String(month).padStart(2, "0");
+//     const yyyy = String(year);
+//     const prefix = `${yyyy}-${mm}-`; // e.g. "2026-03-"
 
-    const records = await BPRecord.find({
-      userId,
-      date: { $regex: `^${prefix}` },
-    }).lean();
+//     const records = await BPRecord.find({
+//       userId,
+//       date: { $regex: `^${prefix}` },
+//     }).lean();
 
-    if (!records || records.length === 0) {
-      return res.status(200).json({
-        success: true,
-        recordCount: 0,
-        avgSystolic: null,
-        avgDiastolic: null,
-      });
-    }
+//     if (!records || records.length === 0) {
+//       return res.status(200).json({
+//         success: true,
+//         recordCount: 0,
+//         avgSystolic: null,
+//         avgDiastolic: null,
+//       });
+//     }
 
-    const totalSystolic = records.reduce((sum, r) => sum + r.systolic, 0);
-    const totalDiastolic = records.reduce((sum, r) => sum + r.diastolic, 0);
-    const count = records.length;
+//     const totalSystolic = records.reduce((sum, r) => sum + r.systolic, 0);
+//     const totalDiastolic = records.reduce((sum, r) => sum + r.diastolic, 0);
+//     const count = records.length;
 
-    res.status(200).json({
-      success: true,
-      recordCount: count,
-      avgSystolic: Math.round(totalSystolic / count),
-      avgDiastolic: Math.round(totalDiastolic / count),
-    });
-  } catch (error) {
-    console.error("getMonthlyAverage error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
+//     res.status(200).json({
+//       success: true,
+//       recordCount: count,
+//       avgSystolic: Math.round(totalSystolic / count),
+//       avgDiastolic: Math.round(totalDiastolic / count),
+//     });
+//   } catch (error) {
+//     console.error("getMonthlyAverage error:", error);
+//     res.status(500).json({ message: "Server error", error: error.message });
+//   }
+// };
 
 // GET /api/bp-records/:userId/range-average?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
 // Returns { avgSystolic, avgDiastolic, recordCount } for the given date range
