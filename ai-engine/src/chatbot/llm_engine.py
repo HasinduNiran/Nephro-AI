@@ -489,7 +489,15 @@ class LLMEngine:
             "   Only use 'pure_sinhala' forms when the surrounding sentence is 100% Unicode.\n\n"
             
             "🔥 STYLE RULES:\n"
-            "1. **Opener:** Start with 'ඔයාගේ තත්ත්වයත් එක්ක බලද්දී...' (Considering your condition...).\n"
+            "1. **Opener — VARY EVERY RESPONSE (CRITICAL):**\n"
+            "   ❌ BANNED: Starting EVERY response with 'ඔයාගේ තත්ත්වයත් එක්ක බලද්දී' — this is robotic and repetitive.\n"
+            "   ❌ BANNED: Starting EVERY response with 'Based on your report' or 'Considering your condition'.\n"
+            "   ✅ RULE: Rotate naturally. Choose the opener that fits the question type:\n"
+            "      • Follow-up / direct answer → jump straight in: 'ඔව්, ඒකට...' / 'Creatinine level එක...' / 'CKD Stage 2 කියන්නේ...'\n"
+            "      • Lab result question → 'ඔයාගේ labs බලද්දී...' (use sparingly, not every time)\n"
+            "      • Advisory → 'වැදගත් දෙයක් — ...' / 'හොඳ ප්‍රශ්නයක් — ...'\n"
+            "      • Reassurance → 'බය වෙන්න එපා — ...' / 'ඒකෙ ගැටළුවක් නැහැ, ...'\n"
+            "   ✅ RULE: If the previous sentence already mentioned the patient's condition, skip the preamble entirely.\n"
             "2. **Empathy:** " + empathy_rule + "\n"
             "3. **Anatomy:** Do NOT use 'පිටුපස' (Back) for 'Stomach'. Use 'බඩේ' for stomach.\n"
             "4. **Tone:** Use warm words like 'පුළුවන් නම්' (If possible), 'වගේ දේවල්' (Things like).\n"
@@ -510,7 +518,7 @@ class LLMEngine:
             "📥 English Input:\n"
             "   'For your condition, it is best to avoid fruits high in potassium like Bananas, Oranges, Kiwi, and Avocados. Instead, eat apples and berries. Consult your dietitian.'\n\n"
             "📤 Sinhala Output (Target):\n"
-            "   'ඔයාගේ තත්ත්වයත් එක්ක බලද්දී, පොටෑසියම් වැඩි පලතුරු කන එක අඩු කරන එක තමයි වඩාත්ම හොඳ. මේ තියෙන්නේ ඔයා අඩුවෙන් කන්න ඕන, නැත්නම් පුළුවන් නම් නොකා ඉන්න ඕන පලතුරු ටිකක්:\n\n"
+            "   'පොටෑසියම් වැඩි පලතුරු කන එක අඩු කරන එක තමයි වඩාත්ම හොඳ. මේ තියෙන්නේ ඔයා අඩුවෙන් කන්න ඕන, නැත්නම් පුළුවන් නම් නොකා ඉන්න ඕන පලතුරු ටිකක්:\n\n"
             "   * කෙසෙල්\n"
             "   * දොඩම්\n"
             "   * කිවි (Kiwi)\n"
@@ -568,6 +576,7 @@ class LLMEngine:
         - The patient context above is BACKGROUND INFO to inform your advice.
         - Do NOT recite or dump the patient's profile (name, age, eGFR, diagnosis, medications) back to them.
         - Do NOT open with "Based on your profile, [Name] (age X) has..." — this feels robotic.
+        - Do NOT start responses with repetitive openers like "Considering your condition", "Based on your report", or "Looking at your profile". Vary your language naturally like a human doctor. For follow-up questions, jump straight to the direct answer.
         - ONLY cite a specific lab value (e.g. eGFR, Creatinine) when directly answering a medical question about that value.
         - For general questions like "Do I have a risk?", answer conversationally first ("Let me check your recent results..."), then reference 1–2 relevant values if needed.
 
