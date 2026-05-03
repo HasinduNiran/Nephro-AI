@@ -5,11 +5,12 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
-  SafeAreaView,
   StatusBar,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomInput from "../components/CustomInput";
@@ -61,7 +62,7 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
       <KeyboardAvoidingView
         style={styles.keyboardView}

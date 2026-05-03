@@ -7,10 +7,11 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
-  SafeAreaView,
   StatusBar,
   KeyboardAvoidingView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import CustomInput from "../components/CustomInput";
@@ -72,7 +73,7 @@ const SignupScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
       <KeyboardAvoidingView
         style={styles.keyboardView}

@@ -8,9 +8,10 @@ import {
   Dimensions,
   TouchableOpacity,
   RefreshControl,
-  SafeAreaView,
   StatusBar,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import { Ionicons } from "@expo/vector-icons";
 import Svg, { Line, Circle, Rect } from "react-native-svg";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -846,7 +847,7 @@ const RiskHistoryScreen = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={[]}>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
       {/* Hero Header */}

@@ -1,6 +1,7 @@
 import "react-native-gesture-handler";
 import React from "react";
-import { SafeAreaView, StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { WalletProvider } from "./src/context/WalletContext";
@@ -62,6 +63,7 @@ class ErrorBoundary extends React.Component {
 const App = () => {
   return (
     <ErrorBoundary>
+    <SafeAreaProvider>
     <WalletProvider>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -126,6 +128,7 @@ const App = () => {
         </Stack.Navigator>
       </NavigationContainer>
     </WalletProvider>
+    </SafeAreaProvider>
     </ErrorBoundary>
   );
 };

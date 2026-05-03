@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, StatusBar } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from '../api/axiosConfig';
@@ -46,7 +47,7 @@ const DietaryManagerScreen = ({ route, navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
       {/* Hero Header */}
@@ -102,7 +103,7 @@ const DietaryManagerScreen = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F0F3F8' },
+  safeArea: { flex: 1, backgroundColor: "#4A90E2" },
   heroHeader: {
     backgroundColor: '#4A90E2',
     paddingHorizontal: 16,

@@ -3,12 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   StatusBar,
   Alert,
-} from 'react-native';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import { Ionicons } from '@expo/vector-icons';
 import { useWallet } from '../context/WalletContext';
 import { useFocusEffect } from '@react-navigation/native';
@@ -140,7 +141,7 @@ const NutrientWalletScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
       {/* Hero Header */}
@@ -158,7 +159,7 @@ const NutrientWalletScreen = ({ navigation }) => {
         </View>
       </View>
 
-      <ScrollView
+      <ScrollView style={{ flex: 1, backgroundColor: "#F0F3F8" }}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
@@ -219,7 +220,7 @@ const NutrientWalletScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F3F8',
+    backgroundColor: "#4A90E2",
   },
   heroHeader: {
     backgroundColor: '#4A90E2',

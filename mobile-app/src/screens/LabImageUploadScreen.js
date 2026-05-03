@@ -11,8 +11,9 @@ import {
   Image,
   Platform,
   TextInput,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
@@ -250,7 +251,7 @@ const LabImageUploadScreen = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
       {/* Hero Header */}
@@ -354,7 +355,7 @@ const LabImageUploadScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F0F3F8",
+    backgroundColor: "#4A90E2",
   },
   loadingContainer: {
     justifyContent: "center",
@@ -423,6 +424,7 @@ const styles = StyleSheet.create({
     width: 40,
   },
   scrollView: {
+    backgroundColor: "#F0F3F8",
     flex: 1,
   },
   contentContainer: {

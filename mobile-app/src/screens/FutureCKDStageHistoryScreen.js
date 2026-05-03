@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   TouchableOpacity,
   ScrollView,
@@ -11,6 +10,8 @@ import {
   Alert,
   TextInput,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -452,7 +453,7 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
       {/* Hero Header */}
@@ -468,7 +469,7 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={true}>
+      <ScrollView style={{ flex: 1, backgroundColor: "#F0F3F8" }} contentContainerStyle={styles.content} showsVerticalScrollIndicator={true}>
         <View style={styles.introCard}>
           <Text style={styles.introTitle}>History for {userName}</Text>
           <Text style={styles.introMeta}>{effectiveEmail || "No email provided"}</Text>
@@ -519,7 +520,7 @@ const FutureCKDStageHistoryScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F0F3F8",
+    backgroundColor: "#4A90E2",
   },
   heroHeader: {
     backgroundColor: "#4A90E2",

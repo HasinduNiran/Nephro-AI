@@ -5,10 +5,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import { Ionicons } from "@expo/vector-icons";
 import axios from "../api/axiosConfig";
 
@@ -110,7 +111,7 @@ const ScanLabScreen = ({ navigation, route }) => {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
       {/* Hero Header */}
@@ -126,7 +127,7 @@ const ScanLabScreen = ({ navigation, route }) => {
         </View>
       </View>
 
-      <ScrollView
+      <ScrollView style={{ flex: 1, backgroundColor: "#F0F3F8" }}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
@@ -182,7 +183,7 @@ const ScanLabScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F0F3F8",
+    backgroundColor: "#4A90E2",
   },
   heroHeader: {
     backgroundColor: "#4A90E2",

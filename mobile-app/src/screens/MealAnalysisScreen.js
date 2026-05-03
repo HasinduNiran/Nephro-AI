@@ -16,6 +16,7 @@ import {
   Dimensions,
   StatusBar,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -793,8 +794,9 @@ const MealAnalysisScreen = ({ route, navigation }) => {
   );
 
   return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#4A90E2" }} edges={["top"]}>
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#fff" }}
+      style={{ flex: 1, backgroundColor: "#F0F3F8" }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       enabled
@@ -1309,6 +1311,7 @@ const MealAnalysisScreen = ({ route, navigation }) => {
         onClose={() => setShowPlateCamera(false)}
       />
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

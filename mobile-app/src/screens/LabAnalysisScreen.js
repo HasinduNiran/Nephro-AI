@@ -11,8 +11,9 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { API_URL } from "../api/axiosConfig";
@@ -291,7 +292,7 @@ const LabAnalysisScreen = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
       {/* Hero Header */}
@@ -591,7 +592,7 @@ const LabAnalysisScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F0F3F8",
+    backgroundColor: "#4A90E2",
   },
   heroHeader: {
     backgroundColor: "#4A90E2",
@@ -680,6 +681,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   content: {
+    backgroundColor: "#F0F3F8",
     flex: 1,
   },
   contentContainer: {

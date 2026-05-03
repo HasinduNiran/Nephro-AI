@@ -8,9 +8,9 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Platform,
-  SafeAreaView,
   StatusBar,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -289,7 +289,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
     Math.round((dateRangeEnd - dateRangeStart) / (1000 * 60 * 60 * 24)) + 1;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
       {/* Hero Header */}
@@ -305,7 +305,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         </View>
       </View>
 
-    <ScrollView
+    <ScrollView style={{ flex: 1, backgroundColor: "#F0F3F8" }}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.container}
     >
@@ -483,7 +483,7 @@ const RiskPredictionScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F0F3F8",
+    backgroundColor: "#4A90E2",
   },
   heroHeader: {
     backgroundColor: "#4A90E2",

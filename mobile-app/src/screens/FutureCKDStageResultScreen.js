@@ -5,10 +5,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
   StatusBar,
   Modal,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import { Ionicons } from "@expo/vector-icons";
 
 const FutureCKDStageResultScreen = ({ navigation, route }) => {
@@ -17,7 +18,7 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
   
   if (!result || !result.success) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={["top"]}>
         <Text style={styles.emptyText}>No data available</Text>
       </SafeAreaView>
     );
@@ -83,7 +84,7 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
 
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
       {/* Hero Header */}
@@ -99,7 +100,7 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView style={{ flex: 1, backgroundColor: "#F0F3F8" }} contentContainerStyle={styles.content}>
         <View style={styles.stageBox}>
           <Text style={styles.stageLabel}>Current Stage</Text>
           <Text style={styles.stageText}>Stage {stage}</Text>
@@ -245,7 +246,7 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F0F3F8",
+    backgroundColor: "#4A90E2",
   },
   heroHeader: {
     backgroundColor: "#4A90E2",

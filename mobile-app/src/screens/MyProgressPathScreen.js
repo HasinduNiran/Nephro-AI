@@ -3,13 +3,14 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
   Modal,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -624,7 +625,7 @@ const MyProgressPathScreen = ({ navigation, route }) => {
   }, [records]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
       {/* Hero Header */}
@@ -931,7 +932,7 @@ const MyProgressPathScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F3F8',
+    backgroundColor: "#4A90E2",
   },
   heroHeader: {
     backgroundColor: '#4A90E2',
@@ -990,7 +991,8 @@ const styles = StyleSheet.create({
   rightBtnPlaceholder: {
     width: 40,
   },
-  scroll: { flex: 1 },
+  scroll: {
+    backgroundColor: "#F0F3F8", flex: 1 },
   scrollBody: { paddingHorizontal: 16, paddingBottom: 40, paddingTop: 8 },
 
   patientCard: {

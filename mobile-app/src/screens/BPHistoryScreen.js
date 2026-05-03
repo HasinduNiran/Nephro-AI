@@ -14,9 +14,10 @@ import {
   PermissionsAndroid,
   RefreshControl,
   TextInput,
-  SafeAreaView,
   StatusBar,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -576,7 +577,7 @@ const BPHistoryScreen = ({ navigation, route }) => {
   // ── main render ──────────────────────────────────────────
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
       {/* Hero Header */}
@@ -594,7 +595,7 @@ const BPHistoryScreen = ({ navigation, route }) => {
         </View>
       </View>
 
-      <ScrollView
+      <ScrollView style={{ flex: 1, backgroundColor: "#F0F3F8" }}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -981,7 +982,7 @@ const BPHistoryScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F0F3F8",
+    backgroundColor: "#4A90E2",
   },
   heroHeader: {
     backgroundColor: "#4A90E2",

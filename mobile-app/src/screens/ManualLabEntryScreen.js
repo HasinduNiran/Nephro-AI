@@ -9,8 +9,9 @@ import {
   StatusBar,
   Alert,
   ActivityIndicator,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
@@ -218,7 +219,7 @@ const ManualLabEntryScreen = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
       {/* Hero Header */}
@@ -370,7 +371,7 @@ const ManualLabEntryScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F0F3F8",
+    backgroundColor: "#4A90E2",
   },
   heroHeader: {
     backgroundColor: "#4A90E2",
@@ -430,6 +431,7 @@ const styles = StyleSheet.create({
     width: 40,
   },
   scrollView: {
+    backgroundColor: "#F0F3F8",
     flex: 1,
   },
   contentContainer: {

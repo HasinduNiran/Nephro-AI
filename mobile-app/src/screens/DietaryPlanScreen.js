@@ -4,14 +4,15 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
-} from 'react-native';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import { Ionicons } from '@expo/vector-icons';
 
 const DietaryPlanScreen = ({ navigation }) => {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
       {/* Hero Header */}
@@ -82,7 +83,7 @@ const DietaryPlanScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F3F8',
+    backgroundColor: "#4A90E2",
   },
   heroHeader: {
     backgroundColor: '#4A90E2',
@@ -144,6 +145,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 24,
+    backgroundColor: "#F0F3F8",
   },
   subtitle: {
     fontSize: 16,

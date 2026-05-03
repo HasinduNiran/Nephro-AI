@@ -1458,7 +1458,7 @@ const ChatbotScreen = ({ route, navigation }) => {
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: "#F0F3F8" }}
         behavior="padding"
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
@@ -1805,7 +1805,7 @@ const ChatbotScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: "#4A90E2",
   },
 
   // ═══════════════════════════════════════════════════════
