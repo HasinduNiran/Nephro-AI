@@ -625,15 +625,19 @@ const MyProgressPathScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
+      <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
-      {/* Top bar */}
-      <View style={styles.topBar}>
-        <TouchableOpacity style={styles.iconCircle} onPress={() => navigation.goBack()}>
-          <Ionicons name="menu" size={20} color="#475569" />
-        </TouchableOpacity>
-        <Text style={styles.topTitle}>My Progress Path</Text>
-        <View style={styles.topPlaceholder} />
+      {/* Hero Header */}
+      <View style={styles.heroHeader}>
+        <View style={styles.heroCircleLarge} />
+        <View style={styles.heroCircleSmall} />
+        <View style={styles.heroInner}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.heroTitle}>My Progress</Text>
+          <View style={styles.rightBtnPlaceholder} />
+        </View>
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollBody}>
@@ -927,31 +931,65 @@ const MyProgressPathScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F0F3F8',
   },
-  topBar: {
-    paddingTop: 40,
-    paddingBottom: 12,
+  heroHeader: {
+    backgroundColor: '#4A90E2',
     paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 20,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  heroCircleLarge: {
+    position: 'absolute',
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    top: -50,
+    right: -40,
+  },
+  heroCircleSmall: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    bottom: -20,
+    left: 30,
+  },
+  heroInner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F8FAFC',
   },
-  iconCircle: {
+  heroTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    flex: 1,
+    textAlign: 'center',
+  },
+  backBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F1F5F9',
-    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
+    alignItems: 'center',
   },
-  topTitle: {
-    color: '#1E2937',
-    fontSize: 18,
-    fontWeight: '600',
+  rightBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  topPlaceholder: { width: 40 },
+  rightBtnPlaceholder: {
+    width: 40,
+  },
   scroll: { flex: 1 },
   scrollBody: { paddingHorizontal: 16, paddingBottom: 40, paddingTop: 8 },
 

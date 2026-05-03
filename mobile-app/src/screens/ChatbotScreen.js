@@ -1455,56 +1455,42 @@ const ChatbotScreen = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.card} />
+      <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior="padding"
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
-        {/* Enhanced Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="arrow-back" size={24} color={COLORS.textDark} />
-          </TouchableOpacity>
-          <View style={styles.headerCenter}>
-            <View style={styles.headerIconContainer}>
-              <FontAwesome5 name="heartbeat" size={19} color={COLORS.white} />
-              <View style={styles.onlineIndicator} />
-            </View>
-            <View>
-              <Text style={styles.headerTitle}>Nephro-AI</Text>
-              <View style={styles.statusRow}>
-                <View style={styles.statusDot} />
-                <Text style={styles.headerSubtitle}>
-                  Online • Ready to help
+        {/* Hero Header */}
+        <View style={styles.heroHeader}>
+          <View style={styles.heroCircleLarge} />
+          <View style={styles.heroCircleSmall} />
+          <View style={styles.heroInner}>
+            <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7}>
+              <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+            <Text style={styles.heroTitle}>AI Assistant</Text>
+            <View style={styles.heroActions}>
+              <TouchableOpacity
+                style={styles.heroActionBtn}
+                activeOpacity={0.7}
+                onPress={clearChatHistory}
+              >
+                <Ionicons name="trash-outline" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.langChip}
+                activeOpacity={0.7}
+                onPress={() => setShowLanguageModal(true)}
+              >
+                <Ionicons name="globe-outline" size={13} color="#FFFFFF" />
+                <Text style={[styles.langChipText, { marginLeft: 4 }]}>
+                  {selectedLanguage === "sinhala" ? "සිංහල" : "English"}
                 </Text>
-              </View>
+              </TouchableOpacity>
             </View>
           </View>
-          <TouchableOpacity
-            style={styles.headerAction}
-            activeOpacity={0.7}
-            onPress={clearChatHistory}
-          >
-            <Ionicons name="trash-outline" size={22} color={COLORS.textLight} />
-          </TouchableOpacity>
-
-          {/* Language toggle chip */}
-          <TouchableOpacity
-            style={styles.langChip}
-            activeOpacity={0.7}
-            onPress={() => setShowLanguageModal(true)}
-          >
-            <Ionicons name="globe-outline" size={13} color={COLORS.primary} />
-            <Text style={[styles.langChipText, { marginLeft: 4 }]}>
-              {selectedLanguage === "sinhala" ? "සිංහල" : "English"}
-            </Text>
-          </TouchableOpacity>
         </View>
 
         <FlatList
@@ -1823,95 +1809,77 @@ const styles = StyleSheet.create({
   },
 
   // ═══════════════════════════════════════════════════════
-  // HEADER STYLES
+  // HERO HEADER STYLES
   // ═══════════════════════════════════════════════════════
-  header: {
+  heroHeader: {
+    backgroundColor: "#4A90E2",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 20,
+    overflow: "hidden",
+    position: "relative",
+  },
+  heroCircleLarge: {
+    position: "absolute",
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    top: -50,
+    right: -40,
+  },
+  heroCircleSmall: {
+    position: "absolute",
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    bottom: -20,
+    left: 30,
+  },
+  heroInner: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 10 : 20,
-    paddingBottom: 15,
-    backgroundColor: COLORS.card,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
-    zIndex: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.cardBorder,
   },
-
-  backButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: COLORS.background,
-  },
-
-  headerCenter: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    marginLeft: 12,
-  },
-
-  headerIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-    position: "relative",
-  },
-
-  onlineIndicator: {
-    position: "absolute",
-    bottom: 2,
-    right: 2,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: COLORS.accent,
-    borderWidth: 2,
-    borderColor: COLORS.white,
-  },
-
-  headerTitle: {
+  heroTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: COLORS.textDark,
-    letterSpacing: 0.3,
+    color: "#FFFFFF",
+    flex: 1,
+    textAlign: "center",
   },
-
-  statusRow: {
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rightBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rightBtnPlaceholder: {
+    width: 40,
+  },
+  heroActions: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 2,
+    gap: 6,
   },
-
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.accent,
-    marginRight: 5,
-  },
-
-  headerSubtitle: {
-    fontSize: 12,
-    color: COLORS.textLight,
-  },
-
-  headerAction: {
-    padding: 8,
+  heroActionBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   // ═══════════════════════════════════════════════════════
@@ -2394,15 +2362,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 14,
-    backgroundColor: COLORS.primary + "18",
+    backgroundColor: "rgba(255,255,255,0.2)",
     borderWidth: 1,
-    borderColor: COLORS.primary + "40",
-    marginLeft: 8,
+    borderColor: "rgba(255,255,255,0.3)",
+    marginLeft: 4,
   },
   langChipText: {
     fontSize: 13,
     fontWeight: "700",
-    color: COLORS.primary,
+    color: "#FFFFFF",
   },
 
   // ── Language Selection Modal ─────────────────────────────────────────

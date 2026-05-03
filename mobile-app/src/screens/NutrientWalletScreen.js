@@ -141,20 +141,21 @@ const NutrientWalletScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F5F7FA" />
+      <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color="#1C1C1E" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Nutrient Wallet</Text>
-        <TouchableOpacity onPress={handleResetWallet} style={styles.resetButton}>
-          <Ionicons name="refresh" size={24} color="#4A90E2" />
-        </TouchableOpacity>
+      {/* Hero Header */}
+      <View style={styles.heroHeader}>
+        <View style={styles.heroCircleLarge} />
+        <View style={styles.heroCircleSmall} />
+        <View style={styles.heroInner}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.heroTitle}>Nutrient Wallet</Text>
+          <TouchableOpacity style={styles.rightBtn} onPress={handleResetWallet}>
+            <Ionicons name="refresh" size={22} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView
@@ -218,34 +219,64 @@ const NutrientWalletScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F7FA',
+    backgroundColor: '#F0F3F8',
   },
-  header: {
+  heroHeader: {
+    backgroundColor: '#4A90E2',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 20,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  heroCircleLarge: {
+    position: 'absolute',
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    top: -50,
+    right: -40,
+  },
+  heroCircleSmall: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    bottom: -20,
+    left: 30,
+  },
+  heroInner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
   },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  resetButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-  },
-  headerTitle: {
-    fontSize: 20,
+  heroTitle: {
+    fontSize: 18,
     fontWeight: '700',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
+    flex: 1,
+    textAlign: 'center',
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  rightBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  rightBtnPlaceholder: {
+    width: 40,
   },
   content: {
     padding: 20,

@@ -1,12 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, SafeAreaView, StatusBar } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from '../api/axiosConfig';
 
 const DietaryManagerScreen = ({ route, navigation }) => {
-  // Get User ID passed from Home Screen
-  const { userId } = route.params || {}; 
+  const { userId } = route.params || {};
   
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,12 +46,26 @@ const DietaryManagerScreen = ({ route, navigation }) => {
   };
 
   return (
-    <ScrollView 
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
+
+      {/* Hero Header */}
+      <View style={styles.heroHeader}>
+        <View style={styles.heroCircleLarge} />
+        <View style={styles.heroCircleSmall} />
+        <View style={styles.heroInner}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.heroTitle}>Dietary Manager</Text>
+          <View style={styles.rightBtnPlaceholder} />
+        </View>
+      </View>
+
+    <ScrollView
       style={styles.container}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchWalletStatus} />}
     >
-      <Text style={styles.headerTitle}>Dietary Manager</Text>
-      <Text style={styles.subText}>Track your daily intake and manage meals.</Text>
 
       {/* --- SECTION 1: NUTRIENT WALLET --- */}
       <View style={styles.card}>
@@ -75,46 +88,105 @@ const DietaryManagerScreen = ({ route, navigation }) => {
       {/* --- SECTION 2: ACTIONS --- */}
       <Text style={styles.sectionHeader}>Actions</Text>
       
-      <TouchableOpacity 
-        style={styles.scanBtn} 
+      <TouchableOpacity
+        style={styles.scanBtn}
         onPress={() => navigation.navigate("MealAnalysis", { userId })}
       >
         <Ionicons name="camera-outline" size={22} color="white" />
         <Text style={styles.btnText}>Scan New Meal</Text>
       </TouchableOpacity>
-      
+
     </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F7FB', padding: 20 },
-  headerTitle: { fontSize: 26, fontWeight: '700', color: '#0B2560', marginTop: 14, marginBottom: 4 },
+  safeArea: { flex: 1, backgroundColor: '#F0F3F8' },
+  heroHeader: {
+    backgroundColor: '#4A90E2',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 20,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  heroCircleLarge: {
+    position: 'absolute',
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    top: -50,
+    right: -40,
+  },
+  heroCircleSmall: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    bottom: -20,
+    left: 30,
+  },
+  heroInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  heroTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    flex: 1,
+    textAlign: 'center',
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  rightBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  rightBtnPlaceholder: {
+    width: 40,
+  },
+  container: { flex: 1, backgroundColor: '#F0F3F8', padding: 20 },
+  headerTitle: { fontSize: 26, fontWeight: '700', color: '#1C1C1E', marginTop: 14, marginBottom: 4 },
   subText: { fontSize: 14, color: '#7A8499', marginBottom: 22, letterSpacing: 0.2 },
-  
+
   card: {
     backgroundColor: 'white',
     padding: 20,
     borderRadius: 16,
     marginBottom: 28,
     borderWidth: 1,
-    borderColor: '#E8EDF4',
+    borderColor: '#E5E5EA',
     borderLeftWidth: 4,
-    borderLeftColor: '#1a6fe0',
-    shadowColor: '#0a1932',
+    borderLeftColor: '#4A90E2',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.06,
     shadowRadius: 8,
-    elevation: 3, 
+    elevation: 3,
   },
-  cardTitle: { fontSize: 17, fontWeight: '700', marginBottom: 16, color: '#0B2560', letterSpacing: 0.3 },
-  
-  nutrientRow: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    marginBottom: 10, 
-    borderBottomWidth: 1, 
-    borderBottomColor: '#F0F4F9', 
+  cardTitle: { fontSize: 17, fontWeight: '700', marginBottom: 16, color: '#1C1C1E', letterSpacing: 0.3 },
+
+  nutrientRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F4F9',
     paddingBottom: 10,
   },
   nutrientLabel: { fontSize: 15, color: '#3D4A5C', fontWeight: '500' },
@@ -123,16 +195,16 @@ const styles = StyleSheet.create({
   textDanger: { color: '#dc3545' },
   errorText: { color: '#9AA5B4', fontStyle: 'italic', marginTop: 10, fontSize: 14 },
 
-  sectionHeader: { fontSize: 16, fontWeight: '700', marginBottom: 14, color: '#0B2560', letterSpacing: 0.3, textTransform: 'uppercase' },
+  sectionHeader: { fontSize: 16, fontWeight: '700', marginBottom: 14, color: '#1C1C1E', letterSpacing: 0.3, textTransform: 'uppercase' },
   scanBtn: {
-    backgroundColor: '#1a6fe0',
+    backgroundColor: '#4A90E2',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 10,
     paddingVertical: 16,
     borderRadius: 14,
-    shadowColor: '#1a6fe0',
+    shadowColor: '#4A90E2',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,

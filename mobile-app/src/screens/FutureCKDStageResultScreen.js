@@ -84,17 +84,22 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
+
+      {/* Hero Header */}
+      <View style={styles.heroHeader}>
+        <View style={styles.heroCircleLarge} />
+        <View style={styles.heroCircleSmall} />
+        <View style={styles.heroInner}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.heroTitle}>Stage Result</Text>
+          <View style={styles.rightBtnPlaceholder} />
+        </View>
+      </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.headerRow}>
-          <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={22} color="#1C1C1E" />
-          </TouchableOpacity>
-          <Text style={styles.title}>Progression Prediction</Text>
-          <View style={styles.iconButtonPlaceholder} />
-        </View>
-
         <View style={styles.stageBox}>
           <Text style={styles.stageLabel}>Current Stage</Text>
           <Text style={styles.stageText}>Stage {stage}</Text>
@@ -240,35 +245,69 @@ const FutureCKDStageResultScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#F0F3F8",
+  },
+  heroHeader: {
+    backgroundColor: "#4A90E2",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 20,
+    overflow: "hidden",
+    position: "relative",
+  },
+  heroCircleLarge: {
+    position: "absolute",
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    top: -50,
+    right: -40,
+  },
+  heroCircleSmall: {
+    position: "absolute",
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    bottom: -20,
+    left: 30,
+  },
+  heroInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  heroTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    flex: 1,
+    textAlign: "center",
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rightBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rightBtnPlaceholder: {
+    width: 40,
   },
   content: {
     padding: 20,
     paddingBottom: 40,
   },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 24,
-    marginTop: 12,
-  },
-  iconButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    backgroundColor: "#F8FAFC",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
-  },
-  iconButtonPlaceholder: { width: 44 },
   title: {
     fontSize: 22,
     fontWeight: "700",

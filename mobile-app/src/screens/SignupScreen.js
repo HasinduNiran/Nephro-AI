@@ -7,7 +7,11 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  SafeAreaView,
+  StatusBar,
+  KeyboardAvoidingView,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import CustomInput from "../components/CustomInput";
 import CustomButton from "../components/CustomButton";
@@ -68,11 +72,29 @@ const SignupScreen = ({ navigation }) => {
   };
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={styles.root}
-    >
-      <Text style={styles.title}>Create an Account</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.root}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Hero Section */}
+        <View style={styles.hero}>
+          <View style={styles.logoRing}>
+            <Ionicons name="water" size={40} color="#FFFFFF" />
+          </View>
+          <Text style={styles.appName}>Nephro-AI</Text>
+          <Text style={styles.appTagline}>Create your account</Text>
+        </View>
+
+        <View style={styles.formCard}>
+        <Text style={styles.title}>Create an Account</Text>
+        <Text style={styles.subtitle}>Join to start monitoring your kidney health</Text>
 
       <CustomInput placeholder="Full Name" value={name} setValue={setName} />
 
@@ -153,47 +175,109 @@ const SignupScreen = ({ navigation }) => {
         onPress={onLoginPress}
         type="TERTIARY"
       />
-    </ScrollView>
+        </View>
+      </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#4A90E2",
+  },
+  keyboardView: {
+    flex: 1,
+  },
   root: {
-    alignItems: "center",
-    padding: 20,
-    paddingTop: 50,
-    backgroundColor: "#fff",
     flexGrow: 1,
+    backgroundColor: "#F5F7FA",
+  },
+  hero: {
+    backgroundColor: "#4A90E2",
+    alignItems: "center",
+    paddingTop: 40,
+    paddingBottom: 32,
+    paddingHorizontal: 24,
+  },
+  logoRing: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.4)",
+  },
+  appName: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  appTagline: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.8)",
+    fontWeight: "400",
+  },
+  formCard: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 24,
+    flex: 1,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 8,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#051C60",
-    margin: 10,
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#1C1C1E",
+    marginBottom: 4,
+    textAlign: "center",
+    width: "100%",
+  },
+  subtitle: {
+    fontSize: 13,
+    color: "#8E8E93",
     marginBottom: 20,
+    textAlign: "center",
+    width: "100%",
   },
   datePickerButton: {
     width: "100%",
-    backgroundColor: "#f9fbfc",
-    borderColor: "#e8e8e8",
+    backgroundColor: "#F5F7FA",
+    borderColor: "#E5E5EA",
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 8,
     padding: 15,
     marginVertical: 5,
+    minHeight: 44,
+    justifyContent: "center",
   },
   datePickerText: {
     fontSize: 16,
-    color: "#333",
+    color: "#1C1C1E",
   },
   genderContainer: {
     width: "100%",
-    marginVertical: 10,
+    marginVertical: 8,
   },
   genderLabel: {
-    fontSize: 16,
-    color: "#333",
+    fontSize: 14,
+    color: "#4B5563",
     marginBottom: 8,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   genderButtons: {
     flexDirection: "row",
@@ -202,22 +286,24 @@ const styles = StyleSheet.create({
   },
   genderButton: {
     flex: 1,
-    backgroundColor: "#f9fbfc",
-    borderColor: "#e8e8e8",
+    backgroundColor: "#F5F7FA",
+    borderColor: "#E5E5EA",
     borderWidth: 1,
-    borderRadius: 5,
-    padding: 15,
-    marginHorizontal: 5,
+    borderRadius: 10,
+    paddingVertical: 13,
+    marginHorizontal: 4,
     alignItems: "center",
+    minHeight: 44,
+    justifyContent: "center",
   },
   genderButtonActive: {
-    backgroundColor: "#3B71F3",
-    borderColor: "#3B71F3",
+    backgroundColor: "#4A90E2",
+    borderColor: "#4A90E2",
   },
   genderButtonText: {
-    fontSize: 16,
-    color: "#333",
-    fontWeight: "500",
+    fontSize: 15,
+    color: "#4B5563",
+    fontWeight: "600",
   },
   genderButtonTextActive: {
     color: "#fff",

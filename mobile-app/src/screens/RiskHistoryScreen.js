@@ -8,7 +8,10 @@ import {
   Dimensions,
   TouchableOpacity,
   RefreshControl,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import Svg, { Line, Circle, Rect } from "react-native-svg";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "../api/axiosConfig";
@@ -34,7 +37,7 @@ const SHAP_LABELS = {
   hba1c_level: "HbA1c",
 };
 
-const RiskHistoryScreen = ({ route }) => {
+const RiskHistoryScreen = ({ route, navigation }) => {
   // Resolve actual user ID from route params or AsyncStorage
   const paramUserId = route?.params?.userId || route?.params?.userID;
   const [userId, setUserId] = useState(paramUserId || null);
@@ -824,7 +827,7 @@ const RiskHistoryScreen = ({ route }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3B71F3" />
+        <ActivityIndicator size="large" color="#4A90E2" />
         <Text style={styles.loadingText}>Loading risk history...</Text>
       </View>
     );
@@ -843,6 +846,22 @@ const RiskHistoryScreen = ({ route }) => {
   }
 
   return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
+
+      {/* Hero Header */}
+      <View style={styles.heroHeader}>
+        <View style={styles.heroCircleLarge} />
+        <View style={styles.heroCircleSmall} />
+        <View style={styles.heroInner}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.heroTitle}>Risk History</Text>
+          <View style={styles.rightBtnPlaceholder} />
+        </View>
+      </View>
+
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
@@ -851,15 +870,10 @@ const RiskHistoryScreen = ({ route }) => {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={["#3B71F3"]}
+          colors={["#4A90E2"]}
         />
       }
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Risk History</Text>
-        <Text style={styles.subtitle}>Your personal kidney health trend</Text>
-      </View>
 
       {/* Trend Card */}
       {renderTrendCard()}
@@ -903,6 +917,7 @@ const RiskHistoryScreen = ({ route }) => {
         </View>
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -943,6 +958,67 @@ const getRiskColor = (riskLevel) => {
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#F0F3F8",
+  },
+  heroHeader: {
+    backgroundColor: "#4A90E2",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 20,
+    overflow: "hidden",
+    position: "relative",
+  },
+  heroCircleLarge: {
+    position: "absolute",
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    top: -50,
+    right: -40,
+  },
+  heroCircleSmall: {
+    position: "absolute",
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    bottom: -20,
+    left: 30,
+  },
+  heroInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  heroTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    flex: 1,
+    textAlign: "center",
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rightBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rightBtnPlaceholder: {
+    width: 40,
+  },
   container: {
     flex: 1,
     backgroundColor: "#F5F7FA",
@@ -980,7 +1056,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   retryButton: {
-    backgroundColor: "#3B71F3",
+    backgroundColor: "#4A90E2",
     paddingHorizontal: 30,
     paddingVertical: 12,
     borderRadius: 8,
@@ -1109,10 +1185,10 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: "#3B71F3",
+    backgroundColor: "#4A90E2",
     borderWidth: 2,
     borderColor: "#fff",
-    shadowColor: "#3B71F3",
+    shadowColor: "#4A90E2",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -1258,7 +1334,7 @@ const styles = StyleSheet.create({
   historyMonth: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#3B71F3",
+    color: "#4A90E2",
   },
   historyYear: {
     fontSize: 12,
@@ -1443,7 +1519,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     borderLeftWidth: 3,
-    borderLeftColor: "#3B71F3",
+    borderLeftColor: "#4A90E2",
     marginBottom: 0,
   },
   explanationActionTitle: {

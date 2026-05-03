@@ -8,7 +8,10 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Platform,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomInput from "../components/CustomInput";
@@ -286,13 +289,26 @@ const RiskPredictionScreen = ({ navigation, route }) => {
     Math.round((dateRangeEnd - dateRangeStart) / (1000 * 60 * 60 * 24)) + 1;
 
   return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
+
+      {/* Hero Header */}
+      <View style={styles.heroHeader}>
+        <View style={styles.heroCircleLarge} />
+        <View style={styles.heroCircleSmall} />
+        <View style={styles.heroInner}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.heroTitle}>Risk Prediction</Text>
+          <View style={styles.rightBtnPlaceholder} />
+        </View>
+      </View>
+
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.container}
     >
-      <Text style={styles.title}>Early Risk Prediction</Text>
-      <Text style={styles.subtitle}>Select a 14-day period to begin</Text>
-
       {/* Date Range Selector */}
       <View style={styles.dateRangeCard}>
         <Text style={styles.dateRangeTitle}>📅 Select 14-Day Period</Text>
@@ -460,14 +476,76 @@ const RiskPredictionScreen = ({ navigation, route }) => {
         </Text>
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#F0F3F8",
+  },
+  heroHeader: {
+    backgroundColor: "#4A90E2",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 20,
+    overflow: "hidden",
+    position: "relative",
+  },
+  heroCircleLarge: {
+    position: "absolute",
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    top: -50,
+    right: -40,
+  },
+  heroCircleSmall: {
+    position: "absolute",
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    bottom: -20,
+    left: 30,
+  },
+  heroInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  heroTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    flex: 1,
+    textAlign: "center",
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rightBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rightBtnPlaceholder: {
+    width: 40,
+  },
   container: {
     padding: 20,
     alignItems: "center",
-    backgroundColor: "#F5F7FA",
+    backgroundColor: "#F0F3F8",
     flexGrow: 1,
   },
   title: {
@@ -475,7 +553,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1C1C1E",
     marginBottom: 10,
-    marginTop: 20,
+    marginTop: 4,
   },
   subtitle: {
     fontSize: 16,
@@ -489,12 +567,12 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     borderLeftWidth: 4,
-    borderLeftColor: "#3B71F3",
+    borderLeftColor: "#4A90E2",
   },
   dateRangeTitle: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#3B71F3",
+    color: "#4A90E2",
     marginBottom: 12,
   },
   dateRow: {
@@ -517,7 +595,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: "#3B71F3",
+    borderColor: "#4A90E2",
   },
   datePickerText: {
     fontSize: 13,
@@ -527,7 +605,7 @@ const styles = StyleSheet.create({
   dateArrow: {
     marginHorizontal: 10,
     fontSize: 18,
-    color: "#3B71F3",
+    color: "#4A90E2",
     fontWeight: "bold",
   },
   periodDaysText: {
@@ -593,12 +671,12 @@ const styles = StyleSheet.create({
   },
   readOnlyContainer: {
     width: "100%",
-    backgroundColor: "#F0F0F0",
-    borderRadius: 8,
+    backgroundColor: "#F5F7FA",
+    borderRadius: 12,
     padding: 15,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: "#E5E5EA",
   },
   readOnlyField: {
     flexDirection: "row",
@@ -659,7 +737,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   saveButton: {
-    backgroundColor: "#3B71F3",
+    backgroundColor: "#4A90E2",
     paddingVertical: 12,
     paddingHorizontal: 25,
     borderRadius: 8,
@@ -707,7 +785,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     width: "100%",
     borderLeftWidth: 4,
-    borderLeftColor: "#3B71F3",
+    borderLeftColor: "#4A90E2",
   },
   infoTitle: {
     fontSize: 14,

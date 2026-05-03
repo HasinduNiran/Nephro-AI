@@ -799,15 +799,19 @@ const MealAnalysisScreen = ({ route, navigation }) => {
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       enabled
     >
-      <View style={styles.headerContainer}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#051C60" />
-        </TouchableOpacity>
-        <Text style={styles.header}>Meal Analysis</Text>
-        <View style={styles.headerSpacer} />
+      <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
+
+      {/* Hero Header */}
+      <View style={styles.heroHeader}>
+        <View style={styles.heroCircleLarge} />
+        <View style={styles.heroCircleSmall} />
+        <View style={styles.heroInner}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.heroTitle}>Meal Analysis</Text>
+          <View style={styles.rightBtnPlaceholder} />
+        </View>
       </View>
 
       <ScrollView
@@ -1231,14 +1235,14 @@ const MealAnalysisScreen = ({ route, navigation }) => {
 
               <View style={styles.tipCard}>
                 <View style={styles.tipIconBox}>
-                  <Ionicons name="apps-outline" size={32} color="#1a6fe0" />
+                  <Ionicons name="apps-outline" size={32} color="#4A90E2" />
                 </View>
               <Text style={styles.tipLabel}>{"Spread food\ndon't pile it"}</Text>
               </View>
 
               <View style={styles.tipCard}>
                 <View style={styles.tipIconBox}>
-                  <Ionicons name="phone-portrait-outline" size={32} color="#1a6fe0" />
+                  <Ionicons name="phone-portrait-outline" size={32} color="#4A90E2" />
                 </View>
                 <Text style={styles.tipLabel}>Hold camera{"\n"}directly above</Text>
               </View>
@@ -1318,28 +1322,62 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     flexGrow: 1,
   },
-  headerContainer: {
+  heroHeader: {
+    backgroundColor: "#4A90E2",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 20,
+    overflow: "hidden",
+    position: "relative",
+  },
+  heroCircleLarge: {
+    position: "absolute",
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    top: -50,
+    right: -40,
+  },
+  heroCircleSmall: {
+    position: "absolute",
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    bottom: -20,
+    left: 30,
+  },
+  heroInner: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingTop: (StatusBar.currentHeight || 44) + 8,
-    paddingBottom: 14,
-    paddingHorizontal: 15,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e8e8e8",
   },
-  backButton: {
-    padding: 5,
-    width: 40,
-  },
-  header: {
-    fontSize: 22,
+  heroTitle: {
+    fontSize: 18,
     fontWeight: "700",
-    color: "#051C60",
-    textAlign: "center",
-    letterSpacing: 0.5,
+    color: "#FFFFFF",
     flex: 1,
+    textAlign: "center",
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rightBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rightBtnPlaceholder: {
+    width: 40,
   },
   headerSpacer: {
     width: 40,
@@ -1466,7 +1504,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E8EDF2",
     borderLeftWidth: 4,
-    borderLeftColor: "#1a6fe0",
+    borderLeftColor: "#4A90E2",
     shadowColor: "#0a1932",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -1642,7 +1680,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     marginBottom: 4,
-    color: "#0B2560",
+    color: "#1C1C1E",
     textAlign: "center",
     letterSpacing: 0.3,
   },
@@ -1794,7 +1832,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
   },
-  modalTitle: { fontSize: 22, fontWeight: "bold", color: "#051C60" },
+  modalTitle: { fontSize: 22, fontWeight: "bold", color: "#1C1C1E" },
   searchInput: {
     borderWidth: 1,
     borderColor: "#ccc",

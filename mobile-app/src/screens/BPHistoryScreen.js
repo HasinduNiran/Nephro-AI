@@ -577,23 +577,21 @@ const BPHistoryScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F5F7FA" />
+      <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="chevron-back" size={24} color="#1C1C1E" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>BP History</Text>
-        <TouchableOpacity
-          style={styles.settingsButton}
-          onPress={() => setSettingsVisible(true)}
-        >
-          <Ionicons name="settings-outline" size={24} color="#1C1C1E" />
-        </TouchableOpacity>
+      {/* Hero Header */}
+      <View style={styles.heroHeader}>
+        <View style={styles.heroCircleLarge} />
+        <View style={styles.heroCircleSmall} />
+        <View style={styles.heroInner}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.heroTitle}>BP History</Text>
+          <TouchableOpacity style={styles.rightBtn} onPress={() => setSettingsVisible(true)}>
+            <Ionicons name="settings-outline" size={22} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView
@@ -983,28 +981,64 @@ const BPHistoryScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F5F7FA",
+    backgroundColor: "#F0F3F8",
   },
-  header: {
+  heroHeader: {
+    backgroundColor: "#4A90E2",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 20,
+    overflow: "hidden",
+    position: "relative",
+  },
+  heroCircleLarge: {
+    position: "absolute",
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    top: -50,
+    right: -40,
+  },
+  heroCircleSmall: {
+    position: "absolute",
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    bottom: -20,
+    left: 30,
+  },
+  heroInner: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    backgroundColor: "#F5F7FA",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E5EA",
   },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
+  heroTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#1C1C1E",
+    color: "#FFFFFF",
+    flex: 1,
+    textAlign: "center",
   },
-  settingsButton: {
-    padding: 4,
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rightBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rightBtnPlaceholder: {
+    width: 40,
   },
   scrollContent: {
     padding: 20,
