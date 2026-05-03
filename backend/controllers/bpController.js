@@ -131,4 +131,4 @@ const getRangeAverage = async (req, res) => {
   }
 };
 
-module.exports = { upsertBPRecord, getBPHistory, getMonthlyAverage, getRangeAverage };
+module.exports = { upsertBPRecord, getBPHistory, getRangeAverage };
