@@ -466,11 +466,15 @@ class LLMEngine:
         hint_str = "\n   ".join(hint_strings) if hint_strings else "(No specific terms detected)"
         print(f"   💡 Style Hints ({len(hint_strings)} terms matched)")
         
-        # Empathy rule: only symptomatic intents get the "I'm sorry to hear" phrase
+        # Empathy rule: symptomatic intents get varied empathy; factual intents stay direct
         empathy_rule = (
-            "Translate 'I'm sorry to hear' as 'ඒක අහන්න ලැබීමත් කණගාටුයි'."
+            "Use varied, natural spoken empathy — rotate between phrases like: "
+            "'අයියෝ, ඒක ටිකක් අමාරු ඇති නේද...', "
+            "'කලබල වෙන්න එපා, අපි බලමු...', or "
+            "'ඒ ගැන අහන්න ලැබීම කණගාටුයි'. "
+            "DO NOT use the same sympathy phrase twice in a conversation."
             if user_intent in {"ask_symptoms", "ask_emergency"}
-            else "Do NOT add 'I'm sorry to hear that' or any sympathy opener. The user asked a factual question. Be warm but direct."
+            else "Do NOT add 'I'm sorry to hear that' or any sympathy opener. Be warm but direct."
         )
 
         # 2. REGISTER-AWARE PROMPT WITH STRUCTURED HINTS
@@ -673,6 +677,8 @@ STEP 5 — CONFLICT RESOLUTION: If the uploaded document contradicts the guideli
 state BOTH findings and explicitly recommend: "Please consult your nephrologist to review this result."
 
 ⚠️ Never fabricate lab values. If a value is not present in the uploaded document, say so clearly.
+
+🎯 CRITICAL FORMATTING: The 5 steps above are your internal reasoning process only — do NOT expose them to the patient. Never output extraction tags like "[Lab Name]: [Value] [Unit]" or source citations like "(Source: Uploaded Report)" in your final answer. Use the steps to think, then deliver the result as natural, conversational prose, the way a doctor explains findings verbally.
 """
 
         knowledge_context = "\n\n".join(context_documents[:3])
