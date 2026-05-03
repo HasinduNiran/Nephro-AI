@@ -220,20 +220,18 @@ const MealAnalysisScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     const loadUser = async () => {
-      if (!userId) {
-        try {
-          const storedUser = await AsyncStorage.getItem("user");
-          if (storedUser) {
-            const userData = JSON.parse(storedUser);
-            setUserId(userData._id || userData.id || "temp_user_001");
-            setUserEmail(userData.email || null);  // store email for CKD stage lookup
-          } else {
-            setUserId("temp_user_001");
-          }
-        } catch (error) {
-          console.error("Error loading user:", error);
+      try {
+        const storedUser = await AsyncStorage.getItem("user");
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          if (!userId) setUserId(userData._id || userData.id || "temp_user_001");
+          setUserEmail(userData.email || null);  // always load email for CKD stage lookup
+        } else if (!userId) {
           setUserId("temp_user_001");
         }
+      } catch (error) {
+        console.error("Error loading user:", error);
+        if (!userId) setUserId("temp_user_001");
       }
     };
     loadUser();

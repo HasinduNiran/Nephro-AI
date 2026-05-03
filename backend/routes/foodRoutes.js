@@ -86,14 +86,14 @@ const fetchCKDStage = async (userEmail) => {
 
         if (!record) {
             console.log(`[CKD-STAGE] ❌ No StageProgressionRecord found for "${normalized}" — defaulting to Stage 3`);
-            return 3;
+            return { stage: 3, source: 'default' };
         }
 
         console.log(`[CKD-STAGE] ✅ Record found (created: ${record.createdAt?.toISOString() ?? 'unknown'})`);
 
         if (!record.progression_by_stage || record.progression_by_stage.length === 0) {
             console.log('[CKD-STAGE] ⚠️  progression_by_stage array is empty — defaulting to Stage 3');
-            return 3;
+            return { stage: 3, source: 'default' };
         }
 
         // Log every stage + its probability so you can verify the data is correct
@@ -113,11 +113,11 @@ const fetchCKDStage = async (userEmail) => {
 
         console.log(`[CKD-STAGE] 🏆 Chosen stage: ${stage}  (raw value: "${best.stage}", probability: ${(best.probability * 100).toFixed(2)}%)`);
         console.log(`[CKD-STAGE] ✔️  Returning Stage ${stage} for user "${normalized}"`);
-        return stage;
+        return { stage, source: 'predicted' };
 
     } catch (err) {
         console.error('[CKD-STAGE] 🔴 Database lookup error:', err.message);
-        return 3;
+        return { stage: 3, source: 'default' };
     }
 };
 
@@ -288,7 +288,7 @@ router.post('/confirm-meal', async (req, res) => {
         // Fetch real CKD stage using the userEmail passed from the mobile app.
         // Falls back to Stage 3 if userEmail is not provided or no record exists.
         const userEmail = req.body.userEmail || null;
-        const ckdStage  = userEmail ? await fetchCKDStage(userEmail) : 3;
+        const { stage: ckdStage } = userEmail ? await fetchCKDStage(userEmail) : { stage: 3 };
         const wallet    = await getWallet(userId, ckdStage);
 
         const projected = {
@@ -348,11 +348,11 @@ router.get('/ckd-stage/:userEmail', async (req, res) => {
             return res.status(400).json({ error: 'userEmail is required' });
         }
 
-        const stage = await fetchCKDStage(userEmail);
+        const { stage, source } = await fetchCKDStage(userEmail);
         return res.json({
             success: true,
             ckdStage: stage,
-            source: stage === 3 ? 'default' : 'predicted'
+            source,
         });
     } catch (err) {
         console.error('[CKD Stage Route] Error:', err.message);
